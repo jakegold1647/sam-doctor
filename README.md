@@ -23,10 +23,12 @@ official documentation.
 ## Install and run
 
 ```bash
-python -m pip install -e .
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git"
 sam-doctor demo
 sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
 ```
+
+For local development, clone the repository and use `python -m pip install -e ".[dev]"`.
 
 To save a report:
 
@@ -58,4 +60,3 @@ failures.
 Run this only on logs you are authorized to inspect. Review every suggested
 command and policy change before applying it. SAM Doctor is diagnostic help,
 not security, legal, or production-operations advice.
-
