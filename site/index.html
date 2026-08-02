@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAM Doctor | AWS deployment diagnosis, locally</title>
+    <meta
+      name="description"
+      content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment logs into an evidence-first diagnostic report—locally."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">LOCAL AWS DEPLOYMENT DIAGNOSTICS</p>
+        <h1>Find the first useful clue in a failed AWS deployment.</h1>
+        <p class="lede">
+          SAM Doctor reads a deployment log on your machine, identifies supported
+          SAM, CloudFormation, IAM, and GitHub Actions OIDC failure patterns, and
+          produces evidence, safe checks, and a shareable Markdown report.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/YOUR_GITHUB_USERNAME/sam-doctor/releases">
+            Try the free alpha
+          </a>
+          <a class="button secondary" href="#founder">
+            See the founder edition
+          </a>
+        </div>
+        <p class="note">Runs locally. No AWS credentials. No log upload. No automatic changes.</p>
+      </section>
+
+      <section class="terminal" aria-label="Example diagnostic output">
+        <p><span>$</span> sam-doctor diagnose failed-deploy.log --format markdown</p>
+        <p class="muted">Likely cause · high confidence</p>
+        <h2>GitHub Actions cannot assume the configured AWS role through OIDC.</h2>
+        <p>
+          Evidence: <code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code>
+        </p>
+        <p class="muted">
+          Next: verify <code>id-token: write</code>, the OIDC audience, and the trust policy subject condition.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article>
+          <p class="eyebrow">WHAT IT HANDLES NOW</p>
+          <h2>Start with the failures that waste deployment time.</h2>
+          <ul>
+            <li>GitHub Actions OIDC and role-assumption failures</li>
+            <li>IAM access-denied errors</li>
+            <li>CloudFormation rollback states</li>
+            <li>SAM configuration and change-set failures</li>
+            <li>API Gateway CORS preflight conflicts</li>
+          </ul>
+        </article>
+        <article>
+          <p class="eyebrow">WHAT IT DOES NOT DO</p>
+          <h2>Useful without pretending to be magic.</h2>
+          <ul>
+            <li>No AWS account access or automatic remediation</li>
+            <li>No claim of guaranteed root-cause analysis</li>
+            <li>No replacement for a security review or production operator</li>
+            <li>No raw-log upload or cloud processing</li>
+          </ul>
+        </article>
+      </section>
+
+      <section id="founder" class="founder">
+        <p class="eyebrow">FOUNDER EDITION</p>
+        <h2>Built for developers who need repeatable evidence, not another vague error message.</h2>
+        <p>
+          The planned $39 one-time founder edition adds batch analysis, expanded
+          diagnostic rules, richer Markdown/JSON reports, configurable redaction,
+          and commercial-use terms. It will only ship after real alpha users confirm
+          that the core reports help on sanitized deployment failures.
+        </p>
+        <a class="button primary" href="https://YOUR_STORE.lemonsqueezy.com/buy/YOUR_PRODUCT">
+          Reserve founder access — $39
+        </a>
+        <p class="note">Replace the checkout URL after creating the product listing.</p>
+      </section>
+
+      <section class="faq">
+        <h2>Questions</h2>
+        <details>
+          <summary>Does SAM Doctor upload my logs?</summary>
+          <p>No. The free alpha processes the file locally. Review any report before sharing it outside your team.</p>
+        </details>
+        <details>
+          <summary>Can it change IAM policies or deploy resources?</summary>
+          <p>No. It provides evidence and read-only verification steps only. You remain responsible for every change.</p>
+        </details>
+        <details>
+          <summary>Who is it for?</summary>
+          <p>Solo developers, freelancers, and small teams that deploy Python or other applications through AWS and GitHub Actions.</p>
+        </details>
+      </section>
+    </main>
+    <footer>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
