@@ -1,4 +1,5 @@
 from sam_doctor.diagnostics import diagnose, markdown_report
+from sam_doctor.cli import _read_demo
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -17,3 +18,7 @@ def test_oidc_failure_is_detected_and_redacted() -> None:
 
 def test_unknown_log_has_no_finding() -> None:
     assert diagnose("Everything completed successfully.") == []
+
+
+def test_packaged_demo_is_available() -> None:
+    assert "AssumeRoleWithWebIdentity" in _read_demo()

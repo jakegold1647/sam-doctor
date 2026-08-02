@@ -1,0 +1,5 @@
+Run aws-actions/configure-aws-credentials@v4
+Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+An error occurred (AccessDenied) when calling the AssumeRoleWithWebIdentity operation: Not authorized to perform sts:AssumeRoleWithWebIdentity
+Role ARN: arn:aws:iam::123456789012:role/github-production-deploy
+Workflow actor: builder@example.com
