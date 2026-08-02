@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from importlib.resources import files
 from pathlib import Path
 import sys
 
@@ -10,7 +11,7 @@ from . import __version__
 from .diagnostics import diagnose, markdown_report, terminal_report
 
 
-_DEMO_PATH = Path(__file__).resolve().parents[2] / "examples" / "oidc-assume-role-failure.txt"
+_DEMO_NAME = "oidc-assume-role-failure.txt"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -45,12 +46,18 @@ def _render(text: str, source_name: str, output_format: str) -> str:
     return terminal_report(findings, source_name) + "\n"
 
 
+def _read_demo() -> str:
+    """Read the packaged example so `sam-doctor demo` works after installation."""
+
+    return files("sam_doctor").joinpath("data", _DEMO_NAME).read_text(encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "demo":
-        report = _render(_read_text(_DEMO_PATH), _DEMO_PATH.name, args.format)
+        report = _render(_read_demo(), _DEMO_NAME, args.format)
         sys.stdout.write(report)
         return 0
 
@@ -70,4 +77,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
