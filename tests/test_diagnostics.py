@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.3.1"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -120,6 +120,7 @@ def test_json_report_is_redacted_and_machine_readable() -> None:
     report = json.loads(json_report(findings, "failure.log"))
 
     assert report["finding_count"] == 1
+    assert report["sam_doctor_version"] == __version__
     assert report["source"] == "failure.log"
     assert "[REDACTED_ARN]" in report["findings"][0]["evidence"][0]
     assert "123456789012" not in json_report(findings, "failure.log")
@@ -138,6 +139,7 @@ def test_rule_catalog_is_machine_readable() -> None:
     catalog = json.loads(rules_report("json"))
 
     assert catalog["rule_count"] >= 7
+    assert catalog["sam_doctor_version"] == __version__
     assert any("CloudFormation resource" in rule["title"] for rule in catalog["rules"])
 
 

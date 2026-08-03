@@ -7,6 +7,7 @@ from html import escape
 import json
 import re
 
+from . import __version__
 from .redaction import redact
 
 
@@ -50,7 +51,7 @@ _RULES = (
         verification=(
             "Confirm the workflow or job permissions include `id-token: write`.",
             "Check that the role trust policy accepts `token.actions.githubusercontent.com:aud` equal to `sts.amazonaws.com`.",
-            "Compare the trust policy's `sub` condition with the branch or GitHub Environment that ran the job.",
+            "Compare the trust policy's `sub` condition with the exact branch or GitHub Environment that ran the job; newer repositories can include immutable owner and repository IDs in that claim.",
         ),
         documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
     ),
@@ -290,6 +291,7 @@ def json_report(findings: list[Finding], source_name: str) -> str:
     """Render a stable, redacted report for scripts and CI annotations."""
 
     payload = {
+        "sam_doctor_version": __version__,
         "source": source_name,
         "finding_count": len(findings),
         "findings": [
@@ -313,6 +315,7 @@ def rules_report(output_format: str) -> str:
     rules = supported_rules()
     if output_format == "json":
         payload = {
+            "sam_doctor_version": __version__,
             "rule_count": len(rules),
             "rules": [
                 {
@@ -325,7 +328,7 @@ def rules_report(output_format: str) -> str:
         }
         return json.dumps(payload, indent=2) + "\n"
 
-    lines = [f"SAM Doctor supports {len(rules)} diagnostic rule(s):", ""]
+    lines = [f"SAM Doctor {__version__} supports {len(rules)} diagnostic rule(s):", ""]
     for index, rule in enumerate(rules, start=1):
         lines.extend(
             [
