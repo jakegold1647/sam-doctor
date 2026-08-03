@@ -2,6 +2,12 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.3.1 - 2026-08-02
+
+- Added the tool version to JSON reports and the rule catalog.
+- Added a practical GitHub Actions to AWS OIDC troubleshooting guide.
+- Updated OIDC verification guidance for GitHub's immutable subject-claim format.
+
 ## v0.3.0 - 2026-08-02
 
 - Added a catalog command: `sam-doctor rules`.

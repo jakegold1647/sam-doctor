@@ -32,7 +32,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.3.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.3.1"
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor rules
@@ -91,6 +91,10 @@ The free core will stay useful for individual deployment failures. Please open
 an issue when a report is wrong, unclear, or missing a failure pattern. For a
 new rule, include only a sanitized error excerpt and the safe next check you
 expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
+
+## Guides
+
+- [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
 
 ## Scope and safety
 
