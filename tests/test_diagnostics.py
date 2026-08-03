@@ -280,3 +280,50 @@ def test_rules_command_prints_json(capsys: pytest.CaptureFixture[str]) -> None:
 
     report = json.loads(capsys.readouterr().out)
     assert report["rule_count"] >= 7
+
+
+def test_batch_command_analyzes_directory(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    (logs / "first.log").write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    (logs / "second.txt").write_text("Everything completed successfully.", encoding="utf-8")
+
+    assert main(["batch", str(logs), "--format", "terminal"]) == 0
+    output = capsys.readouterr().out
+
+    assert "first.log" in output
+    assert "second.log" not in output
+    assert "second.txt" in output
+    assert "AccessDenied" not in output
+    assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output
+
+
+def test_batch_command_json_has_aggregate_counts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
+    (tmp_path / "b.log").write_text("sam deploy completed successfully", encoding="utf-8")
+
+    assert main(["batch", str(tmp_path / "a.txt"), str(tmp_path / "b.log"), "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["batch_count"] == 2
+    assert any(entry["finding_count"] == 1 for entry in report["results"])
+
+
+def test_batch_command_preserves_path_for_duplicate_filenames(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    first_dir = tmp_path / "run1"
+    second_dir = tmp_path / "run2"
+    first_dir.mkdir()
+    second_dir.mkdir()
+
+    first_file = first_dir / "duplicate.log"
+    second_file = second_dir / "duplicate.log"
+    first_file.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    second_file.write_text("The REST API doesn't contain any methods", encoding="utf-8")
+
+    assert main(["batch", str(first_dir), str(second_dir), "--format", "terminal"]) == 0
+
+    output = capsys.readouterr().out
+    assert str(first_file) in output
+    assert str(second_file) in output

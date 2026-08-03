@@ -26,6 +26,11 @@ All notable changes to SAM Doctor are documented here.
   cleanup blockers are called out as a separate action path.
 - Added an outreach metrics helper (`scripts/check-outreach.py`) and launch docs
   guidance to keep ethical, repeatable growth tracking lightweight.
+- Added a new `batch` CLI subcommand to diagnose multiple deployment logs in one
+  run and aggregate findings for local triage.
+- Improved batch output to preserve full source paths for duplicate filenames
+  (especially from similarly-named directories) and to include per-file markdown
+  section labels.
 
 ## v0.7.4 - 2026-08-03
 

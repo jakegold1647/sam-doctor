@@ -46,6 +46,7 @@ sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
 sam-doctor rules
 sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
+sam-doctor batch "tmp/*.log" tmp/deployment-error.txt
 ```
 
 This installs the published release directly and does not require Git. The
@@ -77,6 +78,12 @@ The terminal format is intended for a quick local check, Markdown is convenient
 for a human-readable handoff, and JSON is stable enough for scripts and CI
 annotations. All three formats contain matched evidence rather than the full
 input log.
+
+You can also process multiple files in batch mode:
+
+```bash
+sam-doctor batch logs/*.log logs/*.txt --format json > batch-results.json
+```
 
 ## GitHub Actions
 
