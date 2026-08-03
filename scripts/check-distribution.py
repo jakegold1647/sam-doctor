@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import datetime, timezone
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -87,6 +88,35 @@ def _list_release_count(repo: str, token: str | None) -> int:
     return len(payload) if isinstance(payload, list) else 0
 
 
+def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
+    repo_url = f"https://api.github.com/repos/{repo}"
+    data, _ = _get_json(repo_url, token)
+
+    release_count = _list_release_count(repo, token)
+    discussions_ping = _count_discussions(repo, token)
+
+    pypi_status = _check_http_status(f"https://pypi.org/pypi/{PYPI_PROJECT}/json")
+    marketplace_status = _check_http_status(MARKETPLACE_URL)
+    site_status = _check_http_status(SITE_URL)
+
+    return {
+        "repo": repo,
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "repo_stars": data.get("stargazers_count", "unknown"),
+        "forks": data.get("forks_count", "unknown"),
+        "open_issues": data.get("open_issues_count", "unknown"),
+        "watchers": data.get("subscribers_count", "unknown"),
+        "releases": release_count,
+        "discussions_ping": discussions_ping,
+        "pypi_status": {"ok": pypi_status.ok, "details": pypi_status.details},
+        "marketplace_status": {
+            "ok": marketplace_status.ok,
+            "details": marketplace_status.details,
+        },
+        "site_status": {"ok": site_status.ok, "details": site_status.details},
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -99,40 +129,57 @@ def main() -> int:
         default=os.environ.get("GITHUB_TOKEN", ""),
         help="Optional GitHub API token",
     )
+    parser.add_argument(
+        "--output-format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format",
+    )
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Optional output file path for JSON snapshots",
+    )
     args = parser.parse_args()
 
     repo = args.repo
     token = args.token or None
-
-    print(f"sam-doctor distribution snapshot for {repo}")
-
-    repo_url = f"https://api.github.com/repos/{repo}"
     try:
-        data, _ = _get_json(repo_url, token)
+        snapshot = _collect_snapshot(repo, token)
     except RuntimeError as error:
         print(f"Unable to read repo metadata: {error}")
         return 1
 
-    release_count = _list_release_count(repo, token)
-    discussions_hint = _count_discussions(repo, token)
-    pypi_status = _check_http_status(f"https://pypi.org/pypi/{PYPI_PROJECT}/json")
-    marketplace_status = _check_http_status(MARKETPLACE_URL)
-    site_status = _check_http_status(SITE_URL)
+    if args.output_format == "json":
+        print(json.dumps(snapshot, indent=2, sort_keys=True))
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as stream:
+                json.dump(snapshot, stream, indent=2, sort_keys=True)
+        return 0
 
-    print(f"repo_stars: {data.get('stargazers_count', 'unknown')}")
-    print(f"forks: {data.get('forks_count', 'unknown')}")
-    print(f"open_issues: {data.get('open_issues_count', 'unknown')}")
-    print(f"watchers: {data.get('subscribers_count', 'unknown')}")
-    print(f"releases: {release_count}")
-    print(f"discussions_ping: {discussions_hint}")
-    print(f"pypi_status: 200={pypi_status.ok} ({pypi_status.details})")
-    print(f"marketplace_status: 200={marketplace_status.ok} ({marketplace_status.details})")
-    print(f"site_status: 200={site_status.ok} ({site_status.details})")
+    print(f"sam-doctor distribution snapshot for {repo}")
+    print(f"repo_stars: {snapshot['repo_stars']}")
+    print(f"forks: {snapshot['forks']}")
+    print(f"open_issues: {snapshot['open_issues']}")
+    print(f"watchers: {snapshot['watchers']}")
+    print(f"releases: {snapshot['releases']}")
+    print(f"discussions_ping: {snapshot['discussions_ping']}")
+    pypi_status = snapshot["pypi_status"]
+    marketplace_status = snapshot["marketplace_status"]
+    site_status = snapshot["site_status"]
+    print(
+        f"pypi_status: 200={pypi_status['ok']} ({pypi_status['details']})"
+    )
+    print(
+        "marketplace_status: 200="
+        f"{marketplace_status['ok']} ({marketplace_status['details']})"
+    )
+    print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
 
-    if marketplace_status.ok and pypi_status.ok:
+    if marketplace_status["ok"] and pypi_status["ok"]:
         print("channels: marketplace, pypi, pages, and github release metadata are visible")
 
-    if data.get("stargazers_count", 0) == 0:
+    if snapshot["repo_stars"] == 0:
         print("signal: no stars yet, keep outreach conversation-first")
 
     return 0

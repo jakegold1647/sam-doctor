@@ -20,6 +20,8 @@ Automated monitoring:
   `.github/workflows/distribution-check.yml`
 - Run it manually via workflow dispatch any time you publish a new release
   or run a new outreach batch.
+- Each run uploads an artifact named `distribution-snapshot` containing
+  `distribution.json` so you can compare snapshots over time.
 
 ## What to watch
 
