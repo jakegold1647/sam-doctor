@@ -19,6 +19,9 @@ outputs:
   has-findings:
     description: Whether the supplied log contains one or more supported findings.
     value: ${{ steps.diagnose.outputs.has-findings }}
+branding:
+  icon: activity
+  color: yellow
 runs:
   using: composite
   steps:
