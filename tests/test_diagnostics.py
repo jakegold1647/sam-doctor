@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.3.1"
+    assert __version__ == "0.4.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
