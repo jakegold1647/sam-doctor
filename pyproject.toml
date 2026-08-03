@@ -32,7 +32,7 @@ Changelog = "https://github.com/jakegold1647/sam-doctor/blob/main/CHANGELOG.md"
 sam-doctor = "sam_doctor.cli:main"
 
 [project.optional-dependencies]
-dev = ["build>=1", "pytest>=8"]
+dev = ["build>=1", "pytest>=8", "tomli>=2.0; python_version < '3.11'"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

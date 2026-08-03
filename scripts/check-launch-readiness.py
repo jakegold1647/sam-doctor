@@ -8,7 +8,10 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-import tomllib
+try:
+    import tomllib  # type: ignore[unused-ignore]
+except ModuleNotFoundError:  # pragma: no cover - Python <3.11
+    import tomli as tomllib  # type: ignore[import-not-found]
 
 
 @dataclass

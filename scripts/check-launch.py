@@ -108,19 +108,24 @@ def run_outreach(
     repo_root: Path,
     outreach_log: str,
     strict: bool = False,
+    summary: str = "",
     loader: Callable[[Path], Any] = _load_outreach_module,
 ) -> bool:
     module = loader(repo_root)
     path = Path(outreach_log)
     if not path.exists():
         print(f"outreach log not found: {path}")
+        if summary:
+            module._write_summary(module.empty_summary(), summary)
         return False if strict else True
 
-    summary = module.summarize(path)
-    module._print_summary(summary)
+    outreach_summary = module.summarize(path)
+    module._print_summary(outreach_summary)
+    if summary:
+        module._write_summary(outreach_summary, summary)
 
-    if strict and summary["ethical_signal"] != "strong":
-        print(f"ethical_signal is {summary['ethical_signal']}, not strong")
+    if strict and outreach_summary["ethical_signal"] != "strong":
+        print(f"ethical_signal is {outreach_summary['ethical_signal']}, not strong")
         return False
     return True
 
@@ -173,6 +178,11 @@ def _parse_args() -> argparse.Namespace:
         help="Outreach log CSV for ethical check.",
     )
     parser.add_argument(
+        "--outreach-summary",
+        default="",
+        help="Optional output path for outreach summary markdown.",
+    )
+    parser.add_argument(
         "--skip-outreach",
         action="store_true",
         help="Skip outreach signal check.",
@@ -211,7 +221,12 @@ def main() -> int:
             ok = False
 
     if not args.skip_outreach:
-        if not run_outreach(repo_root, args.outreach_log, strict=args.strict_ethical):
+        if not run_outreach(
+            repo_root,
+            args.outreach_log,
+            strict=args.strict_ethical,
+            summary=args.outreach_summary,
+        ):
             ok = False
 
     if ok:
