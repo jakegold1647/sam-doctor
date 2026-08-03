@@ -22,7 +22,7 @@ report_path="$(mktemp)"
 trap 'rm -f "$report_path"' EXIT
 
 python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
-sam-doctor diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
+python -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
 finding_count="$(python - "$report_path" <<'PY'
 import json
@@ -41,7 +41,7 @@ else
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
-  sam-doctor diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+  python -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then
