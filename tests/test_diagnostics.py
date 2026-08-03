@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.7.0"
+    assert __version__ == "0.7.1"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -108,6 +108,18 @@ def test_capability_error_does_not_add_the_generic_sam_finding() -> None:
 
     assert len(findings) == 1
     assert "explicit capability acknowledgement" in findings[0].title.lower()
+
+
+def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
+    findings = diagnose(
+        "CORS conflict: duplicate OPTIONS method\n"
+        "AccessDeniedException: action is not authorized"
+    )
+
+    assert [finding.title for finding in findings] == [
+        "API Gateway CORS preflight configuration conflicts with an existing OPTIONS method",
+        "AWS denied an API action required by the deployment",
+    ]
 
 
 @pytest.mark.parametrize(

@@ -37,7 +37,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.0/sam_doctor-0.7.0-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.1/sam_doctor-0.7.1-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
@@ -50,7 +50,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.1"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -81,7 +81,7 @@ Use the included action when a workflow already saves a deployment log:
 
 ```yaml
 - id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.0
+  uses: jakegold1647/sam-doctor@v0.7.1
   with:
     log-file: deployment.log
     summary: "true"
@@ -102,7 +102,8 @@ SAM Doctor deliberately reports only what its rules can support:
 4. A link to the relevant official documentation.
 
 It is most useful when you start with the first failure in a deployment log,
-not a later rollback message.
+not a later rollback message. When multiple supported patterns appear, SAM
+Doctor presents findings in the order of their first matching log line.
 
 ## Example output
 

@@ -408,11 +408,29 @@ def _matching_evidence(
     return tuple(dict.fromkeys(redact(line) for line in matches[:3]))
 
 
+def _first_matching_line(
+    text: str, patterns: tuple[str, ...], excluded_patterns: tuple[str, ...] = ()
+) -> int:
+    """Return the first source line that supports a rule.
+
+    A deployment log is chronological evidence. Keeping findings in the same order
+    makes the earlier, more useful failure easier to inspect before downstream
+    rollback messages.
+    """
+
+    for line_number, line in enumerate(text.splitlines()):
+        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns) and not any(
+            re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns
+        ):
+            return line_number
+    return len(text.splitlines())
+
+
 def diagnose(text: str) -> list[Finding]:
     """Return all deterministic findings supported by the supplied text."""
 
-    findings: list[Finding] = []
-    for rule in _RULES:
+    matched_findings: list[tuple[int, int, Finding]] = []
+    for rule_index, rule in enumerate(_RULES):
         if rule.title == "CloudFormation resource creation or update failed" and re.search(
             r"Has prohibited field Resource|Code signing is not supported for functions created with container images|Error Code:\s*InvalidBucketName|The specified bucket is not valid|access has been denied by S3.*permission.*GetObject|The REST API does(?:n't| not) contain any methods",
             text,
@@ -448,17 +466,21 @@ def diagnose(text: str) -> list[Finding]:
             excluded_patterns = (r"AssumeRoleWithWebIdentity",)
         evidence = _matching_evidence(text, rule.patterns, excluded_patterns)
         if evidence:
-            findings.append(
-                Finding(
+            matched_findings.append(
+                (
+                    _first_matching_line(text, rule.patterns, excluded_patterns),
+                    rule_index,
+                    Finding(
                     title=rule.title,
                     confidence=rule.confidence,
                     explanation=rule.explanation,
                     verification=rule.verification,
                     documentation_url=rule.documentation_url,
                     evidence=evidence,
+                    ),
                 )
             )
-    return findings
+    return [finding for _, _, finding in sorted(matched_findings)]
 
 
 def markdown_report(findings: list[Finding], source_name: str) -> str:
