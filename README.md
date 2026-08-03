@@ -69,6 +69,13 @@ To save a report:
 sam-doctor diagnose deployment.log --format markdown --output diagnosis.md
 ```
 
+For a direct CI gate, add `--fail-on-findings`; the report is still written or
+printed before the command exits with status 1 when a supported finding exists:
+
+```bash
+sam-doctor diagnose deployment.log --format json --fail-on-findings
+```
+
 The input can also be read from standard input, which is useful for CI steps and
 shell pipelines:
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from sam_doctor.cli import _read_demo, _read_text, _write_report, main
+from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
 from sam_doctor.diagnostics import (
     diagnose,
     json_report,
@@ -384,3 +384,45 @@ def test_batch_markdown_output_includes_file_sections(
     assert "## Source:" in output
     assert str(first_file) in output
     assert str(second_file) in output
+
+
+def test_diagnose_can_fail_on_findings_after_writing_report(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log = tmp_path / "failure.log"
+    report = tmp_path / "diagnosis.json"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert main(
+        [
+            "diagnose",
+            log,
+            "--format",
+            "json",
+            "--output",
+            report,
+            "--fail-on-findings",
+        ]
+    ) == 1
+    assert report.exists()
+    assert "Wrote json report" in capsys.readouterr().out
+
+
+def test_diagnose_fail_on_findings_stays_zero_for_unknown_logs(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "success.log"
+    log.write_text("Deployment completed successfully.", encoding="utf-8")
+
+    assert main(["diagnose", log, "--fail-on-findings"]) == 0
+
+
+def test_render_findings_matches_report_format_selection() -> None:
+    findings = diagnose("AccessDeniedException: action is not authorized")
+
+    assert "## 1." in _render_findings(findings, "failure.log", "markdown")
+    assert '"finding_count": 1' in _render_findings(findings, "failure.log", "json")
+    assert "SAM Doctor found 1 possible issue" in _render_findings(findings, "failure.log", "terminal")
