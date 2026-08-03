@@ -10,6 +10,8 @@ All notable changes to SAM Doctor are documented here.
   release with a verified GitHub wheel install path.
 - Added an explicit workflow-dispatch handoff so automated stable releases can
   publish to PyPI even when GitHub does not fan out the release event.
+- Documented the exact manual PyPI workflow retry fields for the first stable
+  publication or a later recovery.
 
 ## v0.7.5-rc.1 - 2026-08-03
 
