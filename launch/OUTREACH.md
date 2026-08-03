@@ -14,3 +14,14 @@ Use these messages only for developers with a recent, public AWS deployment prob
 
 > Based on the failure you described - [their exact pain] - the founder edition will add [relevant paid capability]. It is a $39 one-time license and I will refund it before delivery if the paid edition does not ship. Would the local report and expanded rule set save you time on your next deployment issue? If not, what would make it worth paying for?
 
+## Execution loop (ethical and repeatable)
+
+- Run `python scripts/check-launch.py --skip-distribution --strict-ethical --min-feedback-ratio 100`
+  before asking for founder feedback payments.
+- Record each live tester conversation in `launch/outreach-log-template.csv`.
+- Favor `outcome = accepted helpful report` or `outcome = reported miss` rows.
+- If outreach is `voluntary_star=1` without `feedback_signal`, follow up with one
+  concrete question before asking for paid follow-up.
+- Use distribution snapshots (already run every 12 hours) to avoid vanity tuning:
+  watch voluntary feedback ratio and repeat contacts, not raw star count.
+

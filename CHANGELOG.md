@@ -40,6 +40,8 @@ All notable changes to SAM Doctor are documented here.
   Marketplace pre-release states.
 - Added launch-readiness snapshot capture to the 12-hour distribution workflow so
   repository publish checks are archived with distribution trend artifacts.
+- Added an outreach execution checklist for ethical pre-founder asks and a
+  concrete 12-hour-informed review cadence in the outreach playbook.
 
 ## v0.7.4 - 2026-08-03
 
