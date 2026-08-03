@@ -32,7 +32,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.3.1"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.0"
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor rules
