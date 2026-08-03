@@ -2,6 +2,15 @@
 
 set -euo pipefail
 
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON_BIN=python
+else
+  echo "Could not find a Python interpreter (python3 or python)." >&2
+  exit 2
+fi
+
 : "${SAM_DOCTOR_LOG_FILE:?SAM_DOCTOR_LOG_FILE is required.}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
@@ -25,14 +34,17 @@ trap 'rm -f "$report_path"' EXIT
 # installs are restricted in the caller workflow.
 export PYTHONPATH="${GITHUB_ACTION_PATH}${PYTHONPATH:+:$PYTHONPATH}"
 
-if ! python -m sam_doctor.cli --help >/dev/null 2>&1; then
+if ! "$PYTHON_BIN" -m sam_doctor.cli --help >/dev/null 2>&1; then
   echo "Could not import local action package from ${GITHUB_ACTION_PATH}. Installing fallback." >&2
-  python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
+  if ! "$PYTHON_BIN" -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"; then
+    "$PYTHON_BIN" -m pip install --disable-pip-version-check --break-system-packages "$GITHUB_ACTION_PATH" || \
+      exit 2
+  fi
 fi
 
-python -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
+"$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
-finding_count="$(python - "$report_path" <<'PY'
+finding_count="$("$PYTHON_BIN" - "$report_path" <<'PY'
 import json
 import sys
 
@@ -54,7 +66,7 @@ else
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
-  python -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+  "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then

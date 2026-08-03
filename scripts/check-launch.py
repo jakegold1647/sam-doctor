@@ -116,6 +116,7 @@ def run_outreach(
     outreach_log: str,
     strict: bool = False,
     summary: str = "",
+    min_feedback_ratio: float = 100.0,
     loader: Callable[[Path], Any] = _load_outreach_module,
 ) -> bool:
     module = loader(repo_root)
@@ -133,6 +134,14 @@ def run_outreach(
 
     if strict and outreach_summary["ethical_signal"] != "strong":
         print(f"ethical_signal is {outreach_summary['ethical_signal']}, not strong")
+        return False
+
+    feedback_ratio = float(outreach_summary["star_feedback_ratio"])
+    if strict and feedback_ratio < min_feedback_ratio:
+        print(
+            f"ethical star feedback ratio is {feedback_ratio:.1f}%, "
+            f"below strict threshold {min_feedback_ratio:.1f}%"
+        )
         return False
     return True
 
@@ -209,6 +218,12 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Fail if outreach ethical signal is not strong.",
     )
+    parser.add_argument(
+        "--min-feedback-ratio",
+        type=float,
+        default=100.0,
+        help="Strict outreach minimum star feedback ratio when --strict-ethical is used.",
+    )
     return parser.parse_args()
 
 
@@ -248,6 +263,7 @@ def main() -> int:
             args.outreach_log,
             strict=args.strict_ethical,
             summary=args.outreach_summary,
+            min_feedback_ratio=args.min_feedback_ratio,
         ):
             ok = False
 

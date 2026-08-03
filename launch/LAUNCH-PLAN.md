@@ -77,7 +77,8 @@ you have helped. The best opening is a short answer to their actual error plus a
   generic "new tool" announcement.
 - Ask collaborators and testers for blunt feedback, not reciprocal stars.
 
-Run `python scripts/check-distribution.py` weekly and track signals in
+Run `python scripts/check-distribution.py` weekly (in addition to the automatic
+12-hour schedule) and track signals in
 [`launch/DISTRIBUTION-TRACKING.md`](DISTRIBUTION-TRACKING.md) before posting.
 
 ## Metrics to track

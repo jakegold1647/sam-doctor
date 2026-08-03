@@ -22,7 +22,8 @@ For a quick machine-check before tag push, run:
 python scripts/check-launch.py --skip-outreach
 python scripts/check-launch.py --skip-distribution \
   --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary artifacts/outreach-summary.md
+  --outreach-summary artifacts/outreach-summary.md \
+  --strict-ethical --min-feedback-ratio 100
 ```
 
 ## 2. Publish the public tool
