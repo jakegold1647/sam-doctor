@@ -21,6 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts
+          python scripts/check-launch-readiness.py --token "${{ secrets.GITHUB_TOKEN }}" | tee artifacts/launch-readiness-check.txt
           python scripts/check-launch.py \
             --outreach-log launch/outreach-log-template.csv \
             --output-format json \
@@ -40,4 +41,5 @@ jobs:
             artifacts/distribution.csv
             artifacts/distribution-summary.md
             artifacts/outreach-summary.md
+            artifacts/launch-readiness-check.txt
           retention-days: 90
