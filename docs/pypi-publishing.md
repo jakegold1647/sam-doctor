@@ -13,7 +13,7 @@ workflow for a future stable release.
    - Repository: `sam-doctor`
    - Workflow filename: `pypi-publish.yml`
    - Environment name: `pypi`
-2. In the GitHub repository, create an environment named `pypi` and add the
+2. In the GitHub repository, configure the existing `pypi` environment with the
    desired deployment protection rule or reviewers before the first stable release.
 3. Confirm the package name is still available immediately before publishing.
 
