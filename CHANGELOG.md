@@ -2,6 +2,14 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## Unreleased
+
+- Fixed ASCII-only trend reporting in `scripts/check-distribution.py` and removed
+  duplicated trend calculation logic.
+- Polished Marketplace publishing docs to separate prerelease workflow behavior from
+  manual listing publish steps.
+- Added Marketplace and PyPI badges to the README launch header.
+
 ## v0.7.4 - 2026-08-03
 
 - Renamed the GitHub Action display name to `SAM Doctor AWS Deployment

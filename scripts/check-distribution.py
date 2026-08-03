@@ -119,6 +119,8 @@ def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
 
 
 def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
+    _ensure_parent_directory(csv_path)
+
     header = [
         "timestamp",
         "repo",
@@ -148,9 +150,15 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
                 "watchers": snapshot["watchers"],
                 "releases": snapshot["releases"],
                 "discussions_ping": snapshot["discussions_ping"],
-                "pypi_ok": snapshot["pypi_status"]["ok"] if isinstance(snapshot["pypi_status"], dict) else "",
-                "marketplace_ok": snapshot["marketplace_status"]["ok"] if isinstance(snapshot["marketplace_status"], dict) else "",
-                "site_ok": snapshot["site_status"]["ok"] if isinstance(snapshot["site_status"], dict) else "",
+                "pypi_ok": snapshot["pypi_status"]["ok"]
+                if isinstance(snapshot["pypi_status"], dict)
+                else "",
+                "marketplace_ok": snapshot["marketplace_status"]["ok"]
+                if isinstance(snapshot["marketplace_status"], dict)
+                else "",
+                "site_ok": snapshot["site_status"]["ok"]
+                if isinstance(snapshot["site_status"], dict)
+                else "",
             }
         )
 
@@ -166,30 +174,45 @@ def _read_last_csv_row(csv_path: str) -> dict[str, str] | None:
     return rows[-1]
 
 
+def _ensure_parent_directory(path: str) -> None:
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+
+
+def _to_int(value: object, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _delta(snapshot_value: object, previous: dict[str, str] | None, key: str) -> int:
+    previous_value = 0 if previous is None else _to_int(previous.get(key, "0"))
+    return _to_int(snapshot_value) - previous_value
+
+
+def _trend_text(
+    snapshot: dict[str, object], previous: dict[str, str] | None
+) -> str:
+    if previous is None:
+        return "baseline: no previous row for comparison"
+
+    return (
+        f"stars={_delta(snapshot['repo_stars'], previous, 'repo_stars'):+d}, "
+        f"forks={_delta(snapshot['forks'], previous, 'forks'):+d}, "
+        f"open_issues={_delta(snapshot['open_issues'], previous, 'open_issues'):+d}, "
+        f"watchers={_delta(snapshot['watchers'], previous, 'watchers'):+d}, "
+        f"releases={_delta(snapshot['releases'], previous, 'releases'):+d}"
+    )
+
+
 def _print_trend(snapshot: dict[str, object], previous: dict[str, str] | None) -> None:
     if previous is None:
         print("trend: no previous snapshot yet, establishing baseline")
         return
 
-    def _to_int(value: object, default: int = 0) -> int:
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return default
-
-    def _delta(current: object, previous_key: str) -> int:
-        return _to_int(current) - _to_int(previous.get(previous_key, "0"))
-
-    star_delta = _delta(snapshot["repo_stars"], "repo_stars")
-    forks_delta = _delta(snapshot["forks"], "forks")
-    issues_delta = _delta(snapshot["open_issues"], "open_issues")
-    watcher_delta = _delta(snapshot["watchers"], "watchers")
-    releases_delta = _delta(snapshot["releases"], "releases")
-
-    print(
-        f"trend: Δstars={star_delta:+d}, Δforks={forks_delta:+d}, "
-        f"Δopen_issues={issues_delta:+d}, Δwatchers={watcher_delta:+d}, Δreleases={releases_delta:+d}"
-    )
+    print(f"trend: {_trend_text(snapshot, previous)}")
 
 
 def _summary_lines(
@@ -207,24 +230,11 @@ def _summary_lines(
     )
     site_up = "up" if isinstance(site_status, dict) and site_status["ok"] else "down"
 
-    trend_text = "baseline: no previous row for comparison"
-    if previous:
-        def _to_int(value: object, default: int = 0) -> int:
-            try:
-                return int(value)
-            except (TypeError, ValueError):
-                return default
-
-        def _delta(current: object, previous_key: str) -> int:
-            return _to_int(current) - _to_int(previous.get(previous_key, "0"))
-
-        trend_text = (
-            f"delta stars={_delta(snapshot['repo_stars'], 'repo_stars'):+d}, "
-            f"delta forks={_delta(snapshot['forks'], 'forks'):+d}, "
-            f"delta open_issues={_delta(snapshot['open_issues'], 'open_issues'):+d}, "
-            f"delta watchers={_delta(snapshot['watchers'], 'watchers'):+d}, "
-            f"delta releases={_delta(snapshot['releases'], 'releases'):+d}"
-        )
+    trend_text = (
+        f"delta {_trend_text(snapshot, previous)}"
+        if previous
+        else "baseline: no previous row for comparison"
+    )
 
     channel_health = []
     if pypi_up == "up":
@@ -316,13 +326,19 @@ def main() -> int:
         return 1
 
     should_read_previous = args.print_trend or bool(args.summary)
-    previous_row = _read_last_csv_row(args.append_csv) if should_read_previous and args.append_csv else None
+    previous_row = (
+        _read_last_csv_row(args.append_csv)
+        if should_read_previous and args.append_csv
+        else None
+    )
     if args.output_format == "json":
         print(json.dumps(snapshot, indent=2, sort_keys=True))
         if args.output:
+            _ensure_parent_directory(args.output)
             with open(args.output, "w", encoding="utf-8") as stream:
                 json.dump(snapshot, stream, indent=2, sort_keys=True)
         if args.summary:
+            _ensure_parent_directory(args.summary)
             _write_summary(snapshot, previous_row, args.summary)
     if args.append_csv:
         _append_csv(snapshot, args.append_csv)
@@ -351,7 +367,9 @@ def main() -> int:
     print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
 
     if marketplace_status["ok"] and pypi_status["ok"]:
-        print("channels: marketplace, pypi, pages, and github release metadata are visible")
+        print(
+            "channels: marketplace, pypi, pages, and github release metadata are visible"
+        )
 
     if snapshot["repo_stars"] == 0:
         print("signal: no stars yet, keep outreach conversation-first")
