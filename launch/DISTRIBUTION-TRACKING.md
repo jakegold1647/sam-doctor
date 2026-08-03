@@ -21,10 +21,11 @@ Automated monitoring:
 - Run it manually via workflow dispatch any time you publish a new release
   or run a new outreach batch.
 - Each run uploads an artifact named `distribution-snapshot` containing
-  `distribution.json` and `distribution.csv` so you can compare snapshots over time.
+  `distribution.json`, `distribution.csv`, `distribution-summary.md`, and
+  `outreach-summary.md` so you can compare launch health over time.
 - The run also appends a trend-friendly history row to `distribution.csv` for quick
   local and spreadsheet analysis.
-- A summary note is also emitted as `distribution-summary.md` for quick paste into
+- A summary note is emitted as `distribution-summary.md` for quick paste into
   launch notes.
 - Run:
   `python scripts/check-outreach.py launch/outreach-log-template.csv --summary outreach-summary.md`
