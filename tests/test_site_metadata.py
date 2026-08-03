@@ -32,3 +32,5 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
 
     assert 'fail-on-findings: "true"' in readme
     assert 'fail-on-findings: "true"' in site
+    assert "--fail-on-findings" in readme
+    assert "--fail-on-findings" in site

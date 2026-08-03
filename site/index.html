@@ -135,6 +135,12 @@
           <code>fail-on-findings: "true"</code> when a supported diagnosis should
           fail the job.
         </p>
+        <p>
+          For shell-based CI, run
+          <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings</code>.
+          It writes the report and returns status 1 only when a supported finding
+          is present.
+        </p>
         <a class="button secondary" href="https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics">Use from GitHub Marketplace</a>
       </section>
 

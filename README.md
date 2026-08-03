@@ -88,6 +88,14 @@ You can also process multiple files in batch mode:
 sam-doctor batch logs/*.log logs/*.txt --format json > batch-results.json
 ```
 
+For a shell-based CI gate, add `--fail-on-findings`. The command still writes
+the report, then exits with status 1 only when a supported finding is present:
+
+```bash
+sam-doctor diagnose deployment.log --format json \
+  --output diagnosis.json --fail-on-findings
+```
+
 ## GitHub Actions
 
 Use the included action when a workflow already saves a deployment log:
