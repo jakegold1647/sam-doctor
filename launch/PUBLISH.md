@@ -24,6 +24,11 @@ python scripts/check-launch.py --skip-distribution \
   --outreach-log launch/outreach-log-template.csv \
   --outreach-summary artifacts/outreach-summary.md \
   --strict-ethical --min-feedback-ratio 100
+python scripts/check-launch.py \
+  --strict-distribution-during-release \
+  --strict-ethical --min-feedback-ratio 100 \
+  --outreach-log launch/outreach-log-template.csv \
+  --outreach-summary artifacts/outreach-summary.md
 ```
 
 ## 2. Publish the public tool
@@ -46,9 +51,17 @@ python scripts/check-launch.py --skip-distribution \
    internal sign-off. For plain `vX.Y.Z` releases, Marketplace and PyPI publish
    flows can use the release as soon as release notes and checks are green.
 
+After the first release, re-run the preflight with
+`--strict-distribution-during-release` to ensure PyPI, Pages, and Marketplace are
+live in addition to ethical-growth quality checks.
+
 For the GitHub Action listing, follow `launch/MARKETPLACE.md` after the
 repository owner has reviewed and accepted GitHub's Marketplace Developer
 Agreement.
+
+If you want the distributed health snapshot to fail on hard launch-channel
+readiness after publish, trigger `distribution-check.yml` manually with
+`strict-distribution-during-release: true`.
 
 ## 3. Prepare a founder checkout only after validation
 

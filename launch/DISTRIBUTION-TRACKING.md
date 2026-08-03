@@ -19,6 +19,9 @@ Automated monitoring:
 
 - This workflow runs every 12 hours on GitHub Actions:
   `.github/workflows/distribution-check.yml`
+- When run manually, include the `strict-distribution-during-release` workflow input
+  after release is fully live so the check fails if PyPI/Marketplace/homepage
+  readiness is still not green.
 - The workflow now runs the full launch check stack (`scripts/check-launch.py`), so
   each run verifies release-readiness, distribution channels, and a fresh
   outreach summary snapshot together.
@@ -36,6 +39,9 @@ Automated monitoring:
   weekly (or before publishing a release) and review `ethical_signal` and
   `ethical_signal_strength`; treat `"mixed"` as "helpful star happened without
   follow-up context" and follow up for context before considering that signal.
+- After a stable tag is live on release channels, add
+  `--strict-distribution-during-release` to also fail when PyPI, Marketplace,
+  and homepage/topics readiness are not fully green.
 
 ## What to watch
 

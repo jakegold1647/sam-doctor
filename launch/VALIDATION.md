@@ -27,6 +27,16 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
   --strict --min-feedback-ratio 100
 ```
 
+After release publish, re-run:
+
+```bash
+python scripts/check-launch.py \
+  --strict-distribution-during-release \
+  --strict-ethical --min-feedback-ratio 100 \
+  --outreach-log launch/outreach-log-template.csv \
+  --outreach-summary artifacts/outreach-summary.md
+```
+
 This prints a lightweight, non-sensitive summary to guide your next 7-day
 focused outreach batch.
 

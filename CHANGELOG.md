@@ -30,6 +30,9 @@ All notable changes to SAM Doctor are documented here.
   uncontextualized voluntary stars and keep outreach loops ethical.
 - Relaxed `--strict-ethical` behavior for empty outreach logs so pre-launch
   readiness checks can run before the first contact row is collected.
+- Added `--strict-distribution-during-release` to `scripts/check-launch.py` so
+  teams can keep pre-release checks non-blocking while enforcing full
+  distribution readiness after channel publication.
 - Added a new `batch` CLI subcommand to diagnose multiple deployment logs in one
   run and aggregate findings for local triage.
 - Added launch-readiness validation of marketplace action metadata so pre-release

@@ -23,27 +23,46 @@ jobs:
       - run: python -m build
       - name: Verify the built wheel in a clean environment
         run: |
+          set -euo pipefail
+
           wheel_file="$(python -c 'from pathlib import Path; paths = sorted(Path("dist").glob("*.whl")); assert paths, "No wheel artifacts found in dist/"; print(paths[-1])')"
           if [ ! -f "$wheel_file" ]; then
             echo "No wheel artifact found in dist/"
             exit 1
           fi
 
+          tmp_demo_report="$(mktemp)"
           python -m venv .wheel-verify
-          .wheel-verify/bin/python -m pip install --disable-pip-version-check "$wheel_file"
-          .wheel-verify/bin/python -m sam_doctor.cli demo --format json --output /tmp/cli-demo.json
-          .wheel-verify/bin/python - <<'PY'
+
+          .wheel-verify/bin/pip install --disable-pip-version-check "$wheel_file"
+
+          if ! ./.wheel-verify/bin/python -m sam_doctor.cli demo --format json --output "$tmp_demo_report"; then
+            echo "Wheel smoke-check command failed; dumped command output:"
+            if [ -f "$tmp_demo_report" ]; then
+              cat "$tmp_demo_report" >&2
+            else
+              echo "(No report file was written.)" >&2
+            fi
+            exit 1
+          fi
+
+          if [ ! -s "$tmp_demo_report" ]; then
+            echo "Wheel smoke-check command produced an empty report at $tmp_demo_report" >&2
+            exit 1
+          fi
+
+          ./.wheel-verify/bin/python - <<PY
           import json
           from pathlib import Path
 
-          payload = json.loads(Path("/tmp/cli-demo.json").read_text(encoding="utf-8"))
+          payload = json.loads(Path("$tmp_demo_report").read_text(encoding="utf-8"))
           if payload.get("finding_count") != 1:
-              raise SystemExit(
-                  f"Expected exactly 1 finding in demo output, got {payload.get('finding_count')}"
-              )
+              raise SystemExit(f"Expected exactly 1 finding in demo output, got {payload.get('finding_count')}")
           print("CLI sample check passed.")
           PY
-          .wheel-verify/bin/python -m sam_doctor.cli demo
+
+          rm -f "$tmp_demo_report"
+          rm -rf .wheel-verify
       - run: python -m sam_doctor.cli demo
       - id: action-check
         uses: ./

@@ -291,6 +291,35 @@ def test_run_outreach_prints_policy_recommendation_when_available(tmp_path) -> N
     assert calls["policy"] and calls["recommendation"]
 
 
+def test_check_launch_strict_distribution_during_release_forces_distribution_strictness(monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+
+    monkeypatch.setattr(script, "run_launch_readiness", lambda *_args, **_kwargs: (True, 6, 0))
+    strict_values: list[bool] = []
+
+    def fake_distribution(*_args, strict: bool = False, **_kwargs):
+        strict_values.append(strict)
+        return True
+
+    monkeypatch.setattr(script, "run_distribution", fake_distribution)
+    monkeypatch.setattr(script, "run_outreach", lambda *_args, **_kwargs: True)
+
+    previous_argv = sys.argv
+    try:
+        sys.argv = [
+            "check-launch.py",
+            "--repo-root",
+            str(Path(__file__).resolve().parents[1]),
+            "--skip-outreach",
+            "--strict-distribution-during-release",
+        ]
+        assert script.main() == 0
+    finally:
+        sys.argv = previous_argv
+
+    assert strict_values == [True]
+
+
 def test_check_launch_parse_args_defaults_github_token(monkeypatch) -> None:
     script = _load_script(Path(__file__).resolve().parents[1])
 
