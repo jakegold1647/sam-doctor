@@ -37,6 +37,22 @@ token.actions.githubusercontent.com:aud = sts.amazonaws.com
 If a credentials action is given a custom `audience` option, verify that it is
 intentional and that the AWS role expects the same value.
 
+For the standard AWS setup, leave `audience` unset or set it to
+`sts.amazonaws.com` in both places:
+
+```yaml
+- uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+    aws-region: us-east-1
+    audience: sts.amazonaws.com
+```
+
+The audience identifies the token's intended service; it is not where the
+repository or organization belongs. Keep that restriction in the `sub`
+condition below. A custom audience is valid only when the GitHub action, the
+OIDC provider client ID, and the IAM trust policy all use the same value.
+
 ## 3. Compare the exact subject claim
 
 The role trust policy must limit `token.actions.githubusercontent.com:sub` to
