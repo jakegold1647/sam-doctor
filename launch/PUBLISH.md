@@ -23,8 +23,14 @@ Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
    wheel and source archive, then creates a prerelease using the corresponding
    `launch/RELEASE-vX.Y.Z.md` notes when present.
 3. Confirm GitHub Pages serves the current `site/` directory.
-4. In repository Settings, set the homepage to the GitHub Pages URL and add these topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`, `serverless`, `python`, `cli`.
-5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social preview image.
+4. In repository Settings, set the homepage to the GitHub Pages URL and add these
+   topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`,
+   `serverless`, `python`, `cli`.
+5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social
+   preview image.
+6. GitHub Actions creates a prerelease on tag push. If you need Marketplace or
+   PyPI publication as a public release, make a manual publish decision from
+   the release page before sharing the tag.
 
 For the GitHub Action listing, follow `launch/MARKETPLACE.md` after the
 repository owner has reviewed and accepted GitHub's Marketplace Developer

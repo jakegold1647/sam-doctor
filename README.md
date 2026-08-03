@@ -3,6 +3,8 @@
 [![Verify free core](https://github.com/jakegold1647/sam-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/jakegold1647/sam-doctor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Available-blue?logo=github)](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)
+[![PyPI version](https://img.shields.io/pypi/v/sam-doctor.svg)](https://pypi.org/project/sam-doctor/)
 
 SAM Doctor is a local, evidence-first command-line tool for turning AWS SAM,
 CloudFormation, IAM, and GitHub Actions deployment failures into a concise

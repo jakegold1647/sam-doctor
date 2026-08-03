@@ -11,6 +11,8 @@ Agreement.
 2. In **Release Action**, select **accept the GitHub Marketplace Developer
    Agreement** and review it as the repository owner.
 3. Return to the release edit form after accepting the agreement.
+4. Confirm this is a **published** release (not a draft), then continue to the
+   publish step.
 
 ## Publish the action
 
@@ -23,6 +25,10 @@ Agreement.
    icon, and yellow branding configured in `action.yml`.
 5. Run the README workflow snippet in a disposable repository before sharing
    the listing broadly.
+6. For this repository, create the public release first. This repo's automated
+   release workflow marks tags as prerelease by default, so publishing to the
+   Marketplace listing still needs a manual publish decision on the tag you want
+   to expose.
 
 Do not accept the Developer Agreement or publish a Marketplace listing from an
 account you are not authorized to represent.
