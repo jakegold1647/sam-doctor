@@ -21,14 +21,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts
-          python scripts/check-launch-readiness.py --token "${{ secrets.GITHUB_TOKEN }}" | tee artifacts/launch-readiness-check.txt
           python scripts/check-launch.py \
+            --repo-root "${{ github.workspace }}" \
+            --repo "jakegold1647/sam-doctor" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --check-launch-token "${{ secrets.GITHUB_TOKEN }}" \
+            --launch-repo "jakegold1647/sam-doctor" \
             --outreach-log launch/outreach-log-template.csv \
             --output-format json \
             --output artifacts/distribution.json \
             --append-csv artifacts/distribution.csv \
             --print-trend \
-            --token "${{ secrets.GITHUB_TOKEN }}" \
             --summary artifacts/distribution-summary.md \
             --outreach-summary artifacts/outreach-summary.md
       - name: Upload snapshot
@@ -41,5 +44,4 @@ jobs:
             artifacts/distribution.csv
             artifacts/distribution-summary.md
             artifacts/outreach-summary.md
-            artifacts/launch-readiness-check.txt
           retention-days: 90
