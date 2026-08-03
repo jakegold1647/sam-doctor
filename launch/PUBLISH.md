@@ -33,9 +33,9 @@ python scripts/check-launch.py --skip-distribution \
    wheel and source archive. It creates a regular release for plain semantic
    version tags (such as `v0.7.4`) and a prerelease for pre-release tag names
    (such as `v0.7.4-rc.1`) using `launch/RELEASE-${TAG}.md` when present.
-3. Verify the release is not marked as a pre-release before final Marketplace
-   publishing. A prerelease release can cause Marketplace and GitHub to surface
-   “Latest pre-release,” which is misleading for first-time visitors.
+3. Verify the release is published and not a pre-release before final
+   Marketplace publishing. A draft or pre-release can cause Marketplace and GitHub
+   to surface misleading “Latest pre-release” metadata.
 4. Confirm GitHub Pages serves the current `site/` directory.
 5. In repository Settings, set the homepage to the GitHub Pages URL and add these
    topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`,

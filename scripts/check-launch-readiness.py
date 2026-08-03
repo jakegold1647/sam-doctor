@@ -140,6 +140,12 @@ def _release_note_is_appropriate(root: Path, repo: str, version: str, token: str
             f"unable to verify release state for v{version} ({error})",
         )
 
+    if payload.get("draft"):
+        return (
+            False,
+            f"GitHub release v{version} is still a draft; publish it before marketplace checks",
+        )
+
     if payload.get("prerelease"):
         return (
             False,
