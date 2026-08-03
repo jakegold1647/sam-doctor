@@ -9,7 +9,7 @@ focused and reviewable.
 Run:
 
 ```bash
-python scripts/check-distribution.py
+python scripts/check-distribution.py --output-format json --append-csv distribution.csv --print-trend
 ```
 
 Recommended cadence: Monday + Friday after any outreach batch.
@@ -21,7 +21,7 @@ Automated monitoring:
 - Run it manually via workflow dispatch any time you publish a new release
   or run a new outreach batch.
 - Each run uploads an artifact named `distribution-snapshot` containing
-  `distribution.json` so you can compare snapshots over time.
+  `distribution.json` and `distribution.csv` so you can compare snapshots over time.
 - The run also appends a trend-friendly history row to `distribution.csv` for quick
   local and spreadsheet analysis.
 

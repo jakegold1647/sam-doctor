@@ -21,11 +21,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts
-          python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv
+          python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: distribution-snapshot
-          path: artifacts/distribution.json
+          path: |
+            artifacts/distribution.json
+            artifacts/distribution.csv
           retention-days: 90
