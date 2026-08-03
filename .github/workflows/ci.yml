@@ -17,22 +17,55 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install ".[dev]"
-      - run: python -m pytest -q
+      - name: Select workflow python executable
+        run: |
+          set -euo pipefail
+
+          MATRIX_PYTHON_VERSION="${{ matrix.python-version }}"
+          CLEAN_VERSION="${MATRIX_PYTHON_VERSION//./}"
+          CANDIDATES=(
+            "python$MATRIX_PYTHON_VERSION"
+            "python$CLEAN_VERSION"
+            "python3"
+            "python"
+          )
+
+          for candidate in "${CANDIDATES[@]}"; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              PYTHON_CMD="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "${PYTHON_CMD:-}" ]; then
+            echo "Unable to find a Python executable."
+            exit 1
+          fi
+
+          actual_version="$("$PYTHON_CMD" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+          if [ "$actual_version" != "$MATRIX_PYTHON_VERSION" ]; then
+            echo "Expected Python ${MATRIX_PYTHON_VERSION}, but ${PYTHON_CMD} reports ${actual_version}." >&2
+            exit 1
+          fi
+
+          "$PYTHON_CMD" --version
+          echo "PYTHON_CMD=$PYTHON_CMD" >> "$GITHUB_ENV"
+      - run: ${{ env.PYTHON_CMD }} -m pip install ".[dev]"
+      - run: ${{ env.PYTHON_CMD }} -m pytest -q
       - run: rm -rf dist
-      - run: python -m build
+      - run: ${{ env.PYTHON_CMD }} -m build
       - name: Verify the built wheel in a clean environment
         run: |
           set -euo pipefail
 
-          wheel_file="$(python -c 'from pathlib import Path; paths = sorted(Path("dist").glob("*.whl")); assert paths, "No wheel artifacts found in dist/"; print(paths[-1])')"
+          wheel_file="$(${{ env.PYTHON_CMD }} -c 'from pathlib import Path; paths = sorted(Path("dist").glob("*.whl")); assert paths, "No wheel artifacts found in dist/"; print(paths[-1])')"
           if [ ! -f "$wheel_file" ]; then
             echo "No wheel artifact found in dist/"
             exit 1
           fi
 
           tmp_demo_report="$(mktemp)"
-          python -m venv .wheel-verify
+          ${{ env.PYTHON_CMD }} -m venv .wheel-verify
 
           .wheel-verify/bin/pip install --disable-pip-version-check "$wheel_file"
 
@@ -63,7 +96,7 @@ jobs:
 
           rm -f "$tmp_demo_report"
           rm -rf .wheel-verify
-      - run: python -m sam_doctor.cli demo
+      - run: ${{ env.PYTHON_CMD }} -m sam_doctor.cli demo
       - id: action-check
         uses: ./
         with:
@@ -71,7 +104,7 @@ jobs:
           summary: "true"
       - name: Assert expected finding count from bundled sample
         run: |
-          python - <<'PY'
+          ${{ env.PYTHON_CMD }} - <<'PY'
           raw_count = """${{ steps.action-check.outputs.finding-count }}""".strip()
           if not raw_count:
             raise SystemExit("finding-count output was empty")
