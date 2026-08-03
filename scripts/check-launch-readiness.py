@@ -4,14 +4,32 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+import urllib.error
+import urllib.request
 try:
     import tomllib  # type: ignore[unused-ignore]
 except ModuleNotFoundError:  # pragma: no cover - Python <3.11
     import tomli as tomllib  # type: ignore[import-not-found]
+
+
+EXPECTED_TOPICS = {
+    "aws",
+    "aws-sam",
+    "cloudformation",
+    "github-actions",
+    "iam",
+    "python",
+    "serverless",
+    "cli",
+}
+EXPECTED_HOMEPAGE = "https://jakegold1647.github.io/sam-doctor/"
 
 
 @dataclass
@@ -30,6 +48,31 @@ class _CheckResult:
         else:
             print(f"FAIL: {label} - {detail}")
             self.failed += 1
+
+
+def _normalize_list(values: object) -> set[str]:
+    if not isinstance(values, (list, tuple)):
+        return set()
+    return {str(value).strip().lower() for value in values if isinstance(value, str)}
+
+
+def _normalize_url(value: object) -> str:
+    return str(value or "").strip().rstrip("/")
+
+
+def _get_json(url: str, token: str | None) -> tuple[Any, int]:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "sam-doctor-launch-readiness",
+        },
+    )
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8")), response.status
 
 
 def _read_text(path: Path) -> str:
@@ -76,11 +119,54 @@ def _marketplace_metadata_ok(root: Path) -> bool:
     return all(token in text for token in required_tokens)
 
 
+def _launch_asset_checks(root: Path) -> tuple[bool, str]:
+    index_page = root / "site" / "index.html"
+    social_preview = root / "site" / "assets" / "sam-doctor-social-preview.jpg"
+    details = (
+        f"site/index.html {'present' if index_page.exists() else 'missing'}; "
+        f"social preview {'present' if social_preview.exists() else 'missing'}"
+    )
+    return index_page.exists() and social_preview.exists(), details
+
+
+def _github_metadata_ok(root: Path, repo: str, token: str | None) -> tuple[bool, str]:
+    del root
+    if not token:
+        return True, "token unavailable, skipping remote launch metadata check"
+
+    try:
+        payload, _ = _get_json(f"https://api.github.com/repos/{repo}", token)
+    except (OSError, urllib.error.HTTPError, urllib.error.URLError) as error:
+        return (
+            False,
+            f"unable to verify remote launch metadata ({error})",
+        )
+
+    homepage_ok = _normalize_url(payload.get("homepage")) == _normalize_url(EXPECTED_HOMEPAGE)
+    topics = _normalize_list(payload.get("topics"))
+    missing_topics = sorted(EXPECTED_TOPICS - topics)
+
+    if homepage_ok and not missing_topics:
+        return (
+            True,
+            f"homepage and required topics match: {', '.join(sorted(EXPECTED_TOPICS))}",
+        )
+
+    details = [f"homepage={payload.get('homepage')!r}", f"topics={', '.join(sorted(topics)) if topics else 'missing'}"]
+    if not homepage_ok:
+        details.append(f"expected_homepage={EXPECTED_HOMEPAGE}")
+    if missing_topics:
+        details.append(f"missing_topics={', '.join(missing_topics)}")
+    return False, "; ".join(details)
+
+
 def _is_prerelease(version: str) -> bool:
     return "-" in version
 
 
-def _run_checks(root: Path) -> _CheckResult:
+def _run_checks_with_options(
+    root: Path, repo: str, token: str | None
+) -> _CheckResult:
     result = _CheckResult()
     pyproject_version = _version_from_pyproject(root)
     init_version = _version_from_init(root)
@@ -91,6 +177,12 @@ def _run_checks(root: Path) -> _CheckResult:
         pyproject_version == init_version,
         f"pyproject={pyproject_version}, __init__={init_version}",
     )
+    launch_assets_ok, launch_assets_detail = _launch_asset_checks(root)
+    result.report("launch assets", launch_assets_ok, launch_assets_detail)
+
+    github_ok, github_detail = _github_metadata_ok(root, repo, token)
+    result.report("github launch metadata", github_ok, github_detail)
+
     if is_prerelease:
         result.report(
             "prerelease release note",
@@ -124,12 +216,31 @@ def _run_checks(root: Path) -> _CheckResult:
     return result
 
 
+def _run_checks(root: Path) -> _CheckResult:
+    token = os.environ.get("GITHUB_TOKEN")
+    return _run_checks_with_options(
+        root,
+        repo="jakegold1647/sam-doctor",
+        token=token,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--repo-root",
         default=str(Path(__file__).resolve().parents[1]),
         help="Repository root passed for repeatable checks.",
+    )
+    parser.add_argument(
+        "--repo",
+        default="jakegold1647/sam-doctor",
+        help="GitHub repository owner/name for remote launch metadata checks.",
+    )
+    parser.add_argument(
+        "--token",
+        default="",
+        help="GitHub API token for remote launch metadata checks.",
     )
     args = parser.parse_args()
     root = Path(args.repo_root).resolve()
@@ -140,7 +251,8 @@ def main() -> int:
         print(f"root is not a directory: {root}", file=sys.stderr)
         return 1
 
-    result = _run_checks(root)
+    token = args.token or os.environ.get("GITHUB_TOKEN")
+    result = _run_checks_with_options(root, repo=args.repo, token=token)
     print(f"checks passed: {result.passed}, checks failed: {result.failed}")
     return 0 if result.ok else 1
 
