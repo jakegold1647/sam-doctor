@@ -25,6 +25,16 @@ MARKETPLACE_URL = (
     "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
 )
 SITE_URL = "https://jakegold1647.github.io/sam-doctor/"
+EXPECTED_TOPICS = {
+    "aws",
+    "aws-sam",
+    "cloudformation",
+    "github-actions",
+    "iam",
+    "python",
+    "serverless",
+}
+EXPECTED_HOMEPAGE = SITE_URL
 
 
 @dataclass
@@ -66,6 +76,32 @@ def _check_http_status(url: str) -> Status:
         return Status(url, False, f"error: {exc.reason}")
 
 
+def _normalize_list(value: object) -> list[str]:
+    if not isinstance(value, (list, tuple)):
+        return []
+    return [item.strip().lower() for item in value if isinstance(item, str) and item.strip()]
+
+
+def _normalize_url(value: object) -> str:
+    return str(value or "").strip().rstrip("/")
+
+
+def _evaluate_launch_readiness(repo_data: dict[str, object]) -> dict[str, object]:
+    homepage = _normalize_url(repo_data.get("homepage"))
+    topics = _normalize_list(repo_data.get("topics"))
+    topics_set = set(topics)
+    required = set(EXPECTED_TOPICS)
+    missing_topics = sorted(required - topics_set)
+
+    return {
+        "homepage_ok": bool(homepage and _normalize_url(homepage) == _normalize_url(EXPECTED_HOMEPAGE)),
+        "homepage": homepage,
+        "topics_ok": len(missing_topics) == 0,
+        "topics_count": len(topics_set),
+        "missing_topics": missing_topics,
+    }
+
+
 def _count_discussions(repo: str, token: str | None) -> int:
     # Discussions is not always visible without auth; return 0 if it fails.
     url = f"https://api.github.com/repos/{repo}/discussions?per_page=1"
@@ -92,6 +128,7 @@ def _list_release_count(repo: str, token: str | None) -> int:
 def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
     repo_url = f"https://api.github.com/repos/{repo}"
     data, _ = _get_json(repo_url, token)
+    launch_readiness = _evaluate_launch_readiness(data)
 
     release_count = _list_release_count(repo, token)
     discussions_ping = _count_discussions(repo, token)
@@ -115,6 +152,7 @@ def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
             "details": marketplace_status.details,
         },
         "site_status": {"ok": site_status.ok, "details": site_status.details},
+        "launch_readiness": launch_readiness,
     }
 
 
@@ -133,6 +171,9 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
         "pypi_ok",
         "marketplace_ok",
         "site_ok",
+        "homepage_ok",
+        "topics_ok",
+        "topics_count",
     ]
     is_new = not os.path.exists(csv_path)
 
@@ -159,6 +200,9 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
                 "site_ok": snapshot["site_status"]["ok"]
                 if isinstance(snapshot["site_status"], dict)
                 else "",
+                "homepage_ok": snapshot.get("launch_readiness", {}).get("homepage_ok", ""),
+                "topics_ok": snapshot.get("launch_readiness", {}).get("topics_ok", ""),
+                "topics_count": snapshot.get("launch_readiness", {}).get("topics_count", ""),
             }
         )
 
@@ -221,6 +265,8 @@ def _summary_lines(
     pypi_status = snapshot["pypi_status"]
     marketplace_status = snapshot["marketplace_status"]
     site_status = snapshot["site_status"]
+    launch_readiness = snapshot.get("launch_readiness", {})
+    launch_readiness_summary = "launch-setup: off (unavailable)"
 
     pypi_up = "up" if isinstance(pypi_status, dict) and pypi_status["ok"] else "down"
     marketplace_up = (
@@ -235,6 +281,16 @@ def _summary_lines(
         if previous
         else "baseline: no previous row for comparison"
     )
+    missing_topics = []
+    launch_ok = "off"
+    if isinstance(launch_readiness, dict):
+        missing_topics = launch_readiness.get("missing_topics")
+        if launch_readiness.get("homepage_ok") and launch_readiness.get("topics_ok"):
+            launch_ok = "ready"
+        elif launch_readiness.get("homepage_ok") or launch_readiness.get("topics_ok"):
+            launch_ok = "partial"
+        details = ", ".join(missing_topics) if isinstance(missing_topics, list) else "unavailable"
+        launch_readiness_summary = f"launch-setup: {launch_ok} ({details})"
 
     channel_health = []
     if pypi_up == "up":
@@ -262,7 +318,12 @@ def _summary_lines(
         f"- watchers: {snapshot['watchers']}",
         f"- releases: {snapshot['releases']}",
         f"- discussions_ping: {snapshot['discussions_ping']}",
+        f"- {launch_readiness_summary}",
         f"- channel_health: {', '.join(channel_health)}",
+        f"- launch_setup_homepage_ok: {launch_readiness.get('homepage_ok', 'unavailable')}",
+        f"- launch_setup_topics_ok: {launch_readiness.get('topics_ok', 'unavailable')}",
+        f"- launch_setup_topics_count: {launch_readiness.get('topics_count', 'unavailable')}",
+        f"- launch_setup_missing_topics: {', '.join(launch_readiness.get('missing_topics', ['unavailable']))}",
         f"- trend_vs_previous: {trend_text}",
         f"- signal: {star_signal}",
     ]
@@ -357,6 +418,7 @@ def main() -> int:
     pypi_status = snapshot["pypi_status"]
     marketplace_status = snapshot["marketplace_status"]
     site_status = snapshot["site_status"]
+    launch_readiness = snapshot.get("launch_readiness", {})
     print(
         f"pypi_status: 200={pypi_status['ok']} ({pypi_status['details']})"
     )
@@ -365,8 +427,14 @@ def main() -> int:
         f"{marketplace_status['ok']} ({marketplace_status['details']})"
     )
     print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
+    print(f"homepage_ok: {launch_readiness.get('homepage_ok', 'unavailable')}")
+    print(f"topics_ok: {launch_readiness.get('topics_ok', 'unavailable')}")
+    print(f"topics_count: {launch_readiness.get('topics_count', 'unavailable')}")
+    print(
+        f"missing_topics: {', '.join(launch_readiness.get('missing_topics', ['unavailable']))}"
+    )
 
-    if marketplace_status["ok"] and pypi_status["ok"]:
+    if marketplace_status["ok"] and pypi_status["ok"] and site_status["ok"]:
         print(
             "channels: marketplace, pypi, pages, and github release metadata are visible"
         )
