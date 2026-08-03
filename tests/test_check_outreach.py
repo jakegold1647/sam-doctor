@@ -50,6 +50,7 @@ def test_outreach_summary_parses_examples(tmp_path: Path) -> None:
     assert summary["repeat_contacts"] == 1
     assert summary["stars_without_feedback"] == 0
     assert summary["ethical_signal"] in {"strong", "mixed", "watch"}
+    assert summary["ethical_signal_strength"] == 100.0
     assert len(summary["top_stages"]) == 3
     assert len(summary["top_problem_areas"]) == 3
     assert isinstance(summary["top_channels"], list)
@@ -75,6 +76,7 @@ def test_outreach_highlights_stars_without_feedback(tmp_path: Path) -> None:
     assert summary["voluntary_stars"] == 1
     assert summary["stars_without_feedback"] == 1
     assert summary["ethical_signal"] == "mixed"
+    assert summary["ethical_signal_strength"] == 0.0
 
 
 def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:

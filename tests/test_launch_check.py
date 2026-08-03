@@ -169,3 +169,39 @@ def test_run_outreach_strict_fails_when_log_missing(tmp_path) -> None:
         summary=str(tmp_path / "artifacts" / "outreach-summary.md"),
         loader=lambda _path: fake_module,
     )
+
+
+def test_run_outreach_strict_fails_when_feedback_ratio_is_low(tmp_path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = _load_script(root)
+    sample = tmp_path / "outreach-low-feedback.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,,no\n",
+        encoding="utf-8",
+    )
+
+    assert not script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+    )
+
+
+def test_run_outreach_strict_passes_when_feedback_ratio_is_high_enough(tmp_path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = _load_script(root)
+    sample = tmp_path / "outreach-good-feedback.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,asked for follow-up,no\n",
+        encoding="utf-8",
+    )
+
+    assert script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+    )

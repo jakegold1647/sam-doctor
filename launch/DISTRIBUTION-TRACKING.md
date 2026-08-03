@@ -12,11 +12,12 @@ Run:
 python scripts/check-launch.py --append-csv distribution.csv --summary distribution-summary.md --print-trend
 ```
 
-Recommended cadence: Monday + Friday after any outreach batch.
+Recommended cadence: after notable outreach batches and at least once per week
+in addition to the automated 12-hour workflow snapshots.
 
 Automated monitoring:
 
-- This workflow runs every Monday and Friday on GitHub Actions:
+- This workflow runs every 12 hours on GitHub Actions:
   `.github/workflows/distribution-check.yml`
 - Run it manually via workflow dispatch any time you publish a new release
   or run a new outreach batch.
@@ -28,10 +29,10 @@ Automated monitoring:
 - A summary note is emitted as `distribution-summary.md` for quick paste into
   launch notes.
 - Run:
-  `python scripts/check-outreach.py launch/outreach-log-template.csv --summary outreach-summary.md`
-  weekly and review `ethical_signal`; treat `"mixed"` as "helpful star happened
-  without follow-up context" and follow up for context before considering that
-  signal.
+  `python scripts/check-launch.py --skip-distribution --strict-ethical --min-feedback-ratio 100 --outreach-log launch/outreach-log-template.csv --outreach-summary artifacts/outreach-summary.md`
+  weekly (or before publishing a release) and review `ethical_signal` and
+  `ethical_signal_strength`; treat `"mixed"` as "helpful star happened without
+  follow-up context" and follow up for context before considering that signal.
 
 ## What to watch
 
