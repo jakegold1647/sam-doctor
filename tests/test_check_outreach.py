@@ -184,6 +184,27 @@ def test_outreach_main_strict_passes_when_signal_is_strong(tmp_path: Path) -> No
         sys.argv = argv_backup
 
 
+def test_outreach_main_strict_passes_when_signal_is_no_data(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-empty.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n",
+        encoding="utf-8",
+    )
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--strict",
+        ]
+        assert module.main() == 0
+    finally:
+        sys.argv = argv_backup
+
+
 def test_outreach_next_growth_actions_are_included_for_blank_sample(tmp_path: Path) -> None:
     module = _load_script(Path(__file__).resolve().parent.parent)
     sample = tmp_path / "outreach-empty.csv"

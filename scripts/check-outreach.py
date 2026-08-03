@@ -155,10 +155,14 @@ def _next_growth_actions(summary: dict[str, object]) -> list[str]:
 
 
 def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio: float) -> tuple[bool, str]:
-    if summary.get("ethical_signal") != "strong":
+    ethical_signal = summary.get("ethical_signal")
+    if ethical_signal == "no_data":
+        return True, ""
+
+    if ethical_signal != "strong":
         return (
             False,
-            f"ethical_signal is {summary['ethical_signal']}, not strong",
+            f"ethical_signal is {ethical_signal}, not strong",
         )
 
     ratio = float(summary["star_feedback_ratio"])
