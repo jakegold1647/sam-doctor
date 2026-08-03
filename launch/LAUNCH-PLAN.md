@@ -27,7 +27,7 @@ Prioritize people who have an active, public error in one of these categories:
 
 Do not pitch under unrelated posts, mass-message people, or ask for a star before
 you have helped. The best opening is a short answer to their actual error plus a
-link to the free alpha only when it is relevant.
+ link to the free tool only when it is relevant.
 
 ## The 14-day sequence
 
@@ -48,8 +48,7 @@ link to the free alpha only when it is relevant.
 > I kept seeing the same AWS deployment failures burn time because the useful
 > error was buried in a long SAM or GitHub Actions log. I made SAM Doctor, a
 > local CLI that matches a small set of failures, shows the evidence, and gives
-> safe checks. It does not need AWS credentials or upload the log. The free alpha
-> is here: https://github.com/jakegold1647/sam-doctor
+> safe checks. It does not need AWS credentials or upload the log. The free tool is here: https://github.com/jakegold1647/sam-doctor
 >
 > If you try it on a sanitized failure, I would genuinely value a false-positive
 > report or a missing-rule request. Star it only if it is worth following.

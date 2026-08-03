@@ -4,9 +4,9 @@ Use these messages only for developers with a recent, public AWS deployment prob
 
 ## Problem interview
 
-> Hey [name] - I saw your post about [specific SAM, IAM, CloudFormation, or GitHub Actions error]. I am testing a small local tool that turns a sanitized deployment log into the likely first failure, supporting evidence, and safe verification commands. I am not asking you to buy anything in this message. Could I ask five questions about what failed and what you tried? I will send the free alpha afterward either way.
+> Hey [name] - I saw your post about [specific SAM, IAM, CloudFormation, or GitHub Actions error]. I am testing a small local tool that turns a sanitized deployment log into the likely first failure, supporting evidence, and safe verification commands. I am not asking you to buy anything in this message. Could I ask five questions about what failed and what you tried? I will send the free tool version afterward either way.
 
-## Alpha tester request
+## Early user tester request
 
 > Hi [name] - I built a local CLI for SAM, CloudFormation, IAM, and GitHub Actions deployment logs. It does not upload the log or require AWS credentials. If you have a recent sanitized failure, would you try it and tell me whether the report points to a useful next check? I am looking for feedback on false diagnoses and missing failure types, not generic feedback.
 
