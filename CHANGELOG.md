@@ -4,6 +4,7 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a focused diagnostic for Lambda failures caused by missing ECR container-image access.
 - Documented direct CLI failure gating for shell-based CI jobs.
 - Switched the primary install path to the verified PyPI package.
 - Clarified the common GitHub OIDC audience mismatch in the deployment guide.
