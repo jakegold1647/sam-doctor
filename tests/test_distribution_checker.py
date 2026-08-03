@@ -97,7 +97,7 @@ def test_launch_readiness_checks_homepage_and_topics():
 
     assert setup["homepage_ok"] is True
     assert setup["topics_ok"] is True
-    assert setup["topics_count"] >= 7
+    assert setup["topics_count"] == 8
     assert setup["missing_topics"] == []
 
 
