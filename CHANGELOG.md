@@ -4,6 +4,7 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a direct diagnostic when a GitHub Actions job lacks `id-token: write`.
 - Added a direct diagnostic for a missing GitHub Actions OIDC provider in the
   target AWS account.
 

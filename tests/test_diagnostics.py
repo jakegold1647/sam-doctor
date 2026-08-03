@@ -36,6 +36,7 @@ def test_unknown_log_has_no_finding() -> None:
     ("log_line", "title_fragment"),
     (
         ("InvalidIdentityToken: Incorrect token audience", "token audience"),
+        ("Unable to get ID Token: missing id-token: write permission", "cannot request an oidc token"),
         ("No OpenIDConnect provider found in your account", "missing the github actions oidc provider"),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
         ("MyFunction CREATE_FAILED Resource handler returned message: denied", "resource creation"),
