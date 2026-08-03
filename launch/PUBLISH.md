@@ -10,7 +10,7 @@ credentials, access keys, session tokens, or personal information.
 python -m pip install -e ".[dev]"
 python -m pytest -q
 python -m build
-sam-doctor demo
+python -m sam_doctor.cli demo
 ```
 
 Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,

@@ -21,7 +21,15 @@ fi
 report_path="$(mktemp)"
 trap 'rm -f "$report_path"' EXIT
 
-python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
+# Use the checked-out action source directly so this step works even if PATH/PIP
+# installs are restricted in the caller workflow.
+export PYTHONPATH="${GITHUB_ACTION_PATH}${PYTHONPATH:+:$PYTHONPATH}"
+
+if ! python -m sam_doctor.cli --help >/dev/null 2>&1; then
+  echo "Could not import local action package from ${GITHUB_ACTION_PATH}. Installing fallback." >&2
+  python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
+fi
+
 python -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
 finding_count="$(python - "$report_path" <<'PY'
@@ -32,6 +40,11 @@ with open(sys.argv[1], encoding="utf-8") as report_file:
     print(json.load(report_file)["finding_count"])
 PY
 )"
+
+if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
+  echo "Could not parse finding-count from JSON output: $finding_count" >&2
+  exit 2
+fi
 
 echo "finding-count=${finding_count}" >> "$GITHUB_OUTPUT"
 if [[ "$finding_count" -gt 0 ]]; then

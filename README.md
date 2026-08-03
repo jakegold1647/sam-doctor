@@ -41,12 +41,12 @@ official documentation.
 
 ```bash
 python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/vX.Y.Z/sam_doctor-X.Y.Z-py3-none-any.whl
-sam-doctor demo
-sam-doctor demo --scenario cloudformation
-sam-doctor demo --scenario capabilities
-sam-doctor rules
-sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
-sam-doctor batch "tmp/*.log" tmp/deployment-error.txt
+python -m sam_doctor.cli demo
+python -m sam_doctor.cli demo --scenario cloudformation
+python -m sam_doctor.cli demo --scenario capabilities
+python -m sam_doctor.cli rules
+python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt --format markdown
+python -m sam_doctor.cli batch "tmp/*.log" tmp/deployment-error.txt
 ```
 
 This installs the published release directly and does not require Git. The
@@ -57,21 +57,21 @@ from the tagged source instead, run:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@vX.Y.Z"
 ```
 
-Run `sam-doctor rules --format json` to inspect the exact set of supported
+Run `python -m sam_doctor.cli rules --format json` to inspect the exact set of supported
 diagnostic categories before sharing a log.
 
 To save a report:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown --output diagnosis.md
+python -m sam_doctor.cli diagnose deployment.log --format markdown --output diagnosis.md
 ```
 
 The input can also be read from standard input, which is useful for CI steps and
 shell pipelines:
 
 ```bash
-kubectl logs deploy/my-api | sam-doctor diagnose -
-sam-doctor diagnose deployment.log --format json --output diagnosis.json
+kubectl logs deploy/my-api | python -m sam_doctor.cli diagnose -
+python -m sam_doctor.cli diagnose deployment.log --format json --output diagnosis.json
 ```
 
 The terminal format is intended for a quick local check, Markdown is convenient
@@ -82,7 +82,7 @@ input log.
 You can also process multiple files in batch mode:
 
 ```bash
-sam-doctor batch logs/*.log logs/*.txt --format json > batch-results.json
+python -m sam_doctor.cli batch logs/*.log logs/*.txt --format json > batch-results.json
 ```
 
 ## GitHub Actions
@@ -173,7 +173,7 @@ tracking notes and fill one row per real contact.
 
 ## Supported signals
 
-Run `sam-doctor rules` for the current machine-readable catalog. Each rule is
+Run `python -m sam_doctor.cli rules` for the current machine-readable catalog. Each rule is
 triggered by an explicit error signal, not by template inspection or AWS account
 access; the report is still a prompt to verify the cause, not an automatic fix.
 
