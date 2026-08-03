@@ -74,3 +74,93 @@ def test_trend_text_is_ascii_and_baseline_or_deltaed():
     assert trend == "stars=+1, forks=+0, open_issues=-2, watchers=+3, releases=+1"
     assert "Î" not in trend
     assert "Δ" not in trend
+
+
+def test_launch_readiness_checks_homepage_and_topics():
+    mod = _load_distribution_script()
+
+    setup = mod._evaluate_launch_readiness(
+        {
+            "homepage": "https://jakegold1647.github.io/sam-doctor/",
+            "topics": [
+                "aws",
+                "aws-sam",
+                "cloudformation",
+                "github-actions",
+                "iam",
+                "python",
+                "serverless",
+                "cli",
+            ],
+        }
+    )
+
+    assert setup["homepage_ok"] is True
+    assert setup["topics_ok"] is True
+    assert setup["topics_count"] >= 7
+    assert setup["missing_topics"] == []
+
+
+def test_launch_readiness_flags_partial_config():
+    mod = _load_distribution_script()
+
+    setup = mod._evaluate_launch_readiness(
+        {
+            "homepage": "https://example.com/custom-home",
+            "topics": ["aws", "cli"],
+        }
+    )
+
+    assert setup["homepage_ok"] is False
+    assert setup["topics_ok"] is False
+    assert "python" in set(setup["missing_topics"])
+
+
+def test_summary_lines_includes_launch_setup():
+    mod = _load_distribution_script()
+
+    snapshot = {
+        "timestamp": "2026-08-03T00:00:00Z",
+        "repo": "jakegold1647/sam-doctor",
+        "repo_stars": 0,
+        "forks": 0,
+        "open_issues": 0,
+        "watchers": 0,
+        "releases": 7,
+        "discussions_ping": 0,
+        "pypi_status": {"ok": False, "details": "404 Not Found"},
+        "marketplace_status": {"ok": True, "details": "200"},
+        "site_status": {"ok": True, "details": "200"},
+        "launch_readiness": {
+            "homepage_ok": True,
+            "topics_ok": False,
+            "topics_count": 5,
+            "missing_topics": ["python"],
+        },
+    }
+
+    lines = mod._summary_lines(snapshot, None)
+    assert any(line.startswith("- launch-setup: partial") for line in lines)
+    assert any("launch_setup_topics_count" in line for line in lines)
+
+
+def test_summary_lines_no_launch_readiness_does_not_crash():
+    mod = _load_distribution_script()
+
+    snapshot = {
+        "timestamp": "2026-08-03T00:00:00Z",
+        "repo": "jakegold1647/sam-doctor",
+        "repo_stars": 1,
+        "forks": 0,
+        "open_issues": 0,
+        "watchers": 0,
+        "releases": 7,
+        "discussions_ping": 0,
+        "pypi_status": {"ok": True, "details": "200"},
+        "marketplace_status": {"ok": True, "details": "200"},
+        "site_status": {"ok": True, "details": "200"},
+    }
+
+    lines = mod._summary_lines(snapshot, None)
+    assert any(line.startswith("# SAM Doctor launch status") for line in lines)
+    assert any("launch_setup_missing_topics" in line for line in lines)
