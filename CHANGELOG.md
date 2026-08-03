@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## Unreleased
+
+- Added a direct diagnostic for a missing GitHub Actions OIDC provider in the
+  target AWS account.
+
 ## v0.3.1 - 2026-08-02
 
 - Added the tool version to JSON reports and the rule catalog.
