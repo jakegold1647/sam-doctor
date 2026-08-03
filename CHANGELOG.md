@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.7.3 - 2026-08-03
+
+- Added GitHub Marketplace branding to the composite action and refreshed the
+  diagnostic issue form's version placeholder.
+
 ## v0.7.2 - 2026-08-03
 
 - Redacted sensitive identifiers in displayed source filenames as well as matched
