@@ -33,13 +33,16 @@ python scripts/check-launch.py --skip-distribution \
    wheel and source archive. It creates a regular release for plain semantic
    version tags (such as `v0.7.4`) and a prerelease for pre-release tag names
    (such as `v0.7.4-rc.1`) using `launch/RELEASE-${TAG}.md` when present.
-3. Confirm GitHub Pages serves the current `site/` directory.
-4. In repository Settings, set the homepage to the GitHub Pages URL and add these
+3. Verify the release is not marked as a pre-release before final Marketplace
+   publishing. A prerelease release can cause Marketplace and GitHub to surface
+   “Latest pre-release,” which is misleading for first-time visitors.
+4. Confirm GitHub Pages serves the current `site/` directory.
+5. In repository Settings, set the homepage to the GitHub Pages URL and add these
    topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`,
    `serverless`, `python`, `cli`.
-5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social
+6. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social
    preview image.
-6. If this tag includes a pre-release suffix, convert to full release only after
+7. If this tag includes a pre-release suffix, convert to full release only after
    internal sign-off. For plain `vX.Y.Z` releases, Marketplace and PyPI publish
    flows can use the release as soon as release notes and checks are green.
 

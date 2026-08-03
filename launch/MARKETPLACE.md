@@ -11,7 +11,10 @@ Agreement.
 2. In **Release Action**, select **accept the GitHub Marketplace Developer
    Agreement** and review it as the repository owner.
 3. Return to the release edit form after accepting the agreement.
-4. Confirm this is a **published** release (not a draft), then continue to the
+4. Confirm this is a **published**, non-prerelease release. If GitHub shows
+   “Latest pre-release,” republish the release as stable or create a new stable
+   release tag before enabling the Marketplace listing.
+5. Confirm this is a **published** release (not a draft), then continue to the
    publish step.
 
 ## Publish the action

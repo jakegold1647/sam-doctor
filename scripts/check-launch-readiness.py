@@ -99,8 +99,57 @@ def _changelog_has_version(root: Path, version: str) -> bool:
     return any(line.startswith(f"## v{version} - ") for line in lines)
 
 
-def _release_note_exists(root: Path, version: str) -> bool:
-    return (root / "launch" / f"RELEASE-v{version}.md").exists()
+def _release_note_is_appropriate(root: Path, repo: str, version: str, token: str | None) -> tuple[bool, str]:
+    release_note = root / "launch" / f"RELEASE-v{version}.md"
+    if not release_note.exists():
+        return (
+            False,
+            f"launch/RELEASE-v{version}.md missing",
+        )
+
+    if "-" in version:
+        return (
+            True,
+            f"release note exists for prerelease {version} (release-state checks deferred)",
+        )
+
+    if not token:
+        return (
+            True,
+            "token unavailable, skipping pre-release validation for launch note release state",
+        )
+
+    try:
+        payload, _ = _get_json(
+            f"https://api.github.com/repos/{repo}/releases/tags/v{version}",
+            token,
+        )
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return (
+                True,
+                f"launch/RELEASE-v{version}.md present; release not published yet for this tag",
+            )
+        return (
+            False,
+            f"unable to verify release state for v{version} ({error.code} {error.reason})",
+        )
+    except (OSError, urllib.error.URLError) as error:
+        return (
+            False,
+            f"unable to verify release state for v{version} ({error})",
+        )
+
+    if payload.get("prerelease"):
+        return (
+            False,
+            f"GitHub release v{version} is marked as prerelease; publish as stable first",
+        )
+
+    return (
+        True,
+        f"launch/RELEASE-v{version}.md present and GitHub release is stable",
+    )
 
 
 def _marketplace_metadata_ok(root: Path) -> bool:
@@ -195,12 +244,17 @@ def _run_checks_with_options(
             f"required fields present in {root / 'action.yml'}",
         )
     else:
-        release_exists = _release_note_exists(root, pyproject_version)
+        release_ok, release_detail = _release_note_is_appropriate(
+            root,
+            repo,
+            pyproject_version,
+            token,
+        )
         changelog_ok = _changelog_has_version(root, pyproject_version)
         result.report(
             "release note file",
-            release_exists,
-            f"launch/RELEASE-v{pyproject_version}.md {'present' if release_exists else 'missing'}",
+            release_ok,
+            release_detail,
         )
         result.report(
             "changelog entry",
