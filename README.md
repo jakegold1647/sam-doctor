@@ -44,6 +44,10 @@ python -m pip install https://github.com/jakegold1647/sam-doctor/releases/downlo
 python -m sam_doctor.cli demo
 python -m sam_doctor.cli demo --scenario cloudformation
 python -m sam_doctor.cli demo --scenario capabilities
+python -m sam_doctor.cli demo --scenario api-gateway
+python -m sam_doctor.cli demo --scenario s3-bucket-conflict
+python -m sam_doctor.cli demo --scenario esbuild
+python -m sam_doctor.cli demo --scenario interactive-changeset
 python -m sam_doctor.cli rules
 python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt --format markdown
 python -m sam_doctor.cli batch "tmp/*.log" tmp/deployment-error.txt

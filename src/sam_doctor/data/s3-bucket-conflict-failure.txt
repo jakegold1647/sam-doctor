@@ -1,0 +1,1 @@
+Error: Cannot use both --resolve-s3 and --s3-bucket parameters. Please use only one.

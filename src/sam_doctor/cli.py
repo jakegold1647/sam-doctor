@@ -18,6 +18,10 @@ _DEMO_FILES = {
     "oidc": "oidc-assume-role-failure.txt",
     "cloudformation": "cloudformation-resource-failure.txt",
     "capabilities": "capability-acknowledgement-failure.txt",
+    "api-gateway": "api-gateway-no-methods-failure.txt",
+    "s3-bucket-conflict": "s3-bucket-conflict-failure.txt",
+    "esbuild": "esbuild-missing-failure.txt",
+    "interactive-changeset": "interactive-changeset-failure.txt",
 }
 
 
@@ -184,9 +188,9 @@ def _write_report(path: Path, report: str) -> None:
         raise ValueError(f"Could not write {path}: {error}") from error
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[object] | None = None) -> int:
     parser = _build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args([str(arg) for arg in argv] if argv is not None else None)
 
     if args.command == "demo":
         report = _render(_read_demo(args.scenario), _DEMO_FILES[args.scenario], args.format)
