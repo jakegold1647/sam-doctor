@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.5.0 - 2026-08-03
+
+- Added a high-confidence diagnosis for CloudFormation capability acknowledgements
+  required by IAM resources and nested applications.
+
 ## v0.4.1 - 2026-08-03
 
 - Redacted bearer tokens and JWT-shaped tokens when they appear in matched evidence.
