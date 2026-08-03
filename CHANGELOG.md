@@ -15,6 +15,7 @@ All notable changes to SAM Doctor are documented here.
 - Added a lightweight outreach tracking template to support the ethical,
   conversation-first growth loop.
 - Added Marketplace and PyPI badges to the README launch header.
+- Added regression tests for the distribution checker trend helpers and output text.
 
 ## v0.7.4 - 2026-08-03
 
