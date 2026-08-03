@@ -155,6 +155,43 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
         )
 
 
+def _read_last_csv_row(csv_path: str) -> dict[str, str] | None:
+    if not os.path.exists(csv_path):
+        return None
+
+    with open(csv_path, "r", encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    if not rows:
+        return None
+    return rows[-1]
+
+
+def _print_trend(snapshot: dict[str, object], previous: dict[str, str] | None) -> None:
+    if previous is None:
+        print("trend: no previous snapshot yet, establishing baseline")
+        return
+
+    def _to_int(value: object, default: int = 0) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _delta(current: object, previous_key: str) -> int:
+        return _to_int(current) - _to_int(previous.get(previous_key, "0"))
+
+    star_delta = _delta(snapshot["repo_stars"], "repo_stars")
+    forks_delta = _delta(snapshot["forks"], "forks")
+    issues_delta = _delta(snapshot["open_issues"], "open_issues")
+    watcher_delta = _delta(snapshot["watchers"], "watchers")
+    releases_delta = _delta(snapshot["releases"], "releases")
+
+    print(
+        f"trend: Δstars={star_delta:+d}, Δforks={forks_delta:+d}, "
+        f"Δopen_issues={issues_delta:+d}, Δwatchers={watcher_delta:+d}, Δreleases={releases_delta:+d}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -183,6 +220,11 @@ def main() -> int:
         default="",
         help="Append machine-readable snapshot rows to a CSV file",
     )
+    parser.add_argument(
+        "--print-trend",
+        action="store_true",
+        help="Print trend deltas from the most recent CSV snapshot",
+    )
     args = parser.parse_args()
 
     repo = args.repo
@@ -193,6 +235,7 @@ def main() -> int:
         print(f"Unable to read repo metadata: {error}")
         return 1
 
+    previous_row = _read_last_csv_row(args.append_csv) if args.print_trend else None
     if args.output_format == "json":
         print(json.dumps(snapshot, indent=2, sort_keys=True))
         if args.output:
@@ -200,6 +243,8 @@ def main() -> int:
                 json.dump(snapshot, stream, indent=2, sort_keys=True)
     if args.append_csv:
         _append_csv(snapshot, args.append_csv)
+    if args.print_trend:
+        _print_trend(snapshot, previous_row)
     if args.output_format == "json":
         return 0
 
