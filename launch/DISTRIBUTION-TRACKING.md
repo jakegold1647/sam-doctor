@@ -34,6 +34,12 @@ Automated monitoring:
   local and spreadsheet analysis.
 - A summary note is emitted as `distribution-summary.md` for quick paste into
   launch notes.
+- Run the scheduled check manually when you want stricter launch-gating:
+  - Add `strict-distribution-during-release: true` to fail on PyPI/Marketplace/site
+    readiness after a stable release is live.
+  - Add `strict-ethical: true` to fail when voluntary outreach feedback is not
+    strong enough (default minimum ratio is 100).
+  - Customize the ethical minimum with `min-feedback-ratio` (for example, `85`).
 - Run:
   `python scripts/check-launch.py --skip-distribution --strict-ethical --min-feedback-ratio 100 --outreach-log launch/outreach-log-template.csv --outreach-summary artifacts/outreach-summary.md`
   weekly (or before publishing a release) and review `ethical_signal` and

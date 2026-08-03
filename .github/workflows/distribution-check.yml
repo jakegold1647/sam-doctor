@@ -9,6 +9,14 @@ on:
         description: "Enable full release-channel strictness checks"
         required: false
         default: "false"
+      strict-ethical:
+        description: "Enable strict ethical outreach threshold check"
+        required: false
+        default: "false"
+      min-feedback-ratio:
+        description: "Minimum feedback ratio for --strict-ethical (percentage)"
+        required: false
+        default: "100"
 
 permissions:
   contents: read
@@ -25,10 +33,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STRICT_DURING_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
+          STRICT_ETHICAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-ethical'] == 'true' }}
+          MIN_FEEDBACK_RATIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['min-feedback-ratio'] || '100' }}
         run: |
           strict_flags=""
           if [ "$STRICT_DURING_RELEASE" = "true" ]; then
             strict_flags="--strict-distribution-during-release"
+          fi
+          ethical_flags=""
+          if [ "$STRICT_ETHICAL" = "true" ]; then
+            ethical_flags="--strict-ethical --min-feedback-ratio ${MIN_FEEDBACK_RATIO}"
           fi
 
           mkdir -p artifacts
@@ -45,7 +59,8 @@ jobs:
             --append-csv artifacts/distribution.csv \
             --print-trend \
             --summary artifacts/distribution-summary.md \
-            --outreach-summary artifacts/outreach-summary.md
+            --outreach-summary artifacts/outreach-summary.md \
+            $ethical_flags
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
         if: always()

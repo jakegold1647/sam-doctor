@@ -56,8 +56,11 @@ repository owner has reviewed and accepted GitHub's Marketplace Developer
 Agreement.
 
 If you want the distribution snapshot to fail on hard launch-channel readiness
-after publish, trigger `distribution-check.yml` manually with
-`strict-distribution-during-release: true`.
+after publish, trigger `distribution-check.yml` manually and enable:
+
+- `strict-distribution-during-release: true`
+- (Optional for founder checks) `strict-ethical: true`
+- (Optional) `min-feedback-ratio` to set your ethical ratio bar (example: `100`)
 
 ## 3. Prepare a founder checkout only after validation
 
