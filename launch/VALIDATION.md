@@ -23,7 +23,8 @@ If you are tracking outreach in `launch/outreach-log-template.csv`, run:
 
 ```bash
 python scripts/check-outreach.py launch/outreach-log-template.csv \
-  --summary artifacts/outreach-summary.md
+  --summary artifacts/outreach-summary.md \
+  --strict --min-feedback-ratio 100
 ```
 
 This prints a lightweight, non-sensitive summary to guide your next 7-day
