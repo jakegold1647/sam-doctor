@@ -26,6 +26,10 @@ Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 4. In repository Settings, set the homepage to the GitHub Pages URL and add these topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`, `serverless`, `python`, `cli`.
 5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social preview image.
 
+For the GitHub Action listing, follow `launch/MARKETPLACE.md` after the
+repository owner has reviewed and accepted GitHub's Marketplace Developer
+Agreement.
+
 ## 3. Prepare a founder checkout only after validation
 
 Create a Lemon Squeezy one-time product using `launch/PRODUCT-LISTING.md`.
