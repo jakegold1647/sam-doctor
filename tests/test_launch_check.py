@@ -205,3 +205,59 @@ def test_run_outreach_strict_passes_when_feedback_ratio_is_high_enough(tmp_path)
         strict=True,
         min_feedback_ratio=100.0,
     )
+
+
+def test_run_outreach_uses_strict_policy_from_module(tmp_path, monkeypatch) -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = _load_script(root)
+
+    sample = tmp_path / "outreach-mixed.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,,no\n",
+        encoding="utf-8",
+    )
+
+    calls = {"called": False}
+
+    class FakeOutreachModule:
+        def summarize(self, *_args, **_kwargs):
+            return {
+                "ethical_signal": "mixed",
+                "star_feedback_ratio": 0.0,
+            }
+
+        def _print_summary(self, *_args, **_kwargs):
+            pass
+
+        def _write_summary(self, *_args, **_kwargs):
+            pass
+
+        def _passes_strict_ethical_policy(self, summary, min_feedback_ratio):
+            calls["called"] = True
+            assert summary["ethical_signal"] == "mixed"
+            assert min_feedback_ratio == 100.0
+            return False, "blocked: mixed signal"
+
+    assert not script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+        loader=lambda _path: FakeOutreachModule(),
+    )
+    assert calls["called"]
+
+
+def test_check_launch_parse_args_defaults_github_token(monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+
+    monkeypatch.setenv("GITHUB_TOKEN", "env-token-xyz")
+    previous_argv = sys.argv
+    try:
+        sys.argv = ["check-launch.py", "--repo-root", str(Path(__file__).resolve().parents[1]), "--skip-distribution", "--skip-outreach"]
+        args = script._parse_args()
+        assert args.token == "env-token-xyz"
+        assert args.check_launch_token == "env-token-xyz"
+    finally:
+        sys.argv = previous_argv

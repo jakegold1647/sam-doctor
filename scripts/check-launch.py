@@ -133,17 +133,25 @@ def run_outreach(
     if summary:
         module._write_summary(outreach_summary, summary)
 
-    if strict and outreach_summary["ethical_signal"] != "strong":
-        print(f"ethical_signal is {outreach_summary['ethical_signal']}, not strong")
-        return False
+    if strict:
+        passes_strict = getattr(module, "_passes_strict_ethical_policy", None)
+        if callable(passes_strict):
+            strict_ok, strict_reason = passes_strict(outreach_summary, min_feedback_ratio)
+            if not strict_ok:
+                print(strict_reason)
+                return False
+        else:
+            if outreach_summary["ethical_signal"] != "strong":
+                print(f"ethical_signal is {outreach_summary['ethical_signal']}, not strong")
+                return False
 
-    feedback_ratio = float(outreach_summary["star_feedback_ratio"])
-    if strict and feedback_ratio < min_feedback_ratio:
-        print(
-            f"ethical star feedback ratio is {feedback_ratio:.1f}%, "
-            f"below strict threshold {min_feedback_ratio:.1f}%"
-        )
-        return False
+            feedback_ratio = float(outreach_summary["star_feedback_ratio"])
+            if feedback_ratio < min_feedback_ratio:
+                print(
+                    f"ethical star feedback ratio is {feedback_ratio:.1f}%, "
+                    f"below strict threshold {min_feedback_ratio:.1f}%"
+                )
+                return False
     return True
 
 
