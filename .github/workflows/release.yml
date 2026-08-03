@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   publish:
@@ -41,4 +42,10 @@ jobs:
             gh release create "$TAG" dist/* "${release_flags[@]}" --title "SAM Doctor ${TAG}" --notes-file "$notes_file"
           else
             gh release create "$TAG" dist/* "${release_flags[@]}" --title "SAM Doctor ${TAG}" --generate-notes
+          fi
+
+          if [[ "$TAG" != *-* ]]; then
+            gh workflow run pypi-publish.yml \
+              --ref "$TAG" \
+              -f release-tag="$TAG"
           fi

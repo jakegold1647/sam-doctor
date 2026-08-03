@@ -30,5 +30,10 @@ than attempting to take it over.
 5. Verify the resulting PyPI project page, install the published wheel in a
    fresh environment, and check the release files and version.
 
+The release workflow explicitly dispatches `pypi-publish.yml` for stable tags
+because releases created with the repository `GITHUB_TOKEN` do not fan out a
+second workflow from the `release` event. To retry a stable publication, run
+the PyPI workflow manually and provide the same `release-tag` value.
+
 The workflow uses PyPI Trusted Publishing with a short-lived GitHub Actions OIDC
 token. It does not require a long-lived PyPI API token in repository secrets.
