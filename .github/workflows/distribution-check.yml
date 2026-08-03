@@ -22,12 +22,13 @@ jobs:
         run: |
           mkdir -p artifacts
           python scripts/check-launch.py \
-            --skip-outreach \
+            --outreach-log launch/outreach-log-template.csv \
             --output-format json \
             --output artifacts/distribution.json \
             --append-csv artifacts/distribution.csv \
             --print-trend \
-            --summary artifacts/distribution-summary.md
+            --summary artifacts/distribution-summary.md \
+            --outreach-summary artifacts/outreach-summary.md
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
         if: always()
@@ -37,4 +38,5 @@ jobs:
             artifacts/distribution.json
             artifacts/distribution.csv
             artifacts/distribution-summary.md
+            artifacts/outreach-summary.md
           retention-days: 90
