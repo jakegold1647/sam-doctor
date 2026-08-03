@@ -8,6 +8,7 @@ signals without guessing popularity from private or manipulated data.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import sys
@@ -117,6 +118,43 @@ def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
     }
 
 
+def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
+    header = [
+        "timestamp",
+        "repo",
+        "repo_stars",
+        "forks",
+        "open_issues",
+        "watchers",
+        "releases",
+        "discussions_ping",
+        "pypi_ok",
+        "marketplace_ok",
+        "site_ok",
+    ]
+    is_new = not os.path.exists(csv_path)
+
+    with open(csv_path, "a", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=header)
+        if is_new:
+            writer.writeheader()
+        writer.writerow(
+            {
+                "timestamp": snapshot["timestamp"],
+                "repo": snapshot["repo"],
+                "repo_stars": snapshot["repo_stars"],
+                "forks": snapshot["forks"],
+                "open_issues": snapshot["open_issues"],
+                "watchers": snapshot["watchers"],
+                "releases": snapshot["releases"],
+                "discussions_ping": snapshot["discussions_ping"],
+                "pypi_ok": snapshot["pypi_status"]["ok"] if isinstance(snapshot["pypi_status"], dict) else "",
+                "marketplace_ok": snapshot["marketplace_status"]["ok"] if isinstance(snapshot["marketplace_status"], dict) else "",
+                "site_ok": snapshot["site_status"]["ok"] if isinstance(snapshot["site_status"], dict) else "",
+            }
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -140,6 +178,11 @@ def main() -> int:
         default="",
         help="Optional output file path for JSON snapshots",
     )
+    parser.add_argument(
+        "--append-csv",
+        default="",
+        help="Append machine-readable snapshot rows to a CSV file",
+    )
     args = parser.parse_args()
 
     repo = args.repo
@@ -155,6 +198,9 @@ def main() -> int:
         if args.output:
             with open(args.output, "w", encoding="utf-8") as stream:
                 json.dump(snapshot, stream, indent=2, sort_keys=True)
+    if args.append_csv:
+        _append_csv(snapshot, args.append_csv)
+    if args.output_format == "json":
         return 0
 
     print(f"sam-doctor distribution snapshot for {repo}")

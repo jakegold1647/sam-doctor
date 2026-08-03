@@ -22,6 +22,8 @@ Automated monitoring:
   or run a new outreach batch.
 - Each run uploads an artifact named `distribution-snapshot` containing
   `distribution.json` so you can compare snapshots over time.
+- The run also appends a trend-friendly history row to `distribution.csv` for quick
+  local and spreadsheet analysis.
 
 ## What to watch
 
