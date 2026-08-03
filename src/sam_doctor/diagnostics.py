@@ -356,6 +356,21 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-deploy.html",
     ),
     Rule(
+        title="SAM deployment prompted for interactive changeset confirmation",
+        confidence="medium",
+        patterns=(r"Deploy this changeset\?\s*\[y/N\]:", r"Aborted!"),
+        explanation=(
+            "SAM stopped at an interactive confirm step and could not continue in a "
+            "non-interactive pipeline."
+        ),
+        verification=(
+            "Set `--no-confirm-changeset` (or `confirm_changeset: false`) for automated pipelines.",
+            "Move manual approval to a GitHub environment or protected workflow gate instead of interactive prompt output.",
+            "Re-run the deployment after removing the interactive confirmation path.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-git.html",
+    ),
+    Rule(
         title="API Gateway CORS preflight configuration conflicts with an existing OPTIONS method",
         confidence="medium",
         patterns=(

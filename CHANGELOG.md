@@ -20,6 +20,8 @@ All notable changes to SAM Doctor are documented here.
   README for pre-tag validation.
 - Replaced stale hard-coded release version examples in install and CI snippets
   with version placeholders to reduce release drift.
+- Added a dedicated rule for non-interactive SAM deploy confirmation prompts
+  (`Aborted! Deploy this changeset?`) to improve CI-directed diagnosis.
 
 ## v0.7.4 - 2026-08-03
 
