@@ -5,13 +5,19 @@ from pathlib import Path
 import pytest
 
 from sam_doctor.cli import _read_demo, _read_text, _write_report, main
-from sam_doctor.diagnostics import diagnose, json_report, markdown_report, rules_report
+from sam_doctor.diagnostics import (
+    diagnose,
+    json_report,
+    markdown_report,
+    rules_report,
+    terminal_report,
+)
 from sam_doctor.redaction import redact
 from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.7.1"
+    assert __version__ == "0.7.2"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -202,6 +208,19 @@ def test_markdown_report_escapes_log_markup() -> None:
     assert "&lt;script&gt;" in report
     assert "failed`<log>.txt" not in report
     assert "failed`&lt;log&gt;.txt" in report
+
+
+def test_reports_redact_sensitive_source_names() -> None:
+    findings = diagnose("AccessDeniedException: action is not authorized")
+    source_name = "owner@example.com-123456789012-deployment.log"
+
+    markdown = markdown_report(findings, source_name)
+    terminal = terminal_report(findings, source_name)
+    report = json.loads(json_report(findings, source_name))
+
+    assert "owner@example.com" not in markdown + terminal
+    assert "123456789012" not in markdown + terminal
+    assert report["source"] == "[REDACTED_EMAIL]-[REDACTED_ACCOUNT_ID]-deployment.log"
 
 
 def test_dash_reads_stdin(monkeypatch: pytest.MonkeyPatch) -> None:

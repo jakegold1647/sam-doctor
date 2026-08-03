@@ -489,7 +489,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
     lines = [
         "# SAM Doctor diagnostic report",
         "",
-        f"**Source:** <code>{escape(source_name)}</code>",
+        f"**Source:** <code>{escape(redact(source_name))}</code>",
         "",
         "This report is generated from matched log patterns. Review the evidence and "
         "commands before applying any change.",
@@ -534,11 +534,11 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
 
     if not findings:
         return (
-            f"No supported diagnostic pattern found in {source_name}.\n"
+            f"No supported diagnostic pattern found in {redact(source_name)}.\n"
             "Keep the first failure event and inspect the relevant AWS documentation."
         )
 
-    blocks = [f"SAM Doctor found {len(findings)} possible issue(s) in {source_name}."]
+    blocks = [f"SAM Doctor found {len(findings)} possible issue(s) in {redact(source_name)}."]
     for index, finding in enumerate(findings, start=1):
         blocks.extend(
             [
@@ -560,7 +560,7 @@ def json_report(findings: list[Finding], source_name: str) -> str:
 
     payload = {
         "sam_doctor_version": __version__,
-        "source": source_name,
+        "source": redact(source_name),
         "finding_count": len(findings),
         "findings": [
             {
