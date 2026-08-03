@@ -58,6 +58,7 @@ def run_distribution(
     append_csv: str = "",
     summary: str = "",
     print_trend: bool = False,
+    strict: bool = False,
     loader: Callable[[Path], Any] = _load_distribution_module,
 ) -> bool:
     module = loader(repo_root)
@@ -108,6 +109,16 @@ def run_distribution(
             f"{marketplace_status['ok']} ({marketplace_status['details']})"
         )
         print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
+
+    if strict:
+        strict_check = getattr(module, "_strict_distribution_violations", None)
+        if callable(strict_check):
+            violations = strict_check(snapshot)
+            if violations:
+                print("distribution strict check: FAIL")
+                for violation in violations:
+                    print(f"- {violation}")
+                return False
 
     return True
 
@@ -215,6 +226,11 @@ def _parse_args() -> argparse.Namespace:
         help="Print distribution trend lines.",
     )
     parser.add_argument(
+        "--strict-distribution",
+        action="store_true",
+        help="Fail launch check when distribution channels or launch setup signals are not ready.",
+    )
+    parser.add_argument(
         "--outreach-log",
         default="launch/outreach-log-template.csv",
         help="Outreach log CSV for ethical check.",
@@ -269,6 +285,7 @@ def main() -> int:
             append_csv=args.append_csv,
             summary=args.summary,
             print_trend=args.print_trend,
+            strict=args.strict_distribution,
         )
         if not distribution_ok:
             ok = False

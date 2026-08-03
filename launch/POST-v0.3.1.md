@@ -20,7 +20,7 @@ The useful part of the post should stand on its own without a repository link.
 ## OIDC guide post
 
 > A GitHub Actions `AssumeRoleWithWebIdentity` failure is often a mismatch
-> between the OIDC token and the AWS role trust policy—not a reason to widen IAM
+> between the OIDC token and the AWS role trust policy; not a reason to widen IAM
 > permissions. The three checks are: `id-token: write`, the
 > `sts.amazonaws.com` audience, and the exact `sub` condition.
 >

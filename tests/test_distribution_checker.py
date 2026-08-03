@@ -189,3 +189,43 @@ def test_marketplace_pre_release_marker_is_detected(monkeypatch):
 
     assert listing["ok"] is True
     assert listing["pre_release_listed"] is True
+
+
+def _sample_launch_snapshot():
+    return {
+        "pypi_status": {"ok": True, "details": "200"},
+        "marketplace_status": {"ok": True, "details": "200", "pre_release_listed": False},
+        "site_status": {"ok": True, "details": "200"},
+        "launch_readiness": {
+            "homepage_ok": True,
+            "topics_ok": True,
+            "missing_topics": [],
+            "topics_count": 8,
+            "homepage": "https://jakegold1647.github.io/sam-doctor/",
+        },
+    }
+
+
+def test_strict_distribution_violations_are_empty_when_ready():
+    mod = _load_distribution_script()
+    snapshot = _sample_launch_snapshot()
+    assert mod._strict_distribution_violations(snapshot) == []
+
+
+def test_strict_distribution_violations_detect_pre_release_listing():
+    mod = _load_distribution_script()
+    snapshot = _sample_launch_snapshot()
+    snapshot["marketplace_status"]["pre_release_listed"] = True
+    violations = mod._strict_distribution_violations(snapshot)
+    assert "Marketplace listing is still marked as latest pre-release" in violations
+
+
+def test_strict_distribution_violations_require_topics_and_homepage():
+    mod = _load_distribution_script()
+    snapshot = _sample_launch_snapshot()
+    snapshot["launch_readiness"]["homepage_ok"] = False
+    snapshot["launch_readiness"]["topics_ok"] = False
+    snapshot["launch_readiness"]["missing_topics"] = ["cli", "serverless"]
+    violations = mod._strict_distribution_violations(snapshot)
+    assert any(v.startswith("Repository homepage is missing") for v in violations)
+    assert any("cli, serverless" in v or "serverless, cli" in v for v in violations)

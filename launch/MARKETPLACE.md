@@ -13,7 +13,7 @@ Agreement.
 3. Return to the release edit form after accepting the agreement.
 4. Confirm this is a **published**, non-prerelease release (not a draft and not
    a prerelease). If GitHub shows
-   “Latest pre-release,” republish the release as stable or create a new stable
+   "Latest pre-release," republish the release as stable or create a new stable
    release tag before enabling the Marketplace listing.
 5. Confirm this is a **published** release (not a draft), then continue to the
    publish step.
