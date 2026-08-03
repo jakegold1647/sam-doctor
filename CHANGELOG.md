@@ -16,6 +16,8 @@ All notable changes to SAM Doctor are documented here.
   conversation-first growth loop.
 - Added an opt-in organic-growth score to outreach summaries and strict launch
   checks, with a backward-compatible default for existing gates.
+- Replaced placeholder install examples with verified v0.7.4 commands and
+  removed the unavailable PyPI badge from the first-use path.
 - Added Marketplace and PyPI badges to the README launch header.
 - Added regression tests for the distribution checker trend helpers and output text.
 - Added a release-readiness checker script and integrated it into launch docs and
