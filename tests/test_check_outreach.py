@@ -114,6 +114,7 @@ def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
     assert rendered.startswith("# SAM Doctor ethical outreach status")
     assert "ethical_signal" in rendered
     assert "recommendation" in rendered
+    assert "next_growth_actions" in rendered
 
 
 def test_outreach_main_handles_header_only_template(tmp_path: Path) -> None:
@@ -181,3 +182,18 @@ def test_outreach_main_strict_passes_when_signal_is_strong(tmp_path: Path) -> No
         assert module.main() == 0
     finally:
         sys.argv = argv_backup
+
+
+def test_outreach_next_growth_actions_are_included_for_blank_sample(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-empty.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n",
+        encoding="utf-8",
+    )
+    summary = module.summarize(sample)
+    actions = module._next_growth_actions(summary)
+    assert isinstance(actions, list)
+    assert actions
+    assert any("seed the outreach tracker" in action.lower() for action in actions)
