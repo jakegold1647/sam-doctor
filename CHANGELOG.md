@@ -2,6 +2,16 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.3.0 - 2026-08-02
+
+- Added a catalog command: `sam-doctor rules`.
+- Added a bundled CloudFormation failed-resource demo.
+- Added a direct high-confidence finding for CloudFormation `CREATE_FAILED` and
+  `UPDATE_FAILED` resource events.
+- Tightened OIDC audience matching so a generic `InvalidIdentityToken` is not
+  reported as an audience problem without supporting evidence.
+- Redacted common key, token, password, and session-token assignments in evidence.
+
 ## v0.2.0 - 2026-08-02
 
 - Added JSON output for scripts and CI.

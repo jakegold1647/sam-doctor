@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from sam_doctor.cli import _read_demo, _read_text, _write_report
-from sam_doctor.diagnostics import diagnose, json_report, markdown_report
+from sam_doctor.cli import _read_demo, _read_text, _write_report, main
+from sam_doctor.diagnostics import diagnose, json_report, markdown_report, rules_report
 from sam_doctor.redaction import redact
 from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.3.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -37,6 +37,7 @@ def test_unknown_log_has_no_finding() -> None:
     (
         ("InvalidIdentityToken: Incorrect token audience", "token audience"),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
+        ("MyFunction CREATE_FAILED Resource handler returned message: denied", "resource creation"),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
@@ -53,6 +54,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
     (
         "sam deploy completed successfully",
         "AssumeRoleWithWebIdentity succeeded",
+        "InvalidIdentityToken was handled by a retrying client",
         "Configured CORS for the API",
         "The preflight request returned 204",
     ),
@@ -65,15 +67,27 @@ def test_packaged_demo_is_available() -> None:
     assert "AssumeRoleWithWebIdentity" in _read_demo()
 
 
+def test_packaged_cloudformation_demo_is_available() -> None:
+    findings = diagnose(_read_demo("cloudformation"))
+
+    assert any("resource creation" in finding.title.lower() for finding in findings)
+
+
 def test_redaction_covers_common_ci_credentials() -> None:
-    text = "AKIAIOSFODNN7EXAMPLE ghp_123456789012345678901234567890123456"
+    text = (
+        "AKIAIOSFODNN7EXAMPLE ghp_123456789012345678901234567890123456 "
+        "AWS_SECRET_ACCESS_KEY=not-a-real-secret token: another-secret"
+    )
 
     result = redact(text)
 
     assert "AKIAIOSFODNN7EXAMPLE" not in result
     assert "ghp_123456789012345678901234567890123456" not in result
+    assert "not-a-real-secret" not in result
+    assert "another-secret" not in result
     assert "[REDACTED_AWS_ACCESS_KEY]" in result
     assert "[REDACTED_GITHUB_TOKEN]" in result
+    assert result.count("[REDACTED_SECRET]") == 2
 
 
 def test_markdown_report_escapes_log_markup() -> None:
@@ -118,3 +132,17 @@ def test_long_evidence_is_bounded() -> None:
 
     assert len(evidence) <= 360
     assert "..." in evidence
+
+
+def test_rule_catalog_is_machine_readable() -> None:
+    catalog = json.loads(rules_report("json"))
+
+    assert catalog["rule_count"] >= 7
+    assert any("CloudFormation resource" in rule["title"] for rule in catalog["rules"])
+
+
+def test_rules_command_prints_json(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["rules", "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["rule_count"] >= 7

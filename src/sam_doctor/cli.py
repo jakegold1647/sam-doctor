@@ -8,10 +8,13 @@ from pathlib import Path
 import sys
 
 from . import __version__
-from .diagnostics import diagnose, json_report, markdown_report, terminal_report
+from .diagnostics import diagnose, json_report, markdown_report, rules_report, terminal_report
 
 
-_DEMO_NAME = "oidc-assume-role-failure.txt"
+_DEMO_FILES = {
+    "oidc": "oidc-assume-role-failure.txt",
+    "cloudformation": "cloudformation-resource-failure.txt",
+}
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -36,9 +39,19 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     diagnose_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
 
-    demo_parser = subcommands.add_parser("demo", help="Run the bundled OIDC failure example.")
+    demo_parser = subcommands.add_parser("demo", help="Run a bundled deployment failure example.")
+    demo_parser.add_argument(
+        "--scenario",
+        choices=tuple(_DEMO_FILES),
+        default="oidc",
+        help="Bundled failure scenario to diagnose.",
+    )
     demo_parser.add_argument("--format", choices=("terminal", "markdown", "json"), default="terminal")
     demo_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
+
+    rules_parser = subcommands.add_parser("rules", help="List the currently supported diagnostic rules.")
+    rules_parser.add_argument("--format", choices=("terminal", "json"), default="terminal")
+    rules_parser.add_argument("--output", type=Path, help="Write the rule catalog to this path instead of stdout.")
     return parser
 
 
@@ -60,10 +73,10 @@ def _render(text: str, source_name: str, output_format: str) -> str:
     return terminal_report(findings, source_name) + "\n"
 
 
-def _read_demo() -> str:
-    """Read the packaged example so `sam-doctor demo` works after installation."""
+def _read_demo(scenario: str = "oidc") -> str:
+    """Read a packaged example so `sam-doctor demo` works after installation."""
 
-    return files("sam_doctor").joinpath("data", _DEMO_NAME).read_text(encoding="utf-8")
+    return files("sam_doctor").joinpath("data", _DEMO_FILES[scenario]).read_text(encoding="utf-8")
 
 
 def _write_report(path: Path, report: str) -> None:
@@ -78,13 +91,26 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "demo":
-        report = _render(_read_demo(), _DEMO_NAME, args.format)
+        demo_name = _DEMO_FILES[args.scenario]
+        report = _render(_read_demo(args.scenario), demo_name, args.format)
         if args.output:
             try:
                 _write_report(args.output, report)
             except ValueError as error:
                 parser.error(str(error))
             print(f"Wrote {args.format} report to {args.output}")
+        else:
+            sys.stdout.write(report)
+        return 0
+
+    if args.command == "rules":
+        report = rules_report(args.format)
+        if args.output:
+            try:
+                _write_report(args.output, report)
+            except ValueError as error:
+                parser.error(str(error))
+            print(f"Wrote {args.format} rule catalog to {args.output}")
         else:
             sys.stdout.write(report)
         return 0

@@ -1,0 +1,2 @@
+2026-08-02 14:22:10 UTC  MyApiDeployment  CREATE_FAILED  Resource handler returned message: "Invalid request provided: API Gateway deployment cannot be created because the stage already exists." (RequestToken: example, HandlerErrorCode: InvalidRequest)
+2026-08-02 14:22:12 UTC  DemoStack        ROLLBACK_IN_PROGRESS  The following resource(s) failed to create: [MyApiDeployment]. Rollback requested by user.
