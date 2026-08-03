@@ -19,6 +19,9 @@ Automated monitoring:
 
 - This workflow runs every 12 hours on GitHub Actions:
   `.github/workflows/distribution-check.yml`
+- The workflow now runs the full launch check stack (`scripts/check-launch.py`), so
+  each run verifies release-readiness, distribution channels, and a fresh
+  outreach summary snapshot together.
 - Run it manually via workflow dispatch any time you publish a new release
   or run a new outreach batch.
 - Each run uploads an artifact named `distribution-snapshot` containing
