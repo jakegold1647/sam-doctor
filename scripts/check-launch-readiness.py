@@ -131,7 +131,13 @@ def _changelog_has_version(root: Path, version: str) -> bool:
     return any(line.startswith(f"## v{version} - ") for line in lines)
 
 
-def _release_note_is_appropriate(root: Path, repo: str, version: str, token: str | None) -> tuple[bool, str]:
+def _release_note_is_appropriate(
+    root: Path,
+    repo: str,
+    version: str,
+    token: str | None,
+    check_release_state: bool = True,
+) -> tuple[bool, str]:
     release_note = root / "launch" / f"RELEASE-v{version}.md"
     if not release_note.exists():
         return (
@@ -143,6 +149,12 @@ def _release_note_is_appropriate(root: Path, repo: str, version: str, token: str
         return (
             True,
             f"release note exists for prerelease {version} (release-state checks deferred)",
+        )
+
+    if not check_release_state:
+        return (
+            True,
+            "release note exists; remote release-state check skipped for monitoring",
         )
 
     if not token:
@@ -252,7 +264,10 @@ def _is_prerelease(version: str) -> bool:
 
 
 def _run_checks_with_options(
-    root: Path, repo: str, token: str | None
+    root: Path,
+    repo: str,
+    token: str | None,
+    check_release_state: bool = True,
 ) -> _CheckResult:
     result = _CheckResult()
     pyproject_version = _version_from_pyproject(root)
@@ -287,6 +302,7 @@ def _run_checks_with_options(
             repo,
             pyproject_version,
             token,
+            check_release_state=check_release_state,
         )
         changelog_ok = _changelog_has_version(root, pyproject_version)
         result.report(
@@ -334,6 +350,11 @@ def main() -> int:
         default=os.environ.get("GITHUB_TOKEN", ""),
         help="GitHub API token for remote launch metadata checks.",
     )
+    parser.add_argument(
+        "--skip-release-state",
+        action="store_true",
+        help="Skip the remote stable/prerelease state check (use for scheduled monitoring).",
+    )
     args = parser.parse_args()
     root = Path(args.repo_root).resolve()
     if not root.exists():
@@ -344,7 +365,12 @@ def main() -> int:
         return 1
 
     token = args.token or os.environ.get("GITHUB_TOKEN")
-    result = _run_checks_with_options(root, repo=args.repo, token=token)
+    result = _run_checks_with_options(
+        root,
+        repo=args.repo,
+        token=token,
+        check_release_state=not args.skip_release_state,
+    )
     print(f"checks passed: {result.passed}, checks failed: {result.failed}")
     return 0 if result.ok else 1
 

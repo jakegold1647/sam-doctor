@@ -320,6 +320,35 @@ def test_check_launch_strict_distribution_during_release_forces_distribution_str
     assert strict_values == [True]
 
 
+def test_check_launch_can_skip_release_state_for_scheduled_monitoring(monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    observed = {"check_release_state": None}
+
+    def fake_launch_readiness(*_args, check_release_state: bool, **_kwargs):
+        observed["check_release_state"] = check_release_state
+        return True, 6, 0
+
+    monkeypatch.setattr(script, "run_launch_readiness", fake_launch_readiness)
+    monkeypatch.setattr(script, "run_distribution", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(script, "run_outreach", lambda *_args, **_kwargs: True)
+
+    previous_argv = sys.argv
+    try:
+        sys.argv = [
+            "check-launch.py",
+            "--repo-root",
+            str(Path(__file__).resolve().parents[1]),
+            "--skip-release-state",
+            "--skip-distribution",
+            "--skip-outreach",
+        ]
+        assert script.main() == 0
+    finally:
+        sys.argv = previous_argv
+
+    assert observed["check_release_state"] is False
+
+
 def test_check_launch_passes_strict_ethical_flags_to_outreach(monkeypatch) -> None:
     script = _load_script(Path(__file__).resolve().parents[1])
     monkeypatch.setattr(script, "run_launch_readiness", lambda *_args, **_kwargs: (True, 6, 0))

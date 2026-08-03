@@ -149,6 +149,43 @@ def test_launch_readiness_flags_stable_release_marked_as_prerelease(tmp_path: Pa
     assert result.passed == 5
 
 
+def test_launch_readiness_can_skip_remote_release_state_for_monitoring(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _create_repo(tmp_path, "1.2.3", with_release=True, with_changelog=True)
+
+    module = _load_module(tmp_path)
+    expected_topics = [
+        "aws",
+        "aws-sam",
+        "cloudformation",
+        "github-actions",
+        "iam",
+        "python",
+        "serverless",
+        "cli",
+    ]
+
+    def fake_get_json(url: str, token: str | None):
+        assert url == "https://api.github.com/repos/jakegold1647/sam-doctor"
+        return {
+            "homepage": "https://jakegold1647.github.io/sam-doctor/",
+            "topics": expected_topics,
+        }, 200
+
+    monkeypatch.setattr(module, "_get_json", fake_get_json)
+
+    result = module._run_checks_with_options(
+        tmp_path,
+        repo="jakegold1647/sam-doctor",
+        token="token",
+        check_release_state=False,
+    )
+    assert result.ok
+    assert result.failed == 0
+    assert result.passed == 6
+
+
 def test_launch_readiness_flags_stable_release_marked_as_draft(tmp_path: Path, monkeypatch) -> None:
     _create_repo(tmp_path, "1.2.3", with_release=True, with_changelog=True)
 
