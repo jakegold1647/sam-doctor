@@ -4,6 +4,17 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.7.6 - 2026-08-03
+
+- Added an opt-in `--fail-on-findings` CLI flag for CI jobs that should fail
+  when a supported diagnostic is found.
+- Recognized CloudFormation `ROLLBACK_FAILED` states and added cleanup-focused
+  verification guidance for stacks that cannot finish rolling back.
+- Kept the stable install links, Marketplace example, and release metadata on
+  one tested version.
+
+## v0.7.5 - 2026-08-03
+
 - Fixed stable PyPI recovery so the current workflow runs from `main` while
   building the exact release tag supplied by the operator.
 - Added coverage for CloudFormation's `ROLLBACK_FAILED` stack state, including
