@@ -27,6 +27,7 @@
     <header class="topbar" aria-label="Primary navigation">
       <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
       <nav>
+        <a href="#install">Install</a>
         <a href="#workflow">How it works</a>
         <a href="#founder">Feedback</a>
         <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
@@ -42,7 +43,7 @@
           produces evidence, safe checks, and a shareable Markdown report.
         </p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/jakegold1647/sam-doctor">
+          <a class="button primary" href="#install">
             Try the free alpha
           </a>
           <a class="button secondary" href="#founder">
@@ -51,6 +52,17 @@
         </div>
         <p class="note">Runs locally. No AWS credentials. No log upload. No automatic changes.</p>
         <p class="note"><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md">Read the OIDC deployment debugging guide</a> · <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md">Find the first useful CloudFormation failure</a></p>
+      </section>
+
+      <section id="install" class="install" aria-labelledby="install-title">
+        <p class="eyebrow">GET STARTED</p>
+        <h2 id="install-title">Install the current release in one command.</h2>
+        <pre><code>python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.4.0/sam_doctor-0.4.0-py3-none-any.whl</code></pre>
+        <p>
+          The wheel installs without Git. Then run <code>sam-doctor demo</code> to see a
+          local example, or pass a log to <code>sam-doctor diagnose deployment.log</code>.
+        </p>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.4.0">View release notes and downloads</a>
       </section>
 
       <section class="terminal" aria-label="Example diagnostic output">

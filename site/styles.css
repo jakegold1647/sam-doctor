@@ -52,10 +52,11 @@ h2 { font-size: clamp(1.55rem, 3vw, 2.45rem); letter-spacing: -.035em; }
 .button:hover, .button:focus-visible { transform: translateY(-2px); }
 .secondary:hover, .secondary:focus-visible { background: var(--panel); }
 .note, .muted { color: var(--muted); font-size: .9rem; }
-.terminal, .founder, .faq, .grid article { border: 1px solid var(--line); border-radius: 1rem; background: color-mix(in srgb, var(--panel) 92%, transparent); padding: clamp(1.25rem, 4vw, 2.5rem); }
+.terminal, .install, .founder, .faq, .grid article { border: 1px solid var(--line); border-radius: 1rem; background: color-mix(in srgb, var(--panel) 92%, transparent); padding: clamp(1.25rem, 4vw, 2.5rem); }
 .terminal { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .terminal h2 { font-size: 1.3rem; }
 .terminal span { color: var(--accent); }
+.install pre { background: #0b1022; border: 1px solid var(--line); border-radius: .55rem; overflow-x: auto; padding: 1rem; white-space: pre-wrap; word-break: break-word; }
 .grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
 .steps { border-left: 2px solid var(--accent); margin: 4rem 0; padding-left: clamp(1.25rem, 4vw, 2.5rem); }
 .steps ol { display: grid; gap: .9rem; margin: 1.5rem 0 0; padding-left: 1.25rem; }
