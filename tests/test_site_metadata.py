@@ -12,6 +12,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert '<link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/"' in page
     assert 'property="og:image"' in page
     assert 'name="twitter:image"' in page
+    assert 'https://pypi.org/project/sam-doctor/' in page
 
     match = re.search(
         r'<script type="application/ld\+json">\s*(.*?)\s*</script>',

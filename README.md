@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Available-blue?logo=github)](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)
+[![PyPI](https://img.shields.io/pypi/v/sam-doctor.svg)](https://pypi.org/project/sam-doctor/)
 [![GitHub release](https://img.shields.io/github/v/release/jakegold1647/sam-doctor?include_prereleases&label=release)](https://github.com/jakegold1647/sam-doctor/releases)
 
 SAM Doctor is a local, evidence-first command-line tool for turning AWS SAM,
@@ -42,13 +43,14 @@ Current release: **v0.7.6**.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.6/sam_doctor-0.7.6-py3-none-any.whl
+python -m pip install sam-doctor
 sam-doctor demo
 ```
 
-This installs the stable v0.7.6 wheel directly from GitHub and does not require
-Git. The bundled demo needs no AWS credentials and makes no network calls. To install
-from the tagged source instead, run:
+This installs the latest stable release from PyPI. The bundled demo needs no AWS
+credentials and makes no network calls. To pin the tested release exactly, run
+`python -m pip install sam-doctor==0.7.6`. To install from the tagged source
+instead, run:
 
 ```bash
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.6"

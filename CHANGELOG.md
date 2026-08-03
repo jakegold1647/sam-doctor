@@ -5,6 +5,7 @@ All notable changes to SAM Doctor are documented here.
 ## Unreleased
 
 - Documented direct CLI failure gating for shell-based CI jobs.
+- Switched the primary install path to the verified PyPI package.
 
 ## v0.7.6 - 2026-08-03
 
