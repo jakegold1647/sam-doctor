@@ -18,6 +18,8 @@ All notable changes to SAM Doctor are documented here.
   removed the unavailable PyPI badge from the first-use path.
 - Clarified the GitHub Actions example so diagnostics still run after a failed
   deployment step.
+- Standardized the README's installed-command examples and documented the
+  module fallback for shells that do not expose the console script.
 - Added a clear sanitized rule-request path when a human-readable report finds
   no supported pattern.
 - Made the test suite import the checked-out source tree so local runs cannot

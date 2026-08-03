@@ -54,6 +54,10 @@ from the tagged source instead, run:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.4"
 ```
 
+If your shell cannot find `sam-doctor` after installation, activate the
+environment where it was installed or use `python -m sam_doctor.cli` in the
+commands below.
+
 For more bundled examples, try `sam-doctor demo --scenario cloudformation`,
 `sam-doctor demo --scenario api-gateway`, or `sam-doctor demo --scenario esbuild`.
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -62,15 +66,15 @@ diagnostic categories before sharing a log.
 To save a report:
 
 ```bash
-python -m sam_doctor.cli diagnose deployment.log --format markdown --output diagnosis.md
+sam-doctor diagnose deployment.log --format markdown --output diagnosis.md
 ```
 
 The input can also be read from standard input, which is useful for CI steps and
 shell pipelines:
 
 ```bash
-kubectl logs deploy/my-api | python -m sam_doctor.cli diagnose -
-python -m sam_doctor.cli diagnose deployment.log --format json --output diagnosis.json
+kubectl logs deploy/my-api | sam-doctor diagnose -
+sam-doctor diagnose deployment.log --format json --output diagnosis.json
 ```
 
 The terminal format is intended for a quick local check, Markdown is convenient
@@ -81,7 +85,7 @@ input log.
 You can also process multiple files in batch mode:
 
 ```bash
-python -m sam_doctor.cli batch logs/*.log logs/*.txt --format json > batch-results.json
+sam-doctor batch logs/*.log logs/*.txt --format json > batch-results.json
 ```
 
 ## GitHub Actions
@@ -204,7 +208,7 @@ blocking on early warm-up timing.
 
 ## Supported signals
 
-Run `python -m sam_doctor.cli rules` for the current machine-readable catalog. Each rule is
+Run `sam-doctor rules` for the current machine-readable catalog. Each rule is
 triggered by an explicit error signal, not by template inspection or AWS account
 access; the report is still a prompt to verify the cause, not an automatic fix.
 
