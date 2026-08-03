@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Available-blue?logo=github)](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)
-[![PyPI version](https://img.shields.io/pypi/v/sam-doctor.svg)](https://pypi.org/project/sam-doctor/)
+[![GitHub release](https://img.shields.io/github/v/release/jakegold1647/sam-doctor?include_prereleases&label=release)](https://github.com/jakegold1647/sam-doctor/releases)
 
 SAM Doctor is a local, evidence-first command-line tool for turning AWS SAM,
 CloudFormation, IAM, and GitHub Actions deployment failures into a concise
@@ -20,6 +20,8 @@ It does **not** access AWS, upload logs, change resources, or promise an
 authoritative root cause. It detects known patterns in the text you provide,
 redacts common identifiers, and gives safe verification steps and the relevant
 official documentation.
+
+Current release: **v0.7.4 (Marketplace pre-release)**.
 
 ## Current free core
 
@@ -40,28 +42,21 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/vX.Y.Z/sam_doctor-X.Y.Z-py3-none-any.whl
-python -m sam_doctor.cli demo
-python -m sam_doctor.cli demo --scenario cloudformation
-python -m sam_doctor.cli demo --scenario capabilities
-python -m sam_doctor.cli demo --scenario api-gateway
-python -m sam_doctor.cli demo --scenario s3-bucket-conflict
-python -m sam_doctor.cli demo --scenario esbuild
-python -m sam_doctor.cli demo --scenario interactive-changeset
-python -m sam_doctor.cli rules
-python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt --format markdown
-python -m sam_doctor.cli batch "tmp/*.log" tmp/deployment-error.txt
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.4/sam_doctor-0.7.4-py3-none-any.whl
+sam-doctor demo
 ```
 
-This installs the published release directly and does not require Git. The
+This installs v0.7.4 directly and does not require Git. The
 bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@vX.Y.Z"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.4"
 ```
 
-Run `python -m sam_doctor.cli rules --format json` to inspect the exact set of supported
+For more bundled examples, try `sam-doctor demo --scenario cloudformation`,
+`sam-doctor demo --scenario api-gateway`, or `sam-doctor demo --scenario esbuild`.
+Run `sam-doctor rules --format json` to inspect the exact set of supported
 diagnostic categories before sharing a log.
 
 To save a report:
@@ -94,13 +89,23 @@ python -m sam_doctor.cli batch logs/*.log logs/*.txt --format json > batch-resul
 Use the included action when a workflow already saves a deployment log:
 
 ```yaml
-- id: sam-doctor
-  uses: jakegold1647/sam-doctor@vX.Y.Z
+- name: Deploy
+  shell: bash
+  run: |
+    set -o pipefail
+    sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+
+- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0.7.4
   with:
     log-file: deployment.log
     summary: "true"
 ```
 
+Put the diagnostic step after the command that writes the log and keep
+`if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set
 `fail-on-findings: "true"` only when you want a supported diagnostic to fail
 the job. The Markdown job summary is opt-in and contains only matched, redacted
