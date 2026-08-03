@@ -10,7 +10,8 @@ diagnostic report.
 
 **[See the project page](https://jakegold1647.github.io/sam-doctor/)** ·
 **[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** ·
-**[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new/choose)**
+**[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** ·
+**[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)**
 
 It does **not** access AWS, upload logs, change resources, or promise an
 authoritative root cause. It detects known patterns in the text you provide,
@@ -22,7 +23,7 @@ official documentation.
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
   trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
 - IAM `AccessDenied` failures
-- CloudFormation rollback states
+- CloudFormation failed-resource events and rollback states
 - SAM deployment/configuration errors
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports
@@ -31,12 +32,16 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.2.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.3.0"
 sam-doctor demo
+sam-doctor demo --scenario cloudformation
+sam-doctor rules
 sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
 ```
 
 The bundled demo needs no AWS credentials and makes no network calls.
+Run `sam-doctor rules --format json` to inspect the exact set of supported
+diagnostic categories before sharing a log.
 
 To save a report:
 

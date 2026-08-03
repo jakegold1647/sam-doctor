@@ -57,7 +57,7 @@ _RULES = (
     Rule(
         title="GitHub OIDC token audience does not match AWS STS",
         confidence="high",
-        patterns=(r"Incorrect token audience", r"audience.*sts\.amazonaws\.com", r"InvalidIdentityToken"),
+        patterns=(r"Incorrect token audience", r"audience.*sts\.amazonaws\.com"),
         explanation=(
             "AWS rejected the token audience. GitHub Actions OIDC deployments to AWS "
             "normally require the audience to be `sts.amazonaws.com`."
@@ -83,6 +83,21 @@ _RULES = (
             "Apply the smallest permission change that permits the intended deployment action.",
         ),
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
+    ),
+    Rule(
+        title="CloudFormation resource creation or update failed",
+        confidence="high",
+        patterns=(r"\bCREATE_FAILED\b", r"\bUPDATE_FAILED\b"),
+        explanation=(
+            "A CloudFormation resource failed before the stack rollback completed. "
+            "Its status reason is usually the most direct evidence for the root cause."
+        ),
+        verification=(
+            "Identify the failed logical resource ID and preserve its exact status reason.",
+            "Check the underlying service event or API error named in that status reason.",
+            "Fix the resource-level cause before retrying the stack operation.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
     ),
     Rule(
         title="CloudFormation stack entered rollback after an earlier resource failure",
@@ -142,6 +157,12 @@ _RULES = (
 )
 
 _MAX_EVIDENCE_LENGTH = 360
+
+
+def supported_rules() -> tuple[Rule, ...]:
+    """Return the diagnostic rule catalog without exposing mutable internals."""
+
+    return _RULES
 
 
 def _compact_evidence(line: str) -> str:
@@ -284,3 +305,32 @@ def json_report(findings: list[Finding], source_name: str) -> str:
         ],
     }
     return json.dumps(payload, indent=2) + "\n"
+
+
+def rules_report(output_format: str) -> str:
+    """Render the supported-rule catalog for prospective users and CI checks."""
+
+    rules = supported_rules()
+    if output_format == "json":
+        payload = {
+            "rule_count": len(rules),
+            "rules": [
+                {
+                    "title": rule.title,
+                    "confidence": rule.confidence,
+                    "documentation_url": rule.documentation_url,
+                }
+                for rule in rules
+            ],
+        }
+        return json.dumps(payload, indent=2) + "\n"
+
+    lines = [f"SAM Doctor supports {len(rules)} diagnostic rule(s):", ""]
+    for index, rule in enumerate(rules, start=1):
+        lines.extend(
+            [
+                f"{index}. {rule.title} ({rule.confidence} confidence)",
+                f"   Docs: {rule.documentation_url}",
+            ]
+        )
+    return "\n".join(lines) + "\n"

@@ -13,7 +13,7 @@ Before the first public post:
 3. Add the repository topics listed in `PUBLISH.md`.
 4. Upload `site/assets/sam-doctor-social-preview.jpg` in repository settings.
 5. Use the release note in `RELEASE-v0.2.0.md` and verify the pinned install command in a clean shell.
-6. Open one example diagnostic-rule issue from a sanitized synthetic log so visitors see the expected feedback format.
+6. Point visitors to the welcome discussion and the issue forms so feedback has a clear home.
 
 ## Who to help first
 
