@@ -40,3 +40,6 @@ python scripts/check-launch.py \
   --outreach-summary artifacts/outreach-summary.md
 ```
 
+`pypi-publish.yml` already triggers this strict launch-health rerun automatically
+after stable release artifacts are published.
+

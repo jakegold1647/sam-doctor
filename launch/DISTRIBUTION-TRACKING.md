@@ -19,11 +19,15 @@ Automated monitoring:
 
 - This workflow runs every 12 hours on GitHub Actions:
   `.github/workflows/distribution-check.yml`
-- A stable `release` publish event also runs the same workflow automatically, so
-  launch-channel readiness is re-checked when the tag goes live.
+- A stable `release` publish event also runs this workflow automatically for a
+  baseline snapshot.
 - The workflow now runs the full launch check stack (`scripts/check-launch.py`), so
   each run verifies release-readiness, distribution channels, and a fresh
   outreach summary snapshot together.
+- After stable publish and PyPI upload, the `pypi-publish` workflow also triggers
+  a strict `workflow_dispatch` rerun of `distribution-check.yml` with
+  `strict-distribution-during-release=true`, so hard readiness checks happen only
+  after release channels are expected to be live.
 - When run manually, include the `strict-distribution-during-release` workflow
   input after release is fully live so the check fails if PyPI/Marketplace/homepage
   readiness is still not green.
@@ -38,8 +42,8 @@ Automated monitoring:
 - A summary note is emitted as `distribution-summary.md` for quick paste into
   launch notes.
 - Run the scheduled check manually when you want stricter launch-gating:
-- Add `strict-distribution-during-release: true` for non-schedule/manual runs where
-  you want to enforce hard launch-channel readiness checks.
+  - Add `strict-distribution-during-release: true` for non-schedule/manual runs
+    where you want hard launch-channel readiness enforcement.
   - Add `strict-ethical: true` to fail when voluntary outreach feedback is not
     strong enough (default minimum ratio is 100).
   - Customize the ethical minimum with `min-feedback-ratio` (for example, `85`).

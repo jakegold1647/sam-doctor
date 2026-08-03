@@ -184,6 +184,10 @@ python scripts/check-launch.py \
   --outreach-summary artifacts/outreach-summary.md
 ```
 
+On stable releases, the PyPI publish workflow also kicks off a strict `distribution-check.yml`
+run after package upload so the strict gate can be verified post-live without
+blocking on early warm-up timing.
+
 ## Guides
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
