@@ -215,6 +215,11 @@ def _parse_args() -> argparse.Namespace:
         help="Print distribution trend lines.",
     )
     parser.add_argument(
+        "--strict-distribution",
+        action="store_true",
+        help="Fail launch check when distribution channels or launch setup signals are not ready.",
+    )
+    parser.add_argument(
         "--outreach-log",
         default="launch/outreach-log-template.csv",
         help="Outreach log CSV for ethical check.",
@@ -233,6 +238,14 @@ def _parse_args() -> argparse.Namespace:
         "--strict-ethical",
         action="store_true",
         help="Fail if outreach ethical signal is not strong.",
+    )
+    parser.add_argument(
+        "--strict-distribution-during-release",
+        action="store_true",
+        help=(
+            "Apply distribution strict checks after release channels are expected to be "
+            "live (PyPI/sources, Marketplace listing, site/docs readiness)."
+        ),
     )
     parser.add_argument(
         "--min-feedback-ratio",
@@ -260,6 +273,7 @@ def main() -> int:
 
     if not args.skip_distribution:
         token = args.token or None
+        strict_distribution = args.strict_distribution or args.strict_distribution_during_release
         distribution_ok = run_distribution(
             repo_root,
             repo=args.repo,
@@ -269,6 +283,7 @@ def main() -> int:
             append_csv=args.append_csv,
             summary=args.summary,
             print_trend=args.print_trend,
+            strict=strict_distribution,
         )
         if not distribution_ok:
             ok = False
