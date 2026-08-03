@@ -42,12 +42,12 @@ Current release: **v0.7.5**.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install sam-doctor
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.5/sam_doctor-0.7.5-py3-none-any.whl
 sam-doctor demo
 ```
 
-This installs the stable v0.7.5 package from PyPI. The
-bundled demo needs no AWS credentials and makes no network calls. To install
+This installs the stable v0.7.5 wheel directly from GitHub and does not require
+Git. The bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
