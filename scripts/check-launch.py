@@ -130,6 +130,7 @@ def run_outreach(
     allow_no_data: bool = False,
     summary: str = "",
     min_feedback_ratio: float = 100.0,
+    min_organic_growth_score: float = 0.0,
     loader: Callable[[Path], Any] = _load_outreach_module,
 ) -> bool:
     module = loader(repo_root)
@@ -153,7 +154,14 @@ def run_outreach(
     if strict:
         passes_strict = getattr(module, "_passes_strict_ethical_policy", None)
         if callable(passes_strict):
-            strict_ok, strict_reason = passes_strict(outreach_summary, min_feedback_ratio)
+            if min_organic_growth_score:
+                strict_ok, strict_reason = passes_strict(
+                    outreach_summary,
+                    min_feedback_ratio,
+                    min_organic_growth_score,
+                )
+            else:
+                strict_ok, strict_reason = passes_strict(outreach_summary, min_feedback_ratio)
             if not strict_ok and allow_no_data and outreach_summary.get("ethical_signal") == "no_data":
                 strict_ok = True
                 strict_reason = ""
@@ -278,6 +286,12 @@ def _parse_args() -> argparse.Namespace:
         default=100.0,
         help="Strict outreach minimum star feedback ratio when --strict-ethical is used.",
     )
+    parser.add_argument(
+        "--min-organic-growth-score",
+        type=float,
+        default=0.0,
+        help="Optional strict minimum for the organic growth score.",
+    )
     return parser.parse_args()
 
 
@@ -320,6 +334,7 @@ def main() -> int:
             strict=args.strict_ethical,
             summary=args.outreach_summary,
             min_feedback_ratio=args.min_feedback_ratio,
+            min_organic_growth_score=args.min_organic_growth_score,
             allow_no_data=args.allow_no_data_in_strict,
         ):
             ok = False

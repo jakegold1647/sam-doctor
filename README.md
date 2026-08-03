@@ -170,6 +170,10 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
   --strict --min-feedback-ratio 100
 ```
 
+Once the tracker has enough real conversations, add `--min-organic-growth-score 75`
+to gate on a balanced signal from feedback, repeat contacts, and voluntary-star
+coverage. The score is informational unless you set a threshold explicitly.
+
 Use `--allow-no-data` to run the same strict check on an empty tracker while
 you are preparing first-contact conversations.
 

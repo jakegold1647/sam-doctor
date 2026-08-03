@@ -20,6 +20,7 @@ _EMPTY_SUMMARY: dict[str, object] = {
     "voluntary_stars_with_feedback": 0,
     "star_feedback_ratio": 0.0,
     "ethical_signal_strength": 0.0,
+    "organic_growth_score": 0.0,
     "positive_outcome_count": 0,
     "repeat_contacts": 0,
     "stars_without_feedback": 0,
@@ -66,6 +67,30 @@ def _contains_feedback_signal(value: str) -> bool:
             "scheduled",
             "pending",
         )
+    )
+
+
+def _growth_score(
+    voluntary_stars: int,
+    voluntary_stars_with_feedback: int,
+    repeat_contacts: int,
+    row_count: int,
+) -> float:
+    if row_count <= 0:
+        return 0.0
+
+    star_feedback_ratio = (
+        voluntary_stars_with_feedback / voluntary_stars * 100
+        if voluntary_stars
+        else 0.0
+    )
+    repeat_ratio = repeat_contacts / max(voluntary_stars, 1)
+    voluntary_ratio = min(voluntary_stars / row_count, 1.0)
+    return min(
+        100.0,
+        (0.60 * star_feedback_ratio)
+        + (0.25 * repeat_ratio * 100)
+        + (0.15 * voluntary_ratio * 100),
     )
 
 
@@ -154,7 +179,11 @@ def _next_growth_actions(summary: dict[str, object]) -> list[str]:
     return actions[:3]
 
 
-def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio: float) -> tuple[bool, str]:
+def _passes_strict_ethical_policy(
+    summary: dict[str, object],
+    min_feedback_ratio: float,
+    min_organic_growth_score: float = 0.0,
+) -> tuple[bool, str]:
     ethical_signal = summary.get("ethical_signal")
     if ethical_signal == "no_data":
         return (
@@ -175,6 +204,15 @@ def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio
             (
                 f"ethical star feedback ratio is {ratio:.1f}%, below strict threshold "
                 f"{min_feedback_ratio:.1f}%"
+            ),
+        )
+    growth_score = float(summary.get("organic_growth_score", 0.0))
+    if growth_score < min_organic_growth_score:
+        return (
+            False,
+            (
+                f"organic growth score is {growth_score:.1f}, below strict threshold "
+                f"{min_organic_growth_score:.1f}"
             ),
         )
     return True, ""
@@ -222,6 +260,12 @@ def summarize(path: Path) -> dict[str, object]:
         "voluntary_stars_with_feedback": voluntary_stars_with_feedback,
         "star_feedback_ratio": star_feedback_ratio,
         "ethical_signal_strength": min(100.0, star_feedback_ratio),
+        "organic_growth_score": _growth_score(
+            voluntary_stars,
+            voluntary_stars_with_feedback,
+            repeat_contacts,
+            len(rows),
+        ),
         "positive_outcome_count": positive_signals,
         "repeat_contacts": repeat_contacts,
         "stars_without_feedback": stars_without_feedback,
@@ -248,6 +292,7 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}",
         f"- star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%",
         f"- ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%",
+        f"- organic_growth_score: {summary['organic_growth_score']:.1f}",
         f"- feedback_signals: {summary['positive_outcome_count']}",
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
@@ -274,6 +319,7 @@ def _print_summary(summary: dict[str, object]) -> None:
     )
     print(f"star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%")
     print(f"ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%")
+    print(f"organic_growth_score: {summary['organic_growth_score']:.1f}")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
     print(f"feedback_signals: {summary['positive_outcome_count']}")
     print(f"stars_without_feedback: {summary['stars_without_feedback']}")
@@ -313,6 +359,12 @@ def main() -> int:
         help="Strict ethical minimum for supportive follow-up ratio.",
     )
     parser.add_argument(
+        "--min-organic-growth-score",
+        type=float,
+        default=0.0,
+        help="Optional strict minimum for the organic growth score.",
+    )
+    parser.add_argument(
         "--allow-no-data",
         action="store_true",
         help="Allow strict mode to pass when outreach has no rows yet.",
@@ -332,7 +384,11 @@ def main() -> int:
         if args.allow_no_data and summary.get("ethical_signal") == "no_data":
             passed, reason = True, ""
         else:
-            passed, reason = _passes_strict_ethical_policy(summary, args.min_feedback_ratio)
+            passed, reason = _passes_strict_ethical_policy(
+                summary,
+                args.min_feedback_ratio,
+                args.min_organic_growth_score,
+            )
         if not passed:
             print(reason)
             return 1

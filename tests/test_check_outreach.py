@@ -51,6 +51,7 @@ def test_outreach_summary_parses_examples(tmp_path: Path) -> None:
     assert summary["stars_without_feedback"] == 0
     assert summary["ethical_signal"] in {"strong", "mixed", "watch"}
     assert summary["ethical_signal_strength"] == 100.0
+    assert summary["organic_growth_score"] == 90.0
     assert len(summary["top_stages"]) == 3
     assert len(summary["top_problem_areas"]) == 3
     assert isinstance(summary["top_channels"], list)
@@ -113,6 +114,7 @@ def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
     rendered = summary_path.read_text(encoding="utf-8")
     assert rendered.startswith("# SAM Doctor ethical outreach status")
     assert "ethical_signal" in rendered
+    assert "organic_growth_score" in rendered
     assert "recommendation" in rendered
     assert "next_growth_actions" in rendered
 
@@ -213,6 +215,33 @@ def test_outreach_main_strict_passes_when_signal_is_no_data(tmp_path: Path) -> N
             "--allow-no-data",
         ]
         assert module.main() == 0
+    finally:
+        sys.argv = argv_backup
+
+
+def test_outreach_main_strict_can_require_growth_score(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-growth-score.csv"
+    sample.write_text(
+        (
+            "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+            "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+            "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,"
+            "share report,1,accepted helpful report,asked for follow-up,no\n"
+        ),
+        encoding="utf-8",
+    )
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--strict",
+            "--min-organic-growth-score",
+            "80",
+        ]
+        assert module.main() == 1
     finally:
         sys.argv = argv_backup
 

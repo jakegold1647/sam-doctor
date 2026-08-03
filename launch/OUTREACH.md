@@ -18,6 +18,9 @@ Use these messages only for developers with a recent, public AWS deployment prob
 
 - Run `python scripts/check-launch.py --skip-distribution --strict-ethical --min-feedback-ratio 100`
   before asking for founder feedback payments.
+  Once the tracker has enough real rows, add `--min-organic-growth-score 75` to
+  require a balanced signal from feedback, repeat contacts, and voluntary-star
+  coverage as well.
   Add `--allow-no-data-in-strict` only while your tracker is still empty.
 - Record each live tester conversation in `launch/outreach-log-template.csv`.
 - Favor `outcome = accepted helpful report` or `outcome = reported miss` rows.

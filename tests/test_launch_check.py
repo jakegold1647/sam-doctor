@@ -232,6 +232,25 @@ def test_run_outreach_strict_passes_when_feedback_ratio_is_high_enough(tmp_path)
     )
 
 
+def test_run_outreach_strict_fails_when_growth_score_is_low(tmp_path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = _load_script(root)
+    sample = tmp_path / "outreach-low-growth.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,asked for follow-up,no\n",
+        encoding="utf-8",
+    )
+
+    assert not script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+        min_organic_growth_score=80.0,
+    )
+
+
 def test_run_outreach_uses_strict_policy_from_module(tmp_path, monkeypatch) -> None:
     root = Path(__file__).resolve().parents[1]
     script = _load_script(root)
@@ -372,10 +391,13 @@ def test_check_launch_parse_args_includes_strict_no_data_flags(monkeypatch) -> N
             "--allow-no-data-in-strict",
             "--min-feedback-ratio",
             "92.5",
+            "--min-organic-growth-score",
+            "80",
         ]
         args = script._parse_args()
         assert args.strict_ethical is True
         assert args.allow_no_data_in_strict is True
         assert args.min_feedback_ratio == 92.5
+        assert args.min_organic_growth_score == 80.0
     finally:
         sys.argv = previous_argv
