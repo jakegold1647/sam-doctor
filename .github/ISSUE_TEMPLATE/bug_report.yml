@@ -13,7 +13,7 @@ body:
     attributes:
       label: SAM Doctor version
       description: Run `sam-doctor --version`.
-      placeholder: sam-doctor 0.2.0
+      placeholder: sam-doctor 0.x.y
     validations:
       required: true
   - type: dropdown
