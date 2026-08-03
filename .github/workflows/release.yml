@@ -45,7 +45,9 @@ jobs:
           fi
 
           if [[ "$TAG" != *-* ]]; then
+            # Dispatch from the default branch so the current workflow definition
+            # is available even when this tag predates workflow_dispatch support.
             gh workflow run pypi-publish.yml \
-              --ref "$TAG" \
+              --ref main \
               -f release-tag="$TAG"
           fi

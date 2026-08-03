@@ -28,6 +28,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # A manual recovery is dispatched from main, but must build the
+          # release tag supplied by the operator rather than current main.
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.event.release.tag_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -41,7 +45,7 @@ jobs:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.event.release.tag_name }}
         run: |
           gh workflow run distribution-check.yml \
-            --ref "$RELEASE_TAG" \
+            --ref main \
             -f release-tag="$RELEASE_TAG" \
             -f strict-distribution-during-release=true \
             -f strict-ethical=false \

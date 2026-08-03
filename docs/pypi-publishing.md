@@ -32,11 +32,15 @@ than attempting to take it over.
 
 The release workflow explicitly dispatches `pypi-publish.yml` for stable tags
 because releases created with the repository `GITHUB_TOKEN` do not fan out a
-second workflow from the `release` event. To retry a stable publication, run
-the PyPI workflow manually and provide the same `release-tag` value. In the
-GitHub UI, open **Actions → Publish to PyPI → Run workflow**, choose the stable
-release tag as the workflow ref, and enter that same tag (for example,
-`v0.7.5`) in `release-tag`.
+second workflow from the `release` event. Both that dispatch and the strict
+post-publish health check run from `main`, where the current workflow definition
+is available. The publisher then checks out the requested release tag before
+building, so the package contents stay tied to the release being recovered.
+
+To retry a stable publication, run the PyPI workflow manually and provide the
+same `release-tag` value. In the GitHub UI, open **Actions → Publish to PyPI →
+Run workflow**, choose `main` as the workflow ref, and enter the stable release
+tag (for example, `v0.7.5`) in `release-tag`.
 
 The workflow uses PyPI Trusted Publishing with a short-lived GitHub Actions OIDC
 token. It does not require a long-lived PyPI API token in repository secrets.
