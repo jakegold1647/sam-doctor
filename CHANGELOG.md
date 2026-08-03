@@ -14,6 +14,8 @@ All notable changes to SAM Doctor are documented here.
   docs to match release-tag behavior.
 - Added a lightweight outreach tracking template to support the ethical,
   conversation-first growth loop.
+- Added an opt-in organic-growth score to outreach summaries and strict launch
+  checks, with a backward-compatible default for existing gates.
 - Added Marketplace and PyPI badges to the README launch header.
 - Added regression tests for the distribution checker trend helpers and output text.
 - Added a release-readiness checker script and integrated it into launch docs and
