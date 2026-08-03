@@ -20,6 +20,9 @@ For a quick machine-check before tag push, run:
 
 ```powershell
 python scripts/check-launch.py --skip-outreach
+python scripts/check-launch.py --skip-distribution \
+  --outreach-log launch/outreach-log-template.csv \
+  --outreach-summary artifacts/outreach-summary.md
 ```
 
 ## 2. Publish the public tool
@@ -62,3 +65,8 @@ to confirm star growth, GitHub activity, and channel visibility remain on track.
 
 Three $39 founder purchases from people who are not friends or family. Record the buyer type, problem, acquisition channel, and feedback without storing their logs or credentials.
 
+Use `--outreach-log` to point to your tracked outreach file:
+
+```powershell
+python scripts/check-launch.py --skip-distribution --outreach-log launch/outreach-log-template.csv --outreach-summary artifacts/outreach-summary.md
+```

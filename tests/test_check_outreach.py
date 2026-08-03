@@ -75,3 +75,38 @@ def test_outreach_highlights_stars_without_feedback(tmp_path: Path) -> None:
     assert summary["voluntary_stars"] == 1
     assert summary["stars_without_feedback"] == 1
     assert summary["ethical_signal"] == "mixed"
+
+
+def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-log.csv"
+    sample.write_text(
+        (
+            "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+            "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+            "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,"
+            "share diagnostic report,1,accepted helpful report,asked for follow-up,no\n"
+            "2026-W31,2026-08-02,LinkedIn,CloudFormation,feedback requested,"
+            "send summary,0,declined,no follow-up signal,no\n"
+            "2026-W31,2026-08-03,Slack,API Gateway,waiting for reply,"
+            "send safe steps,0,scheduled follow-up,pending,yes\n"
+        ),
+        encoding="utf-8",
+    )
+    summary_path = tmp_path / "artifacts" / "outreach-summary.md"
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--summary",
+            str(summary_path),
+        ]
+        assert module.main() == 0
+    finally:
+        sys.argv = argv_backup
+
+    assert summary_path.exists()
+    assert summary_path.read_text(encoding="utf-8").startswith("# SAM Doctor ethical outreach status")
+    assert "ethical_signal" in summary_path.read_text(encoding="utf-8")

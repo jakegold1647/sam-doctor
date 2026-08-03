@@ -22,7 +22,8 @@ If people like the report but will not install a CLI, package the findings as a 
 If you are tracking outreach in `launch/outreach-log-template.csv`, run:
 
 ```bash
-python scripts/check-outreach.py launch/outreach-log-template.csv
+python scripts/check-outreach.py launch/outreach-log-template.csv \
+  --summary artifacts/outreach-summary.md
 ```
 
 This prints a lightweight, non-sensitive summary to guide your next 7-day

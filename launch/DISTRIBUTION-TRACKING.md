@@ -26,9 +26,11 @@ Automated monitoring:
   local and spreadsheet analysis.
 - A summary note is also emitted as `distribution-summary.md` for quick paste into
   launch notes.
-- Run `python scripts/check-outreach.py launch/outreach-log-template.csv` weekly and
-  review `ethical_signal`; treat `"mixed"` as "helpful star happened without
-  follow-up context" and follow up for context before considering that signal.
+- Run:
+  `python scripts/check-outreach.py launch/outreach-log-template.csv --summary outreach-summary.md`
+  weekly and review `ethical_signal`; treat `"mixed"` as "helpful star happened
+  without follow-up context" and follow up for context before considering that
+  signal.
 
 ## What to watch
 

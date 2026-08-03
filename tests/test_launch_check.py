@@ -91,3 +91,45 @@ def test_launch_check_distribution_isolation_no_network(tmp_path, monkeypatch) -
         loader=loader,
     )
     assert calls["repo"] == "jakegold1647/custom-repo"
+
+
+def test_run_outreach_writes_summary_when_log_missing(tmp_path, monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+
+    class FakeOutreachModule:
+        def __init__(self) -> None:
+            self.summary_written = ""
+
+        def empty_summary(self):
+            return {
+                "rows": 0,
+                "voluntary_stars": 0,
+                "positive_outcome_count": 0,
+                "repeat_contacts": 0,
+                "stars_without_feedback": 0,
+                "top_channels": [],
+                "top_outcomes": [],
+                "top_problem_areas": [],
+                "top_stages": [],
+                "ethical_signal": "no_data",
+            }
+
+        def _write_summary(self, summary, path):
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text(
+                f"ethical_signal: {summary['ethical_signal']}\n",
+                encoding="utf-8",
+            )
+            self.summary_written = path
+
+    fake_module = FakeOutreachModule()
+
+    assert script.run_outreach(
+        tmp_path,
+        str(tmp_path / "missing.csv"),
+        strict=False,
+        summary=str(tmp_path / "artifacts" / "outreach-summary.md"),
+        loader=lambda _path: fake_module,
+    )
+    assert fake_module.summary_written != ""
+    assert Path(fake_module.summary_written).exists()
