@@ -30,6 +30,8 @@ All notable changes to SAM Doctor are documented here.
   uncontextualized voluntary stars and keep outreach loops ethical.
 - Added a new `batch` CLI subcommand to diagnose multiple deployment logs in one
   run and aggregate findings for local triage.
+- Added launch-readiness validation of marketplace action metadata so pre-release
+  checks catch listing blockers before manual publication.
 - Improved batch output to preserve full source paths for duplicate filenames
   (especially from similarly-named directories) and to include per-file markdown
   section labels.
