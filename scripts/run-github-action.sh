@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -38,31 +38,30 @@ if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "true" && "$SAM_DOCTOR_FAIL_ON_FINDINGS"
 fi
 
 STEP_SUMMARY_CREATED=0
-
-report_path="$(mktemp)"
 if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then
   GITHUB_STEP_SUMMARY="$(mktemp)"
   STEP_SUMMARY_CREATED=1
 fi
 
+report_path="$(mktemp)"
 trap '
   rm -f "$report_path"
-  if [ "${STEP_SUMMARY_CREATED}" = "1" ]; then
+  if [ "$STEP_SUMMARY_CREATED" = "1" ]; then
     rm -f "$GITHUB_STEP_SUMMARY"
   fi
 ' EXIT
 
-if ! "$PYTHON_BIN" -m sam_doctor.cli --help >/dev/null 2>&1; then
+if ! "$PYTHON_BIN" -c "import sam_doctor.cli" >/dev/null 2>&1; then
   echo "Could not import local action package from ${GITHUB_ACTION_PATH}. Installing fallback." >&2
-  if ! "$PYTHON_BIN" -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"; then
-    "$PYTHON_BIN" -m pip install --disable-pip-version-check --break-system-packages "$GITHUB_ACTION_PATH" || \
+  if ! "$PYTHON_BIN" -m pip install --disable-pip-version-check -e "$GITHUB_ACTION_PATH"; then
+    "$PYTHON_BIN" -m pip install --disable-pip-version-check --break-system-packages -e "$GITHUB_ACTION_PATH" || \
       exit 2
   fi
 fi
 
 "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
-finding_count="$("$PYTHON_BIN" - "$report_path" <<'PY'
+finding_count="$($PYTHON_BIN - "$report_path" <<'PY'
 import json
 import sys
 
