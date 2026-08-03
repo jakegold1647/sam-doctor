@@ -239,7 +239,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--token",
-        default="",
+        default=os.environ.get("GITHUB_TOKEN", ""),
         help="GitHub API token for remote launch metadata checks.",
     )
     args = parser.parse_args()
