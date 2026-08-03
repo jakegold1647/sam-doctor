@@ -1,0 +1,44 @@
+name: Incorrect or missing diagnosis
+description: Report a false positive, missed failure, or unclear report.
+title: "diagnostic: "
+labels: ["diagnostic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not post raw logs, AWS account IDs, ARNs, access keys, session tokens,
+        customer data, or private repository names. Use a short, sanitized excerpt.
+  - type: input
+    id: version
+    attributes:
+      label: SAM Doctor version
+      description: Run `sam-doctor --version`.
+      placeholder: sam-doctor 0.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What went wrong?
+      options:
+        - A failure was missed
+        - A successful or unrelated line was diagnosed
+        - The report was unclear or unsafe
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: excerpt
+    attributes:
+      label: Sanitized error excerpt
+      description: Include only the minimum lines around the first relevant error.
+      placeholder: "Error: Failed to create changeset ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What safe next check or diagnostic outcome did you expect?
+    validations:
+      required: true

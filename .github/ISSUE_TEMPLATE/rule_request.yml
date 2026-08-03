@@ -1,0 +1,31 @@
+name: Request a diagnostic rule
+description: Suggest a failure pattern SAM Doctor should support.
+title: "rule: "
+labels: ["rule request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not post raw logs, AWS account IDs, ARNs, access keys, session tokens,
+        customer data, or private repository names. A short, sanitized error is enough.
+  - type: input
+    id: service
+    attributes:
+      label: AWS or CI service
+      placeholder: CloudFormation, IAM, API Gateway, GitHub Actions, or AWS SAM
+    validations:
+      required: true
+  - type: textarea
+    id: excerpt
+    attributes:
+      label: Sanitized error excerpt
+      description: Include the first useful error, not an entire log.
+    validations:
+      required: true
+  - type: textarea
+    id: next_check
+    attributes:
+      label: Useful next check
+      description: What should a safe, evidence-based report ask a developer to verify?
+    validations:
+      required: true
