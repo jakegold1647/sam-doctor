@@ -262,6 +262,38 @@ def _ensure_parent_directory(path: str) -> None:
         os.makedirs(parent, exist_ok=True)
 
 
+def _strict_distribution_violations(snapshot: dict[str, object]) -> list[str]:
+    """Return high-signal launch violations for pre-publish validation."""
+
+    violations: list[str] = []
+    pypi_status = snapshot.get("pypi_status")
+    marketplace_status = snapshot.get("marketplace_status")
+    site_status = snapshot.get("site_status")
+    launch_readiness = snapshot.get("launch_readiness", {})
+
+    if not isinstance(pypi_status, dict) or not pypi_status.get("ok", False):
+        violations.append("PyPI download channel is not reachable")
+    if not isinstance(marketplace_status, dict) or not marketplace_status.get("ok", False):
+        violations.append("GitHub Marketplace listing is not reachable")
+    if not isinstance(site_status, dict) or not site_status.get("ok", False):
+        violations.append("Project website is not reachable")
+    if not isinstance(launch_readiness, dict) or not launch_readiness.get("homepage_ok", False):
+        violations.append("Repository homepage is missing or not set to the public site URL")
+    if not isinstance(launch_readiness, dict) or not launch_readiness.get("topics_ok", False):
+        missing_topics = launch_readiness.get("missing_topics")
+        topics_text = (
+            ", ".join(missing_topics)
+            if isinstance(missing_topics, list) and missing_topics
+            else "topics not configured as expected"
+        )
+        violations.append(f"Required repository topics are missing: {topics_text}")
+
+    if isinstance(marketplace_status, dict) and marketplace_status.get("pre_release_listed"):
+        violations.append("Marketplace listing is still marked as latest pre-release")
+
+    return violations
+
+
 def _to_int(value: object, default: int = 0) -> int:
     try:
         return int(value)
@@ -415,6 +447,11 @@ def main() -> int:
         default="",
         help="Write launch summary markdown to this file",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail when launch-critical signals indicate pre-publish issues",
+    )
     args = parser.parse_args()
 
     repo = args.repo
@@ -444,6 +481,13 @@ def main() -> int:
         _append_csv(snapshot, args.append_csv)
     if args.print_trend:
         _print_trend(snapshot, previous_row)
+    if args.strict:
+        violations = _strict_distribution_violations(snapshot)
+        if violations:
+            print("strict launch health: FAIL")
+            for violation in violations:
+                print(f"- {violation}")
+            return 1
     if args.output_format == "json":
         return 0
 
