@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from html import escape
+import json
 import re
 
 from .redaction import redact
@@ -130,13 +131,25 @@ _RULES = (
     ),
 )
 
+_MAX_EVIDENCE_LENGTH = 360
+
+
+def _compact_evidence(line: str) -> str:
+    """Normalize a log line and keep reports readable for noisy CI output."""
+
+    line = " ".join(line.split())
+    if len(line) <= _MAX_EVIDENCE_LENGTH:
+        return line
+    half = (_MAX_EVIDENCE_LENGTH - 9) // 2
+    return f"{line[:half]} ... {line[-half:]}"
+
 
 def _matching_evidence(
     text: str, patterns: tuple[str, ...], excluded_patterns: tuple[str, ...] = ()
 ) -> tuple[str, ...]:
     lines = text.splitlines()
     matches = [
-        line.strip()
+        _compact_evidence(line.strip())
         for line in lines
         if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns)
         and not any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns)
@@ -240,3 +253,24 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
             ]
         )
     return "\n".join(blocks)
+
+
+def json_report(findings: list[Finding], source_name: str) -> str:
+    """Render a stable, redacted report for scripts and CI annotations."""
+
+    payload = {
+        "source": source_name,
+        "finding_count": len(findings),
+        "findings": [
+            {
+                "title": finding.title,
+                "confidence": finding.confidence,
+                "explanation": finding.explanation,
+                "evidence": list(finding.evidence),
+                "verification": list(finding.verification),
+                "documentation_url": finding.documentation_url,
+            }
+            for finding in findings
+        ],
+    }
+    return json.dumps(payload, indent=2) + "\n"
