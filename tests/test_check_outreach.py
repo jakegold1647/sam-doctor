@@ -48,5 +48,30 @@ def test_outreach_summary_parses_examples(tmp_path: Path) -> None:
     assert summary["rows"] == 3
     assert summary["voluntary_stars"] == 1
     assert summary["repeat_contacts"] == 1
+    assert summary["stars_without_feedback"] == 0
+    assert summary["ethical_signal"] in {"strong", "mixed", "watch"}
+    assert len(summary["top_stages"]) == 3
+    assert len(summary["top_problem_areas"]) == 3
     assert isinstance(summary["top_channels"], list)
     assert summary["top_outcomes"][0][0] in {"accepted helpful report", "declined", "scheduled follow-up"}
+
+
+def test_outreach_highlights_stars_without_feedback(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-echo.csv"
+    sample.write_text(
+        (
+            "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+            "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+            "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,"
+            "share report,1,accepted helpful report,,no\n"
+            "2026-W31,2026-08-02,LinkedIn,CloudFormation,feedback requested,"
+            "send summary,0,declined,asked for follow-up check,no\n"
+        ),
+        encoding="utf-8",
+    )
+
+    summary = module.summarize(sample)
+    assert summary["voluntary_stars"] == 1
+    assert summary["stars_without_feedback"] == 1
+    assert summary["ethical_signal"] == "mixed"

@@ -26,11 +26,16 @@ Automated monitoring:
   local and spreadsheet analysis.
 - A summary note is also emitted as `distribution-summary.md` for quick paste into
   launch notes.
+- Run `python scripts/check-outreach.py launch/outreach-log-template.csv` weekly and
+  review `ethical_signal`; treat `"mixed"` as "helpful star happened without
+  follow-up context" and follow up for context before considering that signal.
 
 ## What to watch
 
 - `repo_stars` should reflect voluntary follow-ups only.
 - `discussions` and issues should trend with practical failures, not broad requests.
+- `ethical_signal` from outreach should trend with problem-first follow-up, not
+  gratitude-only stars.
 - `release` count and versioned artifact publishing should keep pace.
 - Pages, Marketplace, and PyPI reachability should stay green.
 - Avoid any request to buy stars; ask people to share only if they found useful output.
