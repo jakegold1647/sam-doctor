@@ -37,8 +37,9 @@ _RULES = (
         title="GitHub Actions cannot assume the configured AWS role through OIDC",
         confidence="high",
         patterns=(
-            r"AssumeRoleWithWebIdentity",
             r"Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+            r"(?:failed|error|denied|unable).{0,80}AssumeRoleWithWebIdentity",
+            r"AssumeRoleWithWebIdentity.{0,80}(?:failed|error|denied|not authorized)",
         ),
         explanation=(
             "The workflow reached AWS STS but the role trust relationship did not "
@@ -101,7 +102,12 @@ _RULES = (
     Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
-        patterns=(r"sam deploy", r"Unable to locate credentials", r"Parameter.*must have values", r"Error: Failed to create changeset"),
+        patterns=(
+            r"Unable to locate credentials",
+            r"Parameter.*must have values",
+            r"Error: Failed to create changeset",
+            r"sam deploy.{0,80}(?:failed|error|unable)",
+        ),
         explanation=(
             "The deployment failed before or while CloudFormation created a change set. "
             "Confirm the selected SAM configuration environment, AWS identity, required "
@@ -117,14 +123,18 @@ _RULES = (
     Rule(
         title="API Gateway CORS preflight configuration conflicts with an existing OPTIONS method",
         confidence="medium",
-        patterns=(r"duplicate.*OPTIONS", r"CORS", r"preflight"),
+        patterns=(
+            r"duplicate.*OPTIONS",
+            r"OPTIONS.*(?:already exists|duplicate)",
+            r"(?:CORS|preflight).{0,80}(?:conflict|error|failed|duplicate|overlap)",
+        ),
         explanation=(
             "SAM can generate CORS preflight handling. Defining an overlapping OPTIONS "
             "method or mixing manual and generated CORS configuration can create a conflict."
         ),
         verification=(
             "Check whether the API definition already declares an `OPTIONS` method for the affected path.",
-            "Use either SAM-managed CORS or a fully manual preflight implementation for that route—not both.",
+            "Use either SAM-managed CORS or a fully manual preflight implementation for that route, not both.",
             "Verify the generated API definition before redeploying.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html#sam-api-cors",

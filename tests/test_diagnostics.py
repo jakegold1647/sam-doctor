@@ -27,6 +27,35 @@ def test_unknown_log_has_no_finding() -> None:
     assert diagnose("Everything completed successfully.") == []
 
 
+@pytest.mark.parametrize(
+    ("log_line", "title_fragment"),
+    (
+        ("InvalidIdentityToken: Incorrect token audience", "token audience"),
+        ("AccessDeniedException: action is not authorized", "AWS denied"),
+        ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
+        ("Error: Failed to create changeset", "SAM deployment"),
+        ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
+    ),
+)
+def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:
+    findings = diagnose(log_line)
+
+    assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
+
+
+@pytest.mark.parametrize(
+    "log_line",
+    (
+        "sam deploy completed successfully",
+        "AssumeRoleWithWebIdentity succeeded",
+        "Configured CORS for the API",
+        "The preflight request returned 204",
+    ),
+)
+def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
+    assert diagnose(log_line) == []
+
+
 def test_packaged_demo_is_available() -> None:
     assert "AssumeRoleWithWebIdentity" in _read_demo()
 
