@@ -112,6 +112,48 @@ def _ethical_recommendation(summary: dict[str, object]) -> str:
     )
 
 
+def _next_growth_actions(summary: dict[str, object]) -> list[str]:
+    ethical_signal = summary.get("ethical_signal")
+    stars = int(summary.get("voluntary_stars", 0))
+    stars_without_feedback = int(summary.get("stars_without_feedback", 0))
+    repeat_contacts = int(summary.get("repeat_contacts", 0))
+    ratio = float(summary.get("star_feedback_ratio", 0.0))
+    rows = int(summary.get("rows", 0))
+
+    actions = []
+
+    if rows == 0:
+        actions.append("Seed the outreach tracker with a single targeted manual conversation and capture the first source link.")
+        actions.append("Prioritize one short conversation to recover baseline ethical signal.")
+        return actions
+
+    if ethical_signal == "watch":
+        actions.append("Collect at least 1 voluntary star before any founder-outreach ask.")
+        actions.append("Run one focused follow-up per non-voluntary contact and record outcomes.")
+    elif ethical_signal == "mixed":
+        if stars_without_feedback:
+            actions.append(
+                "Follow up with each volunteer whose feedback signal is missing before re-contacting them."
+            )
+        else:
+            actions.append("Focus on moving mixed outcomes toward explicit follow-up signals (asked / pending / scheduled).")
+    elif ethical_signal == "strong":
+        actions.append("Keep sending updates to the same cohort and test one new channel per week (GitHub Issue, LinkedIn, or Slack).")
+
+    if ratio < 100 and stars > 0:
+        actions.append(
+            "Add one consented follow-up prompt to every voluntary star contact until ratio reaches 100%."
+        )
+
+    if repeat_contacts == 0 and stars > 0:
+        actions.append("Aim for one respectful repeat contact with an existing user who accepted follow-up.")
+
+    if not actions:
+        actions.append("Continue one conservative outreach thread at a time and review next results manually.")
+
+    return actions[:3]
+
+
 def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio: float) -> tuple[bool, str]:
     if summary.get("ethical_signal") != "strong":
         return (
@@ -209,6 +251,10 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
     lines.extend(_format_top_list("top_outcomes", summary.get("top_outcomes")))
     lines.extend(_format_top_list("top_problem_areas", summary.get("top_problem_areas")))
     lines.extend(_format_top_list("top_stages", summary.get("top_stages")))
+    lines.append("")
+    lines.append("## next_growth_actions")
+    for action in _next_growth_actions(summary):
+        lines.append(f"- {action}")
     with open(path, "w", encoding="utf-8") as stream:
         stream.write("\n".join(lines) + "\n")
 
@@ -230,6 +276,9 @@ def _print_summary(summary: dict[str, object]) -> None:
     print(f"top_outcomes: {summary['top_outcomes']}")
     print(f"top_problem_areas: {summary['top_problem_areas']}")
     print(f"top_stages: {summary['top_stages']}")
+    print("next_growth_actions:")
+    for action in _next_growth_actions(summary):
+        print(f"- {action}")
 
 
 def main() -> int:
