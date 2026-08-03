@@ -19,8 +19,9 @@ Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 ## 2. Publish the public alpha
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
-2. Create a GitHub release from the matching version tag with the corresponding
-   `launch/RELEASE-vX.Y.Z.md` release notes.
+2. Push the matching `vX.Y.Z` tag. The `Publish release` workflow builds the
+   wheel and source archive, then creates a prerelease using the corresponding
+   `launch/RELEASE-vX.Y.Z.md` notes when present.
 3. Confirm GitHub Pages serves the current `site/` directory.
 4. In repository Settings, set the homepage to the GitHub Pages URL and add these topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`, `serverless`, `python`, `cli`.
 5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social preview image.
