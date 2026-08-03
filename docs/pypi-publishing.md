@@ -1,8 +1,8 @@
-# Publishing a stable release to PyPI
+# Publishing SAM Doctor to PyPI
 
-SAM Doctor's normal GitHub releases are prereleases and deliberately do not
-upload to PyPI. The repository includes a separate, least-privilege publishing
-workflow for a future stable release.
+SAM Doctor's release workflow publishes a normal release for plain version tags and
+publishes prereleases for tags with pre-release suffixes. PyPI publishes on the
+`release` GitHub event only when the release is not marked as a prerelease.
 
 ## One-time owner setup
 
@@ -21,7 +21,7 @@ The pending publisher does not reserve the package name. If another account
 registers `sam-doctor` first, stop and choose a different package name rather
 than attempting to take it over.
 
-## Publishing a stable version
+## Publishing a release
 
 1. Update the package version, changelog, and user-facing install links.
 2. Run the full test suite and build locally.

@@ -22,15 +22,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
+
           if [[ "$TAG" == *-* ]]; then
-            release_flags="--prerelease"
+            release_flags=(--prerelease)
           else
-            release_flags=""
+            release_flags=()
           fi
 
           notes_file="launch/RELEASE-${TAG}.md"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists; skipping publish step."
+            exit 0
+          fi
+
           if [ -f "$notes_file" ]; then
-            gh release create "$TAG" dist/* $release_flags --title "SAM Doctor ${TAG}" --notes-file "$notes_file"
+            gh release create "$TAG" dist/* "${release_flags[@]}" --title "SAM Doctor ${TAG}" --notes-file "$notes_file"
           else
-            gh release create "$TAG" dist/* $release_flags --title "SAM Doctor ${TAG}" --generate-notes
+            gh release create "$TAG" dist/* "${release_flags[@]}" --title "SAM Doctor ${TAG}" --generate-notes
           fi
