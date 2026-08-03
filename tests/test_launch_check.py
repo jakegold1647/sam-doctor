@@ -320,6 +320,45 @@ def test_check_launch_strict_distribution_during_release_forces_distribution_str
     assert strict_values == [True]
 
 
+def test_check_launch_passes_strict_ethical_flags_to_outreach(monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    monkeypatch.setattr(script, "run_launch_readiness", lambda *_args, **_kwargs: (True, 6, 0))
+    monkeypatch.setattr(script, "run_distribution", lambda *_args, **_kwargs: True)
+    observed = {"strict": None, "ratio": None}
+
+    def fake_outreach(
+        _repo_root: Path,
+        _outreach_log: str,
+        *,
+        strict: bool,
+        min_feedback_ratio: float,
+        **_kwargs: object,
+    ) -> bool:
+        observed["strict"] = strict
+        observed["ratio"] = min_feedback_ratio
+        return True
+
+    monkeypatch.setattr(script, "run_outreach", fake_outreach)
+
+    previous_argv = sys.argv
+    try:
+        sys.argv = [
+            "check-launch.py",
+            "--repo-root",
+            str(Path(__file__).resolve().parents[1]),
+            "--skip-distribution",
+            "--strict-ethical",
+            "--min-feedback-ratio",
+            "93.5",
+        ]
+        assert script.main() == 0
+    finally:
+        sys.argv = previous_argv
+
+    assert observed["strict"] is True
+    assert observed["ratio"] == 93.5
+
+
 def test_check_launch_parse_args_defaults_github_token(monkeypatch) -> None:
     script = _load_script(Path(__file__).resolve().parents[1])
 
