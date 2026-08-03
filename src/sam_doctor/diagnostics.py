@@ -70,6 +70,25 @@ _RULES = (
         documentation_url="https://github.com/aws-actions/configure-aws-credentials#oidc-configuration",
     ),
     Rule(
+        title="The target AWS account is missing the GitHub Actions OIDC provider",
+        confidence="high",
+        patterns=(
+            r"No OpenIDConnect provider found in your account",
+            r"OpenIDConnect provider.*token\.actions\.githubusercontent\.com.*not found",
+        ),
+        explanation=(
+            "AWS could not find the GitHub Actions OIDC identity provider in the account "
+            "where the role is configured. A valid workflow token cannot assume the role "
+            "until that provider and the role's federated principal agree."
+        ),
+        verification=(
+            "Confirm the deployment is targeting the intended AWS account and role ARN.",
+            "Verify that the account has an IAM OIDC provider for `token.actions.githubusercontent.com`.",
+            "Check that the role trust policy names that provider ARN as its federated principal.",
+        ),
+        documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
+    ),
+    Rule(
         title="AWS denied an API action required by the deployment",
         confidence="medium",
         patterns=(r"AccessDenied(?:Exception)?", r"is not authorized to perform:"),
