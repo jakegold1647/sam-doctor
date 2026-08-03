@@ -17,6 +17,8 @@ from typing import Iterable, Mapping, Sequence, Tuple
 _EMPTY_SUMMARY: dict[str, object] = {
     "rows": 0,
     "voluntary_stars": 0,
+    "voluntary_stars_with_feedback": 0,
+    "star_feedback_ratio": 0.0,
     "positive_outcome_count": 0,
     "repeat_contacts": 0,
     "stars_without_feedback": 0,
@@ -104,6 +106,12 @@ def summarize(path: Path) -> dict[str, object]:
         return empty_summary()
 
     voluntary_stars = sum(_to_bool(row.get("voluntary_star", "")) for row in rows)
+    voluntary_stars_with_feedback = sum(
+        1
+        for row in rows
+        if _to_bool(row.get("voluntary_star", ""))
+        and _contains_feedback_signal(row.get("feedback_signal", ""))
+    )
     repeat_contacts = sum(_to_bool(row.get("repeat_contact", "")) for row in rows)
     positive_signals = sum(
         1 for row in rows if "asked" in _normalize_text(row.get("feedback_signal", "")).lower()
@@ -122,6 +130,12 @@ def summarize(path: Path) -> dict[str, object]:
     return {
         "rows": len(rows),
         "voluntary_stars": voluntary_stars,
+        "voluntary_stars_with_feedback": voluntary_stars_with_feedback,
+        "star_feedback_ratio": (
+            (voluntary_stars_with_feedback / voluntary_stars * 100)
+            if voluntary_stars
+            else 0.0
+        ),
         "positive_outcome_count": positive_signals,
         "repeat_contacts": repeat_contacts,
         "stars_without_feedback": stars_without_feedback,
@@ -145,6 +159,8 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         "# SAM Doctor ethical outreach status",
         f"- rows: {summary['rows']}",
         f"- voluntary_stars: {summary['voluntary_stars']}",
+        f"- voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}",
+        f"- star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%",
         f"- feedback_signals: {summary['positive_outcome_count']}",
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
@@ -161,6 +177,10 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
 def _print_summary(summary: dict[str, object]) -> None:
     print(f"outreach rows: {summary['rows']}")
     print(f"voluntary_stars: {summary['voluntary_stars']}")
+    print(
+        f"voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}"
+    )
+    print(f"star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
     print(f"feedback_signals: {summary['positive_outcome_count']}")
     print(f"stars_without_feedback: {summary['stars_without_feedback']}")
