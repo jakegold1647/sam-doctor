@@ -327,3 +327,19 @@ def test_batch_command_preserves_path_for_duplicate_filenames(
     output = capsys.readouterr().out
     assert str(first_file) in output
     assert str(second_file) in output
+
+
+def test_batch_markdown_output_includes_file_sections(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    first_file = tmp_path / "first.log"
+    second_file = tmp_path / "second.log"
+    first_file.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    second_file.write_text("AccessDeniedException: action is not authorized", encoding="utf-8")
+
+    assert main(["batch", str(first_file), str(second_file), "--format", "markdown"]) == 0
+
+    output = capsys.readouterr().out
+    assert "## Source:" in output
+    assert str(first_file) in output
+    assert str(second_file) in output
