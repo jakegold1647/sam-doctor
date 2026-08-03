@@ -8,11 +8,11 @@ report, and make starring the repository an easy voluntary way to follow it.
 
 Before the first public post:
 
-1. Confirm the `v0.2.0` release exists and the GitHub Actions matrix is green.
+1. Confirm the current prerelease exists and the GitHub Actions matrix is green.
 2. Set the repository homepage to the GitHub Pages site.
 3. Add the repository topics listed in `PUBLISH.md`.
 4. Upload `site/assets/sam-doctor-social-preview.jpg` in repository settings.
-5. Use the release note in `RELEASE-v0.2.0.md` and verify the pinned install command in a clean shell.
+5. Use the current release note and verify the pinned install command in a clean shell.
 6. Point visitors to the welcome discussion and the issue forms so feedback has a clear home.
 
 ## Who to help first
@@ -33,7 +33,7 @@ link to the free alpha only when it is relevant.
 
 | Day | Action | Success signal |
 | --- | --- | --- |
-| 0 | Publish v0.2.0 and run the launch-bar checklist. | A stranger can install, demo, and file feedback without asking a question. |
+| 0 | Publish the current prerelease and run the launch-bar checklist. | A stranger can install, demo, and file feedback without asking a question. |
 | 1 | Post a concise launch note on your own GitHub, LinkedIn, X, or personal network. | 5 qualified clicks or replies. |
 | 2-4 | Have 10 one-to-one problem conversations using the interview note in `OUTREACH.md`. | 3 people try it on a sanitized real failure. |
 | 5 | Publish a short problem-first write-up: "Why an OIDC deploy failed even though the workflow looked right." Include one synthetic before/after report. | 1 saved/shared post or substantive reply. |

@@ -28,6 +28,7 @@
       <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
       <nav>
         <a href="#install">Install</a>
+        <a href="#ci">Use in CI</a>
         <a href="#workflow">How it works</a>
         <a href="#founder">Feedback</a>
         <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
@@ -75,6 +76,22 @@
         <p class="muted">
           Next: verify <code>id-token: write</code>, the OIDC audience, and the trust policy subject condition.
         </p>
+      </section>
+
+      <section id="ci" class="integration" aria-labelledby="ci-title">
+        <p class="eyebrow">GITHUB ACTIONS</p>
+        <h2 id="ci-title">Keep the diagnostic close to the failed workflow.</h2>
+        <pre><code>- id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0.7.0
+  with:
+    log-file: deployment.log
+    summary: "true"</code></pre>
+        <p>
+          The action exposes <code>finding-count</code> and <code>has-findings</code>
+          outputs. Job summaries and failure gating are opt-in, so your workflow stays
+          in control of what it publishes and when it fails.
+        </p>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor#github-actions">Read the action guide</a>
       </section>
 
       <section id="workflow" class="grid" aria-label="How SAM Doctor works">
