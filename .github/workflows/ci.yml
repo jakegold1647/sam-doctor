@@ -20,6 +20,11 @@ jobs:
       - run: python -m pip install ".[dev]"
       - run: python -m pytest -q
       - run: python -m build
+      - name: Verify the built wheel in a clean environment
+        run: |
+          python -m venv .wheel-verify
+          .wheel-verify/bin/python -m pip install dist/*.whl
+          .wheel-verify/bin/sam-doctor demo
       - run: sam-doctor demo
       - id: action-check
         uses: ./
