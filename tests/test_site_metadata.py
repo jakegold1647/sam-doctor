@@ -24,3 +24,11 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["name"] == "SAM Doctor"
     assert schema["softwareVersion"] == "0.7.5"
     assert schema["offers"]["price"] == "0"
+
+
+def test_action_examples_show_opt_in_failure_gate() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+
+    assert 'fail-on-findings: "true"' in readme
+    assert 'fail-on-findings: "true"' in site
