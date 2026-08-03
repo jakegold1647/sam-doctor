@@ -47,7 +47,9 @@ Agreement.
 
 Create a Lemon Squeezy one-time product using `launch/PRODUCT-LISTING.md`.
 
-Do not activate a purchase button until the product description includes the delivery condition and refund terms. Then replace the `YOUR_STORE` and `YOUR_PRODUCT` placeholders in `site/index.html` with the checkout URL.
+Do not activate a purchase button until the product description includes the
+delivery condition and refund terms. If you add a checkout link, place it in
+`site/index.html` only after the terms are visible.
 
 ## 4. First distribution
 

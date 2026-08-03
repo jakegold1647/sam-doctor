@@ -22,6 +22,8 @@ All notable changes to SAM Doctor are documented here.
   with version placeholders to reduce release drift.
 - Added a dedicated rule for non-interactive SAM deploy confirmation prompts
   (`Aborted! Deploy this changeset?`) to improve CI-directed diagnosis.
+- Added a dedicated rule for CloudFormation rollback role-deletion failures so role
+  cleanup blockers are called out as a separate action path.
 
 ## v0.7.4 - 2026-08-03
 
