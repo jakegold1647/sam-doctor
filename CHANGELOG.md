@@ -4,6 +4,9 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Fixed stable PyPI recovery so the current workflow runs from `main` while
+  building the exact release tag supplied by the operator.
+
 ## v0.7.5 - 2026-08-03
 
 - Promoted the tested prerelease to a stable package and Marketplace Action
