@@ -14,8 +14,11 @@ fi
 : "${SAM_DOCTOR_LOG_FILE:?SAM_DOCTOR_LOG_FILE is required.}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
-: "${GITHUB_ACTION_PATH:?GITHUB_ACTION_PATH is required.}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
+
+if [ -z "${GITHUB_ACTION_PATH:-}" ]; then
+  GITHUB_ACTION_PATH="$(cd "$(dirname "$0")/.." && pwd)"
+fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" != "true" && "$SAM_DOCTOR_SUMMARY" != "false" ]]; then
   echo "SAM_DOCTOR_SUMMARY must be 'true' or 'false'." >&2
@@ -27,8 +30,20 @@ if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "true" && "$SAM_DOCTOR_FAIL_ON_FINDINGS"
   exit 2
 fi
 
+STEP_SUMMARY_CREATED=0
+
 report_path="$(mktemp)"
-trap 'rm -f "$report_path"' EXIT
+if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then
+  GITHUB_STEP_SUMMARY="$(mktemp)"
+  STEP_SUMMARY_CREATED=1
+fi
+
+trap '
+  rm -f "$report_path"
+  if [ "${STEP_SUMMARY_CREATED}" = "1" ]; then
+    rm -f "$GITHUB_STEP_SUMMARY"
+  fi
+' EXIT
 
 # Use the checked-out action source directly so this step works even if PATH/PIP
 # installs are restricted in the caller workflow.
