@@ -173,6 +173,17 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
 tracking notes and fill one row per real contact.
 
+After a release is published and channels are expected live, run the stricter
+combined gate:
+
+```bash
+python scripts/check-launch.py \
+  --strict-distribution-during-release \
+  --strict-ethical --min-feedback-ratio 100 \
+  --outreach-log launch/outreach-log-template.csv \
+  --outreach-summary artifacts/outreach-summary.md
+```
+
 ## Guides
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)

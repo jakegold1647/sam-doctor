@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 */12 * * *"
   workflow_dispatch:
+    inputs:
+      strict-distribution-during-release:
+        description: "Enable full release-channel strictness checks"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -19,7 +24,13 @@ jobs:
       - name: Run distribution snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRICT_DURING_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
         run: |
+          strict_flags=""
+          if [ "$STRICT_DURING_RELEASE" = "true" ]; then
+            strict_flags="--strict-distribution-during-release"
+          fi
+
           mkdir -p artifacts
           python scripts/check-launch.py \
             --repo-root "${{ github.workspace }}" \
@@ -28,6 +39,7 @@ jobs:
             --check-launch-token "${{ secrets.GITHUB_TOKEN }}" \
             --launch-repo "jakegold1647/sam-doctor" \
             --outreach-log launch/outreach-log-template.csv \
+            $strict_flags \
             --output-format json \
             --output artifacts/distribution.json \
             --append-csv artifacts/distribution.csv \

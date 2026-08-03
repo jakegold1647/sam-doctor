@@ -26,6 +26,9 @@ All notable changes to SAM Doctor are documented here.
   cleanup blockers are called out as a separate action path.
 - Added an outreach metrics helper (`scripts/check-outreach.py`) and launch docs
   guidance to keep ethical, repeatable growth tracking lightweight.
+- Added `--strict-distribution-during-release` to `scripts/check-launch.py` so
+  teams can keep pre-release checks non-blocking while enforcing full
+  distribution-channel readiness after publication.
 - Deepened outreach health checks so we can distinguish paid-interest signal from
   uncontextualized voluntary stars and keep outreach loops ethical.
 - Added a new `batch` CLI subcommand to diagnose multiple deployment logs in one
