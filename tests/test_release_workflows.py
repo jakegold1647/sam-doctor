@@ -42,10 +42,9 @@ def test_stable_install_links_match_project_version() -> None:
     version = _project_version()
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
-    wheel_path = (
-        f"releases/download/v{version}/sam_doctor-{version}-py3-none-any.whl"
-    )
 
-    assert wheel_path in readme
+    assert "python -m pip install sam-doctor" in readme
+    assert "https://pypi.org/project/sam-doctor/" in readme
+    assert "python -m pip install sam-doctor" in site
+    assert "https://pypi.org/project/sam-doctor/" in site
     assert f"releases/tag/v{version}" in site
-    assert wheel_path in site
