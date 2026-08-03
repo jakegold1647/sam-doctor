@@ -35,6 +35,11 @@ All notable changes to SAM Doctor are documented here.
 - Improved batch output to preserve full source paths for duplicate filenames
   (especially from similarly-named directories) and to include per-file markdown
   section labels.
+- Strengthened launch-readiness checks so stable versions fail when their
+  associated GitHub release is a draft or prerelease, preventing misleading
+  Marketplace pre-release states.
+- Added launch-readiness snapshot capture to the 12-hour distribution workflow so
+  repository publish checks are archived with distribution trend artifacts.
 
 ## v0.7.4 - 2026-08-03
 
