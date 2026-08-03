@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sam-doctor"
-version = "0.7.5-rc.1"
+version = "0.7.5"
 description = "Local, evidence-first diagnostics for AWS SAM and GitHub Actions deployment failures."
 readme = "README.md"
 requires-python = ">=3.10"

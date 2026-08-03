@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.7.5 - 2026-08-03
+
+- Promoted the tested prerelease to a stable package and Marketplace Action
+  release so users can install with `pip install sam-doctor`.
+
 ## v0.7.5-rc.1 - 2026-08-03
 
 - Published the first tested prerelease containing the polished CLI install path,
