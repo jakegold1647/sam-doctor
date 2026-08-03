@@ -11,6 +11,9 @@ from . import __version__
 from .redaction import redact
 
 
+_RULE_REQUEST_URL = "https://github.com/jakegold1647/sam-doctor/issues/new/choose"
+
+
 @dataclass(frozen=True)
 class Finding:
     """A matched failure pattern and safe next actions."""
@@ -547,6 +550,11 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 "The input did not match the current rule set. Preserve the first error "
                 "and relevant CloudFormation event details, then consult the linked AWS "
                 "documentation or an authorized support engineer.",
+                "",
+                "### What to do next",
+                "",
+                "Run `sam-doctor rules` to review current coverage. If this was a real "
+                f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({_RULE_REQUEST_URL}).",
             ]
         )
         return "\n".join(lines) + "\n"
@@ -579,7 +587,9 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
     if not findings:
         return (
             f"No supported diagnostic pattern found in {redact(source_name)}.\n"
-            "Keep the first failure event and inspect the relevant AWS documentation."
+            "Keep the first failure event and inspect the relevant AWS documentation.\n"
+            "Run `sam-doctor rules` for current coverage; if this was a real failure, "
+            f"share a short, sanitized excerpt at {_RULE_REQUEST_URL}."
         )
 
     blocks = [f"SAM Doctor found {len(findings)} possible issue(s) in {redact(source_name)}."]

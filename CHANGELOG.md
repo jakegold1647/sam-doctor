@@ -21,6 +21,10 @@ All notable changes to SAM Doctor are documented here.
 - Clarified the GitHub Actions example so diagnostics still run after a failed
   deployment step.
 - Removed a repository-only example path from the wheel install quick start.
+- Added a clear sanitized rule-request path when a human-readable report finds
+  no supported pattern.
+- Made the test suite import the checked-out source tree so local runs cannot
+  silently exercise an older installed package.
 - Added Marketplace and PyPI badges to the README launch header.
 - Added regression tests for the distribution checker trend helpers and output text.
 - Added a release-readiness checker script and integrated it into launch docs and

@@ -38,6 +38,17 @@ def test_unknown_log_has_no_finding() -> None:
     assert diagnose("Everything completed successfully.") == []
 
 
+def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
+    markdown = markdown_report([], "unknown.log")
+    terminal = terminal_report([], "unknown.log")
+
+    assert "sam-doctor rules" in markdown
+    assert "diagnostic rule request" in markdown
+    assert "issues/new/choose" in markdown
+    assert "sam-doctor rules" in terminal
+    assert "issues/new/choose" in terminal
+
+
 @pytest.mark.parametrize(
     ("log_line", "title_fragment"),
     (
