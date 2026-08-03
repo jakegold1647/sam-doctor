@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.7.2 - 2026-08-03
+
+- Redacted sensitive identifiers in displayed source filenames as well as matched
+  log evidence across terminal, Markdown, and JSON reports.
+
 ## v0.7.1 - 2026-08-03
 
 - Ordered multiple findings by the first supporting line in the supplied log so

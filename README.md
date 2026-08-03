@@ -37,7 +37,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.1/sam_doctor-0.7.1-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.2/sam_doctor-0.7.2-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
@@ -50,7 +50,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.1"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.2"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -81,7 +81,7 @@ Use the included action when a workflow already saves a deployment log:
 
 ```yaml
 - id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.1
+  uses: jakegold1647/sam-doctor@v0.7.2
   with:
     log-file: deployment.log
     summary: "true"
@@ -142,7 +142,7 @@ not security, legal, or production-operations advice.
 
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
 bearer tokens, JWT-style tokens, and common GitHub token formats before matched
-evidence is displayed. This is a helpful guardrail, not a secret scanner:
+evidence or a displayed source name is shared. This is a helpful guardrail, not a secret scanner:
 review a report before sharing it.
 
 ## Development
