@@ -6,12 +6,21 @@
     <title>SAM Doctor | AWS deployment diagnosis, locally</title>
     <meta
       name="description"
-      content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment logs into an evidence-first diagnostic report—locally."
+      content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment logs into an evidence-first diagnostic report locally."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="#workflow">How it works</a>
+        <a href="#founder">Feedback</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+    <main id="main-content">
       <section class="hero">
         <p class="eyebrow">LOCAL AWS DEPLOYMENT DIAGNOSTICS</p>
         <h1>Find the next useful step in a failed AWS deployment.</h1>
@@ -33,7 +42,7 @@
 
       <section class="terminal" aria-label="Example diagnostic output">
         <p><span>$</span> sam-doctor diagnose failed-deploy.log --format markdown</p>
-        <p class="muted">Likely cause · high confidence</p>
+        <p class="muted">Likely cause - high confidence</p>
         <h2>GitHub Actions cannot assume the configured AWS role through OIDC.</h2>
         <p>
           Evidence: <code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code>
@@ -43,7 +52,7 @@
         </p>
       </section>
 
-      <section class="grid">
+      <section id="workflow" class="grid" aria-label="How SAM Doctor works">
         <article>
           <p class="eyebrow">WHAT IT HANDLES NOW</p>
           <h2>Start with the failures that waste deployment time.</h2>
@@ -67,12 +76,22 @@
         </article>
       </section>
 
+      <section class="steps" aria-labelledby="steps-title">
+        <p class="eyebrow">A SMALL, USEFUL LOOP</p>
+        <h2 id="steps-title">From noisy log to next check.</h2>
+        <ol>
+          <li><strong>Give it a log.</strong> Point the CLI at a file or pipe text through stdin.</li>
+          <li><strong>See the evidence.</strong> Matching lines are redacted and kept short.</li>
+          <li><strong>Verify the cause.</strong> Use the linked docs and review every suggested change.</li>
+        </ol>
+      </section>
+
       <section id="founder" class="founder">
         <p class="eyebrow">SHAPE THE NEXT VERSION</p>
         <h2>Tell me the exact error that stopped your deploy.</h2>
         <p>
           SAM Doctor is a free alpha. The next version will focus on the failures that
-          repeatedly waste real developers’ time—starting with GitHub Actions to AWS
+          repeatedly waste real developers' time - starting with GitHub Actions to AWS
           OIDC role-assumption failures. Share a sanitized error or request an
           improvement in GitHub Issues.
         </p>
