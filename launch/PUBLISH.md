@@ -20,17 +20,18 @@ Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
 2. Push the matching `vX.Y.Z` tag. The `Publish release` workflow builds the
-   wheel and source archive, then creates a prerelease using the corresponding
-   `launch/RELEASE-vX.Y.Z.md` notes when present.
+   wheel and source archive. It creates a regular release for plain semantic
+   version tags (such as `v0.7.4`) and a prerelease for pre-release tag names
+   (such as `v0.7.4-rc.1`) using `launch/RELEASE-${TAG}.md` when present.
 3. Confirm GitHub Pages serves the current `site/` directory.
 4. In repository Settings, set the homepage to the GitHub Pages URL and add these
    topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`,
    `serverless`, `python`, `cli`.
 5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social
    preview image.
-6. GitHub Actions creates a prerelease on tag push. If you need Marketplace or
-   PyPI publication as a public release, make a manual publish decision from
-   the release page before sharing the tag.
+6. If this tag includes a pre-release suffix, convert to full release only after
+   internal sign-off. For plain `vX.Y.Z` releases, Marketplace and PyPI publish
+   flows can use the release as soon as release notes and checks are green.
 
 For the GitHub Action listing, follow `launch/MARKETPLACE.md` after the
 repository owner has reviewed and accepted GitHub's Marketplace Developer

@@ -17,14 +17,20 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install build
       - run: python -m build
-      - name: Create prerelease with package artifacts
+      - name: Create release with package artifacts
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          if [[ "$TAG" == *-* ]]; then
+            release_flags="--prerelease"
+          else
+            release_flags=""
+          fi
+
           notes_file="launch/RELEASE-${TAG}.md"
           if [ -f "$notes_file" ]; then
-            gh release create "$TAG" dist/* --prerelease --title "SAM Doctor ${TAG}" --notes-file "$notes_file"
+            gh release create "$TAG" dist/* $release_flags --title "SAM Doctor ${TAG}" --notes-file "$notes_file"
           else
-            gh release create "$TAG" dist/* --prerelease --title "SAM Doctor ${TAG}" --generate-notes
+            gh release create "$TAG" dist/* $release_flags --title "SAM Doctor ${TAG}" --generate-notes
           fi
