@@ -11,7 +11,14 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .diagnostics import diagnose, json_report, markdown_report, rules_report, terminal_report
+from .diagnostics import (
+    Finding,
+    diagnose,
+    json_report,
+    markdown_report,
+    rules_report,
+    terminal_report,
+)
 
 
 _DEMO_FILES = {
@@ -46,6 +53,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Report format for stdout or --output.",
     )
     diagnose_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
+    diagnose_parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help="Exit with status 1 when one or more supported findings are detected.",
+    )
 
     demo_parser = subcommands.add_parser("demo", help="Run a bundled deployment failure example.")
     demo_parser.add_argument(
@@ -93,13 +105,16 @@ def _read_text(path: Path) -> str:
         raise ValueError(f"Could not read {path}: {error}") from error
 
 
-def _render(text: str, source_name: str, output_format: str) -> str:
-    findings = diagnose(text)
+def _render_findings(findings: list[Finding], source_name: str, output_format: str) -> str:
     if output_format == "markdown":
         return markdown_report(findings, source_name)
     if output_format == "json":
         return json_report(findings, source_name)
     return terminal_report(findings, source_name) + "\n"
+
+
+def _render(text: str, source_name: str, output_format: str) -> str:
+    return _render_findings(diagnose(text), source_name, output_format)
 
 
 def _expand_input_paths(input_value: str) -> list[Path]:
@@ -240,7 +255,8 @@ def main(argv: list[object] | None = None) -> int:
         return 1
 
     source_name = "<stdin>" if args.input == Path("-") else args.input.name
-    report = _render(text, source_name, args.format)
+    findings = diagnose(text)
+    report = _render_findings(findings, source_name, args.format)
     if args.output:
         try:
             _write_report(args.output, report)
@@ -249,7 +265,7 @@ def main(argv: list[object] | None = None) -> int:
         print(f"Wrote {args.format} report to {args.output}")
     else:
         sys.stdout.write(report)
-    return 0
+    return 1 if args.fail_on_findings and findings else 0
 
 
 if __name__ == "__main__":
