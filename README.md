@@ -40,7 +40,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.4/sam_doctor-0.7.4-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/vX.Y.Z/sam_doctor-X.Y.Z-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
@@ -53,7 +53,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.4"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@vX.Y.Z"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -84,7 +84,7 @@ Use the included action when a workflow already saves a deployment log:
 
 ```yaml
 - id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.4
+  uses: jakegold1647/sam-doctor@vX.Y.Z
   with:
     log-file: deployment.log
     summary: "true"
@@ -136,6 +136,12 @@ Track progress with:
 
 ```bash
 python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend --summary artifacts/distribution-summary.md
+```
+
+Before release tagging, run:
+
+```bash
+python scripts/check-launch-readiness.py
 ```
 
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your

@@ -16,6 +16,12 @@ sam-doctor demo
 Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 `CHANGELOG.md`, and the release note all agree.
 
+For a quick machine-check before tag push, run:
+
+```powershell
+python scripts/check-launch-readiness.py
+```
+
 ## 2. Publish the public tool
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
