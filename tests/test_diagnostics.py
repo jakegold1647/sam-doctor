@@ -183,6 +183,35 @@ def test_packaged_capability_demo_is_available() -> None:
     assert any("explicit capability acknowledgement" in finding.title.lower() for finding in findings)
 
 
+@pytest.mark.parametrize(
+    ("scenario", "title_fragment"),
+    (
+        ("api-gateway", "API Gateway deployment started"),
+        ("s3-bucket-conflict", "managed and explicit S3 bucket"),
+        ("esbuild", "configured esbuild"),
+        ("interactive-changeset", "interactive changeset confirmation"),
+    ),
+)
+def test_packaged_scenario_demos_are_available(scenario: str, title_fragment: str) -> None:
+    findings = diagnose(_read_demo(scenario))
+
+    assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    ("oidc", "cloudformation", "capabilities", "api-gateway", "s3-bucket-conflict", "esbuild", "interactive-changeset"),
+)
+def test_demo_command_supports_scenarios(tmp_path, scenario: str, capsys: pytest.CaptureFixture[str]) -> None:
+    output_file = tmp_path / f"{scenario}.md"
+
+    assert main(["demo", "--scenario", scenario, "--format", "json", "--output", output_file]) == 0
+    assert output_file.exists()
+
+    captured = capsys.readouterr().out
+    assert "Wrote json report" in captured
+
+
 def test_redaction_covers_common_ci_credentials() -> None:
     text = (
         "AKIAIOSFODNN7EXAMPLE ghp_123456789012345678901234567890123456 "
