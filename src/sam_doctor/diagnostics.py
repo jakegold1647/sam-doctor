@@ -279,6 +279,28 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/determine-root-cause-for-stack-failures.html",
     ),
     Rule(
+        title="CloudFormation rollback could not delete an IAM role",
+        confidence="medium",
+        patterns=(
+            r"The following resource\(s\) failed to delete:.*Role",
+            r"failed to delete.*IAM Role",
+            r"Unable to delete.*AWS::IAM::Role",
+        ),
+        explanation=(
+            "CloudFormation could not remove an IAM role during rollback or deletion. "
+            "The rollback may stop even after the root failure is fixed, blocking clean "
+            "retries until the dependency is released."
+        ),
+        verification=(
+            "Find the IAM role and inspect its attached managed policies, inline policies, "
+            "and role attachments (including instance profiles).",
+            "Temporarily detach blockers or confirm deletion permissions, then retry rollback "
+            "or delete the stack with resources retained as required.",
+            "Re-run deployment only after the stack can transition cleanly past the rollback phase.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-deleting-stack.html",
+    ),
+    Rule(
         title="CloudFormation needs an explicit capability acknowledgement",
         confidence="high",
         patterns=(
@@ -472,6 +494,13 @@ def diagnose(text: str) -> list[Finding]:
             r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated", text, flags=re.IGNORECASE
         ):
             # An immutable initial-create rollback state has a more precise recovery path.
+            continue
+        if rule.title == "CloudFormation stack entered rollback after an earlier resource failure" and re.search(
+            r"following resource\(s\) failed to delete|failed to delete.*AWS::IAM::Role|Unable to delete.*AWS::IAM::Role",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            # A role deletion blocker has a more actionable dedicated finding.
             continue
         excluded_patterns = ()
         if rule.title == "AWS denied an API action required by the deployment":

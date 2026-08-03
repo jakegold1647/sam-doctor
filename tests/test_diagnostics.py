@@ -75,6 +75,10 @@ def test_unknown_log_has_no_finding() -> None:
             "cannot find the configured esbuild",
         ),
         ("Deploy this changeset? [y/N]:", "interactive changeset confirmation"),
+        (
+            "AWS::CloudFormation::Stack ROLLBACK_FAILED ... The following resource(s) failed to delete: [IAMRoleDeployment]",
+            "rollback could not delete an iam role",
+        ),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
@@ -151,6 +155,11 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
         (
             "MyLayer CREATE_FAILED\nYour access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
             "cannot read a Lambda layer artifact",
+        ),
+        (
+            "MyStack DELETE_FAILED The following resource(s) failed to delete: [MyRole].\n"
+            "Failed to delete AWS::IAM::Role MyRole",
+            "rollback could not delete an iam role",
         ),
     ),
 )

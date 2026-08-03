@@ -28,9 +28,10 @@ It does not upload logs, access an AWS account, modify infrastructure, or promis
 
 ## Creator checklist before publishing
 
-1. Replace the placeholder GitHub release link in `site/index.html`.
-2. Replace the Lemon Squeezy checkout link in `site/index.html`.
-3. Create a clearly named $39 one-time product with the copy above.
-4. Publish the free repository and add one terminal screenshot or short demo video.
-5. Do not enable a checkout until the refund language is visible.
+1. Create a clearly named $39 one-time product with the copy above.
+2. Publish the free repository and add one terminal screenshot or short demo
+   video.
+3. Add a checkout link only after the refund and delivery terms are visible.
+4. If you add a checkout button in `site/index.html`, place it in the founder
+   section with a clear "optional paid upgrade" label.
 
