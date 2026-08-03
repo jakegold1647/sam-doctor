@@ -14,6 +14,13 @@ python scripts/check-distribution.py
 
 Recommended cadence: Monday + Friday after any outreach batch.
 
+Automated monitoring:
+
+- This workflow runs every Monday and Friday on GitHub Actions:
+  `.github/workflows/distribution-check.yml`
+- Run it manually via workflow dispatch any time you publish a new release
+  or run a new outreach batch.
+
 ## What to watch
 
 - `repo_stars` should reflect voluntary follow-ups only.
