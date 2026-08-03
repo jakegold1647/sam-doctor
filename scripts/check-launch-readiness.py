@@ -94,9 +94,6 @@ def _extract_project_version_from_pyproject(pyproject: str) -> str | None:
         if not inside_project:
             continue
 
-        if line.startswith("[") and line.endswith("]"):
-            break
-
         if line.startswith("version"):
             key, _, value = line.partition("=")
             if key.strip() == "version":
