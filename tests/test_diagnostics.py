@@ -74,6 +74,7 @@ def test_unknown_log_has_no_finding() -> None:
             "NodejsNpmEsbuildBuilder:EsbuildBundle - Esbuild Failed: Cannot find esbuild.",
             "cannot find the configured esbuild",
         ),
+        ("Deploy this changeset? [y/N]:", "interactive changeset confirmation"),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
