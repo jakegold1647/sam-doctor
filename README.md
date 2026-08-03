@@ -22,7 +22,7 @@ authoritative root cause. It detects known patterns in the text you provide,
 redacts common identifiers, and gives safe verification steps and the relevant
 official documentation.
 
-Current release: **v0.7.6**.
+Current release: **v0.7.7**.
 
 ## Current free core
 
@@ -50,11 +50,11 @@ sam-doctor demo
 
 This installs the latest stable release from PyPI. The bundled demo needs no AWS
 credentials and makes no network calls. To pin the tested release exactly, run
-`python -m pip install sam-doctor==0.7.6`. To install from the tagged source
+`python -m pip install sam-doctor==0.7.7`. To install from the tagged source
 instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.6"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.7"
 ```
 
 If your shell cannot find `sam-doctor` after installation, activate the
@@ -113,7 +113,7 @@ Use the included action when a workflow already saves a deployment log:
 - name: Diagnose deployment log
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.6
+  uses: jakegold1647/sam-doctor@v0.7.7
   with:
     log-file: deployment.log
     summary: "true"
