@@ -57,13 +57,14 @@
 
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
-        <h2 id="install-title">Install the current release in one command.</h2>
-        <pre><code>python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/vX.Y.Z/sam_doctor-X.Y.Z-py3-none-any.whl</code></pre>
+        <h2 id="install-title">Install v0.7.4 in one command.</h2>
+        <pre><code>python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.4/sam_doctor-0.7.4-py3-none-any.whl</code></pre>
         <p>
-          The wheel installs without Git. Then run <code>sam-doctor demo</code> to see a
-          local example, or pass a log to <code>sam-doctor diagnose deployment.log</code>.
+          This Marketplace pre-release installs without Git. Then run
+          <code>sam-doctor demo</code> to see a local example, or pass a log to
+          <code>sam-doctor diagnose deployment.log</code>.
         </p>
-        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/latest">View the latest release notes and downloads</a>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.7.4">View v0.7.4 release notes and downloads</a>
       </section>
 
       <section class="terminal" aria-label="Example diagnostic output">
@@ -81,15 +82,24 @@
       <section id="ci" class="integration" aria-labelledby="ci-title">
         <p class="eyebrow">GITHUB ACTIONS</p>
         <h2 id="ci-title">Keep the diagnostic close to the failed workflow.</h2>
-        <pre><code>- id: sam-doctor
-  uses: jakegold1647/sam-doctor@vX.Y.Z
+        <pre><code>- name: Deploy
+  shell: bash
+  run: |
+    set -o pipefail
+    sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+
+- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0.7.4
   with:
     log-file: deployment.log
     summary: "true"</code></pre>
         <p>
-          The action exposes <code>finding-count</code> and <code>has-findings</code>
-          outputs. Job summaries and failure gating are opt-in, so your workflow stays
-          in control of what it publishes and when it fails.
+          Put the action after the command that writes the log and keep
+          <code>if: always()</code>, or GitHub skips it when deployment fails.
+          It exposes <code>finding-count</code> and <code>has-findings</code> outputs;
+          job summaries and failure gating are opt-in.
         </p>
         <a class="button secondary" href="https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics">Use from GitHub Marketplace</a>
       </section>
