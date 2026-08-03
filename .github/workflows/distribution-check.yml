@@ -2,7 +2,7 @@ name: Distribution health check
 
 on:
   schedule:
-    - cron: "0 12 * * 1,5"
+    - cron: "0 */12 * * *"
   workflow_dispatch:
 
 permissions:
