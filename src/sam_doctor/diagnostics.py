@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from html import escape
 import re
 
 from .redaction import redact
@@ -175,7 +176,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
     lines = [
         "# SAM Doctor diagnostic report",
         "",
-        f"**Source:** `{source_name}`",
+        f"**Source:** <code>{escape(source_name)}</code>",
         "",
         "This report is generated from matched log patterns. Review the evidence and "
         "commands before applying any change.",
@@ -203,7 +204,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 finding.explanation,
                 "",
                 "### Evidence",
-                *[f"- `{evidence}`" for evidence in finding.evidence],
+                *[f"- <code>{escape(evidence)}</code>" for evidence in finding.evidence],
                 "",
                 "### Safe verification steps",
                 *[f"- {step}" for step in finding.verification],
