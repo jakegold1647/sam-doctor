@@ -58,6 +58,7 @@ def run_distribution(
     append_csv: str = "",
     summary: str = "",
     print_trend: bool = False,
+    strict: bool = False,
     loader: Callable[[Path], Any] = _load_distribution_module,
 ) -> bool:
     module = loader(repo_root)
@@ -90,6 +91,16 @@ def run_distribution(
             print("trend: no previous snapshot yet, establishing baseline")
         else:
             print(f"trend: {module._trend_text(snapshot, previous)}")
+
+    if strict:
+        strict_check = getattr(module, "_strict_distribution_violations", None)
+        if callable(strict_check):
+            violations = strict_check(snapshot)
+            if violations:
+                print("distribution strict check: FAIL")
+                for violation in violations:
+                    print(f"- {violation}")
+                return False
 
     if output_format != "json":
         print(f"sam-doctor distribution snapshot for {snapshot['repo']}")

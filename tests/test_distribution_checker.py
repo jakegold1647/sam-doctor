@@ -189,3 +189,41 @@ def test_marketplace_pre_release_marker_is_detected(monkeypatch):
 
     assert listing["ok"] is True
     assert listing["pre_release_listed"] is True
+
+
+def test_strict_distribution_violations_surface_expected_failures():
+    mod = _load_distribution_script()
+    snapshot = {
+        "pypi_status": {"ok": True, "details": "200"},
+        "marketplace_status": {"ok": False, "details": "503", "pre_release_listed": False},
+        "site_status": {"ok": False, "details": "404"},
+        "launch_readiness": {
+            "homepage_ok": False,
+            "topics_ok": False,
+            "missing_topics": ["python", "cli"],
+            "topics_count": 3,
+        },
+    }
+
+    violations = mod._strict_distribution_violations(snapshot)
+    assert "GitHub Marketplace listing is not reachable" in violations
+    assert "Project website is not reachable" in violations
+    assert "Repository homepage is missing or not set to the public site URL" in violations
+    assert "Required repository topics are missing: python, cli" in violations
+
+
+def test_strict_distribution_passes_on_healthy_distribution_snapshot():
+    mod = _load_distribution_script()
+    snapshot = {
+        "pypi_status": {"ok": True, "details": "200"},
+        "marketplace_status": {"ok": True, "details": "200", "pre_release_listed": False},
+        "site_status": {"ok": True, "details": "200"},
+        "launch_readiness": {
+            "homepage_ok": True,
+            "topics_ok": True,
+            "missing_topics": [],
+            "topics_count": 8,
+        },
+    }
+
+    assert mod._strict_distribution_violations(snapshot) == []
