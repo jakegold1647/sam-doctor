@@ -106,13 +106,16 @@ Use the included action when a workflow already saves a deployment log:
   with:
     log-file: deployment.log
     summary: "true"
+    # Uncomment to fail this job when a supported finding is detected.
+    # fail-on-findings: "true"
 ```
 
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set
 `fail-on-findings: "true"` only when you want a supported diagnostic to fail
-the job. The Markdown job summary is opt-in and contains only matched, redacted
+the job; the commented line above shows the opt-in placement. The Markdown job
+summary is opt-in and contains only matched, redacted
 evidence; review it before sharing a workflow run outside your team.
 
 ## What a report includes

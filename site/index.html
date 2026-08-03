@@ -125,12 +125,15 @@
   uses: jakegold1647/sam-doctor@v0.7.5
   with:
     log-file: deployment.log
-    summary: "true"</code></pre>
+    summary: "true"
+    # fail-on-findings: "true"</code></pre>
         <p>
           Put the action after the command that writes the log and keep
           <code>if: always()</code>, or GitHub skips it when deployment fails.
           It exposes <code>finding-count</code> and <code>has-findings</code> outputs;
-          job summaries and failure gating are opt-in.
+          job summaries and failure gating are opt-in. Uncomment
+          <code>fail-on-findings: "true"</code> when a supported diagnosis should
+          fail the job.
         </p>
         <a class="button secondary" href="https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics">Use from GitHub Marketplace</a>
       </section>
