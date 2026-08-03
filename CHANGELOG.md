@@ -16,6 +16,10 @@ All notable changes to SAM Doctor are documented here.
   conversation-first growth loop.
 - Added Marketplace and PyPI badges to the README launch header.
 - Added regression tests for the distribution checker trend helpers and output text.
+- Added a release-readiness checker script and integrated it into launch docs and
+  README for pre-tag validation.
+- Replaced stale hard-coded release version examples in install and CI snippets
+  with version placeholders to reduce release drift.
 
 ## v0.7.4 - 2026-08-03
 
