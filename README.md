@@ -28,6 +28,7 @@ official documentation.
 - API Gateway deployments created before methods exist
 - SAM deployment/configuration errors, including conflicting artifact-bucket settings
   and missing `esbuild` dependencies
+- Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports
 - Composite GitHub Action with opt-in redacted job summaries and CI gating
@@ -36,7 +37,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.6.0/sam_doctor-0.6.0-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.0/sam_doctor-0.7.0-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
@@ -49,7 +50,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.6.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.0"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -80,7 +81,7 @@ Use the included action when a workflow already saves a deployment log:
 
 ```yaml
 - id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.6.0
+  uses: jakegold1647/sam-doctor@v0.7.0
   with:
     log-file: deployment.log
     summary: "true"

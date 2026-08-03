@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.6.0"
+    assert __version__ == "0.7.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -39,6 +39,20 @@ def test_unknown_log_has_no_finding() -> None:
         ("Unable to get ID Token: missing id-token: write permission", "cannot request an oidc token"),
         ("No OpenIDConnect provider found in your account", "missing the github actions oidc provider"),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
+        (
+            "property StageName: not defined for resource of type AWS::Serverless::Api",
+            "SAM template property",
+        ),
+        ("Has prohibited field Resource", "trust policy contains"),
+        (
+            "Code signing is not supported for functions created with container images.",
+            "code signing is incompatible",
+        ),
+        ("The specified bucket is not valid. Error Code: InvalidBucketName", "S3 bucket name"),
+        (
+            "Your access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
+            "cannot read a Lambda layer artifact",
+        ),
         (
             "InsufficientCapabilitiesException: Requires capabilities : [CAPABILITY_NAMED_IAM]",
             "explicit capability acknowledgement",
@@ -73,6 +87,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
         "InvalidIdentityToken was handled by a retrying client",
         "Deployment values include Capabilities: [CAPABILITY_IAM]",
         "sam build completed after esbuild bundled the function",
+        "SAM template property StageName is valid for AWS::Serverless::Api",
         "Configured CORS for the API",
         "The preflight request returned 204",
     ),
@@ -109,6 +124,14 @@ def test_capability_error_does_not_add_the_generic_sam_finding() -> None:
         (
             "ROLLBACK_COMPLETE\nStack is in ROLLBACK_COMPLETE state and can not be updated.",
             "failed initial stack",
+        ),
+        (
+            "MyFunction CREATE_FAILED\nCode signing is not supported for functions created with container images.",
+            "code signing is incompatible",
+        ),
+        (
+            "MyLayer CREATE_FAILED\nYour access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
+            "cannot read a Lambda layer artifact",
         ),
     ),
 )
