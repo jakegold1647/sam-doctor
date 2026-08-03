@@ -23,7 +23,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     schema = json.loads(match.group(1))
     assert schema["@type"] == "SoftwareApplication"
     assert schema["name"] == "SAM Doctor"
-    assert schema["softwareVersion"] == "0.7.6"
+    assert schema["softwareVersion"] == "0.7.7"
     assert schema["offers"]["price"] == "0"
 
 
