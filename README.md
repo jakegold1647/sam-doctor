@@ -142,13 +142,16 @@ share the report and a short ask for permission to improve coverage.
 Track progress with:
 
 ```bash
-python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend --summary artifacts/distribution-summary.md
+python scripts/check-launch.py \
+  --append-csv artifacts/distribution.csv \
+  --summary artifacts/distribution-summary.md \
+  --print-trend
 ```
 
 Before release tagging, run:
 
 ```bash
-python scripts/check-launch-readiness.py
+python scripts/check-launch.py --skip-outreach
 ```
 
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
