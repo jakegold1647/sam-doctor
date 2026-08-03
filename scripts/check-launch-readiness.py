@@ -57,6 +57,22 @@ def _release_note_exists(root: Path, version: str) -> bool:
     return (root / "launch" / f"RELEASE-v{version}.md").exists()
 
 
+def _marketplace_metadata_ok(root: Path) -> bool:
+    action_yaml = root / "action.yml"
+    if not action_yaml.exists():
+        return False
+    text = action_yaml.read_text(encoding="utf-8")
+    required_tokens = [
+        "name:",
+        "description:",
+        "branding:",
+        "runs:",
+        "using: composite",
+        "log-file:",
+    ]
+    return all(token in text for token in required_tokens)
+
+
 def _is_prerelease(version: str) -> bool:
     return "-" in version
 
@@ -78,6 +94,11 @@ def _run_checks(root: Path) -> _CheckResult:
             True,
             "release-note/changelog checks are optional until final stable release",
         )
+        result.report(
+            "marketplace action metadata",
+            _marketplace_metadata_ok(root),
+            f"required fields present in {root / 'action.yml'}",
+        )
     else:
         release_exists = _release_note_exists(root, pyproject_version)
         changelog_ok = _changelog_has_version(root, pyproject_version)
@@ -90,6 +111,11 @@ def _run_checks(root: Path) -> _CheckResult:
             "changelog entry",
             changelog_ok,
             f"CHANGELOG.md contains v{pyproject_version}",
+        )
+        result.report(
+            "marketplace action metadata",
+            _marketplace_metadata_ok(root),
+            f"required fields present in {root / 'action.yml'}",
         )
 
     return result
