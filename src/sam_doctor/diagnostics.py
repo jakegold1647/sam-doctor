@@ -269,13 +269,19 @@ _RULES = (
     Rule(
         title="CloudFormation stack entered rollback after an earlier resource failure",
         confidence="medium",
-        patterns=(r"ROLLBACK_IN_PROGRESS", r"ROLLBACK_COMPLETE", r"UPDATE_ROLLBACK"),
+        patterns=(
+            r"ROLLBACK_IN_PROGRESS",
+            r"ROLLBACK_FAILED",
+            r"ROLLBACK_COMPLETE",
+            r"UPDATE_ROLLBACK",
+        ),
         explanation=(
             "Rollback is a downstream stack state. The most useful evidence is usually "
             "the first failed resource event that appears before the rollback entries."
         ),
         verification=(
             "Inspect stack events in chronological order and locate the first `CREATE_FAILED` or `UPDATE_FAILED` resource.",
+            "If the stack is in `ROLLBACK_FAILED`, inspect the failed cleanup event and resolve that blocker before retrying the rollback or deletion.",
             "Preserve the exact resource status reason before retrying the deployment.",
             "Use a change set or isolated stack when testing a fix, where practical.",
         ),

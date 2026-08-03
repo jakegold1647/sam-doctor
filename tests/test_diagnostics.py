@@ -91,6 +91,7 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "rollback could not delete an iam role",
         ),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
+        ("Stack entered ROLLBACK_FAILED after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
     ),
