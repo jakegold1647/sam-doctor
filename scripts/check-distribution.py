@@ -31,6 +31,7 @@ EXPECTED_TOPICS = {
     "cloudformation",
     "github-actions",
     "iam",
+    "cli",
     "python",
     "serverless",
 }
