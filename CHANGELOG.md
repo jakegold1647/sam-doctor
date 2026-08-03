@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Documented direct CLI failure gating for shell-based CI jobs.
+
 ## v0.7.6 - 2026-08-03
 
 - Added an opt-in `--fail-on-findings` CLI flag for CI jobs that should fail
