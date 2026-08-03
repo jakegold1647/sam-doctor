@@ -357,3 +357,25 @@ def test_check_launch_parse_args_defaults_github_token(monkeypatch) -> None:
         assert args.check_launch_token == "env-token-xyz"
     finally:
         sys.argv = previous_argv
+
+
+def test_check_launch_parse_args_includes_strict_no_data_flags(monkeypatch) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+
+    previous_argv = sys.argv
+    try:
+        sys.argv = [
+            "check-launch.py",
+            "--skip-distribution",
+            "--skip-outreach",
+            "--strict-ethical",
+            "--allow-no-data-in-strict",
+            "--min-feedback-ratio",
+            "92.5",
+        ]
+        args = script._parse_args()
+        assert args.strict_ethical is True
+        assert args.allow_no_data_in_strict is True
+        assert args.min_feedback_ratio == 92.5
+    finally:
+        sys.argv = previous_argv
