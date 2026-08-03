@@ -170,12 +170,27 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
   --strict --min-feedback-ratio 100
 ```
 
+Use `--allow-no-data` to run the same strict check on an empty tracker while
+you are preparing first-contact conversations.
+
 After a release is published, run the stricter combined gate:
 
 ```bash
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
+  --outreach-log launch/outreach-log-template.csv \
+  --outreach-summary artifacts/outreach-summary.md
+```
+
+If outreach tracking is still at zero rows during pre-launch preparation, you can
+run:
+
+```bash
+python scripts/check-launch.py \
+  --strict-distribution-during-release \
+  --strict-ethical --min-feedback-ratio 100 \
+  --allow-no-data-in-strict \
   --outreach-log launch/outreach-log-template.csv \
   --outreach-summary artifacts/outreach-summary.md
 ```

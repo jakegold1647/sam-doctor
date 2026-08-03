@@ -171,6 +171,31 @@ def test_run_outreach_strict_fails_when_log_missing(tmp_path) -> None:
     )
 
 
+def test_run_outreach_strict_allows_no_data_only_when_flagged(tmp_path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = _load_script(root)
+    sample = tmp_path / "empty-log.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n",
+        encoding="utf-8",
+    )
+
+    assert not script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+    )
+    assert script.run_outreach(
+        root,
+        str(sample),
+        strict=True,
+        min_feedback_ratio=100.0,
+        allow_no_data=True,
+    )
+
+
 def test_run_outreach_strict_fails_when_feedback_ratio_is_low(tmp_path) -> None:
     root = Path(__file__).resolve().parents[1]
     script = _load_script(root)

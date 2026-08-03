@@ -157,7 +157,10 @@ def _next_growth_actions(summary: dict[str, object]) -> list[str]:
 def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio: float) -> tuple[bool, str]:
     ethical_signal = summary.get("ethical_signal")
     if ethical_signal == "no_data":
-        return True, ""
+        return (
+            False,
+            "outreach log has no meaningful rows yet; strict ethical checks require real conversations first",
+        )
 
     if ethical_signal != "strong":
         return (
@@ -309,6 +312,11 @@ def main() -> int:
         default=100.0,
         help="Strict ethical minimum for supportive follow-up ratio.",
     )
+    parser.add_argument(
+        "--allow-no-data",
+        action="store_true",
+        help="Allow strict mode to pass when outreach has no rows yet.",
+    )
     args = parser.parse_args()
 
     csv_path = Path(args.path)
@@ -321,7 +329,10 @@ def main() -> int:
     if args.summary:
         _write_summary(summary, args.summary)
     if args.strict:
-        passed, reason = _passes_strict_ethical_policy(summary, args.min_feedback_ratio)
+        if args.allow_no_data and summary.get("ethical_signal") == "no_data":
+            passed, reason = True, ""
+        else:
+            passed, reason = _passes_strict_ethical_policy(summary, args.min_feedback_ratio)
         if not passed:
             print(reason)
             return 1

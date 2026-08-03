@@ -127,6 +127,7 @@ def run_outreach(
     repo_root: Path,
     outreach_log: str,
     strict: bool = False,
+    allow_no_data: bool = False,
     summary: str = "",
     min_feedback_ratio: float = 100.0,
     loader: Callable[[Path], Any] = _load_outreach_module,
@@ -148,6 +149,9 @@ def run_outreach(
         passes_strict = getattr(module, "_passes_strict_ethical_policy", None)
         if callable(passes_strict):
             strict_ok, strict_reason = passes_strict(outreach_summary, min_feedback_ratio)
+            if not strict_ok and allow_no_data and outreach_summary.get("ethical_signal") == "no_data":
+                strict_ok = True
+                strict_reason = ""
             if not strict_ok:
                 print(strict_reason)
                 recommendation = getattr(module, "_ethical_recommendation", None)
@@ -259,6 +263,11 @@ def _parse_args() -> argparse.Namespace:
         help="Fail if outreach ethical signal is not strong.",
     )
     parser.add_argument(
+        "--allow-no-data-in-strict",
+        action="store_true",
+        help="Allow strict ethical checks to pass when the log has no rows yet.",
+    )
+    parser.add_argument(
         "--min-feedback-ratio",
         type=float,
         default=100.0,
@@ -306,6 +315,7 @@ def main() -> int:
             strict=args.strict_ethical,
             summary=args.outreach_summary,
             min_feedback_ratio=args.min_feedback_ratio,
+            allow_no_data=args.allow_no_data_in_strict,
         ):
             ok = False
 

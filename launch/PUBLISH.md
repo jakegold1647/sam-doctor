@@ -27,6 +27,7 @@ python scripts/check-launch.py --skip-distribution \
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
+  --allow-no-data-in-strict \
   --outreach-log launch/outreach-log-template.csv \
   --outreach-summary artifacts/outreach-summary.md
 ```

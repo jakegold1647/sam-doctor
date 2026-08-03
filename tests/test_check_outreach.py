@@ -200,6 +200,18 @@ def test_outreach_main_strict_passes_when_signal_is_no_data(tmp_path: Path) -> N
             str(sample),
             "--strict",
         ]
+        assert module.main() == 1
+    finally:
+        sys.argv = argv_backup
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--strict",
+            "--allow-no-data",
+        ]
         assert module.main() == 0
     finally:
         sys.argv = argv_backup

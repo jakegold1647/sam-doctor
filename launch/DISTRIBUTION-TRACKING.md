@@ -39,6 +39,8 @@ Automated monitoring:
   weekly (or before publishing a release) and review `ethical_signal` and
   `ethical_signal_strength`; treat `"mixed"` as "helpful star happened without
   follow-up context" and follow up for context before considering that signal.
+- When you are tracking your first conversations and the tracker is still empty,
+  add `--allow-no-data-in-strict` for the same check.
 - After a stable tag is live on release channels, add
   `--strict-distribution-during-release` to also fail when PyPI, Marketplace,
   and homepage/topics readiness are not fully green.

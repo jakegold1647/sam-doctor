@@ -27,6 +27,9 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
   --strict --min-feedback-ratio 100
 ```
 
+If you have not started outreach yet but want the same strict posture, run with
+`--allow-no-data` so the check is explicit rather than ambiguous.
+
 After release publish, re-run:
 
 ```bash
@@ -36,6 +39,9 @@ python scripts/check-launch.py \
   --outreach-log launch/outreach-log-template.csv \
   --outreach-summary artifacts/outreach-summary.md
 ```
+
+Add `--allow-no-data-in-strict` only if your tracker is intentionally still
+blank before public release.
 
 This prints a lightweight, non-sensitive summary to guide your next 7-day
 focused outreach batch.
