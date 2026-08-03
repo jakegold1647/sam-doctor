@@ -32,14 +32,21 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.0"
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.4.0/sam_doctor-0.4.0-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor rules
 sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
 ```
 
-The bundled demo needs no AWS credentials and makes no network calls.
+This installs the published release directly and does not require Git. The
+bundled demo needs no AWS credentials and makes no network calls. To install
+from the tagged source instead, run:
+
+```bash
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.0"
+```
+
 Run `sam-doctor rules --format json` to inspect the exact set of supported
 diagnostic categories before sharing a log.
 
