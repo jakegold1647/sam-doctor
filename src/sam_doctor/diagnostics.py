@@ -35,6 +35,25 @@ class Rule:
 
 _RULES = (
     Rule(
+        title="The GitHub Actions job cannot request an OIDC token",
+        confidence="high",
+        patterns=(
+            r"Unable to get ID Token.*id-token:\s*write",
+            r"id-token:\s*write.*(?:permission|required|missing)",
+        ),
+        explanation=(
+            "The workflow does not have the permission required to request a GitHub "
+            "OIDC token. AWS role trust settings cannot help until the deployment job "
+            "can obtain a token."
+        ),
+        verification=(
+            "Add `id-token: write` to the permissions of the workflow or deployment job.",
+            "Confirm no reusable-workflow or job-level permissions block overrides that setting.",
+            "Rerun the job and then evaluate the AWS trust-policy conditions if STS still rejects the token.",
+        ),
+        documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
+    ),
+    Rule(
         title="GitHub Actions cannot assume the configured AWS role through OIDC",
         confidence="high",
         patterns=(
