@@ -154,6 +154,25 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/determine-root-cause-for-stack-failures.html",
     ),
     Rule(
+        title="CloudFormation needs an explicit capability acknowledgement",
+        confidence="high",
+        patterns=(
+            r"InsufficientCapabilities(?:Exception)?",
+            r"Requires capabilities\s*:\s*\[?CAPABILITY_(?:IAM|NAMED_IAM|AUTO_EXPAND)",
+        ),
+        explanation=(
+            "CloudFormation rejected the change set because the deployment did not "
+            "explicitly acknowledge a capability required by the template. The error "
+            "identifies the capability that must be reviewed before retrying."
+        ),
+        verification=(
+            "Read the capability named in the error and inspect the relevant template resources before changing deployment settings.",
+            "For IAM resources, configure `CAPABILITY_IAM`; use `CAPABILITY_NAMED_IAM` when the template gives IAM resources custom names.",
+            "For nested applications, configure `CAPABILITY_AUTO_EXPAND`, then review the expanded application and proposed change set.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
+    ),
+    Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
         patterns=(
@@ -232,6 +251,12 @@ def diagnose(text: str) -> list[Finding]:
 
     findings: list[Finding] = []
     for rule in _RULES:
+        if rule.title == "AWS SAM deployment configuration or parameter resolution failed" and re.search(
+            r"InsufficientCapabilities|Requires capabilities", text, flags=re.IGNORECASE
+        ):
+            # A capability failure can include a preceding generic change-set error
+            # on another line. Prefer the narrower finding for the whole log.
+            continue
         excluded_patterns = ()
         if rule.title == "AWS denied an API action required by the deployment":
             # STS OIDC failures are authorization failures, but the OIDC rule

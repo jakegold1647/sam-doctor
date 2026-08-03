@@ -14,6 +14,7 @@ from .diagnostics import diagnose, json_report, markdown_report, rules_report, t
 _DEMO_FILES = {
     "oidc": "oidc-assume-role-failure.txt",
     "cloudformation": "cloudformation-resource-failure.txt",
+    "capabilities": "capability-acknowledgement-failure.txt",
 }
 
 

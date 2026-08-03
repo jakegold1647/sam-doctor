@@ -24,6 +24,7 @@ official documentation.
   trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
 - IAM `AccessDenied` failures
 - CloudFormation failed-resource events and rollback states
+- CloudFormation capability acknowledgement errors
 - SAM deployment/configuration errors
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports
@@ -32,9 +33,10 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.4.1/sam_doctor-0.4.1-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.5.0/sam_doctor-0.5.0-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
+sam-doctor demo --scenario capabilities
 sam-doctor rules
 sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
 ```
@@ -44,7 +46,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.1"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.5.0"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported

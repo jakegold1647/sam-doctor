@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.4.1"
+    assert __version__ == "0.5.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -39,6 +39,10 @@ def test_unknown_log_has_no_finding() -> None:
         ("Unable to get ID Token: missing id-token: write permission", "cannot request an oidc token"),
         ("No OpenIDConnect provider found in your account", "missing the github actions oidc provider"),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
+        (
+            "InsufficientCapabilitiesException: Requires capabilities : [CAPABILITY_NAMED_IAM]",
+            "explicit capability acknowledgement",
+        ),
         ("MyFunction CREATE_FAILED Resource handler returned message: denied", "resource creation"),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
@@ -57,6 +61,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
         "sam deploy completed successfully",
         "AssumeRoleWithWebIdentity succeeded",
         "InvalidIdentityToken was handled by a retrying client",
+        "Deployment values include Capabilities: [CAPABILITY_IAM]",
         "Configured CORS for the API",
         "The preflight request returned 204",
     ),
@@ -69,10 +74,27 @@ def test_packaged_demo_is_available() -> None:
     assert "AssumeRoleWithWebIdentity" in _read_demo()
 
 
+def test_capability_error_does_not_add_the_generic_sam_finding() -> None:
+    findings = diagnose(
+        "Error: Failed to create changeset: InsufficientCapabilitiesException: "
+        "Requires capabilities : [CAPABILITY_IAM]"
+    )
+
+    assert len(findings) == 1
+    assert "explicit capability acknowledgement" in findings[0].title.lower()
+
+
 def test_packaged_cloudformation_demo_is_available() -> None:
     findings = diagnose(_read_demo("cloudformation"))
 
     assert any("resource creation" in finding.title.lower() for finding in findings)
+
+
+def test_packaged_capability_demo_is_available() -> None:
+    findings = diagnose(_read_demo("capabilities"))
+
+    assert len(findings) == 1
+    assert any("explicit capability acknowledgement" in finding.title.lower() for finding in findings)
 
 
 def test_redaction_covers_common_ci_credentials() -> None:

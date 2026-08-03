@@ -1,0 +1,7 @@
+Deploying with following values
+===============================
+Stack name                   : example-service
+Capabilities                 : []
+
+Error: Failed to create changeset for the stack: example-service
+An error occurred (InsufficientCapabilitiesException) when calling the CreateChangeSet operation: Requires capabilities : [CAPABILITY_NAMED_IAM]
