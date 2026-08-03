@@ -31,20 +31,22 @@ jobs:
           )
 
           for candidate in "${CANDIDATES[@]}"; do
-            if command -v "$candidate" >/dev/null 2>&1; then
+            if ! command -v "$candidate" >/dev/null 2>&1; then
+              continue
+            fi
+
+            actual_version="$("$candidate" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+            if [ "$actual_version" = "$MATRIX_PYTHON_VERSION" ]; then
               PYTHON_CMD="$candidate"
               break
             fi
+
+            echo "Skipping ${candidate}: reports Python ${actual_version}, expected ${MATRIX_PYTHON_VERSION}" >&2
           done
 
           if [ -z "${PYTHON_CMD:-}" ]; then
-            echo "Unable to find a Python executable."
-            exit 1
-          fi
-
-          actual_version="$("$PYTHON_CMD" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-          if [ "$actual_version" != "$MATRIX_PYTHON_VERSION" ]; then
-            echo "Expected Python ${MATRIX_PYTHON_VERSION}, but ${PYTHON_CMD} reports ${actual_version}." >&2
+            echo "Unable to find a Python executable matching ${MATRIX_PYTHON_VERSION}." >&2
+            echo "Checked candidates: ${CANDIDATES[*]}" >&2
             exit 1
           fi
 

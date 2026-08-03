@@ -138,7 +138,12 @@ def run_outreach(
         print(f"outreach log not found: {path}")
         if summary:
             module._write_summary(module.empty_summary(), summary)
-        return False if strict else True
+        if strict and not allow_no_data:
+            return False
+        if strict and allow_no_data:
+            print("strict ethical checks allow missing outreach log via --allow-no-data-in-strict")
+            return True
+        return True
 
     outreach_summary = module.summarize(path)
     module._print_summary(outreach_summary)
