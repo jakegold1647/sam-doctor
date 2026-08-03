@@ -21,7 +21,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts
-          python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend --summary artifacts/distribution-summary.md
+          python scripts/check-launch.py \
+            --skip-outreach \
+            --output-format json \
+            --output artifacts/distribution.json \
+            --append-csv artifacts/distribution.csv \
+            --print-trend \
+            --summary artifacts/distribution-summary.md
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
         if: always()

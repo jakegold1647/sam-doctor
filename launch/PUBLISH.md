@@ -19,7 +19,7 @@ Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 For a quick machine-check before tag push, run:
 
 ```powershell
-python scripts/check-launch-readiness.py
+python scripts/check-launch.py --skip-outreach
 ```
 
 ## 2. Publish the public tool

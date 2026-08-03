@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""Run launch-readiness, distribution, and outreach checks in one command."""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import sys
+from pathlib import Path
+
+from typing import Any, Callable
+
+
+def _load_script(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem, str(path))
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_launch_readiness_module(repo_root: Path):
+    return _load_script(repo_root / "scripts" / "check-launch-readiness.py")
+
+
+def _load_distribution_module(repo_root: Path):
+    return _load_script(repo_root / "scripts" / "check-distribution.py")
+
+
+def _load_outreach_module(repo_root: Path):
+    return _load_script(repo_root / "scripts" / "check-outreach.py")
+
+
+def run_launch_readiness(
+    repo_root: Path, loader: Callable[[Path], Any] = _load_launch_readiness_module
+) -> tuple[bool, int, int]:
+    module = loader(repo_root)
+    result = module._run_checks(repo_root)
+    return bool(result.ok), int(result.passed), int(result.failed)
+
+
+def run_distribution(
+    repo_root: Path,
+    repo: str,
+    token: str | None,
+    output_format: str = "text",
+    output: str = "",
+    append_csv: str = "",
+    summary: str = "",
+    print_trend: bool = False,
+    loader: Callable[[Path], Any] = _load_distribution_module,
+) -> bool:
+    module = loader(repo_root)
+    try:
+        snapshot = module._collect_snapshot(repo, token)
+    except RuntimeError as error:
+        print(f"distribution snapshot unavailable: {error}")
+        return False
+
+    previous = None
+    if print_trend or summary:
+        if append_csv:
+            previous = module._read_last_csv_row(append_csv)
+        elif summary:
+            previous = module._read_last_csv_row((Path(repo_root) / "artifacts" / "distribution.csv").as_posix())
+
+    if output_format == "json":
+        print(module.json.dumps(snapshot, indent=2, sort_keys=True))
+        if output:
+            module._ensure_parent_directory(output)
+            with open(output, "w", encoding="utf-8") as stream:
+                module.json.dump(snapshot, stream, indent=2, sort_keys=True)
+    if append_csv:
+        module._append_csv(snapshot, append_csv)
+    if summary:
+        module._ensure_parent_directory(summary)
+        module._write_summary(snapshot, previous, summary)
+    if print_trend:
+        if previous is None:
+            print("trend: no previous snapshot yet, establishing baseline")
+        else:
+            print(f"trend: {module._trend_text(snapshot, previous)}")
+
+    if output_format != "json":
+        print(f"sam-doctor distribution snapshot for {snapshot['repo']}")
+        print(f"repo_stars: {snapshot['repo_stars']}")
+        print(f"forks: {snapshot['forks']}")
+        print(f"open_issues: {snapshot['open_issues']}")
+        print(f"watchers: {snapshot['watchers']}")
+        print(f"releases: {snapshot['releases']}")
+        print(f"discussions_ping: {snapshot['discussions_ping']}")
+        pypi_status = snapshot["pypi_status"]
+        marketplace_status = snapshot["marketplace_status"]
+        site_status = snapshot["site_status"]
+        print(f"pypi_status: 200={pypi_status['ok']} ({pypi_status['details']})")
+        print(
+            "marketplace_status: 200="
+            f"{marketplace_status['ok']} ({marketplace_status['details']})"
+        )
+        print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
+
+    return True
+
+
+def run_outreach(
+    repo_root: Path,
+    outreach_log: str,
+    strict: bool = False,
+    loader: Callable[[Path], Any] = _load_outreach_module,
+) -> bool:
+    module = loader(repo_root)
+    path = Path(outreach_log)
+    if not path.exists():
+        print(f"outreach log not found: {path}")
+        return False if strict else True
+
+    summary = module.summarize(path)
+    module._print_summary(summary)
+
+    if strict and summary["ethical_signal"] != "strong":
+        print(f"ethical_signal is {summary['ethical_signal']}, not strong")
+        return False
+    return True
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run launch checks for a publish attempt.",
+    )
+    parser.add_argument(
+        "--repo-root",
+        default=str(Path(__file__).resolve().parents[1]),
+        help="Repository root to validate.",
+    )
+    parser.add_argument(
+        "--repo",
+        default="jakegold1647/sam-doctor",
+        help="GitHub repository owner/name for distribution check.",
+    )
+    parser.add_argument("--token", default="", help="GitHub token for distribution/check calls.")
+    parser.add_argument("--skip-distribution", action="store_true", help="Skip distribution snapshot.")
+    parser.add_argument(
+        "--output-format",
+        choices=("text", "json"),
+        default="text",
+        help="Distribution output format.",
+    )
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Optional output path for distribution JSON.",
+    )
+    parser.add_argument(
+        "--append-csv",
+        default="",
+        help="Append distribution rows to CSV path.",
+    )
+    parser.add_argument(
+        "--summary",
+        default="",
+        help="Write distribution summary file.",
+    )
+    parser.add_argument(
+        "--print-trend",
+        action="store_true",
+        help="Print distribution trend lines.",
+    )
+    parser.add_argument(
+        "--outreach-log",
+        default="launch/outreach-log-template.csv",
+        help="Outreach log CSV for ethical check.",
+    )
+    parser.add_argument(
+        "--skip-outreach",
+        action="store_true",
+        help="Skip outreach signal check.",
+    )
+    parser.add_argument(
+        "--strict-ethical",
+        action="store_true",
+        help="Fail if outreach ethical signal is not strong.",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = _parse_args()
+    repo_root = Path(args.repo_root)
+    ok = True
+
+    launch_ok, launch_passed, launch_failed = run_launch_readiness(repo_root)
+    if not launch_ok:
+        ok = False
+    print(f"launch-readiness checks: {launch_passed} passed, {launch_failed} failed")
+
+    if not args.skip_distribution:
+        token = args.token or None
+        distribution_ok = run_distribution(
+            repo_root,
+            repo=args.repo,
+            token=token,
+            output_format=args.output_format,
+            output=args.output,
+            append_csv=args.append_csv,
+            summary=args.summary,
+            print_trend=args.print_trend,
+        )
+        if not distribution_ok:
+            ok = False
+
+    if not args.skip_outreach:
+        if not run_outreach(repo_root, args.outreach_log, strict=args.strict_ethical):
+            ok = False
+
+    if ok:
+        print("launch check: PASS")
+        return 0
+    print("launch check: FAIL")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

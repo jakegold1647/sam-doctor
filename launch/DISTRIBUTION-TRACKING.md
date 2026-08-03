@@ -9,7 +9,7 @@ focused and reviewable.
 Run:
 
 ```bash
-python scripts/check-distribution.py --output-format json --append-csv distribution.csv --print-trend --summary distribution-summary.md
+python scripts/check-launch.py --append-csv distribution.csv --summary distribution-summary.md --print-trend
 ```
 
 Recommended cadence: Monday + Friday after any outreach batch.
