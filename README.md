@@ -124,6 +124,18 @@ an issue when a report is wrong, unclear, or missing a failure pattern. For a
 new rule, include only a sanitized error excerpt and the safe next check you
 expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 
+## Distribution and ethics
+
+SAM Doctor is grown through practical conversations and feedback, not star
+incentives. If you run outreach, ask for one realistic use case first, then
+share the report and a short ask for permission to improve coverage.
+
+Track progress with:
+
+```bash
+python scripts/check-distribution.py
+```
+
 ## Guides
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)

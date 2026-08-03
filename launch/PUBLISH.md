@@ -40,6 +40,9 @@ Do not activate a purchase button until the product description includes the del
 
 Use `launch/LAUNCH-PLAN.md` and `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free tool and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
 
+Use `python scripts/check-distribution.py` periodically (or before major outreach bursts)
+to confirm star growth, GitHub activity, and channel visibility remain on track.
+
 ## Definition of the first revenue milestone
 
 Three $39 founder purchases from people who are not friends or family. Record the buyer type, problem, acquisition channel, and feedback without storing their logs or credentials.

@@ -77,6 +77,9 @@ you have helped. The best opening is a short answer to their actual error plus a
   generic "new tool" announcement.
 - Ask collaborators and testers for blunt feedback, not reciprocal stars.
 
+Run `python scripts/check-distribution.py` weekly and track signals in
+[`launch/DISTRIBUTION-TRACKING.md`](DISTRIBUTION-TRACKING.md) before posting.
+
 ## Metrics to track
 
 Record only aggregate numbers and voluntary feedback. Do not retain customer logs.
@@ -84,6 +87,7 @@ Record only aggregate numbers and voluntary feedback. Do not retain customer log
 | Metric | Week-one target | Why it matters |
 | --- | --- | --- |
 | Qualified conversations | 10 | Measures whether the problem is real and reachable. |
+| Distribution snapshots | 4 | Keeps the growth loop human and evidence-driven. |
 | Sanitized real-log trials | 3 | Validates the diagnostic workflow. |
 | Actionable issues or rule requests | 2 | Produces an evidence-based roadmap. |
 | Organic stars | 3-10 | Indicates that a visitor wants to follow the project. |

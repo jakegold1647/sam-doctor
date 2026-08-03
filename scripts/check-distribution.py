@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Collect public launch signals for SAM Doctor.
+
+This script keeps the launch loop human and ethical by reporting distribution
+signals without guessing popularity from private or manipulated data.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from typing import Any, Tuple
+
+
+GITHUB_REPO = "jakegold1647/sam-doctor"
+PYPI_PROJECT = "sam-doctor"
+MARKETPLACE_URL = (
+    "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
+)
+SITE_URL = "https://jakegold1647.github.io/sam-doctor/"
+
+
+@dataclass
+class Status:
+    name: str
+    ok: bool
+    details: str
+
+
+def _get_json(url: str, token: str | None) -> Tuple[Any, int]:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "sam-doctor-launch-check",
+        },
+    )
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+
+    try:
+        with urllib.request.urlopen(req, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8")), response.status
+    except urllib.error.HTTPError as exc:  # pragma: no cover - network dependent
+        raise RuntimeError(f"{exc.code} {exc.reason} @ {url}") from exc
+    except urllib.error.URLError as exc:  # pragma: no cover - network dependent
+        raise RuntimeError(f"Network error @ {url}: {exc}") from exc
+
+
+def _check_http_status(url: str) -> Status:
+    try:
+        with urllib.request.urlopen(
+            urllib.request.Request(url, method="HEAD"), timeout=20
+        ) as response:
+            return Status(url, response.status == 200, str(response.status))
+    except urllib.error.HTTPError as exc:
+        return Status(url, False, f"{exc.code} {exc.reason}")
+    except urllib.error.URLError as exc:
+        return Status(url, False, f"error: {exc.reason}")
+
+
+def _count_discussions(repo: str, token: str | None) -> int:
+    # Discussions is not always visible without auth; return 0 if it fails.
+    url = f"https://api.github.com/repos/{repo}/discussions?per_page=1"
+    try:
+        payload, _ = _get_json(url, token)
+    except RuntimeError as error:
+        print(f"# discussions unavailable: {error}", file=sys.stderr)
+        return 0
+
+    return len(payload) if isinstance(payload, list) else 0
+
+
+def _list_release_count(repo: str, token: str | None) -> int:
+    url = f"https://api.github.com/repos/{repo}/releases?per_page=100"
+    try:
+        payload, _ = _get_json(url, token)
+    except RuntimeError as error:
+        print(f"# releases unavailable: {error}", file=sys.stderr)
+        return 0
+
+    return len(payload) if isinstance(payload, list) else 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--repo",
+        default=GITHUB_REPO,
+        help="GitHub repository owner/name",
+    )
+    parser.add_argument(
+        "--token",
+        default=os.environ.get("GITHUB_TOKEN", ""),
+        help="Optional GitHub API token",
+    )
+    args = parser.parse_args()
+
+    repo = args.repo
+    token = args.token or None
+
+    print(f"sam-doctor distribution snapshot for {repo}")
+
+    repo_url = f"https://api.github.com/repos/{repo}"
+    try:
+        data, _ = _get_json(repo_url, token)
+    except RuntimeError as error:
+        print(f"Unable to read repo metadata: {error}")
+        return 1
+
+    release_count = _list_release_count(repo, token)
+    discussions_hint = _count_discussions(repo, token)
+    pypi_status = _check_http_status(f"https://pypi.org/pypi/{PYPI_PROJECT}/json")
+    marketplace_status = _check_http_status(MARKETPLACE_URL)
+    site_status = _check_http_status(SITE_URL)
+
+    print(f"repo_stars: {data.get('stargazers_count', 'unknown')}")
+    print(f"forks: {data.get('forks_count', 'unknown')}")
+    print(f"open_issues: {data.get('open_issues_count', 'unknown')}")
+    print(f"watchers: {data.get('subscribers_count', 'unknown')}")
+    print(f"releases: {release_count}")
+    print(f"discussions_ping: {discussions_hint}")
+    print(f"pypi_status: 200={pypi_status.ok} ({pypi_status.details})")
+    print(f"marketplace_status: 200={marketplace_status.ok} ({marketplace_status.details})")
+    print(f"site_status: 200={site_status.ok} ({site_status.details})")
+
+    if marketplace_status.ok and pypi_status.ok:
+        print("channels: marketplace, pypi, pages, and github release metadata are visible")
+
+    if data.get("stargazers_count", 0) == 0:
+        print("signal: no stars yet, keep outreach conversation-first")
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
