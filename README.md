@@ -32,7 +32,7 @@ official documentation.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.4.0/sam_doctor-0.4.0-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.4.1/sam_doctor-0.4.1-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor rules
@@ -44,7 +44,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.4.1"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -111,8 +111,9 @@ command and policy change before applying it. SAM Doctor is diagnostic help,
 not security, legal, or production-operations advice.
 
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
-and common GitHub token formats before matched evidence is displayed. This is a
-helpful guardrail, not a secret scanner: review a report before sharing it.
+bearer tokens, JWT-style tokens, and common GitHub token formats before matched
+evidence is displayed. This is a helpful guardrail, not a secret scanner:
+review a report before sharing it.
 
 ## Development
 

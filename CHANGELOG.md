@@ -2,6 +2,10 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.4.1 - 2026-08-03
+
+- Redacted bearer tokens and JWT-shaped tokens when they appear in matched evidence.
+
 ## v0.4.0 - 2026-08-02
 
 - Added a direct diagnostic when a GitHub Actions job lacks `id-token: write`.
