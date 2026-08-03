@@ -183,6 +183,10 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
   --strict --min-feedback-ratio 100
 ```
 
+For a combined snapshot, `scripts/check-launch.py` also writes
+`artifacts/outreach-summary.md` with an `ethical_growth_score` and concrete
+`next_growth_actions` to guide the next outreach batch.
+
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
 tracking notes and fill one row per real contact.
 

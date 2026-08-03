@@ -16,6 +16,8 @@ All notable changes to SAM Doctor are documented here.
   docs to match release-tag behavior.
 - Added a lightweight outreach tracking template to support the ethical,
   conversation-first growth loop.
+- Added an organic-growth score and concrete next actions to outreach summaries
+  so real follow-through is easier to measure without incentivizing stars.
 - Replaced placeholder install examples with verified v0.7.4 commands and
   removed the unavailable PyPI badge from the first-use path.
 - Clarified the GitHub Actions example so diagnostics still run after a failed

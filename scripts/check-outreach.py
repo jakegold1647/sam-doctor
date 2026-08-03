@@ -19,6 +19,7 @@ _EMPTY_SUMMARY: dict[str, object] = {
     "voluntary_stars": 0,
     "voluntary_stars_with_feedback": 0,
     "star_feedback_ratio": 0.0,
+    "organic_growth_score": 0.0,
     "ethical_signal_strength": 0.0,
     "positive_outcome_count": 0,
     "repeat_contacts": 0,
@@ -73,6 +74,33 @@ def _contains_feedback_signal(value: str) -> bool:
     if not text:
         return False
     return any(marker in text for marker in _FEEDBACK_MARKERS)
+
+
+def _growth_score(
+    voluntary_stars: int,
+    stars_with_feedback: int,
+    repeat_contacts: int,
+    rows_with_feedback: int,
+    rows: int,
+) -> float:
+    """Return a compact ethical-growth score in the 0-100 range."""
+
+    rows_value = min(100.0, (rows_with_feedback / rows * 100.0)) if rows > 0 else 0.0
+    feedback_value = (
+        min(100.0, (stars_with_feedback / voluntary_stars * 100.0))
+        if voluntary_stars > 0
+        else 0.0
+    )
+    repeat_value = (
+        min(100.0, (repeat_contacts / voluntary_stars * 100.0))
+        if voluntary_stars > 0
+        else 0.0
+    )
+
+    return round(
+        (0.55 * feedback_value) + (0.25 * rows_value) + (0.20 * repeat_value),
+        1,
+    )
 
 
 def _ensure_parent_directory(path: str) -> None:
@@ -215,18 +243,27 @@ def summarize(path: Path) -> dict[str, object]:
     problem_areas = _count((row.get("problem_area", "") for row in rows))
     stages = _count((row.get("conversation_stage", "") for row in rows))
 
+    rows_with_feedback = sum(
+        1 for row in rows if _contains_feedback_signal(row.get("feedback_signal", ""))
+    )
+
     return {
         "rows": len(rows),
         "voluntary_stars": voluntary_stars,
         "voluntary_stars_with_feedback": voluntary_stars_with_feedback,
         "star_feedback_ratio": star_feedback_ratio,
+        "organic_growth_score": _growth_score(
+            voluntary_stars,
+            voluntary_stars_with_feedback,
+            repeat_contacts,
+            rows_with_feedback,
+            len(rows),
+        ),
         "ethical_signal_strength": min(100.0, star_feedback_ratio),
         "positive_outcome_count": positive_signals,
         "repeat_contacts": repeat_contacts,
         "stars_without_feedback": stars_without_feedback,
-        "rows_with_feedback": sum(
-            1 for row in rows if _contains_feedback_signal(row.get("feedback_signal", ""))
-        ),
+        "rows_with_feedback": rows_with_feedback,
         "ethical_signal": (
             "strong"
             if stars_without_feedback == 0 and voluntary_stars > 0
@@ -249,6 +286,7 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- voluntary_stars: {summary['voluntary_stars']}",
         f"- voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}",
         f"- star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%",
+        f"- organic_growth_score: {summary['organic_growth_score']:.1f}%",
         f"- ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%",
         f"- feedback_signals: {summary['positive_outcome_count']}",
         f"- repeat_contacts: {summary['repeat_contacts']}",
@@ -276,6 +314,7 @@ def _print_summary(summary: dict[str, object]) -> None:
         f"voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}"
     )
     print(f"star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%")
+    print(f"organic_growth_score: {summary['organic_growth_score']:.1f}%")
     print(f"ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%")
     print(f"rows_with_feedback: {summary['rows_with_feedback']}")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
