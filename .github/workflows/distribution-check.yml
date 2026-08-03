@@ -3,6 +3,8 @@ name: Distribution health check
 on:
   schedule:
     - cron: "0 */12 * * *"
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       strict-distribution-during-release:
@@ -32,10 +34,17 @@ jobs:
       - name: Run distribution snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STRICT_DURING_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
+          STRICT_DURING_RELEASE: >-
+            ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true'
+            || (github.event_name == 'release' && github.event.release.prerelease == false) }}
           STRICT_ETHICAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-ethical'] == 'true' }}
           MIN_FEEDBACK_RATIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['min-feedback-ratio'] || '100' }}
+          RELEASED_FROM_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
         run: |
+          if [ "$RELEASED_FROM_TAG" != "" ] && [ "$STRICT_ETHICAL" != "true" ]; then
+            STRICT_ETHICAL=""
+          fi
+
           strict_flags=""
           if [ "$STRICT_DURING_RELEASE" = "true" ]; then
             strict_flags="--strict-distribution-during-release"
