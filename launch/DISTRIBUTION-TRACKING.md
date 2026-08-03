@@ -9,7 +9,7 @@ focused and reviewable.
 Run:
 
 ```bash
-python scripts/check-distribution.py --output-format json --append-csv distribution.csv --print-trend
+python scripts/check-distribution.py --output-format json --append-csv distribution.csv --print-trend --summary distribution-summary.md
 ```
 
 Recommended cadence: Monday + Friday after any outreach batch.
@@ -24,6 +24,8 @@ Automated monitoring:
   `distribution.json` and `distribution.csv` so you can compare snapshots over time.
 - The run also appends a trend-friendly history row to `distribution.csv` for quick
   local and spreadsheet analysis.
+- A summary note is also emitted as `distribution-summary.md` for quick paste into
+  launch notes.
 
 ## What to watch
 

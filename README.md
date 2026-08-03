@@ -133,7 +133,7 @@ share the report and a short ask for permission to improve coverage.
 Track progress with:
 
 ```bash
-python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend
+python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend --summary artifacts/distribution-summary.md
 ```
 
 ## Guides
