@@ -14,6 +14,20 @@ from pathlib import Path
 from typing import Iterable, Mapping
 
 
+_EMPTY_SUMMARY: dict[str, object] = {
+    "rows": 0,
+    "voluntary_stars": 0,
+    "positive_outcome_count": 0,
+    "repeat_contacts": 0,
+    "stars_without_feedback": 0,
+    "top_channels": [],
+    "top_outcomes": [],
+    "top_problem_areas": [],
+    "top_stages": [],
+    "ethical_signal": "no_data",
+}
+
+
 def _to_bool(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
@@ -52,26 +66,29 @@ def _contains_feedback_signal(value: str) -> bool:
     )
 
 
+def _ensure_parent_directory(path: str) -> None:
+    parent = str(Path(path).parent)
+    if parent:
+        Path(parent).mkdir(parents=True, exist_ok=True)
+
+
+def _normalize_text(value: str) -> str:
+    return (value or "").strip()
+
+
+def empty_summary() -> dict[str, object]:
+    return dict(_EMPTY_SUMMARY)
+
+
 def summarize(path: Path) -> dict[str, object]:
     rows = _read_rows(path)
     if not rows:
-        return {
-            "rows": 0,
-            "voluntary_stars": 0,
-            "positive_outcome_count": 0,
-            "repeat_contacts": 0,
-            "stars_without_feedback": 0,
-            "top_channels": [],
-            "top_outcomes": [],
-            "top_problem_areas": [],
-            "top_stages": [],
-            "ethical_signal": "no_data",
-        }
+        return empty_summary()
 
     voluntary_stars = sum(_to_bool(row.get("voluntary_star", "")) for row in rows)
     repeat_contacts = sum(_to_bool(row.get("repeat_contact", "")) for row in rows)
     positive_signals = sum(
-        1 for row in rows if "asked" in (row.get("feedback_signal", "") or "").lower()
+        1 for row in rows if "asked" in _normalize_text(row.get("feedback_signal", "")).lower()
     )
     stars_without_feedback = sum(
         1
@@ -102,6 +119,25 @@ def summarize(path: Path) -> dict[str, object]:
         "top_problem_areas": _sorted_counts(problem_areas)[:3],
         "top_stages": _sorted_counts(stages)[:3],
     }
+
+
+def _write_summary(summary: dict[str, object], path: str) -> None:
+    _ensure_parent_directory(path)
+    lines = [
+        "# SAM Doctor ethical outreach status",
+        f"- rows: {summary['rows']}",
+        f"- voluntary_stars: {summary['voluntary_stars']}",
+        f"- feedback_signals: {summary['positive_outcome_count']}",
+        f"- repeat_contacts: {summary['repeat_contacts']}",
+        f"- stars_without_feedback: {summary['stars_without_feedback']}",
+        f"- ethical_signal: {summary['ethical_signal']}",
+        f"- top_channels: {summary['top_channels']}",
+        f"- top_outcomes: {summary['top_outcomes']}",
+        f"- top_problem_areas: {summary['top_problem_areas']}",
+        f"- top_stages: {summary['top_stages']}",
+    ]
+    with open(path, "w", encoding="utf-8") as stream:
+        stream.write("\n".join(lines) + "\n")
 
 
 def _print_summary(summary: dict[str, object]) -> None:
