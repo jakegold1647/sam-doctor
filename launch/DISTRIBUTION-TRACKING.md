@@ -54,4 +54,18 @@ Automated monitoring:
 - voluntary stars
 - repeat users / re-runs
 
+To reduce drift, copy this into a weekly `outreach-log-template.csv` row in
+`launch/outreach-log-template.csv` and keep it in your notes folder:
+
+- week
+- date
+- contact_channel
+- problem_area
+- conversation_stage
+- next_action
+- voluntary_star
+- outcome
+- feedback_signal
+- repeat_contact
+
 Keep this honest and lightweight. The signal you want is repeated, practical use.

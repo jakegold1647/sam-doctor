@@ -138,6 +138,9 @@ Track progress with:
 python scripts/check-distribution.py --output-format json --output artifacts/distribution.json --append-csv artifacts/distribution.csv --print-trend --summary artifacts/distribution-summary.md
 ```
 
+For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
+tracking notes and fill one row per real contact.
+
 ## Guides
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
