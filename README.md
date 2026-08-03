@@ -95,6 +95,7 @@ expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 ## Guides
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
+- [Find the first useful error in a CloudFormation rollback](docs/cloudformation-first-failure.md)
 
 ## Scope and safety
 
