@@ -10,6 +10,8 @@ All notable changes to SAM Doctor are documented here.
   manual listing publish steps.
 - Updated release automation so plain tags (`vX.Y.Z`) publish as public releases
   while pre-release tags keep prerelease behavior.
+- Hardened release automation for existing tag re-runs and clarified PyPI/launch
+  docs to match release-tag behavior.
 - Added Marketplace and PyPI badges to the README launch header.
 
 ## v0.7.4 - 2026-08-03
