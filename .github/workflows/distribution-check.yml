@@ -27,6 +27,7 @@ jobs:
             --output artifacts/distribution.json \
             --append-csv artifacts/distribution.csv \
             --print-trend \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
             --summary artifacts/distribution-summary.md \
             --outreach-summary artifacts/outreach-summary.md
       - name: Upload snapshot

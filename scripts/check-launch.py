@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -160,10 +161,14 @@ def _parse_args() -> argparse.Namespace:
         default="jakegold1647/sam-doctor",
         help="GitHub repository owner/name for distribution check.",
     )
-    parser.add_argument("--token", default="", help="GitHub token for distribution/check calls.")
+    parser.add_argument(
+        "--token",
+        default=os.environ.get("GITHUB_TOKEN", ""),
+        help="GitHub token for distribution/check calls.",
+    )
     parser.add_argument(
         "--check-launch-token",
-        default="",
+        default=os.environ.get("GITHUB_TOKEN", ""),
         help="GitHub token for launch metadata checks.",
     )
     parser.add_argument(
