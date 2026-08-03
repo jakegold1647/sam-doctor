@@ -31,4 +31,10 @@ jobs:
         with:
           log-file: examples/oidc-assume-role-failure.txt
           summary: "true"
-      - run: test "${{ steps.action-check.outputs.finding-count }}" = "1"
+      - name: Assert expected finding count from bundled sample
+        run: |
+          python - <<'PY'
+          finding_count = int("${{ steps.action-check.outputs.finding-count }}".strip())
+          if finding_count != 1:
+              raise SystemExit(f"Expected 1 finding, got {finding_count}")
+          PY
