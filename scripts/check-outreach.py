@@ -23,12 +23,27 @@ _EMPTY_SUMMARY: dict[str, object] = {
     "positive_outcome_count": 0,
     "repeat_contacts": 0,
     "stars_without_feedback": 0,
+    "rows_with_feedback": 0,
     "top_channels": [],
     "top_outcomes": [],
     "top_problem_areas": [],
     "top_stages": [],
     "ethical_signal": "no_data",
 }
+
+
+_FEEDBACK_MARKERS = (
+    "accepted",
+    "follow",
+    "asked",
+    "pending",
+    "scheduled",
+    "interested",
+    "opened",
+    "reported",
+    "used",
+    "helpful",
+)
 
 
 def _to_bool(value: str) -> bool:
@@ -57,16 +72,7 @@ def _contains_feedback_signal(value: str) -> bool:
     text = (value or "").strip().lower()
     if not text:
         return False
-    return any(
-        marker in text
-        for marker in (
-            "follow",
-            "asked",
-            "accepted",
-            "scheduled",
-            "pending",
-        )
-    )
+    return any(marker in text for marker in _FEEDBACK_MARKERS)
 
 
 def _ensure_parent_directory(path: str) -> None:
@@ -196,7 +202,7 @@ def summarize(path: Path) -> dict[str, object]:
     )
     repeat_contacts = sum(_to_bool(row.get("repeat_contact", "")) for row in rows)
     positive_signals = sum(
-        1 for row in rows if "asked" in _normalize_text(row.get("feedback_signal", "")).lower()
+        1 for row in rows if _contains_feedback_signal(row.get("feedback_signal", ""))
     )
     stars_without_feedback = sum(
         1
@@ -218,6 +224,9 @@ def summarize(path: Path) -> dict[str, object]:
         "positive_outcome_count": positive_signals,
         "repeat_contacts": repeat_contacts,
         "stars_without_feedback": stars_without_feedback,
+        "rows_with_feedback": sum(
+            1 for row in rows if _contains_feedback_signal(row.get("feedback_signal", ""))
+        ),
         "ethical_signal": (
             "strong"
             if stars_without_feedback == 0 and voluntary_stars > 0
@@ -244,6 +253,7 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- feedback_signals: {summary['positive_outcome_count']}",
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
+        f"- rows_with_feedback: {summary['rows_with_feedback']}",
         f"- ethical_signal: {summary['ethical_signal']}",
         f"- recommendation: {_ethical_recommendation(summary)}",
     ]
@@ -267,6 +277,7 @@ def _print_summary(summary: dict[str, object]) -> None:
     )
     print(f"star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%")
     print(f"ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%")
+    print(f"rows_with_feedback: {summary['rows_with_feedback']}")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
     print(f"feedback_signals: {summary['positive_outcome_count']}")
     print(f"stars_without_feedback: {summary['stars_without_feedback']}")
