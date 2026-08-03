@@ -31,6 +31,6 @@ It does not upload logs, access an AWS account, modify infrastructure, or promis
 1. Replace the placeholder GitHub release link in `site/index.html`.
 2. Replace the Lemon Squeezy checkout link in `site/index.html`.
 3. Create a clearly named $39 one-time product with the copy above.
-4. Publish the free alpha repository and add one terminal screenshot or short demo video.
+4. Publish the free repository and add one terminal screenshot or short demo video.
 5. Do not enable a checkout until the refund language is visible.
 
