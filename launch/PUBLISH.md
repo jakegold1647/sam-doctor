@@ -16,7 +16,7 @@ sam-doctor demo
 Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 `CHANGELOG.md`, and the release note all agree.
 
-## 2. Publish the public alpha
+## 2. Publish the public tool
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
 2. Push the matching `vX.Y.Z` tag. The `Publish release` workflow builds the
@@ -38,7 +38,7 @@ Do not activate a purchase button until the product description includes the del
 
 ## 4. First distribution
 
-Use `launch/LAUNCH-PLAN.md` and `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free alpha and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
+Use `launch/LAUNCH-PLAN.md` and `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free tool and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
 
 ## Definition of the first revenue milestone
 
