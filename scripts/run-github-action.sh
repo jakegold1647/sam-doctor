@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -61,14 +61,7 @@ fi
 
 "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
-finding_count="$($PYTHON_BIN - "$report_path" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as report_file:
-    print(json.load(report_file)["finding_count"])
-PY
-)"
+finding_count="$($PYTHON_BIN -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
 
 if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
   echo "Could not parse finding-count from JSON output: $finding_count" >&2
