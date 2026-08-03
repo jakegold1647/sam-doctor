@@ -50,9 +50,9 @@ python scripts/check-launch.py \
 7. If this tag includes a pre-release suffix, convert to full release only after
    internal sign-off. For plain `vX.Y.Z` releases, Marketplace and PyPI publish
    flows can use the release as soon as release notes and checks are green.
-8. Stable release publishes trigger `distribution-check.yml` automatically. If you
-   want hard gating immediately after publish, rerun the workflow manually with
-   `strict-distribution-during-release=true` plus `strict-ethical=true` as needed.
+8. Stable release publishes trigger `distribution-check.yml` automatically for a
+   baseline run, then `pypi-publish.yml` triggers a strict rerun with
+   `strict-distribution-during-release=true` after PyPI upload.
 
 For the GitHub Action listing, follow `launch/MARKETPLACE.md` after the
 repository owner has reviewed and accepted GitHub's Marketplace Developer

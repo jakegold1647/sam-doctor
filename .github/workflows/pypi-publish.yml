@@ -4,7 +4,10 @@ on:
   release:
     types: [published]
 
-permissions: {}
+permissions:
+  contents: read
+  actions: write
+  id-token: write
 
 jobs:
   publish:
@@ -15,6 +18,7 @@ jobs:
       url: https://pypi.org/project/sam-doctor/
     permissions:
       contents: read
+      actions: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +29,12 @@ jobs:
       - run: python -m build
       - name: Publish distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Trigger strict post-release launch health check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run distribution-check.yml \
+            --ref "${{ github.event.release.tag_name }}" \
+            -f strict-distribution-during-release=true \
+            -f strict-ethical=false \
+            -f min-feedback-ratio=100

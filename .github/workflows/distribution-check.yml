@@ -35,8 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STRICT_DURING_RELEASE: >-
-            ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true'
-            || (github.event_name == 'release' && github.event.release.prerelease == false) }}
+            ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
           STRICT_ETHICAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-ethical'] == 'true' }}
           MIN_FEEDBACK_RATIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['min-feedback-ratio'] || '100' }}
           RELEASED_FROM_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
