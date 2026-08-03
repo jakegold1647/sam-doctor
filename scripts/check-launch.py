@@ -139,6 +139,9 @@ def run_outreach(
             strict_ok, strict_reason = passes_strict(outreach_summary, min_feedback_ratio)
             if not strict_ok:
                 print(strict_reason)
+                recommendation = getattr(module, "_ethical_recommendation", None)
+                if callable(recommendation):
+                    print(f"recommendation: {recommendation(outreach_summary)}")
                 return False
         else:
             if outreach_summary["ethical_signal"] != "strong":
