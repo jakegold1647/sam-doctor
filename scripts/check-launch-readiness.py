@@ -16,7 +16,7 @@ import urllib.request
 try:
     import tomllib  # type: ignore[unused-ignore]
 except ModuleNotFoundError:  # pragma: no cover - Python <3.11
-    import tomli as tomllib  # type: ignore[import-not-found]
+    tomllib = None
 
 
 EXPECTED_TOPICS = {
@@ -79,11 +79,46 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _extract_project_version_from_pyproject(pyproject: str) -> str | None:
+    inside_project = False
+
+    for raw_line in pyproject.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            inside_project = line[1:-1].strip() == "project"
+            continue
+
+        if not inside_project:
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            break
+
+        if line.startswith("version"):
+            key, _, value = line.partition("=")
+            if key.strip() == "version":
+                cleaned = value.split("#", 1)[0].strip()
+                if len(cleaned) >= 2 and cleaned[0] == cleaned[-1] and cleaned[0] in {'"', "'"}:
+                    return cleaned[1:-1]
+
+    return None
+
+
 def _version_from_pyproject(root: Path) -> str:
     pyproject = _read_text(root / "pyproject.toml")
-    data = tomllib.loads(pyproject)
-    project = data.get("project", {})
-    return project["version"]
+    if tomllib is not None:
+        data = tomllib.loads(pyproject)
+        project = data.get("project", {})
+        if "version" in project and isinstance(project["version"], str):
+            return project["version"]
+
+    version = _extract_project_version_from_pyproject(pyproject)
+    if version is None:
+        raise ValueError("Could not parse version from pyproject.toml")
+    return version
 
 
 def _version_from_init(root: Path) -> str:

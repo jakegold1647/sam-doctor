@@ -141,6 +141,7 @@ def test_summary_lines_includes_launch_setup():
 
     lines = mod._summary_lines(snapshot, None)
     assert any(line.startswith("- launch-setup: partial") for line in lines)
+    assert any("marketplace_pre_release_listed" in line for line in lines)
     assert any("launch_setup_topics_count" in line for line in lines)
 
 
@@ -164,3 +165,27 @@ def test_summary_lines_no_launch_readiness_does_not_crash():
     lines = mod._summary_lines(snapshot, None)
     assert any(line.startswith("# SAM Doctor launch status") for line in lines)
     assert any("launch_setup_missing_topics" in line for line in lines)
+
+
+def test_marketplace_pre_release_marker_is_detected(monkeypatch):
+    mod = _load_distribution_script()
+
+    class DummyResponse:
+        def __init__(self, body: str, status: int = 200):
+            self._body = body
+            self.status = status
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return self._body.encode("utf-8")
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", lambda _request, timeout=20: DummyResponse("<html>Latest pre-release</html>"))
+    listing = mod._marketplace_pre_release_status("https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics")
+
+    assert listing["ok"] is True
+    assert listing["pre_release_listed"] is True

@@ -77,6 +77,34 @@ def _check_http_status(url: str) -> Status:
         return Status(url, False, f"error: {exc.reason}")
 
 
+def _marketplace_pre_release_status(url: str) -> dict[str, object]:
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "sam-doctor-launch-check"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = response.read().decode("utf-8", errors="replace")
+            has_pre_release_marker = "Latest pre-release" in body
+            return {
+                "ok": response.status == 200,
+                "details": str(response.status),
+                "pre_release_listed": has_pre_release_marker,
+            }
+    except urllib.error.HTTPError as exc:
+        return {
+            "ok": False,
+            "details": f"{exc.code} {exc.reason}",
+            "pre_release_listed": False,
+        }
+    except urllib.error.URLError as exc:
+        return {
+            "ok": False,
+            "details": f"error: {exc.reason}",
+            "pre_release_listed": False,
+        }
+
+
 def _normalize_list(value: object) -> list[str]:
     if not isinstance(value, (list, tuple)):
         return []
@@ -136,6 +164,7 @@ def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
 
     pypi_status = _check_http_status(f"https://pypi.org/pypi/{PYPI_PROJECT}/json")
     marketplace_status = _check_http_status(MARKETPLACE_URL)
+    marketplace_listing = _marketplace_pre_release_status(MARKETPLACE_URL)
     site_status = _check_http_status(SITE_URL)
 
     return {
@@ -151,6 +180,8 @@ def _collect_snapshot(repo: str, token: str | None) -> dict[str, object]:
         "marketplace_status": {
             "ok": marketplace_status.ok,
             "details": marketplace_status.details,
+            "pre_release_listed": marketplace_listing["pre_release_listed"],
+            "listing_status": marketplace_listing["details"],
         },
         "site_status": {"ok": site_status.ok, "details": site_status.details},
         "launch_readiness": launch_readiness,
@@ -171,6 +202,7 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
         "discussions_ping",
         "pypi_ok",
         "marketplace_ok",
+        "marketplace_pre_release",
         "site_ok",
         "homepage_ok",
         "topics_ok",
@@ -196,6 +228,11 @@ def _append_csv(snapshot: dict[str, object], csv_path: str) -> None:
                 if isinstance(snapshot["pypi_status"], dict)
                 else "",
                 "marketplace_ok": snapshot["marketplace_status"]["ok"]
+                if isinstance(snapshot["marketplace_status"], dict)
+                else "",
+                "marketplace_pre_release": snapshot["marketplace_status"].get(
+                    "pre_release_listed", ""
+                )
                 if isinstance(snapshot["marketplace_status"], dict)
                 else "",
                 "site_ok": snapshot["site_status"]["ok"]
@@ -325,6 +362,7 @@ def _summary_lines(
         f"- launch_setup_topics_ok: {launch_readiness.get('topics_ok', 'unavailable')}",
         f"- launch_setup_topics_count: {launch_readiness.get('topics_count', 'unavailable')}",
         f"- launch_setup_missing_topics: {', '.join(launch_readiness.get('missing_topics', ['unavailable']))}",
+        f"- marketplace_pre_release_listed: {marketplace_status.get('pre_release_listed', 'unavailable')}",
         f"- trend_vs_previous: {trend_text}",
         f"- signal: {star_signal}",
     ]
@@ -428,6 +466,8 @@ def main() -> int:
         f"{marketplace_status['ok']} ({marketplace_status['details']})"
     )
     print(f"site_status: 200={site_status['ok']} ({site_status['details']})")
+    marketplace_pre_release = marketplace_status.get("pre_release_listed", False)
+    print(f"marketplace_pre_release_listed: {marketplace_pre_release}")
     print(f"homepage_ok: {launch_readiness.get('homepage_ok', 'unavailable')}")
     print(f"topics_ok: {launch_readiness.get('topics_ok', 'unavailable')}")
     print(f"topics_count: {launch_readiness.get('topics_count', 'unavailable')}")
