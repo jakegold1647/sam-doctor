@@ -39,7 +39,7 @@
         "name": "SAM Doctor",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows, macOS, Linux",
-        "softwareVersion": "0.7.5",
+        "softwareVersion": "0.7.6",
         "description": "Local, evidence-first diagnostics for AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures.",
         "url": "https://jakegold1647.github.io/sam-doctor/",
         "downloadUrl": "https://github.com/jakegold1647/sam-doctor/releases/latest",
@@ -88,14 +88,14 @@
 
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
-        <h2 id="install-title">Install v0.7.5 in one command.</h2>
-        <pre><code>python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.5/sam_doctor-0.7.5-py3-none-any.whl</code></pre>
+        <h2 id="install-title">Install v0.7.6 in one command.</h2>
+        <pre><code>python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.6/sam_doctor-0.7.6-py3-none-any.whl</code></pre>
         <p>
           This stable release wheel installs without Git. Then run
           <code>sam-doctor demo</code> to see a local example, or pass a log to
           <code>sam-doctor diagnose deployment.log</code>.
         </p>
-        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.7.5">View v0.7.5 release notes and downloads</a>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.7.6">View v0.7.6 release notes and downloads</a>
       </section>
 
       <section class="terminal" aria-label="Example diagnostic output">
@@ -122,7 +122,7 @@
 - name: Diagnose deployment log
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.5
+  uses: jakegold1647/sam-doctor@v0.7.6
   with:
     log-file: deployment.log
     summary: "true"
