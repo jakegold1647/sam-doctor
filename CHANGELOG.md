@@ -2,6 +2,12 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.7.0 - 2026-08-03
+
+- Added direct findings for invalid SAM template properties, IAM trust-policy
+  `Resource` fields, Lambda image code-signing conflicts, invalid S3 bucket
+  names, and S3 access denied for Lambda layer artifacts.
+
 ## v0.6.0 - 2026-08-03
 
 - Added a composite GitHub Action with redacted job-summary output and opt-in

@@ -124,6 +124,94 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
     ),
     Rule(
+        title="A SAM template property is not valid for its resource type",
+        confidence="high",
+        patterns=(
+            r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
+        ),
+        explanation=(
+            "SAM rejected a property key that is not defined for the resource type. "
+            "This is commonly a misspelling, punctuation error in the key, or a property "
+            "copied from a different SAM or CloudFormation resource."
+        ),
+        verification=(
+            "Compare the exact property key in the template with the reference for the resource type named in the error.",
+            "Check for punctuation accidentally included in a YAML or JSON property name before changing related API configuration.",
+            "Run `sam validate` after correcting the template shape.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html",
+    ),
+    Rule(
+        title="An IAM role trust policy contains a permissions-only Resource field",
+        confidence="high",
+        patterns=(r"Has prohibited field Resource",),
+        explanation=(
+            "IAM rejected the role trust policy because it contains a `Resource` field. "
+            "A role trust policy defines who may assume the role; permissions on AWS "
+            "resources belong in an identity policy attached to that role."
+        ),
+        verification=(
+            "Inspect the role's `AssumeRolePolicyDocument` and remove `Resource` or `NotResource` elements from that trust policy.",
+            "Keep the trusted principal and `sts:AssumeRole` action in the trust policy.",
+            "Move service permissions to the role's `Policies` or `ManagedPolicyArns`, then review the least-privilege scope.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-reference-policy-checks.html",
+    ),
+    Rule(
+        title="Lambda code signing is incompatible with a container-image function",
+        confidence="high",
+        patterns=(r"Code signing is not supported for functions created with container images",),
+        explanation=(
+            "Lambda does not support a code signing configuration for a function packaged "
+            "as a container image. The template must use a supported packaging and signing "
+            "combination."
+        ),
+        verification=(
+            "Confirm whether the function uses `PackageType: Image` or an image URI.",
+            "Remove the code signing configuration for an image-packaged function, or switch to a signed ZIP deployment package if code signing is required.",
+            "Review the function's deployment and integrity requirements before changing package type.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-codesigning-create.html",
+    ),
+    Rule(
+        title="An S3 bucket name failed AWS validation",
+        confidence="high",
+        patterns=(
+            r"Error Code:\s*InvalidBucketName",
+            r"The specified bucket is not valid",
+        ),
+        explanation=(
+            "S3 rejected the bucket name before deployment could continue. The configured "
+            "or generated name violates S3 naming rules; this is distinct from a bucket "
+            "that already exists or a missing permission."
+        ),
+        verification=(
+            "Inspect the configured deployment bucket and any environment-derived suffix used to construct its name.",
+            "Check for uppercase letters, underscores, invalid length, adjacent periods, an IP-address-like form, or invalid leading and trailing characters.",
+            "Use a unique, lowercase bucket name that satisfies the documented S3 naming rules.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
+    ),
+    Rule(
+        title="CloudFormation cannot read a Lambda layer artifact from S3",
+        confidence="high",
+        patterns=(
+            r"access has been denied by S3.*permission.*GetObject",
+            r"permission to GetObject for.*bucket",
+        ),
+        explanation=(
+            "The deployment could not retrieve the S3 object used for a Lambda layer. "
+            "The deployment or CloudFormation execution identity needs access to the exact "
+            "artifact, and encryption controls can impose an additional requirement."
+        ),
+        verification=(
+            "Identify the identity that CloudFormation uses for the stack operation and the exact layer archive object ARN.",
+            "Allow `s3:GetObject` for that object while checking bucket-policy denies and cross-account ownership.",
+            "If the artifact uses a customer-managed KMS key, verify the identity also has the required decrypt permission.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-lambda-layerversion-content.html",
+    ),
+    Rule(
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
         patterns=(
@@ -325,13 +413,27 @@ def diagnose(text: str) -> list[Finding]:
 
     findings: list[Finding] = []
     for rule in _RULES:
+        if rule.title == "CloudFormation resource creation or update failed" and re.search(
+            r"Has prohibited field Resource|Code signing is not supported for functions created with container images|Error Code:\s*InvalidBucketName|The specified bucket is not valid|access has been denied by S3.*permission.*GetObject|The REST API does(?:n't| not) contain any methods",
+            text,
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            # These service errors have more actionable, resource-specific findings.
+            continue
         if rule.title == "AWS SAM deployment configuration or parameter resolution failed" and re.search(
-            r"InsufficientCapabilities|Requires capabilities|Cannot use both --resolve-s3 and --s3-bucket|Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
+            r"InsufficientCapabilities|Requires capabilities|Cannot use both --resolve-s3 and --s3-bucket|Esbuild Failed:\s*(?:Cannot|can not) find esbuild|property\s+\S+:\s+not defined for resource of type AWS::Serverless::|Error Code:\s*InvalidBucketName|The specified bucket is not valid",
             text,
             flags=re.IGNORECASE,
         ):
             # A capability failure can include a preceding generic change-set error
             # on another line. Prefer the narrower finding for the whole log.
+            continue
+        if rule.title == "AWS denied an API action required by the deployment" and re.search(
+            r"access has been denied by S3.*permission.*GetObject|permission to GetObject for.*bucket",
+            text,
+            flags=re.IGNORECASE | re.DOTALL,
+        ):
+            # The layer-artifact finding identifies the S3 retrieval path directly.
             continue
         if rule.title == "CloudFormation stack entered rollback after an earlier resource failure" and re.search(
             r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated", text, flags=re.IGNORECASE
