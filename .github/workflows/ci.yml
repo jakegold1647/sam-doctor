@@ -19,10 +19,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install ".[dev]"
       - run: python -m pytest -q
+      - run: rm -rf dist
       - run: python -m build
       - name: Verify the built wheel in a clean environment
         run: |
-          wheel_file="$(python -c "from pathlib import Path\nimport sys\npaths=sorted(Path('dist').glob('*.whl'))\nif not paths:\n    raise SystemExit('No wheel artifacts found in dist/')\nprint(paths[-1])")"
+          wheel_file="$(python - <<'PY'\nfrom pathlib import Path\n\npaths = sorted(Path('dist').glob('*.whl'))\nif not paths:\n    raise SystemExit('No wheel artifacts found in dist/')\nprint(paths[-1])\nPY\n)"
           if [ ! -f "$wheel_file" ]; then
             echo "No wheel artifact found in dist/"
             exit 1
@@ -31,11 +32,11 @@ jobs:
           python -m venv .wheel-verify
           .wheel-verify/bin/python -m pip install --disable-pip-version-check "$wheel_file"
           .wheel-verify/bin/python -m sam_doctor.cli demo --format json --output /tmp/cli-demo.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          .wheel-verify/bin/python - <<'PY'
+import json
+from pathlib import Path
 
-          payload = json.loads(Path("/tmp/cli-demo.json").read_text(encoding="utf-8"))
+payload = json.loads(Path("/tmp/cli-demo.json").read_text(encoding="utf-8"))
           if payload.get("finding_count") != 1:
               raise SystemExit(f"Expected exactly 1 finding in demo output, got {payload.get('finding_count')}")
           print("CLI sample check passed.")

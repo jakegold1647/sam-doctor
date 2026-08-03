@@ -20,6 +20,13 @@ if [ -z "${GITHUB_ACTION_PATH:-}" ]; then
   GITHUB_ACTION_PATH="$(cd "$(dirname "$0")/.." && pwd)"
 fi
 
+if [ -d "${GITHUB_ACTION_PATH}/src" ]; then
+  PYTHONPATH="${GITHUB_ACTION_PATH}/src${PYTHONPATH:+:$PYTHONPATH}"
+else
+  PYTHONPATH="${GITHUB_ACTION_PATH}${PYTHONPATH:+:$PYTHONPATH}"
+fi
+export PYTHONPATH
+
 if [[ "$SAM_DOCTOR_SUMMARY" != "true" && "$SAM_DOCTOR_SUMMARY" != "false" ]]; then
   echo "SAM_DOCTOR_SUMMARY must be 'true' or 'false'." >&2
   exit 2
@@ -44,10 +51,6 @@ trap '
     rm -f "$GITHUB_STEP_SUMMARY"
   fi
 ' EXIT
-
-# Use the checked-out action source directly so this step works even if PATH/PIP
-# installs are restricted in the caller workflow.
-export PYTHONPATH="${GITHUB_ACTION_PATH}${PYTHONPATH:+:$PYTHONPATH}"
 
 if ! "$PYTHON_BIN" -m sam_doctor.cli --help >/dev/null 2>&1; then
   echo "Could not import local action package from ${GITHUB_ACTION_PATH}. Installing fallback." >&2
