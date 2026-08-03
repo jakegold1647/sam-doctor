@@ -34,10 +34,17 @@ def _load_outreach_module(repo_root: Path):
 
 
 def run_launch_readiness(
-    repo_root: Path, loader: Callable[[Path], Any] = _load_launch_readiness_module
+    repo_root: Path,
+    repo: str,
+    token: str | None,
+    loader: Callable[[Path], Any] = _load_launch_readiness_module,
 ) -> tuple[bool, int, int]:
     module = loader(repo_root)
-    result = module._run_checks(repo_root)
+    run_checks = getattr(module, "_run_checks_with_options", None)
+    if callable(run_checks):
+        result = run_checks(repo_root, repo=repo, token=token)
+    else:
+        result = module._run_checks(repo_root)
     return bool(result.ok), int(result.passed), int(result.failed)
 
 
@@ -145,6 +152,16 @@ def _parse_args() -> argparse.Namespace:
         help="GitHub repository owner/name for distribution check.",
     )
     parser.add_argument("--token", default="", help="GitHub token for distribution/check calls.")
+    parser.add_argument(
+        "--check-launch-token",
+        default="",
+        help="GitHub token for launch metadata checks.",
+    )
+    parser.add_argument(
+        "--launch-repo",
+        default="jakegold1647/sam-doctor",
+        help="GitHub repository owner/name for launch metadata checks.",
+    )
     parser.add_argument("--skip-distribution", action="store_true", help="Skip distribution snapshot.")
     parser.add_argument(
         "--output-format",
@@ -200,7 +217,12 @@ def main() -> int:
     repo_root = Path(args.repo_root)
     ok = True
 
-    launch_ok, launch_passed, launch_failed = run_launch_readiness(repo_root)
+    launch_token = args.check_launch_token or args.token or None
+    launch_ok, launch_passed, launch_failed = run_launch_readiness(
+        repo_root,
+        repo=args.launch_repo,
+        token=launch_token,
+    )
     if not launch_ok:
         ok = False
     print(f"launch-readiness checks: {launch_passed} passed, {launch_failed} failed")

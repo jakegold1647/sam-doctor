@@ -37,6 +37,16 @@ def _create_repo(root: Path, version: str, with_release=True, with_changelog=Tru
             f"# Changelog\n\n## v{version} - 2026-08-03\n",
             encoding="utf-8",
         )
+
+    site_dir = root / "site"
+    assets_dir = site_dir / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    (site_dir / "index.html").write_text(
+        "<html><body>SAM Doctor</body></html>",
+        encoding="utf-8",
+    )
+    (assets_dir / "sam-doctor-social-preview.jpg").write_bytes(b"fake jpg")
+
     (root / "action.yml").write_text(
         "\n".join(
             [
@@ -71,7 +81,7 @@ def test_launch_readiness_passes_for_consistent_release_metadata(tmp_path: Path)
     result = module._run_checks(tmp_path)
     assert result.ok
     assert result.failed == 0
-    assert result.passed == 4
+    assert result.passed == 6
 
 
 def test_launch_readiness_fails_when_release_metadata_missing(tmp_path: Path) -> None:
@@ -80,6 +90,7 @@ def test_launch_readiness_fails_when_release_metadata_missing(tmp_path: Path) ->
     result = module._run_checks(tmp_path)
     assert not result.ok
     assert result.failed == 1
+    assert result.passed == 5
 
 
 def test_launch_readiness_fails_when_versions_do_not_match(tmp_path: Path) -> None:
@@ -91,6 +102,7 @@ def test_launch_readiness_fails_when_versions_do_not_match(tmp_path: Path) -> No
     result = module._run_checks(tmp_path)
     assert not result.ok
     assert result.failed == 1
+    assert result.passed == 5
 
 
 def test_launch_readiness_prerelease_skips_release_note_requirements(tmp_path: Path) -> None:
@@ -99,7 +111,7 @@ def test_launch_readiness_prerelease_skips_release_note_requirements(tmp_path: P
     result = module._run_checks(tmp_path)
     assert result.ok
     assert result.failed == 0
-    assert result.passed == 3
+    assert result.passed == 5
 
 
 def test_launch_readiness_fails_when_action_metadata_is_missing(tmp_path: Path) -> None:
@@ -109,4 +121,16 @@ def test_launch_readiness_fails_when_action_metadata_is_missing(tmp_path: Path) 
     result = module._run_checks(tmp_path)
     assert not result.ok
     assert result.failed == 1
-    assert result.passed == 3
+    assert result.passed == 5
+
+
+def test_launch_readiness_skips_remote_metadata_without_token(tmp_path: Path) -> None:
+    _create_repo(tmp_path, "1.2.3")
+    module = _load_module(tmp_path)
+    result = module._run_checks_with_options(
+        tmp_path,
+        repo="jakegold1647/sam-doctor",
+        token=None,
+    )
+    assert result.failed == 0
+    assert result.passed == 6
