@@ -37,6 +37,25 @@ def _create_repo(root: Path, version: str, with_release=True, with_changelog=Tru
             f"# Changelog\n\n## v{version} - 2026-08-03\n",
             encoding="utf-8",
         )
+    (root / "action.yml").write_text(
+        "\n".join(
+            [
+                "name: SAM Doctor AWS Deployment Diagnostics",
+                "description: Diagnose local AWS deployment failures",
+                "branding:",
+                "  icon: activity",
+                "  color: yellow",
+                "runs:",
+                "  using: composite",
+                "  steps: []",
+                "inputs:",
+                "  log-file:",
+                "    description: Path to the deployment log to diagnose.",
+                "    required: true",
+            ]
+        ),
+        encoding="utf-8",
+    )
     (root / "scripts").mkdir(exist_ok=True, parents=True)
     (root / "scripts" / "check-launch-readiness.py").write_text(
         Path(__file__).resolve().parents[1].joinpath(
@@ -52,7 +71,7 @@ def test_launch_readiness_passes_for_consistent_release_metadata(tmp_path: Path)
     result = module._run_checks(tmp_path)
     assert result.ok
     assert result.failed == 0
-    assert result.passed == 3
+    assert result.passed == 4
 
 
 def test_launch_readiness_fails_when_release_metadata_missing(tmp_path: Path) -> None:
@@ -80,4 +99,14 @@ def test_launch_readiness_prerelease_skips_release_note_requirements(tmp_path: P
     result = module._run_checks(tmp_path)
     assert result.ok
     assert result.failed == 0
-    assert result.passed == 2
+    assert result.passed == 3
+
+
+def test_launch_readiness_fails_when_action_metadata_is_missing(tmp_path: Path) -> None:
+    _create_repo(tmp_path, "1.2.3", with_release=True, with_changelog=True)
+    (tmp_path / "action.yml").unlink()
+    module = _load_module(tmp_path)
+    result = module._run_checks(tmp_path)
+    assert not result.ok
+    assert result.failed == 1
+    assert result.passed == 3
