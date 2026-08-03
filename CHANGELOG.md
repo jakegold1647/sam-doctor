@@ -8,6 +8,8 @@ All notable changes to SAM Doctor are documented here.
   duplicated trend calculation logic.
 - Polished Marketplace publishing docs to separate prerelease workflow behavior from
   manual listing publish steps.
+- Updated release automation so plain tags (`vX.Y.Z`) publish as public releases
+  while pre-release tags keep prerelease behavior.
 - Added Marketplace and PyPI badges to the README launch header.
 
 ## v0.7.4 - 2026-08-03

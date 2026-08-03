@@ -25,10 +25,9 @@ Agreement.
    icon, and yellow branding configured in `action.yml`.
 5. Run the README workflow snippet in a disposable repository before sharing
    the listing broadly.
-6. For this repository, create the public release first. This repo's automated
-   release workflow marks tags as prerelease by default, so publishing to the
-   Marketplace listing still needs a manual publish decision on the tag you want
-   to expose.
+6. For this repository, use a public release tag (`vX.Y.Z`) for listing. If
+   you are testing a prerelease tag (`vX.Y.Z-rc.N`), keep the listing draft
+   until you have internal sign-off on the exact release path.
 
 Do not accept the Developer Agreement or publish a Marketplace listing from an
 account you are not authorized to represent.
