@@ -18,6 +18,9 @@ All notable changes to SAM Doctor are documented here.
   checks, with a backward-compatible default for existing gates.
 - Replaced placeholder install examples with verified v0.7.4 commands and
   removed the unavailable PyPI badge from the first-use path.
+- Clarified the GitHub Actions example so diagnostics still run after a failed
+  deployment step.
+- Removed a repository-only example path from the wheel install quick start.
 - Added Marketplace and PyPI badges to the README launch header.
 - Added regression tests for the distribution checker trend helpers and output text.
 - Added a release-readiness checker script and integrated it into launch docs and

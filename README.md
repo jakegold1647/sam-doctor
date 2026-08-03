@@ -44,7 +44,6 @@ Current release: **v0.7.4 (Marketplace pre-release)**.
 ```bash
 python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.4/sam_doctor-0.7.4-py3-none-any.whl
 sam-doctor demo
-sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
 ```
 
 This installs v0.7.4 directly and does not require Git. The
@@ -89,13 +88,23 @@ python -m sam_doctor.cli batch logs/*.log logs/*.txt --format json > batch-resul
 Use the included action when a workflow already saves a deployment log:
 
 ```yaml
-- id: sam-doctor
+- name: Deploy
+  shell: bash
+  run: |
+    set -o pipefail
+    sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+
+- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
   uses: jakegold1647/sam-doctor@v0.7.4
   with:
     log-file: deployment.log
     summary: "true"
 ```
 
+Put the diagnostic step after the command that writes the log and keep
+`if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set
 `fail-on-findings: "true"` only when you want a supported diagnostic to fail
 the job. The Markdown job summary is opt-in and contains only matched, redacted
