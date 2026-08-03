@@ -37,16 +37,15 @@ if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "true" && "$SAM_DOCTOR_FAIL_ON_FINDINGS"
   exit 2
 fi
 
+report_path="$(mktemp)"
 STEP_SUMMARY_CREATED=0
 if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then
   GITHUB_STEP_SUMMARY="$(mktemp)"
   STEP_SUMMARY_CREATED=1
 fi
-
-report_path="$(mktemp)"
 trap '
   rm -f "$report_path"
-  if [ "$STEP_SUMMARY_CREATED" = "1" ]; then
+  if [ "${STEP_SUMMARY_CREATED}" = "1" ]; then
     rm -f "$GITHUB_STEP_SUMMARY"
   fi
 ' EXIT
@@ -61,7 +60,7 @@ fi
 
 "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 
-finding_count="$($PYTHON_BIN -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
+finding_count="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
 
 if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
   echo "Could not parse finding-count from JSON output: $finding_count" >&2
