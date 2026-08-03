@@ -1,0 +1,33 @@
+name: SAM Doctor
+description: Diagnose a local AWS SAM deployment log and optionally add a redacted report to the job summary.
+inputs:
+  log-file:
+    description: Path to the deployment log to diagnose.
+    required: true
+  summary:
+    description: Add the redacted Markdown report to the GitHub Actions job summary.
+    required: false
+    default: "false"
+  fail-on-findings:
+    description: Fail the action when one or more supported findings are detected.
+    required: false
+    default: "false"
+outputs:
+  finding-count:
+    description: Number of supported findings in the supplied log.
+    value: ${{ steps.diagnose.outputs.finding-count }}
+  has-findings:
+    description: Whether the supplied log contains one or more supported findings.
+    value: ${{ steps.diagnose.outputs.has-findings }}
+runs:
+  using: composite
+  steps:
+    - id: diagnose
+      name: Diagnose deployment log
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+        SAM_DOCTOR_LOG_FILE: ${{ inputs.log-file }}
+        SAM_DOCTOR_SUMMARY: ${{ inputs.summary }}
+        SAM_DOCTOR_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+      run: bash "$GITHUB_ACTION_PATH/scripts/run-github-action.sh"

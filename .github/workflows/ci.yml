@@ -21,3 +21,9 @@ jobs:
       - run: python -m pytest -q
       - run: python -m build
       - run: sam-doctor demo
+      - id: action-check
+        uses: ./
+        with:
+          log-file: examples/oidc-assume-role-failure.txt
+          summary: "true"
+      - run: test "${{ steps.action-check.outputs.finding-count }}" = "1"

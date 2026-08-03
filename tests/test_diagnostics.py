@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.5.0"
+    assert __version__ == "0.6.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -43,7 +43,17 @@ def test_unknown_log_has_no_finding() -> None:
             "InsufficientCapabilitiesException: Requires capabilities : [CAPABILITY_NAMED_IAM]",
             "explicit capability acknowledgement",
         ),
+        ("The REST API doesn't contain any methods", "API Gateway deployment started"),
         ("MyFunction CREATE_FAILED Resource handler returned message: denied", "resource creation"),
+        ("Stack: example is in ROLLBACK_COMPLETE state and can not be updated.", "failed initial stack"),
+        (
+            "Cannot use both --resolve-s3 and --s3-bucket parameters. Please use only one.",
+            "managed and explicit S3 bucket",
+        ),
+        (
+            "NodejsNpmEsbuildBuilder:EsbuildBundle - Esbuild Failed: Cannot find esbuild.",
+            "cannot find the configured esbuild",
+        ),
         ("UPDATE_ROLLBACK_IN_PROGRESS after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
@@ -62,6 +72,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
         "AssumeRoleWithWebIdentity succeeded",
         "InvalidIdentityToken was handled by a retrying client",
         "Deployment values include Capabilities: [CAPABILITY_IAM]",
+        "sam build completed after esbuild bundled the function",
         "Configured CORS for the API",
         "The preflight request returned 204",
     ),
@@ -82,6 +93,30 @@ def test_capability_error_does_not_add_the_generic_sam_finding() -> None:
 
     assert len(findings) == 1
     assert "explicit capability acknowledgement" in findings[0].title.lower()
+
+
+@pytest.mark.parametrize(
+    ("log", "title_fragment"),
+    (
+        (
+            "Error: Failed to create changeset\nCannot use both --resolve-s3 and --s3-bucket parameters.",
+            "managed and explicit S3 bucket",
+        ),
+        (
+            "Error: Failed to create changeset\nEsbuild Failed: Cannot find esbuild.",
+            "cannot find the configured esbuild",
+        ),
+        (
+            "ROLLBACK_COMPLETE\nStack is in ROLLBACK_COMPLETE state and can not be updated.",
+            "failed initial stack",
+        ),
+    ),
+)
+def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment: str) -> None:
+    findings = diagnose(log)
+
+    assert len(findings) == 1
+    assert title_fragment.lower() in findings[0].title.lower()
 
 
 def test_packaged_cloudformation_demo_is_available() -> None:

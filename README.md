@@ -25,15 +25,18 @@ official documentation.
 - IAM `AccessDenied` failures
 - CloudFormation failed-resource events and rollback states
 - CloudFormation capability acknowledgement errors
-- SAM deployment/configuration errors
+- API Gateway deployments created before methods exist
+- SAM deployment/configuration errors, including conflicting artifact-bucket settings
+  and missing `esbuild` dependencies
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports
+- Composite GitHub Action with opt-in redacted job summaries and CI gating
 - Local redaction for account IDs, ARNs, email addresses, and common CI credentials
 
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.5.0/sam_doctor-0.5.0-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.6.0/sam_doctor-0.6.0-py3-none-any.whl
 sam-doctor demo
 sam-doctor demo --scenario cloudformation
 sam-doctor demo --scenario capabilities
@@ -46,7 +49,7 @@ bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.5.0"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.6.0"
 ```
 
 Run `sam-doctor rules --format json` to inspect the exact set of supported
@@ -70,6 +73,23 @@ The terminal format is intended for a quick local check, Markdown is convenient
 for a human-readable handoff, and JSON is stable enough for scripts and CI
 annotations. All three formats contain matched evidence rather than the full
 input log.
+
+## GitHub Actions
+
+Use the included action when a workflow already saves a deployment log:
+
+```yaml
+- id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0.6.0
+  with:
+    log-file: deployment.log
+    summary: "true"
+```
+
+The action exposes `finding-count` and `has-findings` outputs. Set
+`fail-on-findings: "true"` only when you want a supported diagnostic to fail
+the job. The Markdown job summary is opt-in and contains only matched, redacted
+evidence; review it before sharing a workflow run outside your team.
 
 ## What a report includes
 
@@ -105,6 +125,12 @@ expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
 - [Find the first useful error in a CloudFormation rollback](docs/cloudformation-first-failure.md)
+
+## Supported signals
+
+Run `sam-doctor rules` for the current machine-readable catalog. Each rule is
+triggered by an explicit error signal, not by template inspection or AWS account
+access; the report is still a prompt to verify the cause, not an automatic fix.
 
 ## Scope and safety
 

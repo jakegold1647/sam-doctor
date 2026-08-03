@@ -2,6 +2,14 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.6.0 - 2026-08-03
+
+- Added a composite GitHub Action with redacted job-summary output and opt-in
+  failure gating for supported findings.
+- Added direct findings for a missing `esbuild` dependency, conflicting SAM S3
+  deployment options, API Gateway deployments with no methods, and non-updatable
+  initial stacks in `ROLLBACK_COMPLETE`.
+
 ## v0.5.0 - 2026-08-03
 
 - Added a high-confidence diagnosis for CloudFormation capability acknowledgements

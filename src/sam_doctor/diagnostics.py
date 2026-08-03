@@ -124,6 +124,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
     ),
     Rule(
+        title="API Gateway deployment started before the API had any methods",
+        confidence="high",
+        patterns=(
+            r"The REST API does(?:n't| not) contain any methods",
+        ),
+        explanation=(
+            "API Gateway rejected the deployment because no methods existed when the "
+            "deployment resource was created. This often happens when a SAM-generated "
+            "deployment is combined with a manually declared `AWS::ApiGateway::Deployment`."
+        ),
+        verification=(
+            "Check whether the template declares a manual `AWS::ApiGateway::Deployment` alongside `AWS::Serverless::Api`.",
+            "Prefer SAM's generated API deployment, or add `DependsOn` entries for every required API method when managing deployments manually.",
+            "Review the transformed template and the affected API Gateway methods before redeploying.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-apigateway-deployment.html",
+    ),
+    Rule(
         title="CloudFormation resource creation or update failed",
         confidence="high",
         patterns=(r"\bCREATE_FAILED\b", r"\bUPDATE_FAILED\b"),
@@ -137,6 +155,25 @@ _RULES = (
             "Fix the resource-level cause before retrying the stack operation.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
+    ),
+    Rule(
+        title="A failed initial stack must be recreated before it can be deployed again",
+        confidence="high",
+        patterns=(
+            r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated",
+            r"is in ROLLBACK_COMPLETE state.*(?:can not|cannot) be updated",
+        ),
+        explanation=(
+            "CloudFormation cannot update a stack that finished rolling back after an "
+            "initial create failure. The original failed resource must be understood and "
+            "fixed before a new stack operation can succeed."
+        ),
+        verification=(
+            "Find the first earlier `CREATE_FAILED` resource event and fix that underlying cause first.",
+            "For an initial deployment with no stable prior stack, delete the failed stack after reviewing its resources, then deploy again with the same name.",
+            "Do not delete or retain resources blindly; confirm the stack state and intended cleanup path in CloudFormation first.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html",
     ),
     Rule(
         title="CloudFormation stack entered rollback after an earlier resource failure",
@@ -171,6 +208,43 @@ _RULES = (
             "For nested applications, configure `CAPABILITY_AUTO_EXPAND`, then review the expanded application and proposed change set.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
+    ),
+    Rule(
+        title="SAM deployment configured both a managed and explicit S3 bucket",
+        confidence="high",
+        patterns=(
+            r"Cannot use both --resolve-s3 and --s3-bucket parameters",
+        ),
+        explanation=(
+            "The deployment selected two mutually exclusive artifact-bucket mechanisms. "
+            "SAM cannot both resolve a managed S3 bucket and use an explicit `--s3-bucket` "
+            "in the same command."
+        ),
+        verification=(
+            "Inspect the selected `samconfig.toml` environment and the workflow's `sam deploy` arguments together.",
+            "For a pipeline that passes `--s3-bucket`, disable `resolve_s3` in that deployment configuration.",
+            "Alternatively, remove the explicit bucket and let SAM resolve its managed bucket; keep exactly one mechanism.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
+    ),
+    Rule(
+        title="SAM build cannot find the configured esbuild dependency",
+        confidence="high",
+        patterns=(
+            r"NodejsNpmEsbuildBuilder:EsbuildBundle.*(?:Cannot|can not) find esbuild",
+            r"Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
+        ),
+        explanation=(
+            "A function configured with `BuildMethod: esbuild` reached SAM's esbuild "
+            "builder, but the bundler was not available in the project or runner "
+            "environment used for the build."
+        ),
+        verification=(
+            "Declare a compatible `esbuild` version in the function project's development dependencies and commit its lockfile.",
+            "Run the matching package-manager install step before `sam build` in CI.",
+            "Confirm the workflow builds the same directory that contains the function's `package.json`.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-typescript.html",
     ),
     Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
@@ -252,10 +326,17 @@ def diagnose(text: str) -> list[Finding]:
     findings: list[Finding] = []
     for rule in _RULES:
         if rule.title == "AWS SAM deployment configuration or parameter resolution failed" and re.search(
-            r"InsufficientCapabilities|Requires capabilities", text, flags=re.IGNORECASE
+            r"InsufficientCapabilities|Requires capabilities|Cannot use both --resolve-s3 and --s3-bucket|Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
+            text,
+            flags=re.IGNORECASE,
         ):
             # A capability failure can include a preceding generic change-set error
             # on another line. Prefer the narrower finding for the whole log.
+            continue
+        if rule.title == "CloudFormation stack entered rollback after an earlier resource failure" and re.search(
+            r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated", text, flags=re.IGNORECASE
+        ):
+            # An immutable initial-create rollback state has a more precise recovery path.
             continue
         excluded_patterns = ()
         if rule.title == "AWS denied an API action required by the deployment":
