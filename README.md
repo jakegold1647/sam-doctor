@@ -124,4 +124,6 @@ python -m build
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for release history, [SECURITY.md](SECURITY.md)
-for vulnerability reporting, and [SUPPORT.md](SUPPORT.md) for help boundaries.
+for vulnerability reporting, [SUPPORT.md](SUPPORT.md) for help boundaries, and
+[docs/pypi-publishing.md](docs/pypi-publishing.md) for the stable-release
+publishing setup.
