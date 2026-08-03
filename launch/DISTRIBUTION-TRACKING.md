@@ -63,6 +63,7 @@ Automated monitoring:
 - `ethical_signal` from outreach should trend with problem-first follow-up, not
   gratitude-only stars.
 - `release` count and versioned artifact publishing should keep pace.
+- Organic growth score should rise as follow-through and repeat conversations increase.
 - Pages, Marketplace, and PyPI reachability should stay green.
 - Avoid any request to buy stars; ask people to share only if they found useful output.
 

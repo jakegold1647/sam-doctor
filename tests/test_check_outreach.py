@@ -56,6 +56,7 @@ def test_outreach_summary_parses_examples(tmp_path: Path) -> None:
     assert len(summary["top_problem_areas"]) == 3
     assert isinstance(summary["top_channels"], list)
     assert summary["top_outcomes"][0][0] in {"accepted helpful report", "declined", "scheduled follow-up"}
+    assert summary["organic_growth_score"] > 0.0
 
 
 def test_outreach_highlights_stars_without_feedback(tmp_path: Path) -> None:
@@ -117,6 +118,66 @@ def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
     assert "ethical_signal" in rendered
     assert "recommendation" in rendered
     assert "next_growth_actions" in rendered
+    assert "organic_growth_score" in rendered
+
+
+def test_growth_score_prefers_feedback_and_follow_through() -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+
+    score = module._growth_score(
+        voluntary_stars=4,
+        stars_with_feedback=2,
+        repeat_contacts=1,
+        rows_with_feedback=3,
+        rows=5,
+    )
+
+    assert score == 47.5
+
+
+def test_summary_reports_organic_growth_score(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    log = tmp_path / "outreach.csv"
+    log.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,"
+        "1,accepted helpful report,asked for follow-up,no\n"
+        "2026-W31,2026-08-02,LinkedIn,CloudFormation,pilot follow-up,share update,"
+        "0,ignored,did not reply,no\n",
+        encoding="utf-8",
+    )
+
+    summary = module.summarize(log)
+    assert summary["rows"] == 2
+    assert summary["voluntary_stars"] == 1
+    assert summary["stars_without_feedback"] == 0
+    assert summary["ethical_signal"] == "strong"
+    assert summary["organic_growth_score"] == module._growth_score(
+        voluntary_stars=1,
+        stars_with_feedback=1,
+        repeat_contacts=0,
+        rows_with_feedback=1,
+        rows=2,
+    )
+
+
+def test_summary_marks_stars_without_feedback_as_mixed(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    log = tmp_path / "outreach-mixed.csv"
+    log.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,"
+        "1,accepted helpful report,,no\n",
+        encoding="utf-8",
+    )
+
+    summary = module.summarize(log)
+    assert summary["ethical_signal"] == "mixed"
+    assert summary["stars_without_feedback"] == 1
+    actions = module._next_growth_actions(summary)
+    assert any("Follow up with each volunteer" in action for action in actions)
 
 
 def test_outreach_main_handles_header_only_template(tmp_path: Path) -> None:
