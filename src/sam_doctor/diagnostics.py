@@ -111,6 +111,25 @@ _RULES = (
         documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
     ),
     Rule(
+        title="Lambda cannot access the configured ECR image",
+        confidence="high",
+        patterns=(
+            r"Lambda does not have permission to access the ECR image",
+            r"(?:Lambda|function).{0,80}(?:permission|access).{0,80}(?:ECR|container) image",
+        ),
+        explanation=(
+            "Lambda could not retrieve the container image from ECR during deployment. "
+            "This usually points to a missing repository policy, a removed permission, "
+            "or a cross-account configuration that no longer grants image access."
+        ),
+        verification=(
+            "Confirm the function uses `PackageType: Image` and identify the exact ECR repository and image tag or digest.",
+            "Check the ECR repository policy and the deployment configuration for the function's account and Region.",
+            "For cross-account images, verify both the consuming account's identity policy and the owning account's repository policy allow the required image retrieval actions.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/images-create.html",
+    ),
+    Rule(
         title="AWS denied an API action required by the deployment",
         confidence="medium",
         patterns=(r"AccessDenied(?:Exception)?", r"is not authorized to perform:"),
@@ -478,7 +497,7 @@ def diagnose(text: str) -> list[Finding]:
     matched_findings: list[tuple[int, int, Finding]] = []
     for rule_index, rule in enumerate(_RULES):
         if rule.title == "CloudFormation resource creation or update failed" and re.search(
-            r"Has prohibited field Resource|Code signing is not supported for functions created with container images|Error Code:\s*InvalidBucketName|The specified bucket is not valid|access has been denied by S3.*permission.*GetObject|The REST API does(?:n't| not) contain any methods",
+            r"Has prohibited field Resource|Code signing is not supported for functions created with container images|Lambda does not have permission to access the ECR image|Error Code:\s*InvalidBucketName|The specified bucket is not valid|access has been denied by S3.*permission.*GetObject|The REST API does(?:n't| not) contain any methods",
             text,
             flags=re.IGNORECASE | re.DOTALL,
         ):
@@ -493,7 +512,7 @@ def diagnose(text: str) -> list[Finding]:
             # on another line. Prefer the narrower finding for the whole log.
             continue
         if rule.title == "AWS denied an API action required by the deployment" and re.search(
-            r"access has been denied by S3.*permission.*GetObject|permission to GetObject for.*bucket",
+            r"Lambda does not have permission to access the ECR image|access has been denied by S3.*permission.*GetObject|permission to GetObject for.*bucket",
             text,
             flags=re.IGNORECASE | re.DOTALL,
         ):
@@ -516,7 +535,7 @@ def diagnose(text: str) -> list[Finding]:
             # STS OIDC failures are authorization failures, but the OIDC rule
             # provides a more precise and actionable explanation than the
             # generic IAM finding.
-            excluded_patterns = (r"AssumeRoleWithWebIdentity",)
+            excluded_patterns = (r"AssumeRoleWithWebIdentity", r"ECR image")
         evidence = _matching_evidence(text, rule.patterns, excluded_patterns)
         if evidence:
             matched_findings.append(

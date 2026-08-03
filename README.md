@@ -31,6 +31,7 @@ Current release: **v0.7.6**.
 - IAM `AccessDenied` failures
 - CloudFormation failed-resource events and rollback states
 - CloudFormation capability acknowledgement errors
+- Lambda container-image failures caused by missing ECR image access
 - API Gateway deployments created before methods exist
 - SAM deployment/configuration errors, including conflicting artifact-bucket settings
   and missing `esbuild` dependencies

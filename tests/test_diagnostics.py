@@ -65,6 +65,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "Code signing is not supported for functions created with container images.",
             "code signing is incompatible",
         ),
+        (
+            "Lambda does not have permission to access the ECR image. Check the ECR permissions.",
+            "cannot access the configured ecr image",
+        ),
         ("The specified bucket is not valid. Error Code: InvalidBucketName", "S3 bucket name"),
         (
             "Your access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
@@ -163,6 +167,10 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
         (
             "MyFunction CREATE_FAILED\nCode signing is not supported for functions created with container images.",
             "code signing is incompatible",
+        ),
+        (
+            "MyFunction CREATE_FAILED\nLambda does not have permission to access the ECR image.",
+            "cannot access the configured ecr image",
         ),
         (
             "MyLayer CREATE_FAILED\nYour access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
