@@ -22,6 +22,10 @@ Automated monitoring:
 - When run manually, include the `strict-distribution-during-release` workflow input
   after release is fully live so the check fails if PyPI/Marketplace/homepage
   readiness is still not green.
+- When you are ready for stricter outreach gates, dispatch with
+  `strict-ethical-check: true` and your preferred `ethical-min-feedback-ratio`.
+  Use `allow-no-data-in-strict: true` only when the outreach tracker is
+  intentionally empty.
 - The workflow now runs the full launch check stack (`scripts/check-launch.py`), so
   each run verifies release-readiness, distribution channels, and a fresh
   outreach summary snapshot together.

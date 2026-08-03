@@ -9,6 +9,18 @@ on:
         description: "Enable full release-channel strictness checks"
         required: false
         default: "false"
+      strict-ethical-check:
+        description: "Enable strict ethical check using outreach data"
+        required: false
+        default: "false"
+      ethical-min-feedback-ratio:
+        description: "Minimum percentage of voluntary stars with feedback for strict ethical checks"
+        required: false
+        default: "100"
+      allow-no-data-in-strict:
+        description: "Allow strict ethical checks to pass when outreach data is still empty"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -25,10 +37,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STRICT_DURING_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
+          STRICT_ETHICAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-ethical-check'] == 'true' }}
+          ETHICAL_MIN_FEEDBACK_RATIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['ethical-min-feedback-ratio'] || '100' }}
+          ALLOW_NO_DATA: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['allow-no-data-in-strict'] == 'true' }}
         run: |
           strict_flags=""
           if [ "$STRICT_DURING_RELEASE" = "true" ]; then
             strict_flags="--strict-distribution-during-release"
+          fi
+          if [ "$STRICT_ETHICAL" = "true" ]; then
+            strict_flags="$strict_flags --strict-ethical --min-feedback-ratio ${ETHICAL_MIN_FEEDBACK_RATIO}"
+            if [ "$ALLOW_NO_DATA" = "true" ]; then
+              strict_flags="$strict_flags --allow-no-data-in-strict"
+            fi
           fi
 
           mkdir -p artifacts

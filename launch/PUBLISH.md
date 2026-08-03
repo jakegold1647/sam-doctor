@@ -64,6 +64,12 @@ If you want the distributed health snapshot to fail on hard launch-channel
 readiness after publish, trigger `distribution-check.yml` manually with
 `strict-distribution-during-release: true`.
 
+If you are also ready to gate by outreach quality, set:
+
+- `strict-ethical-check: true`
+- `ethical-min-feedback-ratio: 100`
+- `allow-no-data-in-strict: false`
+
 ## 3. Prepare a founder checkout only after validation
 
 Create a Lemon Squeezy one-time product using `launch/PRODUCT-LISTING.md`.
