@@ -34,7 +34,15 @@ jobs:
       - name: Assert expected finding count from bundled sample
         run: |
           python - <<'PY'
-          finding_count = int("${{ steps.action-check.outputs.finding-count }}".strip())
+          raw_count = """${{ steps.action-check.outputs.finding-count }}""".strip()
+          if not raw_count:
+            raise SystemExit("finding-count output was empty")
+
+          try:
+            finding_count = int(raw_count)
+          except ValueError as exc:
+            raise SystemExit(f"Invalid finding-count output: {raw_count}") from exc
+
           if finding_count != 1:
-              raise SystemExit(f"Expected 1 finding, got {finding_count}")
+            raise SystemExit(f"Expected 1 finding, got {finding_count}")
           PY
