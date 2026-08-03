@@ -65,6 +65,9 @@ Automated monitoring:
 To reduce drift, copy this into a weekly `outreach-log-template.csv` row in
 `launch/outreach-log-template.csv` and keep it in your notes folder:
 
+`launch/outreach-log-template.csv` is intentionally header-only so the launch checks
+measure only real outreach outcomes.
+
 - week
 - date
 - contact_channel

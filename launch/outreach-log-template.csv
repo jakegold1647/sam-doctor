@@ -1,4 +1,1 @@
 week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact
-2026-W31,2026-08-01,GitHub Issue,GitHub Actions OIDC,problem interview completed,share diagnostic report,1,accepted helpful report,"asked for follow-up check",no
-2026-W31,2026-08-02,LinkedIn,CloudFormation rollback,feedback request,send rule request summary,0,declined to install,no follow-up signal,yes
-2026-W31,2026-08-03,Slack (invite-only),IAM access denied,waiting on user reply,send safe steps,0,scheduled follow-up,pending,yes

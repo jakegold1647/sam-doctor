@@ -110,3 +110,20 @@ def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
     assert summary_path.exists()
     assert summary_path.read_text(encoding="utf-8").startswith("# SAM Doctor ethical outreach status")
     assert "ethical_signal" in summary_path.read_text(encoding="utf-8")
+
+
+def test_outreach_main_handles_header_only_template(tmp_path: Path) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-template.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n",
+        encoding="utf-8",
+    )
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = ["check-outreach.py", str(sample)]
+        assert module.main() == 0
+    finally:
+        sys.argv = argv_backup
