@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.7.4 - 2026-08-03
+
+- Renamed the GitHub Action display name to `SAM Doctor AWS Deployment
+  Diagnostics` so it can be uniquely listed in GitHub Marketplace.
+
 ## v0.7.3 - 2026-08-03
 
 - Added GitHub Marketplace branding to the composite action and refreshed the
