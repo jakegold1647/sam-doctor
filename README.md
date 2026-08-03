@@ -154,6 +154,15 @@ Before release tagging, run:
 python scripts/check-launch.py --skip-outreach
 ```
 
+For a lightweight outreach quality check, run:
+
+```bash
+python scripts/check-launch.py \
+  --skip-distribution \
+  --outreach-summary artifacts/outreach-summary.md \
+  --outreach-log launch/outreach-log-template.csv
+```
+
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
 tracking notes and fill one row per real contact.
 

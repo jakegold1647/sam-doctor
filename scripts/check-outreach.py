@@ -11,7 +11,7 @@ import argparse
 import csv
 from collections import Counter
 from pathlib import Path
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Sequence, Tuple
 
 
 _EMPTY_SUMMARY: dict[str, object] = {
@@ -76,6 +76,24 @@ def _normalize_text(value: str) -> str:
     return (value or "").strip()
 
 
+def _format_top_list(
+    title: str, items: object
+) -> list[str]:
+    lines = [f"- {title}:"]
+    if not isinstance(items, list):
+        lines.append("  - unavailable")
+        return lines
+
+    pairs: Sequence[Tuple[str, object]] = items  # type: ignore[assignment]
+    if not pairs:
+        lines.append("  - none recorded")
+        return lines
+
+    for name, count in pairs:
+        lines.append(f"  - {name}: {count}")
+    return lines
+
+
 def empty_summary() -> dict[str, object]:
     return dict(_EMPTY_SUMMARY)
 
@@ -131,11 +149,11 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
         f"- ethical_signal: {summary['ethical_signal']}",
-        f"- top_channels: {summary['top_channels']}",
-        f"- top_outcomes: {summary['top_outcomes']}",
-        f"- top_problem_areas: {summary['top_problem_areas']}",
-        f"- top_stages: {summary['top_stages']}",
     ]
+    lines.extend(_format_top_list("top_channels", summary.get("top_channels")))
+    lines.extend(_format_top_list("top_outcomes", summary.get("top_outcomes")))
+    lines.extend(_format_top_list("top_problem_areas", summary.get("top_problem_areas")))
+    lines.extend(_format_top_list("top_stages", summary.get("top_stages")))
     with open(path, "w", encoding="utf-8") as stream:
         stream.write("\n".join(lines) + "\n")
 
@@ -161,6 +179,11 @@ def main() -> int:
         default="launch/outreach-log-template.csv",
         help="Path to the outreach CSV.",
     )
+    parser.add_argument(
+        "--summary",
+        default="",
+        help="Write outreach summary file.",
+    )
     args = parser.parse_args()
 
     csv_path = Path(args.path)
@@ -170,6 +193,8 @@ def main() -> int:
 
     summary = summarize(csv_path)
     _print_summary(summary)
+    if args.summary:
+        _write_summary(summary, args.summary)
     return 0
 
 
