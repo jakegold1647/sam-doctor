@@ -21,7 +21,7 @@ authoritative root cause. It detects known patterns in the text you provide,
 redacts common identifiers, and gives safe verification steps and the relevant
 official documentation.
 
-Current release: **v0.7.4 (Marketplace pre-release)**.
+Current release: **v0.7.5-rc.1 (Marketplace pre-release)**.
 
 ## Current free core
 
@@ -42,16 +42,16 @@ Current release: **v0.7.4 (Marketplace pre-release)**.
 ## Try it in 60 seconds
 
 ```bash
-python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.4/sam_doctor-0.7.4-py3-none-any.whl
+python -m pip install https://github.com/jakegold1647/sam-doctor/releases/download/v0.7.5-rc.1/sam_doctor-0.7.5rc1-py3-none-any.whl
 sam-doctor demo
 ```
 
-This installs v0.7.4 directly and does not require Git. The
+This installs v0.7.5-rc.1 directly and does not require Git. The
 bundled demo needs no AWS credentials and makes no network calls. To install
 from the tagged source instead, run:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.4"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.5-rc.1"
 ```
 
 If your shell cannot find `sam-doctor` after installation, activate the
@@ -102,7 +102,7 @@ Use the included action when a workflow already saves a deployment log:
 - name: Diagnose deployment log
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.4
+  uses: jakegold1647/sam-doctor@v0.7.5-rc.1
   with:
     log-file: deployment.log
     summary: "true"
