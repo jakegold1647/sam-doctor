@@ -11,7 +11,7 @@ from sam_doctor import __version__
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.4.0"
+    assert __version__ == "0.4.1"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -90,6 +90,15 @@ def test_redaction_covers_common_ci_credentials() -> None:
     assert "[REDACTED_AWS_ACCESS_KEY]" in result
     assert "[REDACTED_GITHUB_TOKEN]" in result
     assert result.count("[REDACTED_SECRET]") == 2
+
+
+def test_redaction_covers_bearer_and_jwt_style_tokens() -> None:
+    bearer_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJydW4ifQ.signaturevalue123"
+    result = redact(f"Authorization: Bearer {bearer_token} standalone {bearer_token}")
+
+    assert bearer_token not in result
+    assert "Authorization: Bearer [REDACTED_BEARER_TOKEN]" in result
+    assert "standalone [REDACTED_JWT]" in result
 
 
 def test_markdown_report_escapes_log_markup() -> None:
