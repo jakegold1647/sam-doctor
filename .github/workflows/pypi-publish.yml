@@ -3,6 +3,12 @@ name: Publish to PyPI
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: Stable GitHub release tag to publish to PyPI (for example, v0.7.5)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -11,7 +17,7 @@ permissions:
 
 jobs:
   publish:
-    if: ${{ !github.event.release.prerelease }}
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -32,9 +38,11 @@ jobs:
       - name: Trigger strict post-release launch health check
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.event.release.tag_name }}
         run: |
           gh workflow run distribution-check.yml \
-            --ref "${{ github.event.release.tag_name }}" \
+            --ref "$RELEASE_TAG" \
+            -f release-tag="$RELEASE_TAG" \
             -f strict-distribution-during-release=true \
             -f strict-ethical=false \
             -f min-feedback-ratio=100

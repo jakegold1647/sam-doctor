@@ -19,6 +19,10 @@ on:
         description: "Minimum feedback ratio for --strict-ethical (percentage)"
         required: false
         default: "100"
+      release-tag:
+        description: Stable release tag that triggered this health check
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -38,7 +42,7 @@ jobs:
             ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-distribution-during-release'] == 'true' }}
           STRICT_ETHICAL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['strict-ethical'] == 'true' }}
           MIN_FEEDBACK_RATIO: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs['min-feedback-ratio'] || '100' }}
-          RELEASED_FROM_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+          RELEASED_FROM_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release-tag || '' }}
         run: |
           if [ "$RELEASED_FROM_TAG" != "" ] && [ "$STRICT_ETHICAL" != "true" ]; then
             STRICT_ETHICAL=""

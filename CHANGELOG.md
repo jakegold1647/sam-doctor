@@ -8,6 +8,8 @@ All notable changes to SAM Doctor are documented here.
 
 - Promoted the tested prerelease to a stable package and Marketplace Action
   release so users can install with `pip install sam-doctor`.
+- Added an explicit workflow-dispatch handoff so automated stable releases can
+  publish to PyPI even when GitHub does not fan out the release event.
 
 ## v0.7.5-rc.1 - 2026-08-03
 
