@@ -1,30 +1,30 @@
-# Publish SAM Doctor free alpha
+# Publish a SAM Doctor release
 
-This runbook assumes the product has been reviewed locally and you are ready to make the repository public. Do not publish logs, customer failures, AWS credentials, access keys, session tokens, or personal information.
+This repository is already public. Use this checklist for a release you intend
+to share with real users. Do not publish logs, customer failures, AWS
+credentials, access keys, session tokens, or personal information.
 
-## 1. Choose the public repository
-
-Create an empty public GitHub repository named `sam-doctor` under the account you want customers and employers to see.
-
-Before the first commit, choose the Git email address you want exposed in public commit metadata. Use a GitHub no-reply email if you do not want a personal address public.
+## 1. Release preflight
 
 ```powershell
-git config user.name "Your public name"
-git config user.email "your-public-git-email"
-git add .
-git commit -m "Launch SAM Doctor free alpha"
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/sam-doctor.git
-git push -u origin main
+python -m pip install -e ".[dev]"
+python -m pytest -q
+python -m build
+sam-doctor demo
 ```
 
-## 2. Enable the public alpha
+Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
+`CHANGELOG.md`, and the release note all agree.
+
+## 2. Publish the public alpha
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
-2. Create a `v0.1.0` GitHub release with the README's install command and demo command.
-3. Replace `YOUR_GITHUB_USERNAME` in `site/index.html` with the public account name.
-4. Enable GitHub Pages for the `site/` directory or deploy the static page through another host.
+2. Create a `v0.2.0` GitHub release from the matching tag with `launch/RELEASE-v0.2.0.md` as the release notes.
+3. Confirm GitHub Pages serves the current `site/` directory.
+4. In repository Settings, set the homepage to the GitHub Pages URL and add these topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`, `serverless`, `python`, `cli`.
+5. Upload `site/assets/sam-doctor-social-preview.jpg` as the repository's social preview image.
 
-## 3. Prepare the founder checkout
+## 3. Prepare a founder checkout only after validation
 
 Create a Lemon Squeezy one-time product using `launch/PRODUCT-LISTING.md`.
 
@@ -32,7 +32,7 @@ Do not activate a purchase button until the product description includes the del
 
 ## 4. First distribution
 
-Use `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free alpha and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
+Use `launch/LAUNCH-PLAN.md` and `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free alpha and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
 
 ## Definition of the first revenue milestone
 

@@ -4,29 +4,41 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sam-doctor"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local, evidence-first diagnostics for AWS SAM and GitHub Actions deployment failures."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "Jacob Goldstein"}]
+keywords = ["aws", "cloudformation", "github-actions", "iam", "sam", "serverless"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
+
+[project.urls]
+Homepage = "https://jakegold1647.github.io/sam-doctor/"
+Repository = "https://github.com/jakegold1647/sam-doctor"
+Issues = "https://github.com/jakegold1647/sam-doctor/issues"
+Changelog = "https://github.com/jakegold1647/sam-doctor/blob/main/CHANGELOG.md"
 
 [project.scripts]
 sam-doctor = "sam_doctor.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["build>=1", "pytest>=8"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 sam_doctor = ["data/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

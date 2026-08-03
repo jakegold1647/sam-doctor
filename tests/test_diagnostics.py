@@ -7,6 +7,11 @@ import pytest
 from sam_doctor.cli import _read_demo, _read_text, _write_report
 from sam_doctor.diagnostics import diagnose, json_report, markdown_report
 from sam_doctor.redaction import redact
+from sam_doctor import __version__
+
+
+def test_package_version_matches_release() -> None:
+    assert __version__ == "0.2.0"
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
