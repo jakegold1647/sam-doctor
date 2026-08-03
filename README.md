@@ -8,9 +8,10 @@ SAM Doctor is a local, evidence-first command-line tool for turning AWS SAM,
 CloudFormation, IAM, and GitHub Actions deployment failures into a concise
 diagnostic report.
 
-**[See the project page](https://jakegold1647.github.io/sam-doctor/)** ·
-**[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** ·
-**[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** ·
+**[See the project page](https://jakegold1647.github.io/sam-doctor/)** |
+**[Use on GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)** |
+**[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** |
+**[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new/choose)** |
 **[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)**
 
 It does **not** access AWS, upload logs, change resources, or promise an
