@@ -17,3 +17,14 @@ Ask for a $39 founder preorder only after a tester has seen a useful report. The
 
 If people like the report but will not install a CLI, package the findings as a paid troubleshooting guide instead. If people do not use the free core on real failures, narrow the tool to the most repeated error family rather than adding more rules.
 
+## Outreach metrics helper
+
+If you are tracking outreach in `launch/outreach-log-template.csv`, run:
+
+```bash
+python scripts/check-outreach.py launch/outreach-log-template.csv
+```
+
+This prints a lightweight, non-sensitive summary to guide your next 7-day
+focused outreach batch.
+
