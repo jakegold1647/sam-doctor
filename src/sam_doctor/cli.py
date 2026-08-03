@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 from . import __version__
-from .diagnostics import diagnose, markdown_report, terminal_report
+from .diagnostics import diagnose, json_report, markdown_report, terminal_report
 
 
 _DEMO_NAME = "oidc-assume-role-failure.txt"
@@ -28,11 +28,16 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Path to a UTF-8 text log, or - to read the log from stdin.",
     )
-    diagnose_parser.add_argument("--format", choices=("terminal", "markdown"), default="terminal")
+    diagnose_parser.add_argument(
+        "--format",
+        choices=("terminal", "markdown", "json"),
+        default="terminal",
+        help="Report format for stdout or --output.",
+    )
     diagnose_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
 
     demo_parser = subcommands.add_parser("demo", help="Run the bundled OIDC failure example.")
-    demo_parser.add_argument("--format", choices=("terminal", "markdown"), default="terminal")
+    demo_parser.add_argument("--format", choices=("terminal", "markdown", "json"), default="terminal")
     demo_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
     return parser
 
@@ -50,6 +55,8 @@ def _render(text: str, source_name: str, output_format: str) -> str:
     findings = diagnose(text)
     if output_format == "markdown":
         return markdown_report(findings, source_name)
+    if output_format == "json":
+        return json_report(findings, source_name)
     return terminal_report(findings, source_name) + "\n"
 
 
@@ -87,7 +94,8 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as error:
         parser.error(str(error))
 
-    report = _render(text, args.input.name, args.format)
+    source_name = "<stdin>" if args.input == Path("-") else args.input.name
+    report = _render(text, source_name, args.format)
     if args.output:
         try:
             _write_report(args.output, report)

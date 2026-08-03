@@ -17,8 +17,8 @@ official documentation.
 - CloudFormation rollback states
 - SAM deployment/configuration errors
 - API Gateway CORS preflight conflicts
-- Terminal and Markdown reports
-- Local redaction for account IDs, ARNs, and email addresses
+- Terminal, Markdown, and JSON reports
+- Local redaction for account IDs, ARNs, email addresses, and common CI credentials
 
 ## Install and run
 
@@ -35,6 +35,19 @@ To save a report:
 ```bash
 sam-doctor diagnose deployment.log --format markdown --output diagnosis.md
 ```
+
+The input can also be read from standard input, which is useful for CI steps and
+shell pipelines:
+
+```bash
+kubectl logs deploy/my-api | sam-doctor diagnose -
+sam-doctor diagnose deployment.log --format json --output diagnosis.json
+```
+
+The terminal format is intended for a quick local check, Markdown is convenient
+for a human-readable handoff, and JSON is stable enough for scripts and CI
+annotations. All three formats contain matched evidence rather than the full
+input log.
 
 ## Example output
 
@@ -60,3 +73,7 @@ failures.
 Run this only on logs you are authorized to inspect. Review every suggested
 command and policy change before applying it. SAM Doctor is diagnostic help,
 not security, legal, or production-operations advice.
+
+Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
+and common GitHub token formats before matched evidence is displayed. This is a
+helpful guardrail, not a secret scanner: review a report before sharing it.

@@ -1,10 +1,11 @@
 import io
+import json
 from pathlib import Path
 
 import pytest
 
 from sam_doctor.cli import _read_demo, _read_text, _write_report
-from sam_doctor.diagnostics import diagnose, markdown_report
+from sam_doctor.diagnostics import diagnose, json_report, markdown_report
 from sam_doctor.redaction import redact
 
 
@@ -61,3 +62,25 @@ def test_dash_reads_stdin(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_write_report_wraps_os_errors(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Could not write"):
         _write_report(tmp_path / "missing" / "report.md", "report")
+
+
+def test_json_report_is_redacted_and_machine_readable() -> None:
+    findings = diagnose(
+        "AccessDeniedException for arn:aws:iam::123456789012:role/deploy owner@example.com"
+    )
+
+    report = json.loads(json_report(findings, "failure.log"))
+
+    assert report["finding_count"] == 1
+    assert report["source"] == "failure.log"
+    assert "[REDACTED_ARN]" in report["findings"][0]["evidence"][0]
+    assert "123456789012" not in json_report(findings, "failure.log")
+
+
+def test_long_evidence_is_bounded() -> None:
+    findings = diagnose("prefix " + ("x" * 500) + " AccessDeniedException " + ("y" * 500))
+
+    evidence = findings[0].evidence[0]
+
+    assert len(evidence) <= 360
+    assert "..." in evidence
