@@ -36,6 +36,22 @@ def _count(values: Iterable[str]) -> Counter[str]:
     return counter
 
 
+def _contains_feedback_signal(value: str) -> bool:
+    text = (value or "").strip().lower()
+    if not text:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "follow",
+            "asked",
+            "accepted",
+            "scheduled",
+            "pending",
+        )
+    )
+
+
 def summarize(path: Path) -> dict[str, object]:
     rows = _read_rows(path)
     if not rows:
@@ -44,8 +60,12 @@ def summarize(path: Path) -> dict[str, object]:
             "voluntary_stars": 0,
             "positive_outcome_count": 0,
             "repeat_contacts": 0,
+            "stars_without_feedback": 0,
             "top_channels": [],
             "top_outcomes": [],
+            "top_problem_areas": [],
+            "top_stages": [],
+            "ethical_signal": "no_data",
         }
 
     voluntary_stars = sum(_to_bool(row.get("voluntary_star", "")) for row in rows)
@@ -53,16 +73,34 @@ def summarize(path: Path) -> dict[str, object]:
     positive_signals = sum(
         1 for row in rows if "asked" in (row.get("feedback_signal", "") or "").lower()
     )
+    stars_without_feedback = sum(
+        1
+        for row in rows
+        if _to_bool(row.get("voluntary_star", ""))
+        and not _contains_feedback_signal(row.get("feedback_signal", ""))
+    )
     contact_channels = _count((row.get("contact_channel", "") for row in rows))
     outcomes = _count((row.get("outcome", "") for row in rows))
+    problem_areas = _count((row.get("problem_area", "") for row in rows))
+    stages = _count((row.get("conversation_stage", "") for row in rows))
 
     return {
         "rows": len(rows),
         "voluntary_stars": voluntary_stars,
         "positive_outcome_count": positive_signals,
         "repeat_contacts": repeat_contacts,
+        "stars_without_feedback": stars_without_feedback,
+        "ethical_signal": (
+            "strong"
+            if stars_without_feedback == 0 and voluntary_stars > 0
+            else "mixed"
+            if voluntary_stars > 0
+            else "watch"
+        ),
         "top_channels": _sorted_counts(contact_channels)[:3],
         "top_outcomes": _sorted_counts(outcomes)[:3],
+        "top_problem_areas": _sorted_counts(problem_areas)[:3],
+        "top_stages": _sorted_counts(stages)[:3],
     }
 
 
@@ -71,8 +109,12 @@ def _print_summary(summary: dict[str, object]) -> None:
     print(f"voluntary_stars: {summary['voluntary_stars']}")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
     print(f"feedback_signals: {summary['positive_outcome_count']}")
+    print(f"stars_without_feedback: {summary['stars_without_feedback']}")
+    print(f"ethical_signal: {summary['ethical_signal']}")
     print(f"top_channels: {summary['top_channels']}")
     print(f"top_outcomes: {summary['top_outcomes']}")
+    print(f"top_problem_areas: {summary['top_problem_areas']}")
+    print(f"top_stages: {summary['top_stages']}")
 
 
 def main() -> int:
