@@ -44,6 +44,11 @@ jobs:
             STRICT_ETHICAL=""
           fi
 
+          launch_flags=""
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            launch_flags="--skip-release-state"
+          fi
+
           strict_flags=""
           if [ "$STRICT_DURING_RELEASE" = "true" ]; then
             strict_flags="--strict-distribution-during-release"
@@ -61,6 +66,7 @@ jobs:
             --check-launch-token "${{ secrets.GITHUB_TOKEN }}" \
             --launch-repo "jakegold1647/sam-doctor" \
             --outreach-log launch/outreach-log-template.csv \
+            $launch_flags \
             $strict_flags \
             --output-format json \
             --output artifacts/distribution.json \

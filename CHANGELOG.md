@@ -10,6 +10,8 @@ All notable changes to SAM Doctor are documented here.
   manual listing publish steps.
 - Updated release automation so plain tags (`vX.Y.Z`) publish as public releases
   while pre-release tags keep prerelease behavior.
+- Kept scheduled distribution monitoring from treating the intentionally
+  pre-release Marketplace build as a failed stable-release gate.
 - Hardened release automation for existing tag re-runs and clarified PyPI/launch
   docs to match release-tag behavior.
 - Added a lightweight outreach tracking template to support the ethical,

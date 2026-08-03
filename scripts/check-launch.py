@@ -38,12 +38,18 @@ def run_launch_readiness(
     repo_root: Path,
     repo: str,
     token: str | None,
+    check_release_state: bool = True,
     loader: Callable[[Path], Any] = _load_launch_readiness_module,
 ) -> tuple[bool, int, int]:
     module = loader(repo_root)
     run_checks = getattr(module, "_run_checks_with_options", None)
     if callable(run_checks):
-        result = run_checks(repo_root, repo=repo, token=token)
+        result = run_checks(
+            repo_root,
+            repo=repo,
+            token=token,
+            check_release_state=check_release_state,
+        )
     else:
         result = module._run_checks(repo_root)
     return bool(result.ok), int(result.passed), int(result.failed)
@@ -194,6 +200,11 @@ def _parse_args() -> argparse.Namespace:
         help="GitHub token for launch metadata checks.",
     )
     parser.add_argument(
+        "--skip-release-state",
+        action="store_true",
+        help="Skip the remote stable/prerelease state check (use for scheduled monitoring).",
+    )
+    parser.add_argument(
         "--launch-repo",
         default="jakegold1647/sam-doctor",
         help="GitHub repository owner/name for launch metadata checks.",
@@ -277,6 +288,7 @@ def main() -> int:
         repo_root,
         repo=args.launch_repo,
         token=launch_token,
+        check_release_state=not args.skip_release_state,
     )
     if not launch_ok:
         ok = False
