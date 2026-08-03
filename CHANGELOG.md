@@ -6,6 +6,8 @@ All notable changes to SAM Doctor are documented here.
 
 - Fixed stable PyPI recovery so the current workflow runs from `main` while
   building the exact release tag supplied by the operator.
+- Added coverage for CloudFormation's `ROLLBACK_FAILED` stack state, including
+  the cleanup-focused verification step.
 
 ## v0.7.5 - 2026-08-03
 
