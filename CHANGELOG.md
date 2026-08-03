@@ -2,6 +2,11 @@
 
 All notable changes to SAM Doctor are documented here.
 
+## v0.7.1 - 2026-08-03
+
+- Ordered multiple findings by the first supporting line in the supplied log so
+  earlier failures are presented before downstream deployment noise.
+
 ## v0.7.0 - 2026-08-03
 
 - Added direct findings for invalid SAM template properties, IAM trust-policy
