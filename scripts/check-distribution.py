@@ -192,6 +192,81 @@ def _print_trend(snapshot: dict[str, object], previous: dict[str, str] | None) -
     )
 
 
+def _summary_lines(
+    snapshot: dict[str, object], previous: dict[str, str] | None
+) -> list[str]:
+    pypi_status = snapshot["pypi_status"]
+    marketplace_status = snapshot["marketplace_status"]
+    site_status = snapshot["site_status"]
+
+    pypi_up = "up" if isinstance(pypi_status, dict) and pypi_status["ok"] else "down"
+    marketplace_up = (
+        "up"
+        if isinstance(marketplace_status, dict) and marketplace_status["ok"]
+        else "down"
+    )
+    site_up = "up" if isinstance(site_status, dict) and site_status["ok"] else "down"
+
+    trend_text = "baseline: no previous row for comparison"
+    if previous:
+        def _to_int(value: object, default: int = 0) -> int:
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return default
+
+        def _delta(current: object, previous_key: str) -> int:
+            return _to_int(current) - _to_int(previous.get(previous_key, "0"))
+
+        trend_text = (
+            f"delta stars={_delta(snapshot['repo_stars'], 'repo_stars'):+d}, "
+            f"delta forks={_delta(snapshot['forks'], 'forks'):+d}, "
+            f"delta open_issues={_delta(snapshot['open_issues'], 'open_issues'):+d}, "
+            f"delta watchers={_delta(snapshot['watchers'], 'watchers'):+d}, "
+            f"delta releases={_delta(snapshot['releases'], 'releases'):+d}"
+        )
+
+    channel_health = []
+    if pypi_up == "up":
+        channel_health.append("PyPI: up")
+    if marketplace_up == "up":
+        channel_health.append("Marketplace: up")
+    if site_up == "up":
+        channel_health.append("Site: up")
+    if not channel_health:
+        channel_health.append("channels: investigate")
+
+    star_signal = (
+        "no stars yet; prioritize conversation-first outreach"
+        if snapshot["repo_stars"] == 0
+        else "has organic follow-through signal"
+    )
+
+    return [
+        "# SAM Doctor launch status",
+        f"- timestamp: {snapshot['timestamp']}",
+        f"- repository: {snapshot['repo']}",
+        f"- repo_stars: {snapshot['repo_stars']}",
+        f"- forks: {snapshot['forks']}",
+        f"- open_issues: {snapshot['open_issues']}",
+        f"- watchers: {snapshot['watchers']}",
+        f"- releases: {snapshot['releases']}",
+        f"- discussions_ping: {snapshot['discussions_ping']}",
+        f"- channel_health: {', '.join(channel_health)}",
+        f"- trend_vs_previous: {trend_text}",
+        f"- signal: {star_signal}",
+    ]
+
+
+def _write_summary(
+    snapshot: dict[str, object],
+    previous: dict[str, str] | None,
+    summary_path: str,
+) -> None:
+    with open(summary_path, "w", encoding="utf-8") as stream:
+        stream.write("\n".join(_summary_lines(snapshot, previous)) + "\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -225,6 +300,11 @@ def main() -> int:
         action="store_true",
         help="Print trend deltas from the most recent CSV snapshot",
     )
+    parser.add_argument(
+        "--summary",
+        default="",
+        help="Write launch summary markdown to this file",
+    )
     args = parser.parse_args()
 
     repo = args.repo
@@ -235,12 +315,15 @@ def main() -> int:
         print(f"Unable to read repo metadata: {error}")
         return 1
 
-    previous_row = _read_last_csv_row(args.append_csv) if args.print_trend else None
+    should_read_previous = args.print_trend or bool(args.summary)
+    previous_row = _read_last_csv_row(args.append_csv) if should_read_previous and args.append_csv else None
     if args.output_format == "json":
         print(json.dumps(snapshot, indent=2, sort_keys=True))
         if args.output:
             with open(args.output, "w", encoding="utf-8") as stream:
                 json.dump(snapshot, stream, indent=2, sort_keys=True)
+        if args.summary:
+            _write_summary(snapshot, previous_row, args.summary)
     if args.append_csv:
         _append_csv(snapshot, args.append_csv)
     if args.print_trend:
