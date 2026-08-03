@@ -97,6 +97,40 @@ def _format_top_list(
     return lines
 
 
+def _ethical_recommendation(summary: dict[str, object]) -> str:
+    ethical_signal = summary.get("ethical_signal")
+    if ethical_signal == "strong":
+        return "Keep the loop simple and scale with newer real-failure conversations."
+    if ethical_signal == "mixed":
+        return (
+            "Follow up with stars that lacked feedback; one clear ask for a "
+            "follow-up issue or note will improve trust signal."
+        )
+    return (
+        "Prioritize conversation-first outreach. Run this again only after collecting "
+        "at least one voluntary star with follow-up signal."
+    )
+
+
+def _passes_strict_ethical_policy(summary: dict[str, object], min_feedback_ratio: float) -> tuple[bool, str]:
+    if summary.get("ethical_signal") != "strong":
+        return (
+            False,
+            f"ethical_signal is {summary['ethical_signal']}, not strong",
+        )
+
+    ratio = float(summary["star_feedback_ratio"])
+    if ratio < min_feedback_ratio:
+        return (
+            False,
+            (
+                f"ethical star feedback ratio is {ratio:.1f}%, below strict threshold "
+                f"{min_feedback_ratio:.1f}%"
+            ),
+        )
+    return True, ""
+
+
 def empty_summary() -> dict[str, object]:
     return dict(_EMPTY_SUMMARY)
 
@@ -169,6 +203,7 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
         f"- ethical_signal: {summary['ethical_signal']}",
+        f"- recommendation: {_ethical_recommendation(summary)}",
     ]
     lines.extend(_format_top_list("top_channels", summary.get("top_channels")))
     lines.extend(_format_top_list("top_outcomes", summary.get("top_outcomes")))
@@ -190,6 +225,7 @@ def _print_summary(summary: dict[str, object]) -> None:
     print(f"feedback_signals: {summary['positive_outcome_count']}")
     print(f"stars_without_feedback: {summary['stars_without_feedback']}")
     print(f"ethical_signal: {summary['ethical_signal']}")
+    print(f"recommendation: {_ethical_recommendation(summary)}")
     print(f"top_channels: {summary['top_channels']}")
     print(f"top_outcomes: {summary['top_outcomes']}")
     print(f"top_problem_areas: {summary['top_problem_areas']}")
@@ -209,6 +245,17 @@ def main() -> int:
         default="",
         help="Write outreach summary file.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail if ethical signal is not strong.",
+    )
+    parser.add_argument(
+        "--min-feedback-ratio",
+        type=float,
+        default=100.0,
+        help="Strict ethical minimum for supportive follow-up ratio.",
+    )
     args = parser.parse_args()
 
     csv_path = Path(args.path)
@@ -220,6 +267,11 @@ def main() -> int:
     _print_summary(summary)
     if args.summary:
         _write_summary(summary, args.summary)
+    if args.strict:
+        passed, reason = _passes_strict_ethical_policy(summary, args.min_feedback_ratio)
+        if not passed:
+            print(reason)
+            return 1
     return 0
 
 

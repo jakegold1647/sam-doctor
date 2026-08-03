@@ -163,6 +163,13 @@ python scripts/check-launch.py \
   --outreach-log launch/outreach-log-template.csv
 ```
 
+For a stricter organic-growth check:
+
+```bash
+python scripts/check-outreach.py launch/outreach-log-template.csv \
+  --strict --min-feedback-ratio 100
+```
+
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
 tracking notes and fill one row per real contact.
 
