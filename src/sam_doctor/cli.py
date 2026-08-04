@@ -79,7 +79,7 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="+",
         help=(
             "One or more log files, directories, or wildcard paths. "
-            "Directories are scanned for *.log and *.txt files."
+            "Directories are scanned for *.log, *.txt, and *.out files."
         ),
     )
     batch_parser.add_argument(
