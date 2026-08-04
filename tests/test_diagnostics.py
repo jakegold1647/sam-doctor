@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
-
 from sam_doctor import __version__
 from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
 from sam_doctor.diagnostics import (
