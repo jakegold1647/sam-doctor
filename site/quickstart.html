@@ -124,6 +124,13 @@ sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary -
 
 # Strict mode after a few stable runs
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations --fail-on-findings --force</code></pre>
+        <p class="muted">
+          If you want one workflow file for both modes, copy
+          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml">
+            github-actions-workflow-two-phase-gating.yml
+          </a>
+          and switch to <code>rollout-mode: strict</code> on demand.
+        </p>
         <p class="note">Use this in Slack/Discord:</p>
         <pre><code>I triaged a deploy failure with SAM Doctor:
 sam-doctor diagnose deployment.log --format markdown

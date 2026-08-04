@@ -130,6 +130,18 @@ sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary \
   --annotations --fail-on-findings --force
 ```
 
+If you prefer to avoid regenerating on each mode switch, use the two-phase starter
+workflow:
+
+```bash
+curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml \
+  -o .github/workflows/sam-doctor.yml
+```
+
+The two-phase workflow stays non-blocking by default and only enforces strict
+gating when you intentionally run a manual rollout (`workflow_dispatch` with
+`rollout-mode: strict`).
+
 For repo-level batch diagnostics, set `--batch` and point `log-file` at a directory
 or glob in the generated workflow.
 

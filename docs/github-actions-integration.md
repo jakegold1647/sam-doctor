@@ -50,7 +50,11 @@ set `batch: true` and point `log-file` to a directory or glob:
 
 You can copy the full starter workflow from
 `examples/github-actions-workflow.yml` and adjust your deploy command and
-permissions. If you prefer a CLI-first setup, run this once in your repo:
+permissions, or use the rollout-safe
+`examples/github-actions-workflow-two-phase-gating.yml` starter for pilot-to-strict
+adoption.
+
+If you prefer a CLI-first setup, run this once in your repo:
 
 ```bash
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
@@ -76,6 +80,15 @@ Later, regenerate with stricter behavior:
 
 ```bash
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --fail-on-findings --force
+```
+
+If you already want a single reusable file for both modes without regenerating,
+copy the two-phase template directly:
+
+```bash
+mkdir -p .github/workflows
+curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml \
+  -o .github/workflows/sam-doctor.yml
 ```
 
 If your stack uses different deployment flow, start from one of these:
