@@ -4,6 +4,9 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for Lambda per-function package size limits (`Unzipped size
+  must be smaller than`, `Request must be smaller than ... bytes`), kept
+  separate from the regional code-storage quota. Contributed in #34.
 - `python -m sam_doctor` now works as an alias for the `sam-doctor` console
   script, matching what the README suggests when the script is not on PATH.
 - Added two advanced diagnostics: resource stabilization failures

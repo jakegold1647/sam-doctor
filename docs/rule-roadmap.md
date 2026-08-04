@@ -371,7 +371,8 @@ this one, pick another open entry above or below.
 
 ## 10. The Lambda deployment package is over a size limit
 
-**Status:** open for a contributor — tracked in
+**Status:** landed — contributed in
+[#34](https://github.com/jakegold1647/sam-doctor/pull/34), closing
 [issue #32](https://github.com/jakegold1647/sam-doctor/issues/32).
 
 **Failure family.** The function code (zip or unzipped) exceeds a Lambda
