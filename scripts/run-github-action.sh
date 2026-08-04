@@ -95,11 +95,51 @@ else
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
-  if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
-    "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
-  else
-    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
-  fi
+  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+import json
+import sys
+
+from html import escape
+from sam_doctor.diagnostics import Finding
+from sam_doctor.cli import markdown_report
+
+
+def write_summary(payload_path: str, is_batch: bool) -> None:
+    payload = json.load(open(payload_path, encoding="utf-8"))
+
+    def _as_findings(raw_findings: list[dict[str, object]]) -> list[Finding]:
+        findings: list[Finding] = []
+        for item in raw_findings:
+            findings.append(
+                Finding(
+                    title=item["title"],
+                    confidence=item["confidence"],
+                    explanation=item["explanation"],
+                    verification=tuple(item["verification"]),
+                    documentation_url=item["documentation_url"],
+                    evidence=tuple(item["evidence"]),
+                    line_number=int(item["line_number"]),
+                )
+            )
+        return findings
+
+    if not is_batch:
+        source = payload.get("source", "")
+        findings = _as_findings(payload.get("findings", []))
+        print(markdown_report(findings, source))
+        return
+
+    for result in payload.get("results", []):
+        source = str(result.get("source", ""))
+        findings = _as_findings(result.get("findings", []))
+        print(f"## Source: <code>{escape(source)}</code>")
+        print("")
+        print(markdown_report(findings, source).rstrip())
+        print("")
+
+
+write_summary(sys.argv[1], sys.argv[2].lower() == "true")
+PY
 fi
 
 if [[ "$SAM_DOCTOR_ANNOTATIONS" == "true" && "$finding_count" -gt 0 ]]; then
