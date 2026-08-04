@@ -5,16 +5,14 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
-import pytest
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import rules_report
 
 
 def test_diagnose_missing_file_exits_2(tmp_path: Path, capsys) -> None:
-    with pytest.raises(SystemExit) as excinfo:
-        main(["diagnose", str(tmp_path / "does-not-exist.log")])
+    exit_code = main(["diagnose", str(tmp_path / "does-not-exist.log")])
 
-    assert excinfo.value.code == 2
+    assert exit_code == 2
     assert "Could not read" in capsys.readouterr().err
 
 
@@ -22,38 +20,34 @@ def test_diagnose_unwritable_output_exits_2(tmp_path: Path, capsys) -> None:
     log = tmp_path / "failure.log"
     log.write_text("AccessDeniedException: nope", encoding="utf-8")
 
-    with pytest.raises(SystemExit) as excinfo:
-        main(["diagnose", str(log), "--output", str(tmp_path / "missing-dir" / "report.txt")])
+    exit_code = main(["diagnose", str(log), "--output", str(tmp_path / "missing-dir" / "report.txt")])
 
-    assert excinfo.value.code == 2
+    assert exit_code == 2
     assert "Could not write" in capsys.readouterr().err
 
 
 def test_batch_missing_input_exits_2(tmp_path: Path, capsys) -> None:
-    with pytest.raises(SystemExit) as excinfo:
-        main(["batch", str(tmp_path / "nope-*.log")])
+    exit_code = main(["batch", str(tmp_path / "nope-*.log")])
 
-    assert excinfo.value.code == 2
+    assert exit_code == 2
     assert "not found" in capsys.readouterr().err
 
 
 def test_batch_directory_without_logs_exits_2(tmp_path: Path, capsys) -> None:
     (tmp_path / "empty-dir").mkdir()
 
-    with pytest.raises(SystemExit) as excinfo:
-        main(["batch", str(tmp_path / "empty-dir")])
+    exit_code = main(["batch", str(tmp_path / "empty-dir")])
 
-    assert excinfo.value.code == 2
+    assert exit_code == 2
     assert "No log files found" in capsys.readouterr().err
 
 
 def test_packet_empty_stdin_exits_2(tmp_path: Path, capsys, monkeypatch) -> None:
     monkeypatch.setattr("sys.stdin", io.StringIO(""))
 
-    with pytest.raises(SystemExit) as excinfo:
-        main(["packet", "-", "--output-dir", str(tmp_path / "artifacts")])
+    exit_code = main(["packet", "-", "--output-dir", str(tmp_path / "artifacts")])
 
-    assert excinfo.value.code == 2
+    assert exit_code == 2
     assert "stdin input was empty" in capsys.readouterr().err
 
 
