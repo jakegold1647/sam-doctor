@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/diagnose-report.schema.json",
+  "title": "SAM Doctor diagnose report payload",
+  "type": "object",
+  "required": ["sam_doctor_version", "source", "finding_count", "findings"],
+  "properties": {
+    "sam_doctor_version": {
+      "type": "string",
+      "description": "Version string from sam_doctor.__version__."
+    },
+    "source": {
+      "type": "string",
+      "description": "Redacted source name used in output."
+    },
+    "finding_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of supported findings in the input."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/finding"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "title",
+        "confidence",
+        "explanation",
+        "verification",
+        "documentation_url",
+        "evidence",
+        "line_number"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "verification": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

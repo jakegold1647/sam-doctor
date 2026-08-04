@@ -16,6 +16,80 @@ from sam_doctor.redaction import redact
 from sam_doctor import __version__
 
 
+def _load_schema(relative_path: str) -> dict[str, object]:
+    schema_path = Path(__file__).resolve().parent.parent / relative_path
+    return json.loads(schema_path.read_text(encoding="utf-8"))
+
+
+def _assert_object_shape(payload: object, schema: dict[str, object], *, required_key: str) -> dict[str, object]:
+    assert isinstance(payload, dict), f"{required_key} payload is not a JSON object"
+    required = schema.get("required", [])
+    assert all(key in payload for key in required), f"{required_key} payload missing required keys"
+    return payload
+
+
+def _finding_shape(finding: object, finding_schema: dict[str, object], index: int) -> None:
+    assert isinstance(finding, dict), f"finding {index} is not an object"
+    required = finding_schema.get("required", [])
+    assert all(key in finding for key in required), f"finding {index} missing required keys"
+    assert isinstance(finding["title"], str)
+    assert isinstance(finding["confidence"], str)
+    assert isinstance(finding["explanation"], str)
+    assert isinstance(finding["verification"], list)
+    assert isinstance(finding["documentation_url"], str)
+    assert isinstance(finding["evidence"], list)
+    assert isinstance(finding["line_number"], int)
+
+
+def test_diagnose_json_payload_matches_schema_shape() -> None:
+    output = json.loads(
+        _render_findings(
+            diagnose(
+                "Not authorized to perform: sts:AssumeRoleWithWebIdentity "
+                "arn:aws:iam::123456789012:role/deploy owner@example.com"
+            ),
+            "failure.log",
+            "json",
+        )
+    )
+    diagnose_schema = _load_schema("docs/schemas/diagnose-report.schema.json")
+    _assert_object_shape(output, diagnose_schema, required_key="diagnose")
+    assert output["sam_doctor_version"] == __version__
+    assert output["source"] == "failure.log"
+    assert isinstance(output["finding_count"], int)
+    assert output["finding_count"] == len(output["findings"])
+    finding_schema = diagnose_schema["definitions"]["finding"]
+    for index, finding in enumerate(output["findings"]):
+        _finding_shape(finding, finding_schema, index)
+
+
+def test_batch_json_payload_matches_schema_shape() -> None:
+    from sam_doctor.cli import _batch_render
+
+    batch_schema = _load_schema("docs/schemas/batch-report.schema.json")
+    diagnose_schema = _load_schema("docs/schemas/diagnose-report.schema.json")
+    report_text, _ = _batch_render(
+        ["docs/cloudformation-first-failure.md", "docs/oidc-deployment-debugging.md"],
+        "json",
+    )
+
+    report = json.loads(report_text)
+    _assert_object_shape(report, batch_schema, required_key="batch")
+    assert report["sam_doctor_version"] == __version__
+    assert report["batch_count"] == len(report["results"])
+    assert isinstance(report["results"], list)
+
+    finding_schema = diagnose_schema["definitions"]["finding"]
+    for index, result in enumerate(report["results"]):
+        assert isinstance(result, dict)
+        assert isinstance(result["source"], str)
+        assert isinstance(result["finding_count"], int)
+        assert isinstance(result["findings"], list)
+        assert result["finding_count"] == len(result["findings"])
+        for finding_index, finding in enumerate(result["findings"]):
+            _finding_shape(finding, finding_schema, index=1000 * index + finding_index)
+
+
 def test_package_version_matches_release() -> None:
     assert __version__ == "0.7.7"
 
