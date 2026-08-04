@@ -46,6 +46,16 @@ If you are:
 - **Team lead / reviewer:** use it as a shared triage template for faster
   incident handoffs.
 
+### Choose your path in 20 seconds
+
+- **You have a failing deployment log file:** run one command and share one finding:
+  `sam-doctor diagnose deployment.log --format markdown`.
+- **You use GitHub Actions for deployment:** add one diagnostics step from one of the
+  starter workflows in the [CI matrix](docs/ci-command-matrix.md).
+- **You need a research-ready packet:** run
+  `sam-doctor packet deployment.log` and share `diagnosis.md` + `diagnosis.json`
+  only.
+
 ### Paste this in Slack/Teams/Email
 
 ```text
@@ -300,6 +310,13 @@ and one safe follow-up check you expected.
 
 For first-time contributors, keep the change small: one rule or one
 documentation improvement, with a focused test.
+
+## Related projects and ecosystem
+
+- **Portfolio:** [jacobgoldstein.dev](https://jacobgoldstein.dev)
+- **Research and historical text tooling:** [aktreader (public)](https://github.com/jakegold1647/aktreader)
+- **Research edition:** [aktreader-research](https://github.com/jakegold1647/aktreader-research)
+- **Historical records corpus project:** [congress-poland-registers](https://github.com/jakegold1647/congress-poland-registers)
 
 ## Pick your starting flow (fastest)
 
