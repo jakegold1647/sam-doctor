@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAM Doctor Quickstart | 60-Second Deployment Diagnosis</title>
+    <meta name="description" content="Start using SAM Doctor in 60 seconds: install, run your first diagnose command, and wire GitHub Actions with an example step." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/quickstart.html" />
+    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="SAM Doctor, AWS SAM, CloudFormation, GitHub Actions, deployment diagnostics, OIDC, rollback, devops" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="SAM Doctor Quickstart | 60-Second Deployment Diagnosis" />
+    <meta
+      property="og:description"
+      content="Install SAM Doctor, run your first diagnostic command, then add CI troubleshooting in under 60 seconds."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jakegold1647.github.io/sam-doctor/quickstart.html" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SAM Doctor Quickstart | 60-Second Deployment Diagnosis" />
+    <meta
+      name="twitter:description"
+      content="Start with one sanitized excerpt and get an actionable finding in minutes."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#quickstart-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="./">Home</a>
+        <a href="./quickstart.html">Quickstart</a>
+        <a href="#download">Download</a>
+        <a href="#workflow">Workflow</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="quickstart-content">
+      <section class="hero" aria-labelledby="quickstart-title">
+        <p class="eyebrow">60-SECOND START</p>
+        <h1 id="quickstart-title">Use SAM Doctor in under 60 seconds</h1>
+        <p class="lede">
+          Run one command on a real failure excerpt, then wire the same flow into
+          GitHub Actions when you are ready to gate deployments.
+        </p>
+      </section>
+
+      <section class="steps" id="download" aria-labelledby="install-title">
+        <p class="eyebrow">INSTALL</p>
+        <h2 id="install-title">1) Install the CLI</h2>
+        <pre><code>python -m pip install sam-doctor</code></pre>
+        <p class="muted">You can also use <code>pipx install sam-doctor</code> or <code>uvx sam-doctor demo</code>.</p>
+      </section>
+
+      <section class="steps" aria-labelledby="first-run-title">
+        <p class="eyebrow">FIRST RUN</p>
+        <h2 id="first-run-title">2) Diagnose a real failure excerpt</h2>
+        <p class="muted">Save the smallest authorized excerpt you are allowed to inspect:</p>
+        <pre><code>cat &gt; deployment-failure.log &lt;&lt;'EOF'
+Not authorized to perform: sts:AssumeRoleWithWebIdentity
+Error: status is not authorized
+EOF</code></pre>
+        <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
+        <p class="muted">Share one finding and the first safe verification step with your teammate.</p>
+      </section>
+
+      <section class="steps" id="workflow" aria-labelledby="ci-title">
+        <p class="eyebrow">CI INTEGRATION</p>
+        <h2 id="ci-title">3) Add one diagnostic step in GitHub Actions</h2>
+        <pre><code>- name: Deploy
+  shell: bash
+  run: |
+    set -o pipefail
+    sam deploy --no-confirm-changeset 2>&amp;1 | tee deployment.log
+
+- name: Diagnose deployment log
+  if: always()
+  uses: jakegold1647/sam-doctor@v0.7.7
+  with:
+    log-file: deployment.log
+    summary: true
+    annotations: true
+    fail-on-findings: true</code></pre>
+        <p class="muted">
+          Keep the deployment command unchanged. SAM Doctor only reads the local log and
+          suggests the next safe verification path.
+        </p>
+      </section>
+
+      <section class="terminal" aria-label="Expected output">
+        <p><span>$</span> sam-doctor diagnose deployment-failure.log --format markdown</p>
+        <p class="muted">Expected result</p>
+        <h2>GitHub Actions cannot assume the configured AWS role through OIDC.</h2>
+        <p class="muted">Matched on line 1</p>
+        <p>Evidence: <code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code></p>
+        <p class="muted">Next: confirm id-token permissions and OIDC audience/subject conditions.</p>
+      </section>
+
+      <section class="founder">
+        <p class="eyebrow">GROW WITH US</p>
+        <h2>Help improve this project</h2>
+        <p class="muted">
+          If this command saved you time, share one real failing excerpt and request an improvement:
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?title=Feedback%3A%20deployment%20error%20or%20rule%20request">open a rule request</a>.
+        </p>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor">Try examples and workflows</a>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
