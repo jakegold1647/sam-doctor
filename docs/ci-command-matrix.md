@@ -11,6 +11,7 @@ Use this matrix to quickly choose the right starting template.
 | `sam deploy` in CircleCI | CircleCI pipeline | [`examples/circleci-sam-doctor.yml`](../examples/circleci-sam-doctor.yml) | Add diagnosis in the same step as your deploy command |
 | `sam deploy` in Azure Pipelines | Azure pipeline | [`examples/azure-pipelines-sam-doctor.yml`](../examples/azure-pipelines-sam-doctor.yml) | Keep `continueOnError: true` while you validate |
 | `sam deploy` in Bitbucket Pipelines | Bitbucket pipeline | [`examples/bitbucket-pipelines-sam-doctor.yml`](../examples/bitbucket-pipelines-sam-doctor.yml) | Keep diagnosis non-blocking during early rollout |
+| Multiple deployment logs in one GitHub Action run | Batch-mode CI workflows | [`examples/github-actions-workflow-batch-logs.yml`](../examples/github-actions-workflow-batch-logs.yml) | Save logs under `logs/` and set `batch: true` with `log-file` |
 | Any other command (`cdk deploy`, `serverless deploy`, custom scripts) | Non-standard | [`examples/README.md`](../examples/README.md) | Use any starter and replace the deploy line with your command |
 
 ## 90-second quick path

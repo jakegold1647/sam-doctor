@@ -445,6 +445,11 @@ Check that the identity-based policy attached to the role allows id-token:write.
           <code>sam-doctor diagnose deployment.log --format github</code> and add
           it after the deploy command.
         </p>
+        <p class="muted">
+          If your workflow produces more than one log, use the batched GitHub Action
+          starter:
+          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-batch-logs.yml">github-actions-workflow-batch-logs.yml</a>.
+        </p>
         <p>
           For shell-based CI, run
           <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings</code>.

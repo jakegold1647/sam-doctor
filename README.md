@@ -487,6 +487,8 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
   - Start with [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
 - **CloudFormation package/deploy commandline**
   - Start with [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
+- **Batched deploy logs in one pipeline run**
+  - Start with [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
 You can also use the examples index to track what you changed:
 
@@ -506,6 +508,7 @@ If your repo uses another CI system, copy:
 - CircleCI: [`examples/circleci-sam-doctor.yml`](examples/circleci-sam-doctor.yml)
 - Azure Pipelines: [`examples/azure-pipelines-sam-doctor.yml`](examples/azure-pipelines-sam-doctor.yml)
 - Bitbucket Pipelines: [`examples/bitbucket-pipelines-sam-doctor.yml`](examples/bitbucket-pipelines-sam-doctor.yml)
+- Batch logs: [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
