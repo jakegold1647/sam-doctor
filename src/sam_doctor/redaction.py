@@ -15,7 +15,8 @@ _BEARER_TOKEN = re.compile(
 )
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(aws_secret_access_key|aws_session_token|github_token|access_token|api_key|password|secret|token)\s*[:=]\s*[^\s'\"`]+"
+    r"(?i)\b(aws_secret_access_key|aws_session_token|github_token|access_token|api_key|password|secret|token)"
+    r"[\"'`]?\s*[:=]\s*[\"'`]?[^\s'\"`]+[\"'`]?"
 )
 
 

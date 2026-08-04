@@ -269,6 +269,32 @@ def test_redaction_covers_common_ci_credentials() -> None:
     assert result.count("[REDACTED_SECRET]") == 2
 
 
+def test_redaction_covers_quoted_secret_values() -> None:
+    text = (
+        "password=\"hunter2\" "
+        "aws_secret_access_key = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY' "
+        "api_key: `topsecret123` "
+        '"github_token": "not-a-real-token"'
+    )
+
+    result = redact(text)
+
+    assert "hunter2" not in result
+    assert "wJalrXUtnFEMI" not in result
+    assert "topsecret123" not in result
+    assert "not-a-real-token" not in result
+    assert result.count("[REDACTED_SECRET]") == 4
+
+
+def test_redaction_leaves_non_secret_identifiers_alone() -> None:
+    text = (
+        "secretsmanager:GetSecretValue failed for MyStack-TokenRotator "
+        "while reading parameter /app/password-policy"
+    )
+
+    assert redact(text) == text
+
+
 def test_redaction_covers_bearer_and_jwt_style_tokens() -> None:
     bearer_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJydW4ifQ.signaturevalue123"
     result = redact(f"Authorization: Bearer {bearer_token} standalone {bearer_token}")
