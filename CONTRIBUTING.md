@@ -49,12 +49,73 @@ drafted, so the PR is mostly a translation exercise.
 For rule proposals, use `docs/contributing-a-diagnostic-rule.md` and keep the
 change scope to one signal and one fixture pair.
 
-## Development
+## Development setup
+
+SAM Doctor supports Python 3.10 through 3.13 on Linux, macOS, and Windows.
+
+### Fork, clone, and branch
+
+1. Fork the repository on GitHub.
+2. Clone your fork and add the upstream remote:
+
+   ```bash
+   git clone https://github.com/YOUR-USER/sam-doctor.git
+   cd sam-doctor
+   git remote add upstream https://github.com/jakegold1647/sam-doctor.git
+   ```
+
+3. Create a branch: `git switch -c fix/short-description`
+
+### Create an isolated environment
+
+macOS or Linux:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Then install the project with development dependencies:
+
+```bash
+python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
+```
+
+### Verify the baseline before editing
+
+```bash
+python scripts/check-pr.py
+```
+
+This one command runs everything CI requires on a pull request: site
+metadata, site QA, Ruff, the rule-catalog gate, the test suite, the package
+build, and the onboarding smoke check. `--fast` skips the build and smoke
+steps during iteration. The individual commands, if you prefer them:
+
+```bash
+python -m ruff check src tests scripts
 python -m pytest -q
 python -m build
+python scripts/run-smoke.py
+```
+
+If the baseline fails before you have changed anything, open an issue with
+the [contributor setup problem](https://github.com/jakegold1647/sam-doctor/issues/new?template=setup_problem.yml)
+form instead of debugging alone.
+
+### Focused diagnostic-rule tests
+
+```bash
+python -m pytest tests/test_diagnostics.py -q
+python scripts/check-rule-catalog.py
 ```
 
 Keep rules deterministic, explain the evidence they match, and add regression

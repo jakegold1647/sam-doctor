@@ -1,0 +1,57 @@
+name: Contributor setup problem
+description: Report a failure while preparing or testing a development environment.
+title: "setup: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste credentials, tokens, private repository names, customer data,
+        account IDs, ARNs, or raw production logs. A setup failure report only needs
+        the command, the smallest relevant output excerpt, and your environment.
+
+        The current setup steps live in
+        [CONTRIBUTING.md](https://github.com/jakegold1647/sam-doctor/blob/main/CONTRIBUTING.md).
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "Python 3.12.4"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux
+        - macOS
+        - Windows PowerShell
+        - Windows WSL
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command that failed
+      placeholder: 'python -m pip install -e ".[dev]"'
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Sanitized output
+      description: Include only the smallest relevant excerpt.
+    validations:
+      required: true
+  - type: checkboxes
+    id: baseline
+    attributes:
+      label: Checks completed
+      options:
+        - label: I reproduced this from a fresh virtual environment.
+        - label: I removed secrets and private identifiers.
+          required: true
+        - label: I checked the current CONTRIBUTING guide.
+          required: true

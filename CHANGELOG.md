@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Contributor on-ramp: CONTRIBUTING gained a full development-setup guide
+  (fork/clone, virtual environments including Windows PowerShell, baseline
+  commands that reproduce CI); the README now has a Contributing section near
+  the top; the PR template checklist covers Ruff, the smoke check, and the
+  rule-catalog gate; and a "Contributor setup problem" issue form reports
+  environment failures with sanitized output.
 - Added `scripts/check-pr.py`: one cross-platform command that runs every
   check a pull request must pass (site metadata, site QA, Ruff, rule-catalog
   gate, pytest, package build, smoke check), mirroring CI so failures surface

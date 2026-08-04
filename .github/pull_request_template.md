@@ -8,9 +8,14 @@
 
 ## Validation
 
+Tip: `python scripts/check-pr.py` runs every required check in one command.
+
 - [ ] I added or updated tests when behavior changed.
+- [ ] I ran `python -m ruff check src tests scripts`.
 - [ ] I ran `python -m pytest -q`.
+- [ ] I ran `python scripts/run-smoke.py`.
 - [ ] I ran `python -m build` when packaging or release files changed.
+- [ ] A new or changed rule passes `python scripts/check-rule-catalog.py` and includes a positive and a nearby-negative test.
 - [ ] I checked that fixtures contain no credentials, account IDs, ARNs, customer data, or unredacted logs.
 
 ## Safety review

@@ -31,6 +31,18 @@ official documentation.
 
 Current release: **v0.7.7**.
 
+## Contributing
+
+New contributors are welcome, and the best first changes are small: a
+documentation correction, a reproducible false positive or missed diagnostic,
+or one new diagnostic rule with a positive and a nearby-negative test. Start
+with the [contributor setup](CONTRIBUTING.md), pick a fully specified rule
+from the [rule roadmap](docs/rule-roadmap.md) or an issue labeled
+[`good first issue`](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
+and run `python scripts/check-pr.py` before opening the PR — it is the same
+gate CI runs. Before sharing any log excerpt, remove account IDs, ARNs,
+credentials, tokens, and customer data.
+
 ## Who this is for
 
 - Use this tool if you need a fast local first pass when a SAM/CloudFormation/GitHub
