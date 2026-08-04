@@ -70,6 +70,46 @@
         }
       }
     </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does SAM Doctor diagnose?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SAM Doctor recognizes explicit AWS SAM, CloudFormation, IAM, API Gateway, and GitHub Actions deployment failure patterns such as OIDC token errors, CloudFormation rollback states, capability errors, and container build failures."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does SAM Doctor access AWS or upload logs?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The CLI and GitHub Action process only provided text locally. SAM Doctor does not call AWS APIs, upload deployment logs, or apply any automatic resource changes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I use SAM Doctor in CI?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Run your deployment command with tee to write the output to a file, then run `sam-doctor diagnose` on that file in the same job with `if: always()` so it runs after failures. In GitHub Actions, use the provided composite action with `log-file` and `fail-on-findings: true` for strict gating."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens when a log has no supported failure pattern?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SAM Doctor reports no supported pattern and recommends sharing a short sanitized excerpt so the diagnostic rule set can be improved."
+            }
+          }
+        ]
+      }
+    </script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
