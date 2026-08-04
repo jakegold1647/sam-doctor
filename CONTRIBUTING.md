@@ -27,3 +27,10 @@ python -m build
 Keep rules deterministic, explain the evidence they match, and add regression
 coverage for both the intended failure and a nearby non-failure case. Do not add
 commands that change AWS resources or require credentials.
+
+## Pull requests
+
+Use the repository PR template and keep a change narrow enough to review safely.
+For new diagnostics, follow [Contributing a diagnostic rule](docs/contributing-a-diagnostic-rule.md)
+and include both a positive fixture and a nearby non-match. Maintainers may ask
+for a smaller excerpt or clearer evidence before merging.
