@@ -473,6 +473,26 @@ Action step exit status is `0` unless `fail-on-findings: true` and findings are 
 - `0`: no enforced action failure (findings may exist).
 - `1`: findings present and `fail-on-findings: true`.
 - `2`: action runtime/precondition failure (for example, invalid boolean inputs or missing Python in the runner).
+- `finding-count` and `has-findings` are available as action outputs:
+  - `finding-count` is the number of supported findings.
+  - `has-findings` is `true` when `finding-count` is greater than `0`, else `false`.
+
+Use the outputs for non-blocking workflows:
+
+```yaml
+- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    summary: true
+
+- name: Route to dedicated triage when action reports findings
+  if: steps.sam-doctor.outputs.has-findings == 'true'
+  run: |
+    echo \"Routing failure with ${{ steps.sam-doctor.outputs.finding-count }} findings to a higher-signal runbook.\"
+```
 
 You can also process multiple files in batch mode:
 

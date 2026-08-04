@@ -107,9 +107,26 @@ The action step exit status is:
 - `1`: `fail-on-findings: true` and one or more findings are present.
 - `2`: action precondition / runtime error (for example, missing `GITHUB_OUTPUT`,
   unsupported boolean input values, missing Python, or an invalid generated report).
+- `finding-count`: total supported findings (stringified integer output).
+- `has-findings`: `true` when findings were detected, otherwise `false`.
 
 You can use `has-findings` and `finding-count` outputs in a follow-up step for
 structured routing while still keeping the action step non-blocking when desired.
+
+```yaml
+- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    summary: true
+
+- name: Open one-click ticket details when findings are present
+  if: steps.sam-doctor.outputs.has-findings == 'true'
+  run: |
+    echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
+```
 
 ## Use your existing AWS authentication
 

@@ -165,6 +165,26 @@ EOF</code></pre>
         <p class="muted">Next: confirm id-token permissions and OIDC audience/subject conditions.</p>
       </section>
 
+      <section class="steps" aria-labelledby="outputs-title">
+        <p class="eyebrow">ROUTING</p>
+        <h2 id="outputs-title">Use outputs to route triage</h2>
+        <p class="muted">
+          Keep CI non-blocking while still surfacing real signals:
+        </p>
+        <pre><code>- name: Diagnose deployment log
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    summary: true
+
+- name: Open an incident thread only when needed
+  if: steps.sam-doctor.outputs.has-findings == 'true'
+  run: |
+    echo "Findings: ${{ steps.sam-doctor.outputs.finding-count }}"</code></pre>
+      </section>
+
       <section class="founder">
         <p class="eyebrow">GROW WITH US</p>
         <h2>Help improve this project</h2>

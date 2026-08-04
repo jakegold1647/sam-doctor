@@ -51,6 +51,9 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
     matrix_doc = (ROOT / "docs" / "ci-command-matrix.md").read_text(encoding="utf-8")
+    integration_doc = (ROOT / "docs" / "github-actions-integration.md").read_text(
+        encoding="utf-8"
+    )
     starter = ROOT / "examples" / "github-actions-workflow.yml"
     starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
@@ -73,6 +76,10 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "bitbucket-pipelines-sam-doctor.yml" in readme
     assert "ci-command-matrix.md" in readme
     assert "ci-command-matrix.md" in site
+    assert "has-findings" in readme
+    assert "finding-count" in readme
+    assert "has-findings" in integration_doc
+    assert "finding-count" in integration_doc
     assert "sam sync" in matrix_doc
     assert "examples/README.md" in readme
     assert "github-actions-workflow-sam-sync.yml" in site
