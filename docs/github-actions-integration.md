@@ -56,6 +56,11 @@ For teams outside GitHub Actions, start from one of these examples:
 - `examples/azure-pipelines-sam-doctor.yml` (Azure)
 - `examples/bitbucket-pipelines-sam-doctor.yml` (Bitbucket)
 
+For non-`sam` command variants (`cdk deploy`, `serverless deploy`, custom),
+use the command matrix:
+
+[`ci-command-matrix.md`](ci-command-matrix.md)
+
 ## Optional: make recognized failures fail the job
 
 Start by observing the diagnostics. When the rule set matches the failures you care about, opt into a diagnostic gate:

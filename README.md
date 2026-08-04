@@ -222,6 +222,12 @@ You can also use the examples index to track what you changed:
 
 [`examples/README.md`](examples/README.md)
 
+### Deployment onboarding matrix
+
+Use the command-to-template matrix for your exact deploy command:
+
+[`docs/ci-command-matrix.md`](docs/ci-command-matrix.md)
+
 ## Non-GitHub CI starter templates
 
 If your repo uses another CI system, copy:

@@ -55,3 +55,9 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
 - `sam-doctor batch logs/*.log --format json --fail-on-findings`
 
 Keep this checklist in your repo until the template is stable in CI.
+
+## Quick command matching
+
+Use the full matrix to pick the right starter for your exact deploy command:
+
+- [`ci-command-matrix.md`](../docs/ci-command-matrix.md)

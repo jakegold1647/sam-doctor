@@ -32,6 +32,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
 def test_action_examples_show_opt_in_failure_gate() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    matrix_doc = (ROOT / "docs" / "ci-command-matrix.md").read_text(encoding="utf-8")
     starter = ROOT / "examples" / "github-actions-workflow.yml"
     starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
@@ -52,6 +53,9 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "circleci-sam-doctor.yml" in readme
     assert "azure-pipelines-sam-doctor.yml" in readme
     assert "bitbucket-pipelines-sam-doctor.yml" in readme
+    assert "ci-command-matrix.md" in readme
+    assert "ci-command-matrix.md" in site
+    assert "sam sync" in matrix_doc
     assert "examples/README.md" in readme
     assert "github-actions-workflow-sam-sync.yml" in site
     assert "github-actions-workflow-cf-pipeline.yml" in site
@@ -71,6 +75,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
 
 def test_examples_index_and_starters_are_documented() -> None:
     examples_readme = ROOT / "examples" / "README.md"
+    matrix_doc = (ROOT / "docs" / "ci-command-matrix.md").read_text(encoding="utf-8")
     starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
     starter_default = ROOT / "examples" / "github-actions-workflow.yml"
@@ -87,6 +92,7 @@ def test_examples_index_and_starters_are_documented() -> None:
         "bitbucket-pipelines-sam-doctor.yml",
     ]:
         assert name in contents
+    assert "ci-command-matrix.md" in contents
 
     assert starter_default.exists()
     assert starter_sync.exists()
