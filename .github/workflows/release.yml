@@ -50,4 +50,10 @@ jobs:
             gh workflow run pypi-publish.yml \
               --ref main \
               -f release-tag="$TAG"
+
+            # Keep major action tag current for downstream CI users.
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -f v0 "$TAG"
+            git push origin v0 --force
           fi
