@@ -537,6 +537,13 @@ For machine integrations, the JSON payload shape is documented in checked-in sch
 - `docs/schemas/batch-report.schema.json`
 - `docs/schemas/rules-report.schema.json`
 
+You can print these schema URLs directly from the CLI:
+
+```bash
+sam-doctor schemas
+sam-doctor schemas --format json
+```
+
 `sam-doctor` treats the JSON schema contracts as additive-compatible: additive top-level
 fields are allowed, but removing or renaming documented required fields is a breaking
 change and requires a coordinated version bump.

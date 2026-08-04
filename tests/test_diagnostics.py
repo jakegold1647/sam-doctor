@@ -626,6 +626,25 @@ def test_rules_command_prints_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert report["rule_count"] >= 7
 
 
+def test_schemas_command_prints_schema_locations(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["schemas"]) == 0
+    output = capsys.readouterr().out
+
+    assert "diagnose:" in output
+    assert "batch:" in output
+    assert "rules:" in output
+    assert "docs/schemas/" in output
+
+
+def test_schemas_command_json(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["schemas", "--format", "json"]) == 0
+    output = json.loads(capsys.readouterr().out)
+
+    assert output["diagnose"].endswith("diagnose-report.schema.json")
+    assert output["batch"].endswith("batch-report.schema.json")
+    assert output["rules"].endswith("rules-report.schema.json")
+
+
 def test_batch_command_analyzes_directory(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     logs = tmp_path / "logs"
     logs.mkdir()

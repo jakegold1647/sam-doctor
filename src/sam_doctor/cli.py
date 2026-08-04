@@ -69,6 +69,12 @@ jobs:
       #   run: echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
 """
 
+_SCHEMA_URLS = {
+    "diagnose": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/diagnose-report.schema.json",
+    "batch": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/batch-report.schema.json",
+    "rules": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/rules-report.schema.json",
+}
+
 
 def _build_parser() -> argparse.ArgumentParser:
     epilog = """
@@ -128,6 +134,16 @@ GitHub Action behavior:
     rules_parser = subcommands.add_parser("rules", help="List the currently supported diagnostic rules.")
     rules_parser.add_argument("--format", choices=("terminal", "json"), default="terminal")
     rules_parser.add_argument("--output", type=Path, help="Write the rule catalog to this path instead of stdout.")
+
+    schemas_parser = subcommands.add_parser(
+        "schemas", help="Show schema references for current machine-readable outputs."
+    )
+    schemas_parser.add_argument(
+        "--format",
+        choices=("terminal", "json"),
+        default="terminal",
+        help="Render schema references as text or machine-readable JSON.",
+    )
 
     packet_parser = subcommands.add_parser(
         "packet",
@@ -561,6 +577,17 @@ def _packet_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _schemas_command(args: argparse.Namespace) -> int:
+    schemas = dict(_SCHEMA_URLS)
+    if args.format == "json":
+        print(json.dumps(schemas, indent=2))
+        return 0
+
+    for name, schema_url in schemas.items():
+        print(f"{name}: {schema_url}")
+    return 0
+
+
 def _print_error(parser: argparse.ArgumentParser, message: str) -> None:
     parser.print_usage(sys.stderr)
     print(f"{parser.prog}: error: {message}", file=sys.stderr)
@@ -642,6 +669,9 @@ def main(argv: list[object] | None = None) -> int:
         except ValueError as error:
             _print_error(parser, str(error))
             return 2
+
+    if args.command == "schemas":
+        return _schemas_command(args)
 
     try:
         text = _read_text(args.input)
