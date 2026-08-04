@@ -177,16 +177,35 @@ It is most useful when you start with the first failure in a deployment log,
 not a later rollback message. When multiple supported patterns appear, SAM
 Doctor presents findings in the order of their first matching log line.
 
-## Example output
+## How it compares
 
-```text
-Likely cause: GitHub Actions cannot assume the configured AWS role through OIDC.
-Confidence: high
-Evidence: Not authorized to perform sts:AssumeRoleWithWebIdentity
-Safe next step: Confirm the workflow grants `id-token: write` and that the
-role trust policy's `sub` condition matches the repository, branch, or GitHub
-Environment that ran the job.
-```
+- **vs. reading the log yourself.** For a failure you have seen before, just
+  read the log. SAM Doctor helps when the useful line is buried under rollback
+  noise, or when the error text (OIDC trust-policy mismatches especially) does
+  not say what to check next. It finds the first supported failure signal and
+  pairs it with the verification steps and the official doc page.
+- **vs. pasting the log into an LLM.** An LLM can reason about failures SAM
+  Doctor has no rule for, and that is sometimes the right call. The trade-offs:
+  you upload the log (deployment logs routinely contain account IDs, ARNs, and
+  role names), the answer varies run to run, and it may be confidently wrong.
+  SAM Doctor is deterministic, runs offline, and redacts by default - and when
+  it has no matching rule, it says so instead of guessing. Using it first and
+  an LLM for the leftovers is a reasonable workflow.
+- **vs. AWS Support.** Support can see your account state; SAM Doctor cannot
+  and does not try. It is the two-minute local check you run before deciding
+  whether a ticket is worth opening, and its redacted report is a safer
+  artifact to paste into one.
+
+## When not to use this
+
+- The failure is in application runtime behavior, not the deployment itself -
+  this reads deployment logs, not CloudWatch application logs.
+- You need account-state inspection (drift, quotas, existing resources). SAM
+  Doctor never calls AWS, by design.
+- Your failure is outside the [supported rules](#supported-signals) - you get
+  an honest "no supported pattern found", not a guess.
+- You want an automatic fix. Every report is a prompt to verify, not a
+  change to apply.
 
 ## Feedback and roadmap
 
