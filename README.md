@@ -344,6 +344,7 @@ the command you ran.
 - SAM deployment/configuration errors, including conflicting artifact-bucket settings
   and missing `esbuild` dependencies
 - SAM build/containerization errors where Docker is unavailable for `sam build --use-container`
+- Python dependency resolution or validation errors in SAM/Python builds
 - Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports
@@ -351,7 +352,8 @@ the command you ran.
 - Local redaction for account IDs, ARNs, email addresses, and common CI credentials
 
 For more bundled examples, try `sam-doctor demo --scenario cloudformation`,
-`sam-doctor demo --scenario api-gateway`, or `sam-doctor demo --scenario esbuild`.
+`sam-doctor demo --scenario api-gateway`, `sam-doctor demo --scenario esbuild`,
+or `sam-doctor demo --scenario python-pip`.
 Run `sam-doctor rules --format json` to inspect the exact set of supported
 diagnostic categories before sharing a log.
 
