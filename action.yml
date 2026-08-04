@@ -1,5 +1,6 @@
 name: SAM Doctor AWS Deployment Diagnostics
-description: Diagnose a local AWS SAM deployment log and optionally add a redacted report to the job summary.
+author: Jake Goldstein
+description: Diagnose AWS SAM, AWS CDK, CloudFormation, and GitHub Actions deployment logs and optionally add a redacted report to the job summary.
 inputs:
   log-file:
     description: Path to the deployment log to diagnose.
