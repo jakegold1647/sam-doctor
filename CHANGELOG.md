@@ -10,6 +10,9 @@ All notable changes to SAM Doctor are documented here.
 - Added published JSON Schema documents for diagnose, batch, and rules JSON outputs,
   with schema-backed tests and a dev dependency on `jsonschema` for local CI
   validation.
+- Added structured SEO metadata to the project landing page (`SoftwareApplication`,
+  `FAQPage`, and `HowTo`) to improve discoverability for common deployment
+  diagnostic queries.
 
 ## v0.7.7 - 2026-08-03
 

@@ -73,6 +73,53 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Run SAM Doctor on a failed deployment log",
+        "description": "Use SAM Doctor in a repository CI pipeline or locally to get the first actionable AWS deployment finding.",
+        "totalTime": "PT120S",
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "sam-doctor CLI"
+          },
+          {
+            "@type": "HowToTool",
+            "name": "GitHub Actions"
+          }
+        ],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Install SAM Doctor",
+            "text": "Install with Python pip: python -m pip install sam-doctor."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Capture the failure log",
+            "text": "Run your deployment command and save output to deployment.log using tee."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Run diagnosis",
+            "text": "Run `sam-doctor diagnose deployment.log --format markdown` and review the top finding."
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Verify safely",
+            "text": "Use the suggested verification command, and run your deployment checks again."
+          }
+        ],
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "A deployment failure log"
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
           {
