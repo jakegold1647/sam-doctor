@@ -137,7 +137,7 @@ The action exposes `finding-count` and `has-findings` outputs. Set
 `fail-on-findings: "true"` only when you want a supported diagnostic to fail
 the job; the commented line above shows the opt-in placement. The Markdown job
 summary is opt-in and contains only matched, redacted
-evidence; review it before sharing a workflow run outside your team.
+evidence; review it before sharing a workflow run outside your team. The action also adds one redacted GitHub Actions notice for the first finding by default; set `annotations: "false"` to disable it.
 
 ## What a report includes
 
@@ -169,66 +169,6 @@ The free core will stay useful for individual deployment failures. Please open
 an issue when a report is wrong, unclear, or missing a failure pattern. For a
 new rule, include only a sanitized error excerpt and the safe next check you
 expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
-
-## Distribution and ethics
-
-SAM Doctor is grown through practical conversations and feedback, not star
-incentives. If you run outreach, ask for one realistic use case first, then
-share the report and a short ask for permission to improve coverage.
-
-Track progress with:
-
-```bash
-python scripts/check-launch.py \
-  --append-csv artifacts/distribution.csv \
-  --summary artifacts/distribution-summary.md \
-  --print-trend
-```
-
-Before release tagging, run:
-
-```bash
-python scripts/check-launch.py --skip-outreach
-```
-
-For a lightweight outreach quality check, run:
-
-```bash
-python scripts/check-launch.py \
-  --skip-distribution \
-  --outreach-summary artifacts/outreach-summary.md \
-  --outreach-log launch/outreach-log-template.csv
-```
-
-For a stricter organic-growth check:
-
-```bash
-python scripts/check-outreach.py launch/outreach-log-template.csv \
-  --strict --min-feedback-ratio 100
-```
-
-For a combined snapshot, `scripts/check-launch.py` also writes
-`artifacts/outreach-summary.md` with an `ethical_growth_score` and concrete
-
-`next_growth_actions` to guide the next outreach batch.
-
-For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
-tracking notes and fill one row per real contact.
-
-After a release is published and channels are expected live, run the stricter
-combined gate:
-
-```bash
-python scripts/check-launch.py \
-  --strict-distribution-during-release \
-  --strict-ethical --min-feedback-ratio 100 \
-  --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary artifacts/outreach-summary.md
-```
-
-On stable releases, the PyPI publish workflow also kicks off a strict `distribution-check.yml`
-run after package upload so the strict gate can be verified post-live without
-blocking on early warm-up timing.
 
 ## Guides
 

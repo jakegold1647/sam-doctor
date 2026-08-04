@@ -13,6 +13,7 @@ fi
 
 : "${SAM_DOCTOR_LOG_FILE:?SAM_DOCTOR_LOG_FILE is required.}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
+: "${SAM_DOCTOR_ANNOTATIONS:=true}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
 
@@ -29,6 +30,11 @@ export PYTHONPATH
 
 if [[ "$SAM_DOCTOR_SUMMARY" != "true" && "$SAM_DOCTOR_SUMMARY" != "false" ]]; then
   echo "SAM_DOCTOR_SUMMARY must be 'true' or 'false'." >&2
+  exit 2
+fi
+
+if [[ "$SAM_DOCTOR_ANNOTATIONS" != "true" && "$SAM_DOCTOR_ANNOTATIONS" != "false" ]]; then
+  echo "SAM_DOCTOR_ANNOTATIONS must be 'true' or 'false'." >&2
   exit 2
 fi
 
@@ -76,6 +82,14 @@ fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
   "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+fi
+
+if [[ "$SAM_DOCTOR_ANNOTATIONS" == "true" && "$finding_count" -gt 0 ]]; then
+  annotation="$("$PYTHON_BIN" -c 'import json,sys; finding=json.load(open(sys.argv[1], encoding="utf-8"))["findings"][0]; print(finding["title"] + ". Next check: " + finding["verification"][0])' "$report_path")"
+  annotation="${annotation//%/%25}"
+  annotation="${annotation//$'\r'/%0D}"
+  annotation="${annotation//$'\n'/%0A}"
+  echo "::notice title=SAM Doctor::${annotation}"
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then
