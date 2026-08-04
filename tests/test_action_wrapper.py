@@ -88,6 +88,28 @@ def test_action_wrapper_can_disable_notices(tmp_path: Path):
     assert "::notice" not in result.stdout
 
 
+def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
+    root = ROOT
+    output_path = tmp_path / "github-output.txt"
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(output_path),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(
+                root / "src" / "sam_doctor" / "data" / "oidc-assume-role-failure.txt"
+            ),
+            "SAM_DOCTOR_FAIL_ON_FINDINGS": "true",
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+        },
+    )
+
+    assert result.returncode == 1, result.stderr
+    assert "SAM Doctor found 1 supported issue(s)." in result.stderr
+    assert output_path.read_text(encoding="utf-8") == "finding-count=1\nhas-findings=true\n"
+
+
 def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     root = ROOT
     logs_dir = tmp_path / "logs"
