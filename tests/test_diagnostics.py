@@ -255,12 +255,21 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "sam build --use-container --cached failed: /bin/sh: docker: not found",
             "requires docker for containerized builds",
         ),
+        (
+            "An error occurred (InvalidParameterValueException) when calling the UpdateFunctionCode operation: Unzipped size must be smaller than 262144000 bytes",
+            "package exceeds a per-function size limit",
+        ),
+        (
+            "An error occurred (RequestEntityTooLargeException) when calling the UpdateFunctionCode operation: Request must be smaller than 70167211 bytes for the UpdateFunctionCode operation",
+            "package exceeds a per-function size limit",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:
     findings = diagnose(log_line)
 
     assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
+
 
 
 @pytest.mark.parametrize(
@@ -280,6 +289,17 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
 )
 def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
     assert diagnose(log_line) == []
+
+def test_lambda_package_size_rule_does_not_match_code_storage_quota_errors() -> None:
+    log = (
+        "An error occurred (CodeStorageExceededException) when calling the "
+        "UpdateFunctionCode operation: Code storage limit exceeded."
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert "The Lambda deployment package exceeds a per-function size limit" not in titles
 
 
 @pytest.mark.parametrize(

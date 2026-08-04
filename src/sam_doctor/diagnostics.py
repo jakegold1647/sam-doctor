@@ -527,6 +527,39 @@ _RULES = (
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html#sam-cli-command-reference-sam-build-use-container",
     ),
+
+    Rule(
+        title="The Lambda deployment package exceeds a per-function size limit",
+        confidence="high",
+        patterns=(
+            r"Unzipped size must be smaller than",
+            r"Request must be smaller than .* bytes",
+        ),
+        explanation=(
+            "The function's code package - whether measured zipped or after unzipping - "
+            "exceeds one of AWS Lambda's per-function size limits, so CreateFunction/"
+            "UpdateFunctionCode failed. This is a per-function packaging limit, not the "
+            "regional code-storage quota."
+        ),
+        verification=(
+            "Measure the built artifact size locally before deploying to catch this before AWS does.",
+            (
+                "List the largest files inside the zip to find what's bloating the package "
+                "(e.g. `unzip -l function.zip | sort -k1 -n -r | head`)."
+            ),
+            (
+                "Move shared dependencies into a Lambda layer, trim dev/test-only dependencies "
+                "from the deployment package, or switch to a container image (up to 10 GB) if the "
+                "package is genuinely large."
+            ),
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+        excluded_line_patterns=(
+            r"CodeStorageExceededException",
+            r"Code storage limit exceeded",
+        ),
+    ),
+
     Rule(
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
