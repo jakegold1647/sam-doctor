@@ -80,6 +80,8 @@ you have helped. The best opening is a short answer to their actual error plus a
 Run `python scripts/check-distribution.py` weekly (in addition to the automatic
 12-hour schedule) and track signals in
 [`launch/DISTRIBUTION-TRACKING.md`](DISTRIBUTION-TRACKING.md) before posting.
+Before major outreach pushes, complete the structured loops in
+[`DEEP-RESEARCH-PLAN.md`](DEEP-RESEARCH-PLAN.md).
 
 ## Metrics to track
 
