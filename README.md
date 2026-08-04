@@ -8,7 +8,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/jakegold1647/sam-doctor?include_prereleases&label=release)](https://github.com/jakegold1647/sam-doctor/releases)
 
 **Find the next useful step in a failed AWS deployment - without uploading your
-logs or granting AWS access.**
+logs or granting AWS access.** Use SAM Doctor for faster triage of `sam deploy`,
+`cdk deploy`, and `aws cloudformation deploy` failures.
 
 SAM Doctor reads AWS SAM, CloudFormation, IAM, and GitHub Actions deployment
 logs locally. It identifies supported failure patterns and returns short,
