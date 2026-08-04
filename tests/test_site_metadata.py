@@ -37,6 +37,8 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
     starter_gitlab = ROOT / "examples" / "gitlab-ci-sam-doctor.yml"
     starter_circle = ROOT / "examples" / "circleci-sam-doctor.yml"
+    starter_azure = ROOT / "examples" / "azure-pipelines-sam-doctor.yml"
+    starter_bitbucket = ROOT / "examples" / "bitbucket-pipelines-sam-doctor.yml"
 
     assert "fail-on-findings: true" in readme
     assert "fail-on-findings: true" in site
@@ -48,17 +50,23 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "github-actions-workflow-cf-pipeline.yml" in readme
     assert "gitlab-ci-sam-doctor.yml" in readme
     assert "circleci-sam-doctor.yml" in readme
+    assert "azure-pipelines-sam-doctor.yml" in readme
+    assert "bitbucket-pipelines-sam-doctor.yml" in readme
     assert "examples/README.md" in readme
     assert "github-actions-workflow-sam-sync.yml" in site
     assert "github-actions-workflow-cf-pipeline.yml" in site
     assert "gitlab-ci-sam-doctor.yml" in site
     assert "circleci-sam-doctor.yml" in site
+    assert "azure-pipelines-sam-doctor.yml" in site
+    assert "bitbucket-pipelines-sam-doctor.yml" in site
     assert "examples/README.md" in site
     assert starter.exists()
     assert starter_sync.exists()
     assert starter_cf.exists()
     assert starter_gitlab.exists()
     assert starter_circle.exists()
+    assert starter_azure.exists()
+    assert starter_bitbucket.exists()
 
 
 def test_examples_index_and_starters_are_documented() -> None:
@@ -75,6 +83,8 @@ def test_examples_index_and_starters_are_documented() -> None:
         "github-actions-workflow-cf-pipeline.yml",
         "gitlab-ci-sam-doctor.yml",
         "circleci-sam-doctor.yml",
+        "azure-pipelines-sam-doctor.yml",
+        "bitbucket-pipelines-sam-doctor.yml",
     ]:
         assert name in contents
 
@@ -83,3 +93,5 @@ def test_examples_index_and_starters_are_documented() -> None:
     assert starter_cf.exists()
     assert (ROOT / "examples" / "gitlab-ci-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "circleci-sam-doctor.yml").exists()
+    assert (ROOT / "examples" / "azure-pipelines-sam-doctor.yml").exists()
+    assert (ROOT / "examples" / "bitbucket-pipelines-sam-doctor.yml").exists()

@@ -1,0 +1,20 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+  - script: |
+      python -m pip install --upgrade pip
+      pip install sam-doctor
+      # Replace this with your deployment command.
+      sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+      sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings
+    displayName: "Deploy and diagnose"
+    continueOnError: true

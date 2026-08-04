@@ -228,6 +228,8 @@ If your repo uses another CI system, copy:
 
 - GitLab: [`examples/gitlab-ci-sam-doctor.yml`](examples/gitlab-ci-sam-doctor.yml)
 - CircleCI: [`examples/circleci-sam-doctor.yml`](examples/circleci-sam-doctor.yml)
+- Azure Pipelines: [`examples/azure-pipelines-sam-doctor.yml`](examples/azure-pipelines-sam-doctor.yml)
+- Bitbucket Pipelines: [`examples/bitbucket-pipelines-sam-doctor.yml`](examples/bitbucket-pipelines-sam-doctor.yml)
 
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.

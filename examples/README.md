@@ -1,4 +1,4 @@
-name: SAM Doctor examples
+﻿name: SAM Doctor examples
 
 Use these templates to onboard quickly.
 
@@ -19,7 +19,7 @@ Use these templates to onboard quickly.
 ## GitLab CI starter
 
 - `gitlab-ci-sam-doctor.yml`
-  - Add this as `.gitlab-ci.yml` and replace deployment command with your team’s real deploy step.
+  - Add this as `.gitlab-ci.yml` and replace deployment command with your team's real deploy step.
   - The example keeps diagnosis non-blocking with `|| true` so it does not fail before you're ready; switch to strict behavior when stable.
 
 ## CircleCI starter
@@ -27,6 +27,16 @@ Use these templates to onboard quickly.
 - `circleci-sam-doctor.yml`
   - Add this as `.circleci/config.yml` and replace deployment command with your real deploy step.
   - Use this when you have a non-GitHub pipeline but want the same one-command diagnosis.
+
+## Azure Pipelines starter
+
+- `azure-pipelines-sam-doctor.yml`
+  - Add this as `azure-pipelines.yml` and replace deployment command with your real deploy step.
+
+## Bitbucket Pipelines starter
+
+- `bitbucket-pipelines-sam-doctor.yml`
+  - Add this as `bitbucket-pipelines.yml` and replace deployment command with your real deploy step.
 
 ## One-time setup (30 seconds)
 

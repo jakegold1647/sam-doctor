@@ -1,0 +1,10 @@
+pipelines:
+  default:
+    - step:
+        name: deploy-and-diagnose
+        image: python:3.11
+        script:
+          - pip install sam-doctor
+          # Replace this with your deployment command.
+          - sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+          - sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true

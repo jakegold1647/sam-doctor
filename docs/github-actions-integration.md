@@ -47,6 +47,15 @@ Keep a short per-repo checklist in
 [`examples/README.md`](../examples/README.md)
 while you validate these templates in your CI.
 
+## Non-GitHub CI starters
+
+For teams outside GitHub Actions, start from one of these examples:
+
+- `examples/gitlab-ci-sam-doctor.yml` (GitLab)
+- `examples/circleci-sam-doctor.yml` (CircleCI)
+- `examples/azure-pipelines-sam-doctor.yml` (Azure)
+- `examples/bitbucket-pipelines-sam-doctor.yml` (Bitbucket)
+
 ## Optional: make recognized failures fail the job
 
 Start by observing the diagnostics. When the rule set matches the failures you care about, opt into a diagnostic gate:
