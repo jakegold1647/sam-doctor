@@ -91,10 +91,16 @@ to reduce false positives.
 ### 3) Run and commit a focused PR
 
 ```bash
+python scripts/check-rule-catalog.py
 python -m pytest -q \
   tests/test_diagnostics.py::test_detects_artifact_bucket_access_block \
   tests/test_diagnostics.py::test_does_not_match_unrelated_s3_output
 ```
+
+`check-rule-catalog.py` is the same objective gate CI runs: it verifies every
+pattern compiles, that none can fire on ordinary successful deploy output, and
+that the rule's metadata (title, confidence, verification steps, documentation
+link) is complete. Run it first — it reports every structural problem at once.
 
 If the rule is accepted, keep the fixture text short, add a short changelog entry,
 and update the matching docs page where practical.

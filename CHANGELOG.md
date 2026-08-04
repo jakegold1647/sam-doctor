@@ -4,6 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `scripts/check-rule-catalog.py`, an objective quality gate for the
+  rule catalog (patterns compile, cannot match empty input or ordinary
+  successful deploy output, metadata complete); enforced in the test suite so
+  local runs and CI report identical problems.
 - Added `docs/rule-roadmap.md`: fully specified diagnostic-rule candidates
   (sample log lines, pattern hints, non-matches, verification steps) that a
   first-time contributor can claim and land in one focused PR; linked from the
