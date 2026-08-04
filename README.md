@@ -354,8 +354,7 @@ not security, legal, or production-operations advice.
 For reproducible, repeatable collaboration:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown > diagnosis.md
-sam-doctor diagnose deployment.log --format json --output diagnosis.json
+python scripts/export-evidence-packet.py deployment.log
 ```
 
 Then share only a minimal sanitized packet (commands, key context, and outputs)

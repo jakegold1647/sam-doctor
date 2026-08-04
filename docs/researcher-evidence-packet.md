@@ -3,29 +3,18 @@
 Use this when you need a repeatable artifact for collaboration, reviews, or
 research discussion.
 
-## 1) Capture a minimal input
+## 1) Capture a reproducible packet
 
 ```bash
-# Prefer the smallest relevant excerpt around the first supported failure signal
-sam-doctor diagnose deployment.log --format markdown > diagnosis.md
-sam-doctor diagnose deployment.log --format json --output diagnosis.json
+python scripts/export-evidence-packet.py deployment.log
 ```
 
 ## 2) Build a reusable packet
 
+You can move artifacts for sharing as needed:
+
 ```bash
-mkdir -p artifacts
-cp diagnosis.md artifacts/
-cp diagnosis.json artifacts/
-cat > artifacts/researcher-notes.md <<'EOF'
-Scenario:
-Toolchain:
-Failure family:
-Sanitized excerpt command:
-SAM Doctor output summary:
-Validation command run:
-Outcome:
-EOF
+cp artifacts/diagnosis.md artifacts/researcher-notes.md ... /your/shared/location/
 ```
 
 ## 3) Share safely

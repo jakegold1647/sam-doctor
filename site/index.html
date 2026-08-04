@@ -273,8 +273,7 @@
           For collaboration or reproducible discussion, generate both human and machine
           outputs, then share only sanitized artifacts:
         </p>
-        <pre><code>sam-doctor diagnose deployment.log --format markdown > diagnosis.md
-sam-doctor diagnose deployment.log --format json --output diagnosis.json</code></pre>
+        <pre><code>python scripts/export-evidence-packet.py deployment.log</code></pre>
         <p class="muted">
           Use the same packet approach for papers, code reviews, and practitioner notes.
           Start with the minimal excerpt, and include

@@ -6,3 +6,4 @@ build/
 dist/
 tmp/
 sample-report.md
+artifacts/
