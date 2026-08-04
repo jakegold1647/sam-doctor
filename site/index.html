@@ -178,6 +178,23 @@
         </ul>
       </section>
 
+      <section class="steps" aria-labelledby="proof-title">
+        <p class="eyebrow">Proof</p>
+        <h2 id="proof-title">A real flow, redacted and repeatable.</h2>
+        <p class="muted">Use this exact pattern to show safe, useful output to a teammate:</p>
+        <pre><code># incident_excerpt.txt (sanitized)
+An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+Check that the identity-based policy attached to the role allows id-token:write.</code></pre>
+        <pre><code>sam-doctor diagnose incident_excerpt.txt --format markdown</code></pre>
+        <p class="muted">Expected output starts with a single actionable finding and a verification path.</p>
+        <ul>
+          <li>One finding, ranked with confidence.</li>
+          <li>Redacted evidence lines only.</li>
+          <li>Suggested next verification command for safe follow-up.</li>
+        </ul>
+        <p class="muted">No account IDs, ARNs, or tokens are printed in this flow.</p>
+      </section>
+
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
         <h2 id="install-title">Install v0.7.7 in one command.</h2>

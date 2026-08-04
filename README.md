@@ -162,6 +162,42 @@ A focused report usually includes:
 In practice this shortens “why did it fail?” to “which flag is actually needed?” and
 reduces repeated guess-and-retry cycles.
 
+## Proof: one real pattern, redacted and repeatable
+
+The goal is speed and confidence, not secrets. Here is a real-style flow you can
+reuse verbatim with customer-safe redaction:
+
+```text
+# incident_excerpt.txt (sanitized)
+An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+Check that the identity-based policy attached to the role allows id-token:write.
+```
+
+Run:
+
+```bash
+sam-doctor diagnose incident_excerpt.txt --format markdown
+```
+
+Result:
+
+```text
+SAM Doctor found 1 possible issue(s) in incident_excerpt.txt.
+
+1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
+   Matched on line: 1
+   Evidence:
+   - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+   Verify:
+   - Confirm the workflow includes `id-token: write`.
+   - Verify the AWS role trust policy audience and subject conditions.
+   Suggested next command:
+   - sam deploy --no-confirm-changeset --skip-prompt
+```
+
+This output is deterministic for the same input and does not contain account IDs,
+ARNs, or tokens.
+
 To diagnose a real deployment log:
 
 ```bash
