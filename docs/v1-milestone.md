@@ -11,9 +11,9 @@ means a user can rely on what is already here.
    contributors. Each should land or be explicitly deferred before 1.0 so the
    issue tracker reflects reality, not ambition.
 3. Promise stability. The JSON report shape and the CLI flags are what CI
-   integrations depend on. At 1.0 the README should say which of those are
-   stable and what the deprecation policy is. Until that sentence exists, 1.0
-   would be a version number, not a commitment.
+   integrations depend on. The promise is drafted in
+   [stability.md](stability.md); at 1.0 the README links to it and it stops
+   being a draft. Until then, 1.0 is a version number, not a commitment.
 4. Keep the site in step. Error-reference pages are hand-written; a release
    that adds rules without pages quietly breaks the "every rule is
    documented" impression the site gives. Add a release-checklist item (or a

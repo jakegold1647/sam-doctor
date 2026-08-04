@@ -1,0 +1,36 @@
+# Stability promise
+
+What CI integrations can depend on, and what they cannot. This is the
+commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
+
+## Stable now, frozen at 1.0
+
+- **JSON report shapes.** The payloads described by
+  `docs/schemas/diagnose-report.schema.json`,
+  `docs/schemas/batch-report.schema.json`, and
+  `docs/schemas/rules-report.schema.json`. Existing fields keep their names
+  and types. New optional fields may be added; parse leniently.
+- **CLI surface.** The subcommands (`diagnose`, `demo`, `rules`, `schemas`,
+  `packet`, `batch`, `init`) and their documented flags. Flags may be added;
+  documented flags will not be removed or change meaning within a major
+  version.
+- **Exit codes.** As documented in `docs/cli-exit-and-action-exit-codes.md`.
+  `0` and `1` keep their meanings; new nonzero codes may be added for new
+  failure classes.
+- **Action inputs/outputs.** The composite Action's documented inputs and
+  outputs in `action.yml`.
+
+## Not covered by the promise
+
+- The rule catalog's contents. Rules are added, tightened, and re-titled as
+  evidence improves. Do not match on finding titles or explanation text;
+  match on the JSON fields.
+- Human-readable output: terminal formatting, markdown reports, wording.
+- The website, docs, and launch material.
+
+## Deprecation policy
+
+Anything documented that must change gets one minor release of overlap: the
+old form keeps working, the changelog says so, and the CLI warns on stderr
+where it can. Removal happens no sooner than the next minor release after
+the warning first ships.
