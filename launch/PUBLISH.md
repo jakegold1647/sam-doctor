@@ -75,7 +75,7 @@ delivery condition and refund terms. If you add a checkout link, place it in
 
 ## 4. First distribution
 
-Use `launch/LAUNCH-PLAN.md` and `launch/OUTREACH.md` for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free tool and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
+Use your local growth notes for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error. Lead with the free tool and ask for a sanitized failure. Ask for founder payment only after the report proves useful.
 
 Use `python scripts/check-distribution.py` periodically (or before major outreach bursts)
 to confirm star growth, GitHub activity, and channel visibility remain on track.
