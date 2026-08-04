@@ -41,6 +41,8 @@
           <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — GitHub Actions OIDC trust-policy rejection.</li>
           <li><a href="./expired-token.html">The security token included in the request is expired (ExpiredToken)</a> — stale sessions, short OIDC durations, and clock skew.</li>
           <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — unauthenticated Docker push to Amazon ECR.</li>
+          <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
+          <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
         </ul>
       </section>
 
@@ -52,6 +54,9 @@
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
           <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
           <li><a href="./rate-exceeded.html">An error occurred (Throttling): Rate exceeded</a> — per-account API rate limits, usually from CI fan-out.</li>
+          <li><a href="./no-changes-to-deploy.html">No changes to deploy / No updates are to be performed</a> — the empty change set that fails CI on purpose.</li>
+          <li><a href="./resource-did-not-stabilize.html">Resource did not stabilize (NotStabilized)</a> — the wait-window wrapper around a slower or nested failure.</li>
+          <li><a href="./export-in-use.html">Export cannot be updated/deleted as it is in use</a> — cross-stack import pins and the staged migration out of them.</li>
         </ul>
       </section>
 

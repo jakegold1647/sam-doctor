@@ -13,6 +13,11 @@
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/docker-unavailable.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/esbuild-not-found.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rest-api-no-methods.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/no-changes-to-deploy.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/access-denied-explicit-deny.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/access-denied-no-policy-allows.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/resource-did-not-stabilize.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/export-in-use.html</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md</loc></url>

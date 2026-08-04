@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Export cannot be updated or deleted as it is in use | SAM Doctor</title>
+    <meta name="description" content="Fix 'Export cannot be updated as it is in use by' CloudFormation failures: list importing stacks with list-imports and migrate exports in stages instead of deleting consumer stacks." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/export-in-use.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Export cannot change while another stack imports it</h1>
+        <p class="lede">
+          CloudFormation refused to change or remove an exported output because
+          at least one other stack imports it with <code>Fn::ImportValue</code>.
+          This is a dependency safeguard, not a failure in the exporting stack.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Cross-stack exports form a contract: consumers pin the export's name
+          and value until they stop importing it. Any update that would change
+          the exported value — renaming the output, changing the resource it
+          points at, deleting the exporting stack — is blocked with
+          <code>Export &lt;name&gt; cannot be updated as it is in use by
+          &lt;stack&gt;</code> for as long as one consumer remains.
+        </p>
+        <p>
+          The blocked deploy is doing its job. The consumers listed in the
+          error (and any it did not list) would break the moment the export
+          changed under them.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>List every consumer</strong> and record which stacks pin the
+            export:
+            <pre><code>aws cloudformation list-imports --export-name YOUR_EXPORT_NAME</code></pre>
+          </li>
+          <li>
+            <strong>Migrate in stages:</strong> add a new export alongside the
+            old one, update each consumer stack to import the new name, then
+            remove the old export once <code>list-imports</code> shows no
+            consumers.
+          </li>
+          <li>
+            <strong>Do not delete or force-update the consumer stacks as a
+            shortcut.</strong> They are load-bearing for whoever owns them —
+            coordinate the migration with those owners instead.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the in-use export refusal (high confidence) and
+          keeps it distinct from generic DELETE_FAILED findings, with the
+          staged-migration path in the guidance. Runs locally; no AWS access,
+          no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./delete-failed.html">DELETE_FAILED</a> — the general resource-deletion failure this refusal is often mistaken for.</li>
+          <li><a href="./rollback-complete-cannot-be-updated.html">Stack is in ROLLBACK_COMPLETE state and can not be updated</a> — another stack-state gate with a specific escape path.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

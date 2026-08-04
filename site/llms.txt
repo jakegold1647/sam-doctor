@@ -24,6 +24,11 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 - [Cannot connect to the Docker daemon](https://jakegold1647.github.io/sam-doctor/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
 - [Esbuild Failed: Cannot find esbuild](https://jakegold1647.github.io/sam-doctor/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://jakegold1647.github.io/sam-doctor/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.
+- [No changes to deploy / No updates are to be performed](https://jakegold1647.github.io/sam-doctor/errors/no-changes-to-deploy.html): the empty change set and --no-fail-on-empty-changeset.
+- [Access denied with an explicit deny](https://jakegold1647.github.io/sam-doctor/errors/access-denied-explicit-deny.html): SCP and Deny-statement failures that Allow policies cannot fix.
+- [Denied because no policy allows it](https://jakegold1647.github.io/sam-doctor/errors/access-denied-no-policy-allows.html): implicit denies and the policy layer the error names.
+- [Resource did not stabilize (NotStabilized)](https://jakegold1647.github.io/sam-doctor/errors/resource-did-not-stabilize.html): nested handler messages, slow resources, and stuck custom handlers.
+- [Export cannot be updated as it is in use](https://jakegold1647.github.io/sam-doctor/errors/export-in-use.html): cross-stack import pins and staged export migration.
 - [GitHub Actions integration](https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md): add SAM Doctor after an existing AWS SAM deployment command without changing its AWS authentication model.
 - [AssumeRoleWithWebIdentity / GitHub Actions OIDC](https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md): check `id-token: write`, the STS audience, and the trust-policy subject.
 - [CloudFormation ROLLBACK_COMPLETE](https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md): find the first failed resource event instead of treating rollback as the root cause.

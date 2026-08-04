@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>No changes to deploy / No updates are to be performed | SAM Doctor</title>
+    <meta name="description" content="Fix 'No changes to deploy', 'The submitted information didn't contain changes', and 'No updates are to be performed' in SAM and CloudFormation pipelines with --no-fail-on-empty-changeset." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/no-changes-to-deploy.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">No changes to deploy (empty change set)</h1>
+        <p class="lede">
+          The stack already matches the template, so CloudFormation produced an
+          empty change set — and the deploy command treated that as an error.
+          In a pipeline this is usually a configuration choice, not a real
+          failure.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Three phrasings of the same outcome, depending on the tool and code
+          path:
+        </p>
+        <ul>
+          <li><code>No changes to deploy. Stack ... is up to date</code> — <code>sam deploy</code>.</li>
+          <li><code>The submitted information didn't contain changes</code> — CloudFormation change-set validation.</li>
+          <li><code>No updates are to be performed</code> — <code>aws cloudformation deploy</code> and direct <code>update-stack</code> calls.</li>
+        </ul>
+        <p>
+          Nothing is broken in AWS: the deployed stack and the submitted
+          template are identical. The command exits non-zero because, by
+          default, it assumes you expected a change. That default is the whole
+          problem in CI, where re-runs and no-op merges are routine.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>For automated pipelines:</strong> make an empty change set a
+            success instead of a failure:
+            <pre><code>sam deploy --no-fail-on-empty-changeset
+# or persist it:
+# samconfig.toml -> fail_on_empty_changeset = false</code></pre>
+            <code>aws cloudformation deploy</code> supports the same
+            <code>--no-fail-on-empty-changeset</code> flag.
+          </li>
+          <li>
+            <strong>If this run was supposed to change the stack</strong>, the
+            empty change set is telling you the artifacts never changed: confirm
+            the build step actually ran and produced updated artifacts before
+            the deploy step consumed them.
+          </li>
+          <li>
+            <strong>Confirm the target</strong> — the intended stack name,
+            region, and configuration environment. Deploying a real change to
+            the wrong stack also looks like "no changes" on the one you meant.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes all three phrasings (high confidence) and
+          separates this non-failure from real change-set errors in the same
+          log. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./rollback-complete-cannot-be-updated.html">Stack is in ROLLBACK_COMPLETE state and can not be updated</a> — the other "the stack state, not the template, is the problem" failure.</li>
+          <li><a href="./rate-exceeded.html">Rate exceeded (Throttling)</a> — another CI-loop symptom that is not a template bug.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
