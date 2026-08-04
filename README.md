@@ -377,9 +377,14 @@ log.
 
 ### CLI exit codes
 
-- `0`: command completed successfully.
-- `1`: command input could not be read, arguments were invalid, or `--fail-on-findings`
-  found supported matches (for `diagnose` or `batch`).
+| Status | Meaning |
+| --- | --- |
+| `0` | Command completed successfully with no enforced fail gate hit. |
+| `1` | `--fail-on-findings` found one or more supported findings (for `diagnose` or `batch`). |
+| `2` | CLI usage/error-path failures (for example, missing inputs or invalid arguments). |
+
+For `batch`, `--fail-on-findings` gates the whole run the same way: if any file has
+a supported finding, the command exits `1` after reporting all files.
 
 You can also process multiple files in batch mode:
 

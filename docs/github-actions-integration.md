@@ -88,6 +88,10 @@ with:
 
 This setting does not replace the exit status from `sam deploy`; it makes a recognized diagnostic fail the job as well.
 
+In `batch` mode, `fail-on-findings: true` also fails the SAM Doctor step when any
+analyzed log reports findings; the step still writes output and keeps all findings in
+the report for review.
+
 ## Use your existing AWS authentication
 
 SAM Doctor does not need AWS credentials. It reads a local log file, so leave the credentials and permissions model of your existing deployment workflow unchanged. If you deploy with GitHub Actions OIDC, see [Debug AWS SAM deployments with GitHub Actions OIDC](oidc-deployment-debugging.md) for the failure patterns SAM Doctor recognizes.
