@@ -48,6 +48,23 @@ def test_export_evidence_packet_generates_files(tmp_path: Path) -> None:
     assert "OIDC triage" in notes.read_text(encoding="utf-8")
 
 
+def test_packet_notes_redact_identifiers_in_source_path(tmp_path: Path) -> None:
+    log = tmp_path / "deploy-123456789012-owner@example.com.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+
+    exit_code = main(["packet", str(log), "--output-dir", str(output_dir)])
+
+    assert exit_code == 0
+    notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
+    assert "123456789012" not in notes
+    assert "owner@example.com" not in notes
+    assert "[REDACTED_ACCOUNT_ID]" in notes
+
+
 def test_export_evidence_packet_supports_stdin_marker(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     script = repo_root / "scripts" / "export-evidence-packet.py"
