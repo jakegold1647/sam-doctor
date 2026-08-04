@@ -4,6 +4,9 @@ import shlex
 import subprocess
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 def _bash_path(path: Path) -> str:
     if path.drive:
         return "/mnt/" + path.drive[0].lower() + path.as_posix()[2:]
@@ -37,7 +40,7 @@ def _run_action(root: Path, environment: dict[str, str]) -> subprocess.Completed
 
 
 def test_action_wrapper_script_has_posix_newlines():
-    script = Path("scripts") / "run-github-action.sh"
+    script = ROOT / "scripts" / "run-github-action.sh"
     assert script.exists(), "run-github-action.sh should exist"
     content = script.read_bytes()
     assert b"\r\n" not in content
@@ -45,7 +48,7 @@ def test_action_wrapper_script_has_posix_newlines():
 
 
 def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
-    root = Path.cwd()
+    root = ROOT
     output_path = tmp_path / "github-output.txt"
     result = _run_action(
         root,
@@ -67,7 +70,7 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
 
 
 def test_action_wrapper_can_disable_notices(tmp_path: Path):
-    root = Path.cwd()
+    root = ROOT
     result = _run_action(
         root,
         {
