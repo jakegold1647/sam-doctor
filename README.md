@@ -27,6 +27,15 @@ official documentation.
 
 Current release: **v0.7.7**.
 
+## Who this is for
+
+- Use this tool if you need a fast local first pass when a SAM/CloudFormation/GitHub
+  Actions deployment fails.
+- Skip it if you need account-state inspection, drift analysis, quota checks, or
+  automatic fixes.
+- It is most useful for actionable deployment logs with explicit error lines and
+  rollback context.
+
 ## Try it in 60 seconds
 
 ```bash
