@@ -55,7 +55,7 @@ If you are:
 - **You need a research-ready packet:** run
   `sam-doctor packet deployment.log` and share `diagnosis.md` + `diagnosis.json`
   only.
-- **You’re onboarding a team:** use the [Adopter onboarding kit](docs/adopter-onboarding-kit.md)
+- **You're onboarding a team:** use the [Adopter onboarding kit](docs/adopter-onboarding-kit.md)
   for role-based templates and copy/paste text.
 
 ### Paste this in Slack/Teams/Email
@@ -171,8 +171,8 @@ This is built for team handoffs: teammate sends the sanitized excerpt, you run o
 diagnosis, then share one verification command before changing IAM or deploy
 configuration.
 
-If the error is real, this usually shortens the back-and-forth from “who changed
-what?” to “check this trust-policy field” in the same thread.
+If the error is real, this usually shortens the back-and-forth from "who changed
+what?" to "check this trust-policy field" in the same thread.
 
 ## Use-case: triage a CloudFormation rollback in one pass
 
@@ -233,7 +233,7 @@ A focused report usually includes:
      `--capabilities CAPABILITY_IAM` (or CAPABILITY_NAMED_IAM when required).
 ```
 
-In practice this shortens “why did it fail?” to “which flag is actually needed?” and
+In practice this shortens "why did it fail?" to "which flag is actually needed?" and
 reduces repeated guess-and-retry cycles.
 
 ## Proof: one real pattern, redacted and repeatable
