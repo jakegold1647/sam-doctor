@@ -27,6 +27,19 @@ INDEX_PATH = PROJECT_ROOT / "site" / "index.html"
 PYPROJECT_PATH = PROJECT_ROOT / "pyproject.toml"
 CURRENT_RELEASE_PATTERN = re.compile(r"Current release: \*\*v(?P<version>\d+\.\d+\.\d+)\*\*")
 SOFTWARE_VERSION_PATTERN = re.compile(r'"softwareVersion":\s*"(?P<version>\d+\.\d+\.\d+)"')
+README_PIN_PATTERN = re.compile(r"sam-doctor==(?P<version>\d+\.\d+\.\d+)")
+README_GITPIN_PATTERN = re.compile(
+    r'sam-doctor @ git\+https://github\.com/jakegold1647/sam-doctor\.git@v(?P<version>\d+\.\d+\.\d+)'
+)
+INDEX_INSTALL_HEADING_PATTERN = re.compile(
+    r'(<h2 id="install-title">)Install v(?P<version>\d+\.\d+\.\d+) in one command\.</h2>'
+)
+INDEX_RELEASE_LINK_PATTERN = re.compile(
+    r'https://github\.com/jakegold1647/sam-doctor/releases/tag/v(?P<version>\d+\.\d+\.\d+)'
+)
+INDEX_RELEASE_LINK_LABEL_PATTERN = re.compile(
+    r"View v(?P<version>\d+\.\d+\.\d+) release notes"
+)
 
 
 def _read_version() -> str:
@@ -48,6 +61,14 @@ def sync_metadata(write: bool = True) -> tuple[int, str]:
         lambda _match: f"Current release: **v{version}**",
         readme_text,
     )
+    updated_readme = README_PIN_PATTERN.sub(
+        lambda _match: f"sam-doctor=={version}",
+        updated_readme,
+    )
+    updated_readme = README_GITPIN_PATTERN.sub(
+        lambda _match: f"sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v{version}",
+        updated_readme,
+    )
     if updated_readme != readme_text:
         if write:
             README_PATH.write_text(updated_readme, encoding="utf-8")
@@ -57,6 +78,18 @@ def sync_metadata(write: bool = True) -> tuple[int, str]:
     updated_index = SOFTWARE_VERSION_PATTERN.sub(
         lambda _match: f'"softwareVersion": "{version}"',
         index_text,
+    )
+    updated_index = INDEX_INSTALL_HEADING_PATTERN.sub(
+        lambda _match: f'<h2 id="install-title">Install v{version} in one command.</h2>',
+        updated_index,
+    )
+    updated_index = INDEX_RELEASE_LINK_PATTERN.sub(
+        lambda _match: f"https://github.com/jakegold1647/sam-doctor/releases/tag/v{version}",
+        updated_index,
+    )
+    updated_index = INDEX_RELEASE_LINK_LABEL_PATTERN.sub(
+        lambda _match: f"View v{version} release notes",
+        updated_index,
     )
     if updated_index != index_text:
         if write:

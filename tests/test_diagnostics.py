@@ -104,7 +104,15 @@ def test_batch_json_payload_matches_schema_shape() -> None:
 
 
 def test_package_version_matches_release() -> None:
-    assert __version__ == "0.7.7"
+    import re
+    from pathlib import Path
+
+    pyproject = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(
+        encoding="utf-8"
+    )
+    match = re.search(r'^version = "(?P<version>\d+\.\d+\.\d+)"$', pyproject, re.M)
+    assert match is not None
+    assert __version__ == match.group("version")
 
 
 def test_oidc_failure_is_detected_and_redacted() -> None:
@@ -669,7 +677,7 @@ def test_github_notices_from_json_payload_skips_noise() -> None:
     from sam_doctor.cli import github_notices_from_payload
 
     payload = {
-        "sam_doctor_version": "0.7.7",
+        "sam_doctor_version": __version__,
         "batch": True,
         "results": [
             {
