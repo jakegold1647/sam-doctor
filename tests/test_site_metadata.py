@@ -74,6 +74,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     starter_circle = ROOT / "examples" / "circleci-sam-doctor.yml"
     starter_azure = ROOT / "examples" / "azure-pipelines-sam-doctor.yml"
     starter_bitbucket = ROOT / "examples" / "bitbucket-pipelines-sam-doctor.yml"
+    starter_two_phase = ROOT / "examples" / "github-actions-workflow-two-phase-gating.yml"
 
     assert "fail-on-findings: true" in readme
     assert "fail-on-findings: true" in site
@@ -88,6 +89,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "circleci-sam-doctor.yml" in readme
     assert "azure-pipelines-sam-doctor.yml" in readme
     assert "bitbucket-pipelines-sam-doctor.yml" in readme
+    assert "github-actions-workflow-two-phase-gating.yml" in readme
     assert "ci-command-matrix.md" in readme
     assert "ci-command-matrix.md" in site
     assert "has-findings" in readme
@@ -103,6 +105,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "circleci-sam-doctor.yml" in site
     assert "azure-pipelines-sam-doctor.yml" in site
     assert "bitbucket-pipelines-sam-doctor.yml" in site
+    assert "github-actions-workflow-two-phase-gating.yml" in site
     assert "examples/README.md" in site
     assert starter.exists()
     assert starter_sync.exists()
@@ -112,6 +115,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert starter_circle.exists()
     assert starter_azure.exists()
     assert starter_bitbucket.exists()
+    assert starter_two_phase.exists()
 
 
 def test_examples_index_and_starters_are_documented() -> None:
@@ -131,6 +135,7 @@ def test_examples_index_and_starters_are_documented() -> None:
         "circleci-sam-doctor.yml",
         "azure-pipelines-sam-doctor.yml",
         "bitbucket-pipelines-sam-doctor.yml",
+        "github-actions-workflow-two-phase-gating.yml",
     ]:
         assert name in contents
     assert "ci-command-matrix.md" in contents
@@ -143,6 +148,7 @@ def test_examples_index_and_starters_are_documented() -> None:
     assert (ROOT / "examples" / "circleci-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "azure-pipelines-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "bitbucket-pipelines-sam-doctor.yml").exists()
+    assert (ROOT / "examples" / "github-actions-workflow-two-phase-gating.yml").exists()
 
 
 def test_researcher_overview_doc_is_discoverable() -> None:
