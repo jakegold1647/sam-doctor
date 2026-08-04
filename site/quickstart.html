@@ -131,6 +131,16 @@ Error: status is not authorized
 EOF</code></pre>
         <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
         <p class="muted">Share one finding and the first safe verification step with your teammate.</p>
+
+        <p class="muted">Use your command family directly:</p>
+        <pre><code># AWS SAM
+sam-doctor diagnose deployment.log --format json --fail-on-findings
+
+# AWS CDK
+sam-doctor diagnose cdk-deploy.log --format json --fail-on-findings
+
+# AWS CloudFormation
+sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</code></pre>
       </section>
 
       <section class="steps" id="workflow" aria-labelledby="ci-title">
@@ -194,7 +204,7 @@ EOF</code></pre>
           <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">request a rule</a>.
         </p>
         <p class="muted">Paste this in your issue:</p>
-<pre><code>Title: sam-doctor report - [short summary]
+        <pre><code>Title: sam-doctor report - [short summary]
 Version: sam-doctor [version]
 Command: sam-doctor diagnose deployment-failure.log --format markdown
 Finding: [top finding title]
@@ -203,6 +213,7 @@ Verify: [one command or doc check]
 Excerpt:
 &lt;paste 1-3 sanitized lines around first matching error&gt;</code></pre>
         <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor">Try examples and workflows</a>
+        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md">Exit-code reference</a>
       </section>
     </main>
 

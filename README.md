@@ -475,6 +475,9 @@ change and requires a coordinated version bump.
 
 ### CLI exit codes
 
+For a copy-paste friendly matrix and examples, see
+[`docs/cli-exit-and-action-exit-codes.md`](docs/cli-exit-and-action-exit-codes.md).
+
 | Status | Meaning |
 | --- | --- |
 | `0` | Command completed successfully with no enforced fail gate hit. |
