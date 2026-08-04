@@ -13,6 +13,8 @@ All notable changes to SAM Doctor are documented here.
 - Added structured SEO metadata to the project landing page (`SoftwareApplication`,
   `FAQPage`, and `HowTo`) to improve discoverability for common deployment
   diagnostic queries.
+- Added Ruff checks to the CI validation workflow so style and lint failures
+  fail fast and local contribution requirements are explicit.
 
 ## v0.7.7 - 2026-08-03
 
