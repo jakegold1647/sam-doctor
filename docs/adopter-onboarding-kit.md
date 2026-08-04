@@ -8,7 +8,11 @@ It gives ready-to-run commands by role and a one-thread handoff template.
 - You have a **deployment log file**:
   `sam-doctor diagnose deployment.log --format markdown`
 - You use **GitHub Actions for deploys**:
-  add the [starter workflow](../examples/github-actions-workflow.yml) from docs.
+  add the [starter workflow](../examples/github-actions-workflow.yml) from docs or run:
+
+  ```bash
+  sam-doctor init
+  ```
 - You need **CI-safe machine output**:
   `sam-doctor diagnose deployment.log --format json --output diagnosis.json`
 - You need a **review-ready packet**:

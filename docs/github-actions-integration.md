@@ -50,7 +50,14 @@ set `batch: true` and point `log-file` to a directory or glob:
 
 You can copy the full starter workflow from
 `examples/github-actions-workflow.yml` and adjust your deploy command and
-permissions.
+permissions. If you prefer a CLI-first setup, run this once in your repo:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
+```
+
+That writes `.github/workflows/sam-doctor.yml` with the same diagnosis step and
+a ready-to-edit deployment command.
 
 If your stack uses different deployment flow, start from one of these:
 
