@@ -53,6 +53,8 @@ Repository = "https://github.com/jakegold1647/sam-doctor"
 Documentation = "https://github.com/jakegold1647/sam-doctor/tree/main/docs"
 Issues = "https://github.com/jakegold1647/sam-doctor/issues"
 Changelog = "https://github.com/jakegold1647/sam-doctor/blob/main/CHANGELOG.md"
+GitHub_Actions = "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
+Researcher_Overview = "https://github.com/jakegold1647/sam-doctor/blob/main/RESEARCHER_OVERVIEW.md"
 
 [project.scripts]
 sam-doctor = "sam_doctor.cli:main"
