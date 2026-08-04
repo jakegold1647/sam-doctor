@@ -9,10 +9,21 @@ def _bash_path(path: Path) -> str:
 
 
 def _run_action(root: Path, environment: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    script = root / "scripts" / "run-github-action.sh"
+    if not root.drive:
+        return subprocess.run(
+            ["bash", str(script)],
+            cwd=root,
+            env=os.environ | environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
     assignments = " ".join(
         f"{key}={shlex.quote(value)}" for key, value in environment.items()
     )
-    command = f"{assignments} bash {shlex.quote(_bash_path(root / 'scripts' / 'run-github-action.sh'))}"
+    command = f"{assignments} bash {shlex.quote(_bash_path(script))}"
     return subprocess.run(
         ["bash", "-lc", command],
         cwd=root,
