@@ -68,8 +68,12 @@ def test_batch_json_payload_matches_schema_shape() -> None:
 
     batch_schema = _load_schema("docs/schemas/batch-report.schema.json")
     diagnose_schema = _load_schema("docs/schemas/diagnose-report.schema.json")
+    docs_dir = Path(__file__).resolve().parent.parent / "docs"
     report_text, _ = _batch_render(
-        ["docs/cloudformation-first-failure.md", "docs/oidc-deployment-debugging.md"],
+        [
+            str(docs_dir / "cloudformation-first-failure.md"),
+            str(docs_dir / "oidc-deployment-debugging.md"),
+        ],
         "json",
     )
 
@@ -286,6 +290,31 @@ def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment
 
     assert len(findings) == 1
     assert title_fragment.lower() in findings[0].title.lower()
+
+
+def test_multiline_s3_denial_still_suppresses_generic_access_denied() -> None:
+    log = (
+        "MyLayer CREATE_FAILED AccessDeniedException\n"
+        "Your access has been denied by S3, please make sure your request credentials\n"
+        "have permission to GetObject\n"
+        "for bucket layer-artifacts."
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert "AWS denied an API action required by the deployment" not in titles
+    assert "CloudFormation resource creation or update failed" not in titles
+
+
+def test_all_declarative_rule_patterns_compile() -> None:
+    import re as _re
+
+    from sam_doctor.diagnostics import supported_rules
+
+    for rule in supported_rules():
+        for pattern in rule.patterns + rule.suppressed_by + rule.excluded_line_patterns:
+            _re.compile(pattern)
 
 
 def test_packaged_cloudformation_demo_is_available() -> None:

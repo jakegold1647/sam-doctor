@@ -35,6 +35,14 @@ class Rule:
     explanation: str
     verification: tuple[str, ...]
     documentation_url: str
+    # Whole-log patterns: when any of them matches anywhere in the input, this
+    # rule is skipped because a more specific rule produces the actionable
+    # finding for that log. Patterns are evaluated case-insensitively; use an
+    # inline (?s:...) group when a pattern must span lines.
+    suppressed_by: tuple[str, ...] = ()
+    # Per-line patterns: a line matching any of these never counts as evidence
+    # for this rule, even when a primary pattern also matches it.
+    excluded_line_patterns: tuple[str, ...] = ()
 
 
 _RULES = (
@@ -145,6 +153,17 @@ _RULES = (
             "Apply the smallest permission change that permits the intended deployment action.",
         ),
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
+        # The ECR-image and layer-artifact findings identify the denied access
+        # path directly, so the generic denial adds noise for those logs.
+        suppressed_by=(
+            r"Lambda does not have permission to access the ECR image",
+            r"(?s:access has been denied by S3.*permission.*GetObject)",
+            r"permission to GetObject for.*bucket",
+        ),
+        # STS OIDC failures are authorization failures, but the OIDC rule
+        # provides a more precise and actionable explanation than the generic
+        # IAM finding.
+        excluded_line_patterns=(r"AssumeRoleWithWebIdentity", r"ECR image"),
     ),
     Rule(
         title="A SAM template property is not valid for its resource type",
@@ -266,6 +285,16 @@ _RULES = (
             "Fix the resource-level cause before retrying the stack operation.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
+        # These service errors have more actionable, resource-specific findings.
+        suppressed_by=(
+            r"Has prohibited field Resource",
+            r"Code signing is not supported for functions created with container images",
+            r"Lambda does not have permission to access the ECR image",
+            r"Error Code:\s*InvalidBucketName",
+            r"The specified bucket is not valid",
+            r"(?s:access has been denied by S3.*permission.*GetObject)",
+            r"The REST API does(?:n't| not) contain any methods",
+        ),
     ),
     Rule(
         title="A failed initial stack must be recreated before it can be deployed again",
@@ -306,6 +335,14 @@ _RULES = (
             "Use a change set or isolated stack when testing a fix, where practical.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/determine-root-cause-for-stack-failures.html",
+        # An immutable initial-create rollback state and a role-deletion
+        # blocker each have a more precise dedicated finding.
+        suppressed_by=(
+            r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated",
+            r"following resource\(s\) failed to delete",
+            r"failed to delete.*AWS::IAM::Role",
+            r"Unable to delete.*AWS::IAM::Role",
+        ),
     ),
     Rule(
         title="CloudFormation rollback could not delete an IAM role",
@@ -405,6 +442,17 @@ _RULES = (
             "Review the complete change-set error before changing the template.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-deploy.html",
+        # A capability failure can include a preceding generic change-set error
+        # on another line. Prefer the narrower finding for the whole log.
+        suppressed_by=(
+            r"InsufficientCapabilities",
+            r"Requires capabilities",
+            r"Cannot use both --resolve-s3 and --s3-bucket",
+            r"Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
+            r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
+            r"Error Code:\s*InvalidBucketName",
+            r"The specified bucket is not valid",
+        ),
     ),
     Rule(
         title="SAM deployment prompted for interactive changeset confirmation",
@@ -503,52 +551,16 @@ def diagnose(text: str) -> list[Finding]:
 
     matched_findings: list[tuple[int, int, Finding]] = []
     for rule_index, rule in enumerate(_RULES):
-        if rule.title == "CloudFormation resource creation or update failed" and re.search(
-            r"Has prohibited field Resource|Code signing is not supported for functions created with container images|Lambda does not have permission to access the ECR image|Error Code:\s*InvalidBucketName|The specified bucket is not valid|access has been denied by S3.*permission.*GetObject|The REST API does(?:n't| not) contain any methods",
-            text,
-            flags=re.IGNORECASE | re.DOTALL,
+        if any(
+            re.search(pattern, text, flags=re.IGNORECASE) for pattern in rule.suppressed_by
         ):
-            # These service errors have more actionable, resource-specific findings.
             continue
-        if rule.title == "AWS SAM deployment configuration or parameter resolution failed" and re.search(
-            r"InsufficientCapabilities|Requires capabilities|Cannot use both --resolve-s3 and --s3-bucket|Esbuild Failed:\s*(?:Cannot|can not) find esbuild|property\s+\S+:\s+not defined for resource of type AWS::Serverless::|Error Code:\s*InvalidBucketName|The specified bucket is not valid",
-            text,
-            flags=re.IGNORECASE,
-        ):
-            # A capability failure can include a preceding generic change-set error
-            # on another line. Prefer the narrower finding for the whole log.
-            continue
-        if rule.title == "AWS denied an API action required by the deployment" and re.search(
-            r"Lambda does not have permission to access the ECR image|access has been denied by S3.*permission.*GetObject|permission to GetObject for.*bucket",
-            text,
-            flags=re.IGNORECASE | re.DOTALL,
-        ):
-            # The layer-artifact finding identifies the S3 retrieval path directly.
-            continue
-        if rule.title == "CloudFormation stack entered rollback after an earlier resource failure" and re.search(
-            r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated", text, flags=re.IGNORECASE
-        ):
-            # An immutable initial-create rollback state has a more precise recovery path.
-            continue
-        if rule.title == "CloudFormation stack entered rollback after an earlier resource failure" and re.search(
-            r"following resource\(s\) failed to delete|failed to delete.*AWS::IAM::Role|Unable to delete.*AWS::IAM::Role",
-            text,
-            flags=re.IGNORECASE,
-        ):
-            # A role deletion blocker has a more actionable dedicated finding.
-            continue
-        excluded_patterns = ()
-        if rule.title == "AWS denied an API action required by the deployment":
-            # STS OIDC failures are authorization failures, but the OIDC rule
-            # provides a more precise and actionable explanation than the
-            # generic IAM finding.
-            excluded_patterns = (r"AssumeRoleWithWebIdentity", r"ECR image")
-        line_matches = _matching_evidence_with_lines(text, rule.patterns, excluded_patterns)
+        line_matches = _matching_evidence_with_lines(text, rule.patterns, rule.excluded_line_patterns)
         if line_matches:
             evidence = tuple(line for _, line in line_matches)
             matched_findings.append(
                 (
-                    _first_matching_line(text, rule.patterns, excluded_patterns),
+                    _first_matching_line(text, rule.patterns, rule.excluded_line_patterns),
                     rule_index,
                     Finding(
                     title=rule.title,
