@@ -233,6 +233,7 @@ blocking on early warm-up timing.
 
 - [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
 - [Find the first useful error in a CloudFormation rollback](docs/cloudformation-first-failure.md)
+- [Fix InsufficientCapabilities in an AWS SAM deployment](docs/capability-acknowledgement.md)
 
 ## Supported signals
 
