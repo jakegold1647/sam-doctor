@@ -5,6 +5,7 @@ Use this matrix to quickly choose the right starting template.
 | Deployment command | Typical scenario | Starting template | Capture step |
 | --- | --- | --- | --- |
 | `sam deploy --no-confirm-changeset` | GitHub SAM CLI deploy | [`examples/github-actions-workflow.yml`](../examples/github-actions-workflow.yml) | Add `2>&1 | tee deployment.log` to the deploy command |
+| `sam deploy --no-confirm-changeset` (pilot → strict rollout) | Teams adopting gradual gating | [`examples/github-actions-workflow-two-phase-gating.yml`](../examples/github-actions-workflow-two-phase-gating.yml) | Keep non-blocking by default; trigger `workflow_dispatch` with `rollout-mode: strict` when ready |
 | `sam sync` | AWS SAM iterative sync | [`examples/github-actions-workflow-sam-sync.yml`](../examples/github-actions-workflow-sam-sync.yml) | Add `2>&1 | tee deployment.log` to the sync command |
 | `aws cloudformation deploy ...` | Direct CloudFormation deployments | [`examples/github-actions-workflow-cf-pipeline.yml`](../examples/github-actions-workflow-cf-pipeline.yml) | Add `2>&1 | tee deployment.log` in your deploy step |
 | `cdk deploy` | AWS CDK deployments | [`examples/github-actions-workflow-cdk.yml`](../examples/github-actions-workflow-cdk.yml) | Add `2>&1 | tee deployment.log` to the deploy command |

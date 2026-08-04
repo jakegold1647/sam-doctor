@@ -8,6 +8,12 @@ Use these templates to onboard quickly.
   - Works for classic `sam deploy` command.
   - Drop this at `.github/workflows/sam-doctor.yml` and fill in your deployment step.
 
+- `github-actions-workflow-two-phase-gating.yml`
+  - Lets teams start non-blocking (`pilot`) and switch to strict enforcement
+    (`strict`) for manual rollout validation.
+  - Use `workflow_dispatch` with `rollout-mode: strict` to enable
+    `fail-on-findings` after pilot stability.
+
 - `github-actions-workflow-sam-sync.yml`
   - Works for `sam sync` style workflows.
   - Replace `your-stack-name` and add any extra `sam sync` arguments.

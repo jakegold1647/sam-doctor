@@ -1,0 +1,56 @@
+name: Deploy and diagnose (pilot then strict mode)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      rollout-mode:
+        description: "pilot = non-blocking, strict = fail on findings"
+        type: choice
+        options:
+          - pilot
+          - strict
+        default: pilot
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        shell: bash
+        run: |
+          set -o pipefail
+          # Replace with your real deployment command.
+          sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+
+      - name: Diagnose deployment log
+        if: always()
+        id: sam-doctor
+        uses: jakegold1647/sam-doctor@v0
+        with:
+          log-file: deployment.log
+          summary: true
+          annotations: true
+          # Use this workflow in two phases:
+          # - default is safe pilot mode (`fail-on-findings: false`).
+          # - on workflow_dispatch + rollout-mode=strict, gate the run.
+          fail-on-findings: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.rollout-mode == 'strict' }}
+
+      - name: Route findings to triage
+        if: always() && steps.sam-doctor.outputs.has-findings == 'true'
+        run: |
+          echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} supported finding(s)."
+          echo "Start here:"
+          echo "https://jakegold1647.github.io/sam-doctor/#founder"
+
+      - name: Continue while running in pilot mode
+        if: always() && steps.sam-doctor.outputs.has-findings == 'true' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "Pilot mode is non-blocking; findings were captured for follow-up."
