@@ -46,6 +46,13 @@ def test_distribution_health_uses_local_outreach_notes_not_repo_tracking_files()
     assert "--outreach-log notes/sam-doctor-outreach-log.csv" in workflow
 
 
+def test_publish_checklist_points_to_local_notes_without_repo_files() -> None:
+    publish = (ROOT / "launch" / "PUBLISH.md").read_text(encoding="utf-8")
+    assert "notes/sam-doctor-outreach-log.csv" in publish
+    assert "notes/sam-doctor-outreach-summary.md" in publish
+    assert "outreach-log-template.csv" not in publish
+
+
 def test_stable_install_links_match_project_version() -> None:
     version = _project_version()
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

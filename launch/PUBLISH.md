@@ -22,13 +22,13 @@ For a quick machine-check before tag push, run:
 python scripts/check-launch.py --skip-outreach
 python scripts/check-launch.py --skip-distribution \
   --outreach-log notes/sam-doctor-outreach-log.csv \
-  --outreach-summary notes\\sam-doctor-outreach-summary.md \
+  --outreach-summary notes/sam-doctor-outreach-summary.md \
   --strict-ethical --min-feedback-ratio 100
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
   --outreach-log notes/sam-doctor-outreach-log.csv \
-  --outreach-summary notes\\sam-doctor-outreach-summary.md
+  --outreach-summary notes/sam-doctor-outreach-summary.md
 ```
 
 ## 2. Publish the public tool
@@ -40,7 +40,7 @@ python scripts/check-launch.py \
    (such as `v0.7.4-rc.1`) using `launch/RELEASE-${TAG}.md` when present.
 3. Verify the release is published and not a pre-release before final
    Marketplace publishing. A draft or pre-release can cause Marketplace and GitHub
-   to surface misleading “Latest pre-release” metadata.
+   to surface misleading "Latest pre-release" metadata.
 4. Confirm GitHub Pages serves the current `site/` directory.
 5. In repository Settings, set the homepage to the GitHub Pages URL and add these
    topics: `aws`, `aws-sam`, `cloudformation`, `github-actions`, `iam`,
@@ -75,7 +75,7 @@ delivery condition and refund terms. If you add a checkout link, place it in
 
 ## 4. First distribution
 
-Use a local outreach note file (for example `..\\notes\\sam-doctor-launch-notes.md`) for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error.
+Use a local outreach note file (for example `../notes/sam-doctor-launch-notes.md`) for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error.
 Keep that note file outside the repository so it is never committed.
 Lead with the free tool and ask for one sanitized failure. Ask for founder payment only after the report proves useful.
 
@@ -90,5 +90,5 @@ Use `--outreach-log` to point to your local outreach file:
 
 ```powershell
 python scripts/bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv
-python scripts/check-launch.py --skip-distribution --outreach-log notes/sam-doctor-outreach-log.csv --outreach-summary notes\\sam-doctor-outreach-summary.md
+python scripts/check-launch.py --skip-distribution --outreach-log notes/sam-doctor-outreach-log.csv --outreach-summary notes/sam-doctor-outreach-summary.md
 ```
