@@ -32,6 +32,8 @@ jobs:
           summary: true
           # Optional: fail this workflow when supported failures are detected.
           # fail-on-findings: true
+          # Optional: enable if a single file path may not capture all logs.
+          # batch: false
           # Optional: disable the one default Actions notice if not desired.
           # annotations: false
 
