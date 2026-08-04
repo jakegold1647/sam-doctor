@@ -710,13 +710,34 @@ def _compact_evidence(line: str) -> str:
     return f"{line[:half]} ... {line[-half:]}"
 
 
+_CANDIDATE_PATTERN: re.Pattern[str] | None = None
+
+
+def _candidate_pattern() -> re.Pattern[str]:
+    """One alternation over every rule pattern, used to prefilter log lines.
+
+    Noisy CI logs are overwhelmingly lines no rule can match; testing each line
+    once against the combined pattern lets diagnose() run the per-rule logic on
+    the handful of candidate lines instead of the whole log.
+    """
+
+    global _CANDIDATE_PATTERN
+    if _CANDIDATE_PATTERN is None:
+        _CANDIDATE_PATTERN = re.compile(
+            "|".join(f"(?:{pattern})" for rule in _RULES for pattern in rule.patterns),
+            re.IGNORECASE,
+        )
+    return _CANDIDATE_PATTERN
+
+
 def _matching_evidence_with_lines(
-    text: str, patterns: tuple[str, ...], excluded_patterns: tuple[str, ...] = ()
+    candidate_lines: list[tuple[int, str]],
+    patterns: tuple[str, ...],
+    excluded_patterns: tuple[str, ...] = (),
 ) -> tuple[tuple[int, str], ...]:
-    lines = text.splitlines()
     matching_lines: list[tuple[int, str]] = []
     seen = set[str]()
-    for line_number, line in enumerate(lines, start=1):
+    for line_number, line in candidate_lines:
         if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns) and not any(
             re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns
         ):
@@ -729,41 +750,37 @@ def _matching_evidence_with_lines(
     return tuple(matching_lines)
 
 
-def _first_matching_line(
-    text: str, patterns: tuple[str, ...], excluded_patterns: tuple[str, ...] = ()
-) -> int:
-    """Return the first source line that supports a rule.
+def diagnose(text: str) -> list[Finding]:
+    """Return all deterministic findings supported by the supplied text.
 
-    A deployment log is chronological evidence. Keeping findings in the same order
-    makes the earlier, more useful failure easier to inspect before downstream
-    rollback messages.
+    Findings keep the chronological order of their first matching log line: a
+    deployment log is chronological evidence, and the earlier failure is the
+    more useful one to inspect before downstream rollback messages.
     """
 
-    for line_number, line in enumerate(text.splitlines()):
-        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns) and not any(
-            re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns
-        ):
-            return line_number
-    return len(text.splitlines())
-
-
-def diagnose(text: str) -> list[Finding]:
-    """Return all deterministic findings supported by the supplied text."""
-
+    combined = _candidate_pattern()
+    candidate_lines = [
+        (line_number, line)
+        for line_number, line in enumerate(text.splitlines(), start=1)
+        if combined.search(line)
+    ]
     matched_findings: list[tuple[int, int, Finding]] = []
     for rule_index, rule in enumerate(_RULES):
+        line_matches = _matching_evidence_with_lines(
+            candidate_lines, rule.patterns, rule.excluded_line_patterns
+        )
+        if not line_matches:
+            continue
         if any(
             re.search(pattern, text, flags=re.IGNORECASE) for pattern in rule.suppressed_by
         ):
             continue
-        line_matches = _matching_evidence_with_lines(text, rule.patterns, rule.excluded_line_patterns)
-        if line_matches:
-            evidence = tuple(line for _, line in line_matches)
-            matched_findings.append(
-                (
-                    _first_matching_line(text, rule.patterns, rule.excluded_line_patterns),
-                    rule_index,
-                    Finding(
+        evidence = tuple(line for _, line in line_matches)
+        matched_findings.append(
+            (
+                line_matches[0][0],
+                rule_index,
+                Finding(
                     title=rule.title,
                     confidence=rule.confidence,
                     explanation=rule.explanation,
@@ -771,9 +788,9 @@ def diagnose(text: str) -> list[Finding]:
                     documentation_url=rule.documentation_url,
                     evidence=evidence,
                     line_number=line_matches[0][0],
-                    ),
-                )
+                ),
             )
+        )
     return [finding for _, _, finding in sorted(matched_findings)]
 
 
