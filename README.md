@@ -113,6 +113,25 @@ sam-doctor init
 Use `sam-doctor init --deploy-command "sam sync --no-confirm-changeset"` to match your
 deployment command style.
 
+A quick rollout pattern:
+
+1. Start non-blocking:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary \
+  --annotations
+```
+
+2. After 3–5 stable runs, switch to strict gating:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary \
+  --annotations --fail-on-findings --force
+```
+
+For repo-level batch diagnostics, set `--batch` and point `log-file` at a directory
+or glob in the generated workflow.
+
 ## I have this specific error; will this help?
 
 Use this if you need a first-pass answer for:

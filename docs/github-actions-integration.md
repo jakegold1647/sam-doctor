@@ -59,6 +59,25 @@ sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
 That writes `.github/workflows/sam-doctor.yml` with the same diagnosis step and
 a ready-to-edit deployment command.
 
+`sam-doctor init` supports rollout-oriented defaults:
+
+- `--summary` / `--no-summary`
+- `--annotations` / `--no-annotations`
+- `--batch`
+- `--fail-on-findings`
+
+For example, generate a non-blocking pilot workflow in one command:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
+```
+
+Later, regenerate with stricter behavior:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --fail-on-findings --force
+```
+
 If your stack uses different deployment flow, start from one of these:
 
 - `examples/github-actions-workflow-sam-sync.yml` for `sam sync`

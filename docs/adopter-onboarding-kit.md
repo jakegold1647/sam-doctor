@@ -53,6 +53,29 @@ Add this in CI immediately after deploy writes logs:
 Keep non-blocking initially (`fail-on-findings: false`), then switch to strict
 gating after 2-3 stable runs.
 
+If you want SAM Doctor to generate the exact workflow for your team in one step:
+
+```bash
+sam-doctor init \
+  --deploy-command "sam deploy --no-confirm-changeset" \
+  --annotations \
+  --summary
+```
+
+When ready for strict mode:
+
+```bash
+sam-doctor init \
+  --deploy-command "sam deploy --no-confirm-changeset" \
+  --annotations \
+  --summary \
+  --fail-on-findings \
+  --force
+```
+
+For multi-log workflows, generate batch mode with `--batch` and then point the
+generated `log-file` at `logs/` or a glob.
+
 ### C) Team lead / reviewer
 
 Use this output pack for every incident handoff:
