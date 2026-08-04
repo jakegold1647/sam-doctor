@@ -650,3 +650,14 @@ def test_render_findings_matches_report_format_selection() -> None:
     assert "## 1." in _render_findings(findings, "failure.log", "markdown")
     assert '"finding_count": 1' in _render_findings(findings, "failure.log", "json")
     assert "SAM Doctor found 1 possible issue" in _render_findings(findings, "failure.log", "terminal")
+
+
+def test_render_findings_github_emits_one_or_more_annotations() -> None:
+    findings = diagnose("Not authorized to perform: sts:AssumeRoleWithWebIdentity")
+
+    output = _render_findings(findings, "deployment.log", "github")
+
+    assert output.count("::notice") >= 1
+    assert "file=deployment.log" in output
+    assert "line=1" in output
+    assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output

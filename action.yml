@@ -11,7 +11,7 @@ inputs:
     type: boolean
     default: false
   annotations:
-    description: Add a redacted GitHub Actions notice for the first supported finding.
+    description: Add redacted GitHub Actions notice(s) for every supported finding.
     required: false
     type: boolean
     default: true

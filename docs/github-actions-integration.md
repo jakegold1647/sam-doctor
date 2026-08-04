@@ -32,7 +32,7 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
     summary: true
 ```
 
-The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds one redacted GitHub Actions notice for the first finding, so the likely cause is visible in the run UI. Set `annotations: "false"` if your workflow should not create that notice. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
+The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds redacted GitHub Actions notices for each finding, so issues are visible in the run UI. Set `annotations: "false"` if your workflow should not create annotations. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
 
 You can copy the full starter workflow from
 `examples/github-actions-workflow.yml` and adjust your deploy command and

@@ -150,9 +150,10 @@ sam-doctor diagnose deployment.log --format json --output diagnosis.json
 ```
 
 The terminal format is intended for a quick local check, Markdown is convenient
-for a human-readable handoff, and JSON is stable enough for scripts and CI
-annotations. All three formats include the first matching line number and matched
-evidence, not the full input log.
+for a human-readable handoff, JSON is stable for scripts and machine workflows,
+and `github` emits GitHub workflow command annotations directly. All formats
+include the first matching line number and matched evidence, not the full input
+log.
 
 ### CLI exit codes
 
@@ -243,7 +244,9 @@ The action exposes `finding-count` and `has-findings` outputs. Set
 `fail-on-findings: true` only when you want a supported diagnostic to fail
 the job; the commented line above shows the opt-in placement. The Markdown job
 summary is opt-in and contains only matched, redacted
-evidence; review it before sharing a workflow run outside your team. The action also adds one redacted GitHub Actions notice for the first finding by default; set `annotations: "false"` to disable it.
+evidence; review it before sharing a workflow run outside your team. The action
+also adds redacted GitHub Actions notices for every finding by default; set
+`annotations: "false"` to disable it.
 
 You can also adapt the full example from
 [`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml).

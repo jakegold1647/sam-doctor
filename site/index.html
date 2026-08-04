@@ -197,6 +197,11 @@
           Pick by deployment command using
           <a href="/sam-doctor/docs/ci-command-matrix.md">the CI command matrix</a>.
         </p>
+        <p class="muted">
+          If you ingest diagnostics directly in a `run:` step, use
+          <code>sam-doctor diagnose deployment.log --format github</code> and add
+          it after the deploy command.
+        </p>
         <p>
           For shell-based CI, run
           <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings</code>.
@@ -252,7 +257,7 @@
           OIDC role-assumption failures. Share a sanitized error or request an
           improvement in GitHub Issues.
         </p>
-        <a class="button primary" href="https://github.com/jakegold1647/sam-doctor/issues/new'title=Feedback%3A%20deployment%20error%20or%20rule%20request">
+        <a class="button primary" href="https://github.com/jakegold1647/sam-doctor/issues/new?title=Feedback%3A%20deployment%20error%20or%20rule%20request">
           Share deployment feedback
         </a>
         <p class="note">Please remove account IDs, ARNs, tokens, and customer data before posting.</p>
@@ -261,19 +266,19 @@
       <section class="faq" aria-labelledby="faq-title">
         <h2 id="faq-title">Common AWS deployment questions</h2>
         <details>
-          <summary>What does SAM Doctor diagnose'</summary>
+          <summary>What does SAM Doctor diagnose?</summary>
           <p>It recognizes explicit AWS SAM, CloudFormation, IAM, API Gateway, and GitHub Actions deployment failure patterns, including <code>AssumeRoleWithWebIdentity</code>, <code>InsufficientCapabilitiesException</code>, rollback states, and ECR image access failures.</p>
         </details>
         <details>
-          <summary>Does SAM Doctor access AWS or upload logs'</summary>
+          <summary>Does SAM Doctor access AWS or upload logs?</summary>
           <p>No. The CLI and core diagnostic logic process the text locally. They do not call AWS, upload logs, change resources, or make an automatic fix.</p>
         </details>
         <details>
-          <summary>What should I do with a CloudFormation ROLLBACK_COMPLETE error'</summary>
+          <summary>What should I do with a CloudFormation ROLLBACK_COMPLETE error?</summary>
           <p>Find the earliest related <code>CREATE_FAILED</code> or <code>UPDATE_FAILED</code> resource event first. Run the sanitized status reason through SAM Doctor, then verify the underlying service cause before retrying.</p>
         </details>
         <details>
-          <summary>Can SAM Doctor prove the root cause'</summary>
+          <summary>Can SAM Doctor prove the root cause?</summary>
           <p>No. It reports only what a matched text pattern supports and labels confidence. Use its safe checks and official documentation to confirm the diagnosis before changing a policy or stack.</p>
         </details>
       </section>

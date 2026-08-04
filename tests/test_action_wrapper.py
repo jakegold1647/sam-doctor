@@ -64,7 +64,8 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     )
 
     assert result.returncode == 0, result.stderr
-    assert "::notice title=SAM Doctor::GitHub Actions cannot assume" in result.stdout
+    assert "::notice file=oidc-assume-role-failure.txt,line=" in result.stdout
+    assert "GitHub Actions cannot assume" in result.stdout
     assert "123456789012" not in result.stdout
     assert output_path.read_text(encoding="utf-8") == "finding-count=1\nhas-findings=true\n"
 

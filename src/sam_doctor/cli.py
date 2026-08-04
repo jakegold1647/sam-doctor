@@ -19,6 +19,7 @@ from .diagnostics import (
     rules_report,
     terminal_report,
 )
+from .redaction import redact
 
 
 _DEMO_FILES = {
@@ -48,7 +49,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     diagnose_parser.add_argument(
         "--format",
-        choices=("terminal", "markdown", "json"),
+        choices=("terminal", "markdown", "json", "github"),
         default="terminal",
         help="Report format for stdout or --output.",
     )
@@ -66,7 +67,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default="oidc",
         help="Bundled failure scenario to diagnose.",
     )
-    demo_parser.add_argument("--format", choices=("terminal", "markdown", "json"), default="terminal")
+    demo_parser.add_argument(
+        "--format",
+        choices=("terminal", "markdown", "json", "github"),
+        default="terminal",
+    )
     demo_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
 
     rules_parser = subcommands.add_parser("rules", help="List the currently supported diagnostic rules.")
@@ -84,7 +89,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     batch_parser.add_argument(
         "--format",
-        choices=("terminal", "markdown", "json"),
+        choices=("terminal", "markdown", "json", "github"),
         default="terminal",
         help="Report format for each file or the overall JSON output.",
     )
@@ -116,9 +121,36 @@ def _read_text(path: Path) -> str:
 def _render_findings(findings: list[Finding], source_name: str, output_format: str) -> str:
     if output_format == "markdown":
         return markdown_report(findings, source_name)
+    if output_format == "github":
+        return _render_github(findings, source_name)
     if output_format == "json":
         return json_report(findings, source_name)
     return terminal_report(findings, source_name) + "\n"
+
+
+def _escape_github_command_value(value: str) -> str:
+    return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def _render_github(findings: list[Finding], source_name: str) -> str:
+    if not findings:
+        return ""
+
+    escaped_source = _escape_github_command_value(redact(source_name))
+    lines = []
+    for finding in findings:
+        verification = (
+            finding.verification[0] if finding.verification else "Review the documentation link."
+        )
+        message = (
+            f"{finding.title}. Line {finding.line_number}: {verification}. "
+            f"Docs: {finding.documentation_url}"
+        )
+        lines.append(
+            f"::notice file={escaped_source},line={finding.line_number},title=SAM Doctor::"
+            f"{_escape_github_command_value(message)}"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def _render(text: str, source_name: str, output_format: str) -> str:
