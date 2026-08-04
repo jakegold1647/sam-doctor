@@ -14,7 +14,7 @@ python scripts/export-evidence-packet.py deployment.log
 You can move artifacts for sharing as needed:
 
 ```bash
-cp artifacts/diagnosis.md artifacts/researcher-notes.md ... /your/shared/location/
+cp artifacts/diagnosis.md artifacts/diagnosis.json artifacts/researcher-notes.md /your/shared/location/
 ```
 
 ## 3) Share safely

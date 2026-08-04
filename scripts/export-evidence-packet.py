@@ -136,15 +136,25 @@ def main() -> int:
     notes_path = output_dir / args.notes_name
 
     python_exe = sys.executable
-    log_path = args.log_file.resolve()
+    log_input = str(args.log_file)
+    if log_input == "-":
+        stdin_text = sys.stdin.read()
+        if not stdin_text:
+            raise ValueError("stdin input was empty; provide an error excerpt.")
+
+        log_path = output_dir / "stdin-input.log"
+        log_path.write_text(stdin_text, encoding="utf-8")
+        log_input = str(log_path)
+    else:
+        log_path = args.log_file.resolve()
 
     _run_diagnose(python_exe, repo_root, log_path, "markdown", markdown_path)
     _run_diagnose(python_exe, repo_root, log_path, "json", json_path)
 
     command = (
-        f"python -m sam_doctor.cli diagnose {log_path} "
+        f"python -m sam_doctor.cli diagnose {log_input} "
         f"--format markdown --output {markdown_path.name} && "
-        f"python -m sam_doctor.cli diagnose {log_path} --format json --output {json_path.name}"
+        f"python -m sam_doctor.cli diagnose {log_input} --format json --output {json_path.name}"
     )
     _write_notes(notes_path, args.scenario, markdown_path, json_path, command)
 
