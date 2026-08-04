@@ -41,6 +41,10 @@ All notable changes to SAM Doctor are documented here.
   diagnostic queries.
 - Added Ruff checks to the CI validation workflow so style and lint failures
   fail fast and local contribution requirements are explicit.
+- Enforced website QA during GitHub Pages publish so link/metadata regressions
+  are blocked before docs deploy.
+- Marked package maturity as Beta in `pyproject.toml` to improve distribution
+  trust signals in package indexes.
 
 ## v0.7.7 - 2026-08-03
 

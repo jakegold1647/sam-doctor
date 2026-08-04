@@ -25,6 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run website QA
+        run: python scripts/check-site-qa.py site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
