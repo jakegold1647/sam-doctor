@@ -110,7 +110,7 @@ def test_package_version_matches_release() -> None:
     pyproject = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(
         encoding="utf-8"
     )
-    match = re.search(r'^version = "(?P<version>\d+\.\d+\.\d+)"$', pyproject, re.M)
+    match = re.search(r'^version = "(?P<version>\d+\.\d+\.\d+)"$', pyproject, re.MULTILINE)
     assert match is not None
     assert __version__ == match.group("version")
 
