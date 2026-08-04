@@ -141,6 +141,9 @@ def run_outreach(
     path = Path(outreach_log)
     if not path.exists():
         print(f"outreach log not found: {path}")
+        print(
+            f"Create a local tracker with: python scripts/bootstrap-outreach-log.py {path}"
+        )
         if summary:
             module._write_summary(module.empty_summary(), summary)
         return False if strict else True

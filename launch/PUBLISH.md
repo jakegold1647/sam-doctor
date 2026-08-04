@@ -89,5 +89,6 @@ Three $39 founder purchases from people who are not friends or family. Record th
 Use `--outreach-log` to point to your local outreach file:
 
 ```powershell
+python scripts/bootstrap-outreach-log.py launch/outreach-log-template.csv
 python scripts/check-launch.py --skip-distribution --outreach-log launch/outreach-log-template.csv --outreach-summary artifacts/outreach-summary.md
 ```
