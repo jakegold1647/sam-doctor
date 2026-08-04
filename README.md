@@ -394,6 +394,14 @@ For machine integrations, the JSON payload shape is documented in checked-in sch
 For `batch`, `--fail-on-findings` gates the whole run the same way: if any file has
 a supported finding, the command exits `1` after reporting all files.
 
+### GitHub Action exit behavior
+
+Action step exit status is `0` unless `fail-on-findings: true` and findings are detected.
+
+- `0`: no enforced action failure (findings may exist).
+- `1`: findings present and `fail-on-findings: true`.
+- `2`: action runtime/precondition failure (for example, invalid boolean inputs or missing Python in the runner).
+
 You can also process multiple files in batch mode:
 
 ```bash

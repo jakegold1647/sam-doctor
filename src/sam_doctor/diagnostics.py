@@ -566,10 +566,8 @@ _RULES = (
             "is not available for the build environment."
         ),
         verification=(
-            "Check the package and pin in the function dependency file and confirm "
-            "it is available for the target architecture and Python version.",
-            "Reproduce with a local `pip install` using the same build-time Python "
-            "version to confirm the missing/invalid requirement.",
+            "Check the package and pin in the function dependency file and confirm it is available for the target architecture and Python version.",
+            "Reproduce with a local `pip install` using the same build-time Python version to confirm the missing/invalid requirement.",
             "Align constraints with a build-compatible version or wheel source and retry.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
@@ -590,12 +588,9 @@ _RULES = (
             "have a matching interpreter for the SAM function runtime."
         ),
         verification=(
-            "Compare the function runtime in the template (for example `python3.12`) "
-            "to the local/interpreter runtime used by the build.",
-            "Use a matching SAM build image or pinned runtime image that provides the "
-            "required Python binary.",
-            "If using native extensions, prefer `sam build --use-container` with a "
-            "container that matches the SAM runtime.",
+            "Compare the function runtime in the template (for example `python3.12`) to the local/interpreter runtime used by the build.",
+            "Use a matching SAM build image or pinned runtime image that provides the required Python binary.",
+            "If using native extensions, prefer `sam build --use-container` with a container that matches the SAM runtime.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
     ),

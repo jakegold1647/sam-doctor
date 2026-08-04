@@ -92,6 +92,18 @@ In `batch` mode, `fail-on-findings: true` also fails the SAM Doctor step when an
 analyzed log reports findings; the step still writes output and keeps all findings in
 the report for review.
 
+## Action exit behavior
+
+The action step exit status is:
+
+- `0`: run completed and `fail-on-findings` did not request failure, even if findings were found.
+- `1`: `fail-on-findings: true` and one or more findings are present.
+- `2`: action precondition / runtime error (for example, missing `GITHUB_OUTPUT`,
+  unsupported boolean input values, missing Python, or an invalid generated report).
+
+You can use `has-findings` and `finding-count` outputs in a follow-up step for
+structured routing while still keeping the action step non-blocking when desired.
+
 ## Use your existing AWS authentication
 
 SAM Doctor does not need AWS credentials. It reads a local log file, so leave the credentials and permissions model of your existing deployment workflow unchanged. If you deploy with GitHub Actions OIDC, see [Debug AWS SAM deployments with GitHub Actions OIDC](oidc-deployment-debugging.md) for the failure patterns SAM Doctor recognizes.
