@@ -18,7 +18,7 @@ It gives ready-to-run commands by role and a one-thread handoff template.
 - You need a **review-ready packet**:
   `sam-doctor packet deployment.log`
 - You are evaluating a **new failure family**:
-  open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?title=Rule%20request:%20new%20failure%20family&labels=rule-request)
+  open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
   with the sanitized excerpt and command family.
 
 ## 2) Team-specific command set

@@ -129,7 +129,7 @@ Need: [optional follow-up permission or config check]
 ```
 
 If this result is wrong or unclear, open a
-[`diagnostic report` issue](https://github.com/jakegold1647/sam-doctor/issues/new/choose)
+[`diagnostic report` issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)
 with the pasted excerpt and command output.
 
 The bundled demo needs no AWS credentials and makes no network calls. It
