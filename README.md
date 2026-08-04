@@ -222,6 +222,13 @@ You can also use the examples index to track what you changed:
 
 [`examples/README.md`](examples/README.md)
 
+## Non-GitHub CI starter templates
+
+If your repo uses another CI system, copy:
+
+- GitLab: [`examples/gitlab-ci-sam-doctor.yml`](examples/gitlab-ci-sam-doctor.yml)
+- CircleCI: [`examples/circleci-sam-doctor.yml`](examples/circleci-sam-doctor.yml)
+
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set

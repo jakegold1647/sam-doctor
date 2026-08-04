@@ -1,0 +1,20 @@
+version: 2.1
+
+jobs:
+  deploy-and-diagnose:
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - run:
+          name: Run deployment and diagnose
+          command: |
+            pip install sam-doctor
+            # Replace with your real deployment command.
+            sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+            sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true
+
+workflows:
+  deploy-and-diagnose:
+    jobs:
+      - deploy-and-diagnose

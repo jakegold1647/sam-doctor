@@ -16,11 +16,23 @@ Use these templates to onboard quickly.
   - Works for direct `aws cloudformation deploy` invocations.
   - Replace template path, stack name, and capabilities.
 
+## GitLab CI starter
+
+- `gitlab-ci-sam-doctor.yml`
+  - Add this as `.gitlab-ci.yml` and replace deployment command with your team’s real deploy step.
+  - The example keeps diagnosis non-blocking with `|| true` so it does not fail before you're ready; switch to strict behavior when stable.
+
+## CircleCI starter
+
+- `circleci-sam-doctor.yml`
+  - Add this as `.circleci/config.yml` and replace deployment command with your real deploy step.
+  - Use this when you have a non-GitHub pipeline but want the same one-command diagnosis.
+
 ## One-time setup (30 seconds)
 
-1. Copy one starter file into `.github/workflows/`.
+1. Copy one starter file into your CI configuration location.
 2. Replace the deploy command with your real deployment flow.
-3. Keep `if: always()` on the diagnose step.
+3. For GitHub Actions, keep `if: always()` on the diagnose step.
 
 ```bash
 curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml \

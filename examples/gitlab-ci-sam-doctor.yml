@@ -1,0 +1,13 @@
+image: python:3.11
+
+stages:
+  - deploy
+
+deploy-and-diagnose:
+  stage: deploy
+  script:
+    - pip install sam-doctor --quiet
+    # Replace this with your real deployment command.
+    - sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+    - sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true
+  allow_failure: true
