@@ -54,3 +54,13 @@ jobs:
       - name: Assert expected finding count from bundled sample
         run: |
           python -c 'raw_count = """${{ steps.action-check.outputs.finding-count }}""".strip(); assert raw_count, "finding-count output was empty"; finding_count=int(raw_count); assert finding_count == 1, f"Expected 1 finding, got {finding_count}"'
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run onboarding smoke check
+        run: python scripts/run-smoke.py

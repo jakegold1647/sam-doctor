@@ -88,6 +88,17 @@ mkdir -p .github/workflows
 curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
 ```
 
+## New contributor smoke check
+
+Verify your installation and first output in one command:
+
+```bash
+python scripts/run-smoke.py
+```
+
+It runs a packaged demo and a sample diagnosis locally, then confirms JSON output is
+well-formed and contains findings before you add the tool to CI.
+
 1. Save a short failing excerpt as `deployment-failure.log`.
 2. Run diagnosis:
 
