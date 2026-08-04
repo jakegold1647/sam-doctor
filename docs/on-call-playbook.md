@@ -1,4 +1,4 @@
-﻿# SAM Doctor on-call playbook
+# SAM Doctor on-call playbook
 
 Use this once per incident and reuse the same sequence for predictable speed.
 

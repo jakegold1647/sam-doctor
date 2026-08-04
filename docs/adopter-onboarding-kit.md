@@ -31,7 +31,7 @@ Reply with exactly:
 
 1. Top finding title
 2. First verification command from the report
-3. One follow-up question: “did this check pass?”
+3. One follow-up question: "did this check pass?"
 
 ### B) SRE / DevOps owner
 
@@ -47,7 +47,7 @@ Add this in CI immediately after deploy writes logs:
 ```
 
 Keep non-blocking initially (`fail-on-findings: false`), then switch to strict
-gating after 2–3 stable runs.
+gating after 2-3 stable runs.
 
 ### C) Team lead / reviewer
 
@@ -98,14 +98,14 @@ If this matches your failure family, we can add a tailored starter workflow in 1
 ## 4) Outreach-ready 3-message sequence
 
 1. **Starter post (first touch)**  
-   “I’m sharing a quick OSS tool for deterministic AWS deployment triage:
-   SAM Doctor. You can install in 60s and get one redacted, actionable finding from a deployment log.”
+   "I'm sharing a quick OSS tool for deterministic AWS deployment triage:
+   SAM Doctor. You can install in 60s and get one redacted, actionable finding from a deployment log."
 
 2. **How it works (second touch)**  
-   “Run `sam-doctor diagnose deployment.log --format markdown`, add one follow-up check, then proceed.”
+   "Run `sam-doctor diagnose deployment.log --format markdown`, add one follow-up check, then proceed."
 
 3. **Proof + invite (third touch)**  
-   “I can share the exact starter for GitHub Actions / your CI system and a copy/paste issue template for your first rule request.”
+   "I can share the exact starter for GitHub Actions / your CI system and a copy/paste issue template for your first rule request."
 
 ## 5) 5-minute rollout checklist
 

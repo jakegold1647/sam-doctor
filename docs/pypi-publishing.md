@@ -38,7 +38,7 @@ is available. The publisher then checks out the requested release tag before
 building, so the package contents stay tied to the release being recovered.
 
 To retry a stable publication, run the PyPI workflow manually and provide the
-same `release-tag` value. In the GitHub UI, open **Actions → Publish to PyPI →
+same `release-tag` value. In the GitHub UI, open **Actions -> Publish to PyPI ->
 Run workflow**, choose `main` as the workflow ref, and enter the stable release
 tag (for example, `v0.7.6`) in `release-tag`.
 

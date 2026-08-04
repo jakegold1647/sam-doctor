@@ -30,7 +30,7 @@ safely.
 5. Decide policy:
 
    - start non-blocking (audit-only)
-   - switch to `fail-on-findings: true` only after 2–3 stable runs
+   - switch to `fail-on-findings: true` only after 2-3 stable runs
 
 ## 2) One-page evidence packet (for collaborators and researchers)
 
@@ -67,7 +67,7 @@ Try it: https://jakegold1647.github.io/sam-doctor/
 ```
 If your team uses SAM/CloudFormation, SAM Doctor can save deployment triage time:
 - runs locally on your logs
-- gives one “first useful failure” with confidence + next check
+- gives one "first useful failure" with confidence + next check
 - exports a repeatable evidence packet for incident notes
 
 Starter docs and issue templates are in:
