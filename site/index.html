@@ -7,7 +7,7 @@
     <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/" />
     <meta name="theme-color" content="#11152a" />
     <meta name="robots" content="index, follow" />
-    <link rel="sitemap" type="application/xml" href="/sam-doctor/sitemap.xml" />
+    <link rel="sitemap" type="application/xml" href="/sam-doctor/sitemap.xml" />`n    <link rel="alternate" type="text/plain" href="/sam-doctor/llms.txt" />
     <meta
       name="description"
       content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally. Find the next check for AssumeRoleWithWebIdentity, InsufficientCapabilities, rollback, and AccessDenied errors without AWS credentials or log uploads."
@@ -203,23 +203,23 @@
         <p class="note">Please remove account IDs, ARNs, tokens, and customer data before posting.</p>
       </section>
 
-      <section class="faq">
-        <h2>Questions</h2>
+      <section class="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">Common AWS deployment questions</h2>
         <details>
-          <summary>How do you keep this tool's growth ethical?</summary>
-          <p>By asking for help only in private conversations first, by asking for one realistic use case before asking for anything else, and by never offering star-for-help trades. Use <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/launch/DISTRIBUTION-TRACKING.md">the same weekly tracking approach</a> in every outreach cycle.</p>
+          <summary>What does SAM Doctor diagnose?</summary>
+          <p>It recognizes explicit AWS SAM, CloudFormation, IAM, API Gateway, and GitHub Actions deployment failure patterns, including <code>AssumeRoleWithWebIdentity</code>, <code>InsufficientCapabilitiesException</code>, rollback states, and ECR image access failures.</p>
         </details>
         <details>
-          <summary>Does SAM Doctor upload my logs?</summary>
-          <p>No. The free tool processes the file locally. Review any report before sharing it outside your team.</p>
+          <summary>Does SAM Doctor access AWS or upload logs?</summary>
+          <p>No. The CLI and core diagnostic logic process the text locally. They do not call AWS, upload logs, change resources, or make an automatic fix.</p>
         </details>
         <details>
-          <summary>Can it change IAM policies or deploy resources?</summary>
-          <p>No. It provides evidence and read-only verification steps only. You remain responsible for every change.</p>
+          <summary>What should I do with a CloudFormation ROLLBACK_COMPLETE error?</summary>
+          <p>Find the earliest related <code>CREATE_FAILED</code> or <code>UPDATE_FAILED</code> resource event first. Run the sanitized status reason through SAM Doctor, then verify the underlying service cause before retrying.</p>
         </details>
         <details>
-          <summary>Who is it for?</summary>
-          <p>Solo developers, freelancers, and small teams that deploy Python or other applications through AWS and GitHub Actions.</p>
+          <summary>Can SAM Doctor prove the root cause?</summary>
+          <p>No. It reports only what a matched text pattern supports and labels confidence. Use its safe checks and official documentation to confirm the diagnosis before changing a policy or stack.</p>
         </details>
       </section>
     </main>

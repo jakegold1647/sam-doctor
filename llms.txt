@@ -1,0 +1,34 @@
+# SAM Doctor
+
+> SAM Doctor is a local, evidence-first CLI and GitHub Action for diagnosing supported AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures. It reads text locally, redacts common identifiers, and returns evidence, confidence, safe verification steps, and official documentation.
+
+SAM Doctor does not access AWS, upload logs, change resources, or claim an authoritative root cause.
+
+## Start here
+
+- [Project homepage](https://jakegold1647.github.io/sam-doctor/): install, demo, supported categories, and GitHub Actions usage.
+- [PyPI package](https://pypi.org/project/sam-doctor/): install the stable CLI with `python -m pip install sam-doctor`.
+- [GitHub repository](https://github.com/jakegold1647/sam-doctor): source, tests, issues, and contribution guide.
+- [GitHub Marketplace Action](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics): diagnose saved deployment logs in CI.
+
+## Exact-error guides
+
+- [AssumeRoleWithWebIdentity / GitHub Actions OIDC](https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md): check `id-token: write`, the STS audience, and the trust-policy subject.
+- [CloudFormation ROLLBACK_COMPLETE](https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md): find the first failed resource event instead of treating rollback as the root cause.
+- [InsufficientCapabilitiesException](https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md): review IAM resources and acknowledge `CAPABILITY_IAM` or `CAPABILITY_NAMED_IAM` deliberately.
+
+## Supported signals
+
+- GitHub Actions OIDC token, audience, subject, and `AssumeRoleWithWebIdentity` failures.
+- IAM `AccessDenied` errors and IAM trust-policy shape errors.
+- CloudFormation failed resources, rollback states, and capability acknowledgements.
+- AWS SAM configuration, change-set, packaging, S3 artifact, and esbuild failures.
+- API Gateway deployment and CORS preflight conflicts.
+- Lambda container-image failures caused by missing ECR image access.
+
+## Safe usage
+
+1. Save the smallest sanitized error excerpt you are authorized to inspect.
+2. Run `sam-doctor diagnose deployment.log` or `sam-doctor demo`.
+3. Treat the finding as a focused starting point; verify it against AWS or GitHub documentation before changing anything.
+4. Never share account IDs, ARNs, credentials, tokens, customer data, or complete production logs.
