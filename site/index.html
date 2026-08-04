@@ -117,6 +117,22 @@
         </p>
       </section>
 
+      <section class="steps" aria-labelledby="site-quickstart-title">
+        <p class="eyebrow">60-SECOND FIRST RESPONSE</p>
+        <h2 id="site-quickstart-title">Diagnose a teammate’s failure in under two minutes.</h2>
+        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
+        <ol>
+          <li><strong>Run the command</strong> from the shared log or pasted excerpt.</li>
+          <li><strong>Send back one finding</strong> (or say no supported signal found).</li>
+          <li><strong>Include one safe verification command</strong> and ask for one follow-up.</li>
+        </ol>
+        <p class="muted">
+          For stdin workflows, use
+          <code>sam-doctor diagnose - --format markdown</code>.
+          If you still can’t match the failure, open <a href="https://github.com/jakegold1647/sam-doctor/issues/new/choose">Report a bad diagnosis</a>.
+        </p>
+      </section>
+
       <section id="ci" class="integration" aria-labelledby="ci-title">
         <p class="eyebrow">GITHUB ACTIONS</p>
         <h2 id="ci-title">Keep the diagnostic close to the failed workflow.</h2>
