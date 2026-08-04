@@ -1,6 +1,6 @@
-from pathlib import Path
 import importlib.util
 import sys
+from pathlib import Path
 
 
 def _load_module(root: Path):
@@ -48,21 +48,19 @@ def _create_repo(root: Path, version: str, with_release=True, with_changelog=Tru
     (assets_dir / "sam-doctor-social-preview.jpg").write_bytes(b"fake jpg")
 
     (root / "action.yml").write_text(
-        "\n".join(
-            [
-                "name: SAM Doctor AWS Deployment Diagnostics",
-                "description: Diagnose local AWS deployment failures",
-                "branding:",
-                "  icon: activity",
-                "  color: yellow",
-                "runs:",
-                "  using: composite",
-                "  steps: []",
-                "inputs:",
-                "  log-file:",
-                "    description: Path to the deployment log to diagnose.",
-                "    required: true",
-            ]
+        (
+            "name: SAM Doctor AWS Deployment Diagnostics\n"
+            "description: Diagnose local AWS deployment failures\n"
+            "branding:\n"
+            "  icon: activity\n"
+            "  color: yellow\n"
+            "runs:\n"
+            "  using: composite\n"
+            "  steps: []\n"
+            "inputs:\n"
+            "  log-file:\n"
+            "    description: Path to the deployment log to diagnose.\n"
+            "    required: true"
         ),
         encoding="utf-8",
     )

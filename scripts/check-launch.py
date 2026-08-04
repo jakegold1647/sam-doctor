@@ -7,9 +7,9 @@ import argparse
 import importlib.util
 import os
 import sys
+from collections.abc import Callable
 from pathlib import Path
-
-from typing import Any, Callable
+from typing import Any
 
 
 def _load_script(path: Path):
@@ -146,7 +146,7 @@ def run_outreach(
         )
         if summary:
             module._write_summary(module.empty_summary(), summary)
-        return False if strict else True
+        return not strict
 
     outreach_summary = module.summarize(path)
     module._print_summary(outreach_summary)
@@ -317,15 +317,17 @@ def main() -> int:
         if not distribution_ok:
             ok = False
 
-    if not args.skip_outreach:
-        if not run_outreach(
+    if (
+        not args.skip_outreach
+        and not run_outreach(
             repo_root,
             args.outreach_log,
             strict=args.strict_ethical,
             summary=args.outreach_summary,
             min_feedback_ratio=args.min_feedback_ratio,
-        ):
-            ok = False
+        )
+    ):
+        ok = False
 
     if ok:
         print("launch check: PASS")

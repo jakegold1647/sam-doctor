@@ -10,9 +10,8 @@ from __future__ import annotations
 import argparse
 import csv
 from collections import Counter
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence, Tuple
-
 
 _EMPTY_SUMMARY: dict[str, object] = {
     "rows": 0,
@@ -121,7 +120,7 @@ def _format_top_list(
         lines.append("  - unavailable")
         return lines
 
-    pairs: Sequence[Tuple[str, object]] = items  # type: ignore[assignment]
+    pairs: Sequence[tuple[str, object]] = items  # type: ignore[assignment]
     if not pairs:
         lines.append("  - none recorded")
         return lines
@@ -238,10 +237,10 @@ def summarize(path: Path) -> dict[str, object]:
         if _to_bool(row.get("voluntary_star", ""))
         and not _contains_feedback_signal(row.get("feedback_signal", ""))
     )
-    contact_channels = _count((row.get("contact_channel", "") for row in rows))
-    outcomes = _count((row.get("outcome", "") for row in rows))
-    problem_areas = _count((row.get("problem_area", "") for row in rows))
-    stages = _count((row.get("conversation_stage", "") for row in rows))
+    contact_channels = _count(row.get("contact_channel", "") for row in rows)
+    outcomes = _count(row.get("outcome", "") for row in rows)
+    problem_areas = _count(row.get("problem_area", "") for row in rows)
+    stages = _count(row.get("conversation_stage", "") for row in rows)
 
     rows_with_feedback = sum(
         1 for row in rows if _contains_feedback_signal(row.get("feedback_signal", ""))

@@ -7,10 +7,8 @@ CSV header for a new local tracker.
 
 from __future__ import annotations
 
-from pathlib import Path
 import argparse
-import sys
-
+from pathlib import Path
 
 _OUTREACH_HEADER = (
     "week,date,contact_channel,problem_area,conversation_stage,next_action,"

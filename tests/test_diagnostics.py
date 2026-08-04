@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from sam_doctor import __version__
 from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
 from sam_doctor.diagnostics import (
     diagnose,
@@ -13,7 +14,6 @@ from sam_doctor.diagnostics import (
     terminal_report,
 )
 from sam_doctor.redaction import redact
-from sam_doctor import __version__
 
 
 def _load_schema(relative_path: str) -> dict[str, object]:
@@ -297,7 +297,7 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
         ),
         (
             "MyStack DELETE_FAILED The following resource(s) failed to delete: [MyRole].\n"
-            "Failed to delete AWS::IAM::Role MyRole",
+            + "Failed to delete AWS::IAM::Role MyRole",
             "rollback could not delete an iam role",
         ),
         (

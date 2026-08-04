@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 
 
-
 def _load_script(root: Path):
     script_path = root / "scripts" / "check-outreach.py"
     spec = importlib.util.spec_from_file_location("check_outreach", str(script_path))

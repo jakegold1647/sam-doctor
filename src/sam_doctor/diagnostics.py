@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from html import escape
 import json
 import re
+from dataclasses import dataclass
+from html import escape
 
 from . import __version__
 from .redaction import redact
-
 
 _RULE_REQUEST_URL = "https://github.com/jakegold1647/sam-doctor/issues/new/choose"
 
@@ -423,9 +422,9 @@ _RULES = (
         ),
         verification=(
             "Find the IAM role and inspect its attached managed policies, inline policies, "
-            "and role attachments (including instance profiles).",
+            + "and role attachments (including instance profiles).",
             "Temporarily detach blockers or confirm deletion permissions, then retry rollback "
-            "or delete the stack with resources retained as required.",
+            + "or delete the stack with resources retained as required.",
             "Re-run deployment only after the stack can transition cleanly past the rollback phase.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-deleting-stack.html",
@@ -654,7 +653,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
         f"**Source:** <code>{escape(redact(source_name))}</code>",
         "",
         "This report is generated from matched log patterns. Review the evidence and "
-        "commands before applying any change.",
+        + "commands before applying any change.",
         "",
     ]
     if not findings:
@@ -663,13 +662,13 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 "## No supported pattern found",
                 "",
                 "The input did not match the current rule set. Preserve the first error "
-                "and relevant CloudFormation event details, then consult the linked AWS "
-                "documentation or an authorized support engineer.",
+                + "and relevant CloudFormation event details, then consult the linked AWS "
+                + "documentation or an authorized support engineer.",
                 "",
                 "### What to do next",
                 "",
                 "Run `sam-doctor rules` to review current coverage. If this was a real "
-                f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({_RULE_REQUEST_URL}).",
+                + f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({_RULE_REQUEST_URL}).",
             ]
         )
         return "\n".join(lines) + "\n"

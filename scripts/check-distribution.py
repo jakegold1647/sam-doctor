@@ -12,12 +12,11 @@ import csv
 import json
 import os
 import sys
-from datetime import datetime, timezone
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from typing import Any, Tuple
-
+from datetime import datetime, timezone
+from typing import Any
 
 GITHUB_REPO = "jakegold1647/sam-doctor"
 PYPI_PROJECT = "sam-doctor"
@@ -45,7 +44,7 @@ class Status:
     details: str
 
 
-def _get_json(url: str, token: str | None) -> Tuple[Any, int]:
+def _get_json(url: str, token: str | None) -> tuple[Any, int]:
     req = urllib.request.Request(
         url,
         headers={

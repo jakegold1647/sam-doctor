@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import sys
+from datetime import datetime, timezone
 from html import escape
 from importlib.resources import files
-from datetime import datetime, timezone
-import sys
 from pathlib import Path
 
 from . import __version__
@@ -21,7 +21,6 @@ from .diagnostics import (
     terminal_report,
 )
 from .redaction import redact
-
 
 _DEMO_FILES = {
     "oidc": "oidc-assume-role-failure.txt",

@@ -8,11 +8,12 @@ import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-import urllib.error
-import urllib.request
+
 try:
     import tomllib  # type: ignore[unused-ignore]
 except ModuleNotFoundError:  # pragma: no cover - Python <3.11

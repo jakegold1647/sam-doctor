@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 
-
 _ACCOUNT_ID = re.compile(r"(?<!\d)\d{12}(?!\d)")
 _ARN = re.compile(r"arn:aws(?:-us-gov|-cn)?:[^\s'\"`]+")
 _EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
