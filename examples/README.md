@@ -53,6 +53,30 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
 
 - `sam-doctor diagnose deployment.log --format json`
 - `sam-doctor batch logs/*.log --format json --fail-on-findings`
+- `sam-doctor diagnose deployment.log --format github`
+
+## Reproducible evidence packet for collaborators
+
+If you are sharing results with a teammate, reviewer, or researcher, generate both
+human and machine outputs at once:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown > diagnosis.md
+sam-doctor diagnose deployment.log --format json --output diagnosis.json
+```
+
+Then include:
+
+- a short sanitized command history,
+- `diagnosis.md`,
+- `diagnosis.json`, and
+- `docs/researcher-evidence-packet.md` (template and reporting notes).
+
+This keeps the collaboration artifact lightweight and redacted.
+
+Use the packet template:
+
+- [Researcher evidence packet](../docs/researcher-evidence-packet.md)
 
 Keep this checklist in your repo until the template is stable in CI.
 
