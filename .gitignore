@@ -7,8 +7,10 @@ dist/
 tmp/
 sample-report.md
 artifacts/
+# Operational trackers, outreach notes, and launch draft artifacts are kept local.
+# These files are intentionally excluded from git history.
+notes/
 launch/outreach-log-template.csv
 launch/DISTRIBUTION-TRACKING.md
 launch/LAUNCH-PLAN.md
 launch/OUTREACH.md
-notes/

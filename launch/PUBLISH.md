@@ -2,7 +2,9 @@
 
 This repository is already public. Use this checklist for a release you intend
 to share with real users. Do not publish logs, customer failures, AWS
-credentials, access keys, session tokens, or personal information.
+credentials, access keys, session tokens, personal information, **or growth/outreach notes**
+into git history. Keep operational notes (including outreach/distribution tracking)
+in local, ignored paths such as `notes/`.
 
 ## 1. Release preflight
 
