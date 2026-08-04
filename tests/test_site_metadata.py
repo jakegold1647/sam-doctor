@@ -10,6 +10,10 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
 
     assert '<link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/"' in page
+    assert 'name="author" content="Jake Goldstein"' in page
+    assert 'name="geo.region" content="US"' in page
+    assert 'name="geo.placename" content="United States"' in page
+    assert 'https://jacobgoldstein.dev' in page
     assert 'property="og:image"' in page
     assert 'meta name="keywords"' in page
     assert 'name="twitter:image"' in page
@@ -27,6 +31,8 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["name"] == "SAM Doctor"
     assert schema["softwareVersion"] == "0.7.7"
     assert schema["offers"]["price"] == "0"
+    assert schema["publisher"]["name"] == "Jake Goldstein"
+    assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"
 
 
 def test_action_examples_show_opt_in_failure_gate() -> None:
