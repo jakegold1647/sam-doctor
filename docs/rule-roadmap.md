@@ -178,7 +178,8 @@ the CloudFormation quotas page for the specific limit named in the error.
 
 ## 5. The deploy bucket denied access to the packaged artifacts
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #28](https://github.com/jakegold1647/sam-doctor/issues/28).
 
 **Failure family.** `sam deploy` fails talking to the artifact bucket: the
 upload is rejected, or CloudFormation cannot read the uploaded template or
@@ -225,7 +226,8 @@ policy.
 
 ## 6. The stack is stuck in a terminal rollback state
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #29](https://github.com/jakegold1647/sam-doctor/issues/29).
 
 **Failure family.** Every deploy fails immediately because the stack sits in
 `ROLLBACK_COMPLETE` (first creation failed; the stack can only be deleted) or
@@ -266,7 +268,8 @@ only for resources that genuinely cannot roll back.
 
 ## 7. The template failed SAM or CloudFormation schema validation
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #30](https://github.com/jakegold1647/sam-doctor/issues/30).
 
 **Failure family.** The deploy dies before any resource is created:
 `InvalidSamDocumentException`, `InvalidResourceException`, or an unsupported /
@@ -309,7 +312,8 @@ line when SAM resource types are used.
 
 ## 8. The deployment ran with invalid or wrong-account AWS credentials
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #31](https://github.com/jakegold1647/sam-doctor/issues/31).
 
 **Failure family.** The request never passed authentication: the security
 token is invalid (not merely expired), or the access key belongs to no known
@@ -367,7 +371,8 @@ this one, pick another open entry above or below.
 
 ## 10. The Lambda deployment package is over a size limit
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #32](https://github.com/jakegold1647/sam-doctor/issues/32).
 
 **Failure family.** The function code (zip or unzipped) exceeds a Lambda
 per-function size limit, so `UpdateFunctionCode`/`CreateFunction` fails.
@@ -409,7 +414,8 @@ genuinely large.
 
 ## 11. Tag-on-create was denied or a tag failed validation
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #33](https://github.com/jakegold1647/sam-doctor/issues/33).
 
 **Failure family.** The resource itself is allowed but tagging it is not:
 the deploy principal lacks `iam:TagRole`/`TagResource`-style permissions, an
