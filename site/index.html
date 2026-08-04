@@ -138,6 +138,14 @@
       <section class="steps" aria-labelledby="site-quickstart-title">
         <p class="eyebrow">60-SECOND FIRST RESPONSE</p>
         <h2 id="site-quickstart-title">Diagnose a teammate's failure in under two minutes.</h2>
+        <p class="muted">Pick the closest path:</p>
+        <ul>
+          <li><strong>Deployment log file:</strong> <code>sam-doctor diagnose deployment.log --format markdown</code></li>
+          <li><strong>Pasted excerpt:</strong> <code>sam-doctor diagnose - --format markdown</code></li>
+          <li><strong>CI-friendly JSON:</strong> <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json</code></li>
+          <li><strong>GitHub annotation output:</strong> <code>sam-doctor diagnose deployment.log --format github</code></li>
+          <li><strong>GitHub Action pipeline:</strong> add the action step in the CI section below.</li>
+        </ul>
         <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
         <ol>
           <li><strong>Run the command</strong> from the shared log or pasted excerpt.</li>

@@ -94,6 +94,18 @@ If your shell cannot find `sam-doctor` after installation, activate the
 environment where it was installed or use `python -m sam_doctor.cli` in the
 commands below.
 
+## Pick your starting flow (fastest)
+
+Use the first row that matches your current situation:
+
+| Situation | First command |
+| --- | --- |
+| You have a deployment log file | `sam-doctor diagnose deployment.log --format markdown` |
+| You want machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
+| You want a CI annotation style report | `sam-doctor diagnose deployment.log --format github` |
+| You only have pasted excerpt text | `printf '%s\n' \"...error excerpt...\" \| sam-doctor diagnose - --format markdown` |
+| You are testing in a GitHub Action | Use the composite action in the CI section below |
+
 ## 60-second first response checklist
 
 Use this when a teammate posts an error:
