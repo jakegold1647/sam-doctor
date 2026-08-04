@@ -600,6 +600,7 @@ expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
+- [Community sharing kit (onboarding + announcement templates)](docs/community-sharing-kit.md)
 
 ## Supported signals
 
@@ -631,6 +632,11 @@ instead of raw logs:
 Start here:
 
 `docs/researcher-evidence-packet.md`
+
+If you want a ready-to-use onboarding script and short announcement drafts for
+community posting, use:
+
+- [docs/community-sharing-kit.md](docs/community-sharing-kit.md)
 
 If you're preparing a repeatable review packet for a teammate, maintainer, or
 researcher, use:

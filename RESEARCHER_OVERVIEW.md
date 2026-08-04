@@ -61,6 +61,9 @@ The packet command writes:
 - `diagnosis.json` (structured result),
 - `researcher-notes.md` (brief method note).
 
+To share this workflow quickly with collaborators, reviewers, or community posts,
+use the [community sharing kit](docs/community-sharing-kit.md).
+
 ## Why this supports reliable reporting
 
 Each run is deterministic for fixed input. If two people run the same excerpt through the same command and version, they get the same match sequence.

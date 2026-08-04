@@ -33,3 +33,6 @@ This packet is intentionally small, reproducible, and safe to discuss in:
 - OSS issue threads,
 - internal postmortems,
 - reproducibility discussions.
+
+For a short onboarding flow and community-ready messaging, use
+[community-sharing-kit.md](community-sharing-kit.md).

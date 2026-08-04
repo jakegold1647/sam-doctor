@@ -16,6 +16,10 @@ For a diagnostic problem, include:
 3. A short, sanitized excerpt containing the first relevant error.
 4. What you expected the report to say and what it said instead.
 
+If you are helping spread the project, include short onboarding notes and share one
+closed reproduction with a link to the community kit:
+`docs/community-sharing-kit.md`.
+
 ## First contribution path
 
 If this is your first contribution, start with this three-step flow:
