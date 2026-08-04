@@ -34,6 +34,19 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"
 
 
+def test_quickstart_page_has_metadata_and_guide_schema() -> None:
+    page = (ROOT / "site" / "quickstart.html").read_text(encoding="utf-8")
+
+    assert '<link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/quickstart.html"' in page
+    assert "geo.region" in page
+    assert "geo.placename" in page
+    assert 'property="og:image"' in page
+    assert 'name="twitter:image"' in page
+    assert "application/ld+json" in page
+    assert '"@type": "HowTo"' in page
+    assert "Install SAM Doctor" in page
+
+
 def test_action_examples_show_opt_in_failure_gate() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
