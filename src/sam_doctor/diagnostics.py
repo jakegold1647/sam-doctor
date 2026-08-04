@@ -138,6 +138,28 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/images-create.html",
     ),
     Rule(
+        title="The CI runner could not authenticate to ECR to push the image",
+        confidence="high",
+        patterns=(
+            r"no basic auth credentials",
+            r"Your authorization token has expired\.?\s*Reauthenticate",
+            r"not authorized to perform:\s*ecr:GetAuthorizationToken",
+        ),
+        explanation=(
+            "The machine running the deployment could not authenticate to ECR "
+            "before or while pushing the function image. This happens earlier "
+            "than any Lambda image-pull problem: the runner never logged in to "
+            "the registry, its 12-hour ECR authorization token expired mid-job, "
+            "or the deployment identity lacks `ecr:GetAuthorizationToken`."
+        ),
+        verification=(
+            "Run `aws ecr get-login-password | docker login` (or the `aws-actions/amazon-ecr-login` action) in the job before the push step.",
+            "For jobs that can run longer than 12 hours, re-authenticate before the push instead of reusing the login from the start of the job.",
+            "Grant the deployment identity `ecr:GetAuthorizationToken` (its resource is always `*`) plus the repository-scoped push actions on the exact repository in the error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html",
+    ),
+    Rule(
         title="AWS denied an API action required by the deployment",
         confidence="medium",
         patterns=(r"AccessDenied(?:Exception)?", r"is not authorized to perform:"),
@@ -162,7 +184,11 @@ _RULES = (
         # STS OIDC failures are authorization failures, but the OIDC rule
         # provides a more precise and actionable explanation than the generic
         # IAM finding.
-        excluded_line_patterns=(r"AssumeRoleWithWebIdentity", r"ECR image"),
+        excluded_line_patterns=(
+            r"AssumeRoleWithWebIdentity",
+            r"ECR image",
+            r"ecr:GetAuthorizationToken",
+        ),
     ),
     Rule(
         title="The AWS credentials used by the deployment have expired",
@@ -428,6 +454,45 @@ _RULES = (
             "Re-run deployment only after the stack can transition cleanly past the rollback phase.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-deleting-stack.html",
+    ),
+    Rule(
+        title="Stack deletion is blocked by termination protection",
+        confidence="high",
+        patterns=(r"cannot be deleted while TerminationProtection is enabled",),
+        explanation=(
+            "CloudFormation refused the delete because termination protection is "
+            "enabled on the stack. Someone turned that protection on deliberately, "
+            "so the refusal is a safeguard rather than a failure."
+        ),
+        verification=(
+            "Confirm the stack name, account, and Region match the stack you intend to remove.",
+            "Find out why termination protection was enabled before removing it; the stack may be shared or load-bearing.",
+            "Only after confirming the stack is safe to remove, disable protection (`aws cloudformation update-termination-protection --no-enable-termination-protection`) and retry the delete.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-protect-stacks.html",
+    ),
+    Rule(
+        title="CloudFormation could not delete one or more stack resources",
+        confidence="medium",
+        patterns=(r"\bDELETE_FAILED\b",),
+        explanation=(
+            "A stack or resource deletion failed. The status reason usually names "
+            "the blocker directly: a non-empty S3 bucket, a network interface "
+            "still attached to a Lambda function, a nested stack with its own "
+            "failure, or a resource another stack depends on."
+        ),
+        verification=(
+            "Identify the blocking resource and preserve its exact status reason before changing anything.",
+            "Resolve the blocker deliberately - empty the bucket, wait for or detach the network interface, fix the nested stack - rather than force-deleting anything.",
+            "If a resource should survive the stack, retry with `aws cloudformation delete-stack --retain-resources` for that logical ID after the blocker is understood.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
+        # A role deletion blocker keeps its dedicated, more actionable finding.
+        suppressed_by=(
+            r"The following resource\(s\) failed to delete:.*Role\b",
+            r"failed to delete.*IAM Role",
+            r"Unable to delete.*AWS::IAM::Role",
+        ),
     ),
     Rule(
         title="CloudFormation needs an explicit capability acknowledgement",

@@ -204,6 +204,22 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "throttled the deployment",
         ),
         (
+            "An error occurred (ValidationError) when calling the DeleteStack operation: Stack [arn:aws:cloudformation:us-east-1:123456789012:stack/sam-app/1a2b3c4d] cannot be deleted while TerminationProtection is enabled",
+            "blocked by termination protection",
+        ),
+        (
+            "ArtifactBucket AWS::S3::Bucket DELETE_FAILED The bucket you tried to delete is not empty (Service: S3, Status Code: 409)",
+            "could not delete one or more stack resources",
+        ),
+        (
+            "denied: Your authorization token has expired. Reauthenticate and try again.",
+            "could not authenticate to ECR",
+        ),
+        (
+            'Error response from daemon: Head "https://123456789012.dkr.ecr.us-east-1.amazonaws.com/v2/sam-app/manifests/latest": no basic auth credentials',
+            "could not authenticate to ECR",
+        ),
+        (
             "sam build --use-container failed: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?",
             "requires docker for containerized builds",
         ),
@@ -337,6 +353,38 @@ def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment
 def test_expired_wording_alone_is_not_a_credential_finding() -> None:
     assert diagnose("The CloudFront distribution's TLS certificate expired last week.") == []
     assert diagnose("Waiting for the changeset to be created; the rate of progress is slow.") == []
+
+
+def test_delete_wording_alone_is_not_a_deletion_finding() -> None:
+    assert diagnose("DELETE_IN_PROGRESS then DELETE_COMPLETE; termination protection was already off.") == []
+    assert diagnose("Login Succeeded; pushed all layers to the registry.") == []
+
+
+def test_iam_role_deletion_blocker_still_wins_over_general_delete_failed() -> None:
+    log = (
+        "MyStack DELETE_FAILED The following resource(s) failed to delete: [MyRole].\n"
+        "Failed to delete AWS::IAM::Role MyRole"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert "CloudFormation rollback could not delete an IAM role" in titles
+    assert "CloudFormation could not delete one or more stack resources" not in titles
+
+
+def test_ecr_auth_denial_does_not_fire_the_generic_access_denied_rule() -> None:
+    log = (
+        "An error occurred (AccessDeniedException) when calling the GetAuthorizationToken "
+        "operation: User: arn:aws:sts::123456789012:assumed-role/deploy-role/GitHubActions "
+        "is not authorized to perform: ecr:GetAuthorizationToken on resource: * because no "
+        "identity-based policy allows the ecr:GetAuthorizationToken action"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["The CI runner could not authenticate to ECR to push the image"]
 
 
 def test_multiline_s3_denial_still_suppresses_generic_access_denied() -> None:
