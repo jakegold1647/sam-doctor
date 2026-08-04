@@ -61,15 +61,15 @@ If you are sharing results with a teammate, reviewer, or researcher, generate bo
 human and machine outputs at once:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown > diagnosis.md
-sam-doctor diagnose deployment.log --format json --output diagnosis.json
+sam-doctor packet deployment.log
 ```
 
 Then include:
 
 - a short sanitized command history,
-- `diagnosis.md`,
-- `diagnosis.json`, and
+- `artifacts/diagnosis.md`,
+- `artifacts/diagnosis.json`,
+- `artifacts/researcher-notes.md`, and
 - `docs/researcher-evidence-packet.md` (template and reporting notes).
 
 This keeps the collaboration artifact lightweight and redacted.
