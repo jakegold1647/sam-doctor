@@ -1,4 +1,4 @@
-﻿# Draft: Hacker News "Show HN"
+# Draft: Hacker News "Show HN"
 
 > Publish manually from your own account. HN convention: title starts with
 > "Show HN:", URL points at the repo, and the text below goes in the text
@@ -19,7 +19,7 @@ and CloudFormation rollbacks where the first CREATE_FAILED event is buried
 under rollback noise.
 
 sam-doctor is a zero-dependency Python CLI that reads the deployment log
-locally and matches it against 24 hand-written failure rules. For each match
+locally and matches it against a catalog of hand-written failure rules (29 and growing). For each match
 it prints the evidence lines, a confidence level, the specific things to
 verify before changing anything, and a link to the official doc page.
 

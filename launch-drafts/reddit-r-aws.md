@@ -1,4 +1,4 @@
-﻿# Draft: r/aws (or r/devops) post
+# Draft: r/aws (or r/devops) post
 
 > Publish manually. Suggested flair: "tooling" or "discussion" depending on
 > subreddit rules. Check each subreddit's self-promo policy first; r/aws
@@ -22,7 +22,7 @@ you actually need (the first `CREATE_FAILED` event) is buried above a wall of
 `ROLLBACK_IN_PROGRESS` noise.
 
 So I wrote sam-doctor. It's a small Python CLI that reads a deployment log
-locally, matches it against 24 known failure patterns (OIDC/STS, IAM
+locally, matches it against a growing catalog of known failure patterns (OIDC/STS, IAM
 AccessDenied, CloudFormation rollbacks and capability errors, SAM config
 problems, API Gateway ordering issues, etc.), and prints the matched evidence
 plus the specific things to check, with a link to the relevant official doc
