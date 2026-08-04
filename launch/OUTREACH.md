@@ -25,3 +25,10 @@ Use these messages only for developers with a recent, public AWS deployment prob
 - Use distribution snapshots (already run every 12 hours) to avoid vanity tuning:
   watch voluntary feedback ratio and repeat contacts, not raw star count.
 
+## 30-second response template for inbound reports
+
+- Ask for the first relevant log excerpt only.
+- Run `sam-doctor diagnose` on the excerpt and include the markdown output.
+- Reply with: what the tool found (or did not find), one safe verification command,
+  and one concrete next step.
+
