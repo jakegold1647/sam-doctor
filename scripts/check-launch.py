@@ -227,12 +227,12 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--append-csv",
-        default="../notes/distribution.csv",
+        default="notes/distribution.csv",
         help="Append distribution rows to CSV path (local, outside repo by default).",
     )
     parser.add_argument(
         "--summary",
-        default="../notes/distribution-summary.md",
+        default="notes/distribution-summary.md",
         help="Write distribution summary file (local, outside repo by default).",
     )
     parser.add_argument(
@@ -247,7 +247,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--outreach-log",
-        default="../notes/sam-doctor-outreach-log.csv",
+        default="notes/sam-doctor-outreach-log.csv",
         help=(
             "Outreach log CSV for ethical check "
             "(local working copy only; default path is outside the repository)."
@@ -255,7 +255,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--outreach-summary",
-        default="../notes/sam-doctor-outreach-summary.md",
+        default="notes/sam-doctor-outreach-summary.md",
         help=(
             "Optional output path for outreach summary markdown "
             "(local working copy only; default is outside the repository)."

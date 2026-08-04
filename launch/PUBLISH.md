@@ -4,7 +4,7 @@ This repository is already public. Use this checklist for a release you intend
 to share with real users. Do not publish logs, customer failures, AWS
 credentials, access keys, session tokens, personal information, **or growth/outreach notes**
 into git history. Keep operational notes (including outreach/distribution tracking)
-in local, ignored paths such as `../notes/` (outside this repository).
+in local, ignored paths such as `notes/` (kept out of git history).
 
 ## 1. Release preflight
 
@@ -24,22 +24,22 @@ For a quick machine-check before tag push, run:
 ```powershell
 python scripts/check-launch.py --skip-outreach
 python scripts/check-launch.py --skip-distribution \
-  --outreach-log ../notes/sam-doctor-outreach-log.csv \
-  --outreach-summary ../notes/sam-doctor-outreach-summary.md \
+  --outreach-log notes/sam-doctor-outreach-log.csv \
+  --outreach-summary notes/sam-doctor-outreach-summary.md \
   --strict-ethical --min-feedback-ratio 100
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
-  --outreach-log ../notes/sam-doctor-outreach-log.csv \
-  --outreach-summary ../notes/sam-doctor-outreach-summary.md
+  --outreach-log notes/sam-doctor-outreach-log.csv \
+  --outreach-summary notes/sam-doctor-outreach-summary.md
 ```
 
 Daily launch tracking files are local-only by default:
 
-- `../notes/distribution.csv`
-- `../notes/distribution-summary.md`
-- `../notes/sam-doctor-outreach-log.csv`
-- `../notes/sam-doctor-outreach-summary.md`
+- `notes/distribution.csv`
+- `notes/distribution-summary.md`
+- `notes/sam-doctor-outreach-log.csv`
+- `notes/sam-doctor-outreach-summary.md`
 
 These paths are ignored by git, so growth/outreach notes stay in your working copy
 only and are never committed.
@@ -88,7 +88,7 @@ delivery condition and refund terms. If you add a checkout link, place it in
 
 ## 4. First distribution
 
-Use a local outreach note file (for example `../notes/sam-doctor-launch-notes.md`) for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error.
+Use a local outreach note file (for example `notes/sam-doctor-launch-notes.md`) for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error.
 Keep that note file outside the repository so it is never committed.
 Lead with the free tool and ask for one sanitized failure. Ask for founder payment only after the report proves useful.
 
@@ -102,6 +102,6 @@ Three $39 founder purchases from people who are not friends or family. Record th
 Use `--outreach-log` to point to your local outreach file:
 
 ```powershell
-python scripts/bootstrap-outreach-log.py ../notes/sam-doctor-outreach-log.csv
-python scripts/check-launch.py --skip-distribution --outreach-log ../notes/sam-doctor-outreach-log.csv --outreach-summary ../notes/sam-doctor-outreach-summary.md
+python scripts/bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv
+python scripts/check-launch.py --skip-distribution --outreach-log notes/sam-doctor-outreach-log.csv --outreach-summary notes/sam-doctor-outreach-summary.md
 ```
