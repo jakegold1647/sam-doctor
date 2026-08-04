@@ -4,6 +4,32 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added seven diagnostic rules: expired AWS credentials and runner clock skew
+  (`ExpiredToken`, `Signature expired`), CloudFormation API throttling
+  (`Rate exceeded`), stack deletion blocked by termination protection, general
+  `DELETE_FAILED` resource blockers, ECR push-authentication failures from CI
+  runners (missing login, expired token, denied `ecr:GetAuthorizationToken`),
+  and Docker unavailable for `sam build --use-container`. Catalog is now 31 rules.
+- Made rule suppression declarative: rules carry `suppressed_by` and
+  `excluded_line_patterns` instead of hard-coded logic in `diagnose()`, so new
+  rules no longer edit engine code.
+- Added `--format github` to diagnose, demo, and batch: one workflow-command
+  annotation per finding with `file=`/`line=` properties and full
+  workflow-command escaping; clean logs emit nothing.
+- Findings now expose the first matching log line (`line_number`) in all
+  report formats.
+- Hardened redaction: quoted secret assignments (`password="..."`,
+  JSON-style pairs), bare STS session tokens (`IQoJ...`/`FwoG...`), and the
+  evidence-packet notes file (source path and command line) are now redacted;
+  verified by a deterministic cross-format fuzz test.
+- Roughly halved diagnose() time on large logs by scanning each line once
+  against a combined pattern instead of once per rule.
+- CLI failure paths (missing input, unwritable output, empty stdin) now
+  consistently exit 2 and are covered by tests; documented exit codes for
+  diagnose, batch, and the GitHub action.
+- Batch mode gained `--fail-on-findings`.
+- Re-dispatching the PyPI publish workflow for an already-published tag is now
+  a safe no-op (`skip-existing`).
 - Added diagnostic coverage for Python SAM build dependency validation failures
   (`PythonPipBuilder:ResolveDependencies`/`Binary validation failed`) with
   demo fixture and ordered rule matching.
