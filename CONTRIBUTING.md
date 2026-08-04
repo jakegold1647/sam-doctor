@@ -16,6 +16,24 @@ For a diagnostic problem, include:
 3. A short, sanitized excerpt containing the first relevant error.
 4. What you expected the report to say and what it said instead.
 
+## First contribution path
+
+If this is your first contribution, start with this three-step flow:
+
+1. Open a small diagnostic issue with the built-in template.
+2. Add one focused regression test in `tests/test_diagnostics.py` (or a fixture for
+   `src/sam_doctor/data` if needed).
+3. Open a PR using the template and include the exact command that reproduced the issue.
+
+To lower contributor friction, labels to look for:
+
+- `good first issue`
+- `documentation`
+- `help wanted`
+
+For rule proposals, use `docs/contributing-a-diagnostic-rule.md` and keep the
+change scope to one signal and one fixture pair.
+
 ## Development
 
 ```bash
