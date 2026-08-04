@@ -48,6 +48,9 @@ jobs:
             STRICT_ETHICAL=""
           fi
 
+          mkdir -p notes
+          python scripts/bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv
+
           launch_flags=""
           if [ "${{ github.event_name }}" = "schedule" ]; then
             launch_flags="--skip-release-state"
@@ -69,7 +72,7 @@ jobs:
             --token "${{ secrets.GITHUB_TOKEN }}" \
             --check-launch-token "${{ secrets.GITHUB_TOKEN }}" \
             --launch-repo "jakegold1647/sam-doctor" \
-            --outreach-log launch/outreach-log-template.csv \
+            --outreach-log notes/sam-doctor-outreach-log.csv \
             $launch_flags \
             $strict_flags \
             --output-format json \

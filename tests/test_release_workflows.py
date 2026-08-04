@@ -37,6 +37,15 @@ def test_manual_pypi_publish_builds_requested_tag_and_checks_from_main() -> None
     assert '-f release-tag="$RELEASE_TAG"' in health_check
 
 
+def test_distribution_health_uses_local_outreach_notes_not_repo_tracking_files() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "distribution-check.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv" in workflow
+    assert 'python scripts/bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv' in workflow
+    assert "--outreach-log notes/sam-doctor-outreach-log.csv" in workflow
+
+
 def test_stable_install_links_match_project_version() -> None:
     version = _project_version()
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
