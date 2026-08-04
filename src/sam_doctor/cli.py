@@ -381,9 +381,19 @@ def _packet_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _print_error(parser: argparse.ArgumentParser, message: str) -> None:
+    parser.print_usage(sys.stderr)
+    print(f"{parser.prog}: error: {message}", file=sys.stderr)
+
+
 def main(argv: list[object] | None = None) -> int:
     parser = _build_parser()
-    args = parser.parse_args([str(arg) for arg in argv] if argv is not None else None)
+    try:
+        args = parser.parse_args([str(arg) for arg in argv] if argv is not None else None)
+    except SystemExit as error:
+        if error.code in (0, "0", None):
+            return 0
+        return 2
 
     if args.command == "demo":
         report = _render(_read_demo(args.scenario), _DEMO_FILES[args.scenario], args.format)
@@ -391,7 +401,8 @@ def main(argv: list[object] | None = None) -> int:
             try:
                 _write_report(args.output, report)
             except ValueError as error:
-                parser.error(str(error))
+                _print_error(parser, str(error))
+                return 2
             print(f"Wrote {args.format} report to {args.output}")
         else:
             sys.stdout.write(report)
@@ -403,7 +414,8 @@ def main(argv: list[object] | None = None) -> int:
             try:
                 _write_report(args.output, report)
             except ValueError as error:
-                parser.error(str(error))
+                _print_error(parser, str(error))
+                return 2
             print(f"Wrote {args.format} rule catalog to {args.output}")
         else:
             sys.stdout.write(report)
@@ -413,14 +425,15 @@ def main(argv: list[object] | None = None) -> int:
         try:
             report, report_has_findings = _batch_render(args.inputs, args.format)
         except ValueError as error:
-            parser.error(str(error))
-            return 1
+            _print_error(parser, str(error))
+            return 2
 
         if args.output:
             try:
                 _write_report(args.output, report)
             except ValueError as error:
-                parser.error(str(error))
+                _print_error(parser, str(error))
+                return 2
             print(f"Wrote batch {args.format} report to {args.output}")
         else:
             sys.stdout.write(report)
@@ -430,14 +443,14 @@ def main(argv: list[object] | None = None) -> int:
         try:
             return _packet_command(args)
         except ValueError as error:
-            parser.error(str(error))
-            return 1
+            _print_error(parser, str(error))
+            return 2
 
     try:
         text = _read_text(args.input)
     except ValueError as error:
-        parser.error(str(error))
-        return 1
+        _print_error(parser, str(error))
+        return 2
 
     source_name = "<stdin>" if args.input == Path("-") else args.input.name
     findings = diagnose(text)
@@ -446,7 +459,8 @@ def main(argv: list[object] | None = None) -> int:
         try:
             _write_report(args.output, report)
         except ValueError as error:
-            parser.error(str(error))
+            _print_error(parser, str(error))
+            return 2
         print(f"Wrote {args.format} report to {args.output}")
     else:
         sys.stdout.write(report)

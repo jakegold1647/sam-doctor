@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator
+
 from sam_doctor import __version__
 from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
 from sam_doctor.diagnostics import (
@@ -676,9 +677,22 @@ def test_batch_command_fails_with_fail_on_findings(tmp_path: Path) -> None:
                 "json",
                 "--fail-on-findings",
             ]
-        )
+    )
         == 1
     )
+
+
+def test_main_returns_exit_code_2_for_usage_and_input_errors(tmp_path: Path) -> None:
+    assert main([]) == 2
+    assert main(["diagnose"]) == 2
+
+    missing = tmp_path / "missing.log"
+    assert main(["diagnose", str(missing)]) == 2
+
+
+def test_main_returns_zero_for_help_request() -> None:
+    assert main(["--help"]) == 0
+    assert main(["batch", "--help"]) == 0
 
 
 def test_batch_command_preserves_path_for_duplicate_filenames(
