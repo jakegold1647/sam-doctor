@@ -1,0 +1,86 @@
+name: "30-day adoption checklist"
+description: Start a structured team rollout for SAM Doctor over 30 days.
+title: "adoption: [team-name]"
+labels: ["documentation", "adoption"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run this issue as a rollout plan when a team starts using SAM Doctor.
+        Keep updates on this thread so every incident and checkpoint is traceable.
+
+  - type: input
+    id: team_or_service
+    attributes:
+      label: Team or service name
+      description: Use the team owner and the primary service/repo this rollout covers.
+      placeholder: "Platform SRE / checkout-service"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: start_immediately
+    attributes:
+      label: Rollout start date
+      description: Check when you plan to start Week 1.
+      options:
+        - "Today"
+        - "Next week"
+        - "Planned (future date)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: target_failures
+    attributes:
+      label: Primary failure families to start with
+      description: Keep this to one to three families.
+      placeholder: "OIDC, rollback noise, InsufficientCapabilities..."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Paste the plan outline from
+        https://github.com/jakegold1647/sam-doctor/blob/main/docs/30-day-adoption-checklist.md
+        and use one checklist item per week.
+
+  - type: textarea
+    id: week1-plan
+    attributes:
+      label: Week 1 plan
+      description: "One-week target: local trust + non-blocking CI in a pilot path."
+      placeholder: "- [ ] Install and run local SAM Doctor\n- [ ] Add non-blocking CI step"
+
+  - type: textarea
+    id: week2-plan
+    attributes:
+      label: Week 2 plan
+      description: "One-week target: team rollout and routing hooks."
+      placeholder: "- [ ] Enable on-call channel\n- [ ] Add has-findings routing"
+
+  - type: textarea
+    id: week3-plan
+    attributes:
+      label: Week 3 plan
+      description: "One-week target: signal hardening and false-positive review."
+      placeholder: "- [ ] Review findings quality\n- [ ] Add any needed rule requests"
+
+  - type: textarea
+    id: week4-plan
+    attributes:
+      label: Week 4 plan
+      description: "One-week target: gating decision and enforcement path."
+      placeholder: "- [ ] Evaluate outcomes\n- [ ] Enable fail-on-findings where stable"
+
+  - type: checkboxes
+    id: metrics
+    attributes:
+      label: Success criteria
+      options:
+        - label: "Incident handoff template is in use for all pilot incidents"
+        - label: "At least 10 incidents reviewed in 30 days"
+        - label: "Failure categories are tracked with one follow-up verification command"
+        - label: "No false-positive runaway; noisy findings reviewed and documented"
+        - label: "Ready for controlled `fail-on-findings: true` where appropriate"
