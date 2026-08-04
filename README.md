@@ -209,6 +209,7 @@ python scripts/check-outreach.py launch/outreach-log-template.csv \
 
 For a combined snapshot, `scripts/check-launch.py` also writes
 `artifacts/outreach-summary.md` with an `ethical_growth_score` and concrete
+
 `next_growth_actions` to guide the next outreach batch.
 
 For the ethical outreach loop, copy `launch/outreach-log-template.csv` into your
@@ -231,6 +232,7 @@ blocking on early warm-up timing.
 
 ## Guides
 
+- [Add SAM Doctor to an existing GitHub Actions deployment](docs/github-actions-integration.md)
 - [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
