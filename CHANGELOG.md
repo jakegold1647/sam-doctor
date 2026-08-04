@@ -4,6 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `scripts/check-pr.py`: one cross-platform command that runs every
+  check a pull request must pass (site metadata, site QA, Ruff, rule-catalog
+  gate, pytest, package build, smoke check), mirroring CI so failures surface
+  locally before a push; `--fast` skips the build and smoke steps.
 - Added `scripts/check-rule-catalog.py`, an objective quality gate for the
   rule catalog (patterns compile, cannot match empty input or ordinary
   successful deploy output, metadata complete); enforced in the test suite so
