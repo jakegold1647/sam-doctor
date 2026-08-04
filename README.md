@@ -77,6 +77,30 @@ If your shell cannot find `sam-doctor` after installation, activate the
 environment where it was installed or use `python -m sam_doctor.cli` in the
 commands below.
 
+## 60-second first response checklist
+
+Use this when a teammate posts an error:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown
+```
+
+If you need a quick signal from pasted text, skip the file step:
+
+```bash
+printf '%s\n' "Your pasted AWS failure excerpt" | sam-doctor diagnose -
+```
+
+Then reply with this pattern:
+
+1. Quote the top finding (or say none supported yet).
+2. Include one safe verification command from the report.
+3. Ask for one follow-up: did that check pass?
+
+If the tool did not match the failure and this was a real production issue, open
+`Report a bad diagnosis` immediately and include a short, sanitized excerpt plus
+the command you ran.
+
 ![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
 
 ## Current free core
