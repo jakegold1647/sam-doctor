@@ -34,14 +34,51 @@ python -m pip install sam-doctor
 sam-doctor demo
 ```
 
-The bundled demo needs no AWS credentials and makes no network calls. To
-diagnose a real deployment log:
+The bundled demo needs no AWS credentials and makes no network calls. It
+prints a real report:
+
+```text
+SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
+
+1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
+   The workflow reached AWS STS but the role trust relationship did not accept
+   the GitHub-issued OIDC token. ...
+   Evidence:
+   - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+   Verify:
+   - Confirm the workflow or job permissions include `id-token: write`.
+   - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
+     equal to `sts.amazonaws.com`.
+   Docs: https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
+```
+
+To diagnose a real deployment log:
 
 ```bash
 sam-doctor diagnose deployment.log
 ```
 
+`pip` installs the latest stable release from PyPI. Other install paths that
+work the same way:
+
+```bash
+pipx install sam-doctor      # isolated global CLI
+uvx sam-doctor demo          # run without installing
+```
+
+To pin the tested release exactly, use `sam-doctor==0.7.7`; to install from
+the tagged source instead:
+
+```bash
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.7"
+```
+
+If your shell cannot find `sam-doctor` after installation, activate the
+environment where it was installed or use `python -m sam_doctor.cli` in the
+commands below.
+
 ![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
+
 ## Current free core
 
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
@@ -58,18 +95,6 @@ sam-doctor diagnose deployment.log
 - Terminal, Markdown, and JSON reports
 - Composite GitHub Action with opt-in redacted job summaries and CI gating
 - Local redaction for account IDs, ARNs, email addresses, and common CI credentials
-
-This installs the latest stable release from PyPI. To pin the tested release
-exactly, run `python -m pip install sam-doctor==0.7.7`. To install from the
-tagged source instead, run:
-
-```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.7"
-```
-
-If your shell cannot find `sam-doctor` after installation, activate the
-environment where it was installed or use `python -m sam_doctor.cli` in the
-commands below.
 
 For more bundled examples, try `sam-doctor demo --scenario cloudformation`,
 `sam-doctor demo --scenario api-gateway`, or `sam-doctor demo --scenario esbuild`.
@@ -152,16 +177,35 @@ It is most useful when you start with the first failure in a deployment log,
 not a later rollback message. When multiple supported patterns appear, SAM
 Doctor presents findings in the order of their first matching log line.
 
-## Example output
+## How it compares
 
-```text
-Likely cause: GitHub Actions cannot assume the configured AWS role through OIDC.
-Confidence: high
-Evidence: Not authorized to perform sts:AssumeRoleWithWebIdentity
-Safe next step: Confirm the workflow grants `id-token: write` and that the
-role trust policy's `sub` condition matches the repository, branch, or GitHub
-Environment that ran the job.
-```
+- **vs. reading the log yourself.** For a failure you have seen before, just
+  read the log. SAM Doctor helps when the useful line is buried under rollback
+  noise, or when the error text (OIDC trust-policy mismatches especially) does
+  not say what to check next. It finds the first supported failure signal and
+  pairs it with the verification steps and the official doc page.
+- **vs. pasting the log into an LLM.** An LLM can reason about failures SAM
+  Doctor has no rule for, and that is sometimes the right call. The trade-offs:
+  you upload the log (deployment logs routinely contain account IDs, ARNs, and
+  role names), the answer varies run to run, and it may be confidently wrong.
+  SAM Doctor is deterministic, runs offline, and redacts by default - and when
+  it has no matching rule, it says so instead of guessing. Using it first and
+  an LLM for the leftovers is a reasonable workflow.
+- **vs. AWS Support.** Support can see your account state; SAM Doctor cannot
+  and does not try. It is the two-minute local check you run before deciding
+  whether a ticket is worth opening, and its redacted report is a safer
+  artifact to paste into one.
+
+## When not to use this
+
+- The failure is in application runtime behavior, not the deployment itself -
+  this reads deployment logs, not CloudWatch application logs.
+- You need account-state inspection (drift, quotas, existing resources). SAM
+  Doctor never calls AWS, by design.
+- Your failure is outside the [supported rules](#supported-signals) - you get
+  an honest "no supported pattern found", not a guess.
+- You want an automatic fix. Every report is a prompt to verify, not a
+  change to apply.
 
 ## Feedback and roadmap
 
