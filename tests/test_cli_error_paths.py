@@ -6,7 +6,6 @@ import io
 from pathlib import Path
 
 import pytest
-
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import rules_report
 
