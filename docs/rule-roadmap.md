@@ -16,9 +16,12 @@ Before starting:
 
 ## How to claim one
 
-Open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
+If an entry links to an existing issue, comment there and ask to be assigned.
+Otherwise, open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 titled `Rule request: <title below>`, mention that it comes from this roadmap,
-and say you would like to be assigned.
+and say you would like to be assigned. Check the
+[open rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
+first so nothing gets duplicated.
 
 ---
 
@@ -101,7 +104,9 @@ environment that runs the deploy.
 
 ## 3. S3 bucket name is already taken globally
 
-**Status:** open for a contributor.
+**Status:** open for a contributor — tracked in
+[issue #20](https://github.com/jakegold1647/sam-doctor/issues/20); comment
+there to claim it rather than opening a new issue.
 
 **Failure family.** A stack creates an `AWS::S3::Bucket` with an explicit
 `BucketName` that another AWS account already owns; bucket names are globally
