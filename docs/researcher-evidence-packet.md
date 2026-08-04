@@ -6,6 +6,9 @@ research discussion.
 ## 1) Capture a reproducible packet
 
 ```bash
+sam-doctor packet deployment.log
+
+# If working in a repo checkout:
 python scripts/export-evidence-packet.py deployment.log
 ```
 

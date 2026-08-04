@@ -7,6 +7,7 @@ import glob
 import json
 from html import escape
 from importlib.resources import files
+from datetime import datetime, timezone
 import sys
 from pathlib import Path
 
@@ -77,6 +78,41 @@ def _build_parser() -> argparse.ArgumentParser:
     rules_parser = subcommands.add_parser("rules", help="List the currently supported diagnostic rules.")
     rules_parser.add_argument("--format", choices=("terminal", "json"), default="terminal")
     rules_parser.add_argument("--output", type=Path, help="Write the rule catalog to this path instead of stdout.")
+
+    packet_parser = subcommands.add_parser(
+        "packet",
+        help="Generate a reproducible evidence packet (markdown/json + notes).",
+    )
+    packet_parser.add_argument(
+        "input",
+        type=str,
+        help="Path to a UTF-8 text log, or - to read the log from stdin.",
+    )
+    packet_parser.add_argument(
+        "--output-dir",
+        default="artifacts",
+        help="Directory for generated packet files.",
+    )
+    packet_parser.add_argument(
+        "--markdown-name",
+        default="diagnosis.md",
+        help="Markdown report filename.",
+    )
+    packet_parser.add_argument(
+        "--json-name",
+        default="diagnosis.json",
+        help="JSON report filename.",
+    )
+    packet_parser.add_argument(
+        "--notes-name",
+        default="researcher-notes.md",
+        help="Template notes filename.",
+    )
+    packet_parser.add_argument(
+        "--scenario",
+        default="Deployment failure triage",
+        help="Short scenario label to include in the notes file.",
+    )
 
     batch_parser = subcommands.add_parser("batch", help="Analyze multiple logs in one run.")
     batch_parser.add_argument(
@@ -254,6 +290,92 @@ def _write_report(path: Path, report: str) -> None:
         raise ValueError(f"Could not write {path}: {error}") from error
 
 
+def _write_packet_notes(
+    notes_path: Path,
+    scenario: str,
+    markdown_path: Path,
+    json_path: Path,
+    command: str,
+    json_payload: dict[str, object],
+    source: str,
+) -> None:
+    findings = json_payload.get("findings", [])
+    finding_count = json_payload.get("finding_count", 0)
+    top_finding = "No finding payload parsed"
+    if findings:
+        first_finding = findings[0]
+        top_finding = first_finding.get("title", first_finding.get("explanation", top_finding))  # type: ignore[union-attr]
+
+    _write_report(
+        notes_path,
+        "\n".join(
+            [
+                "# Researcher evidence packet",
+                f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+                f"- Scenario: {scenario}",
+                f"- Source: {source}",
+                f"- Command: {command}",
+                f"- Markdown report: {markdown_path.name}",
+                f"- JSON report: {json_path.name}",
+                f"- Finding count: {finding_count}",
+                f"- Top finding: {top_finding}",
+                "",
+                "Use only the packet files to discuss this case; do not share full raw logs.",
+            ]
+        )
+        + "\n",
+    )
+
+
+def _packet_command(args: argparse.Namespace) -> int:
+    output_dir = Path(args.output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.input == "-":
+        stdin_text = sys.stdin.read()
+        if not stdin_text:
+            raise ValueError("stdin input was empty; provide an error excerpt.")
+        source_name = "<stdin>"
+        findings = diagnose(stdin_text)
+    else:
+        source_path = Path(args.input)
+        source_name = str(source_path)
+        text = _read_text(source_path)
+        findings = diagnose(text)
+
+    markdown_path = output_dir / args.markdown_name
+    json_path = output_dir / args.json_name
+    notes_path = output_dir / args.notes_name
+
+    _write_report(markdown_path, _render_findings(findings, source_name, "markdown"))
+    json_report = _render_findings(findings, source_name, "json")
+    _write_report(json_path, json_report)
+
+    command = (
+        f"sam-doctor packet {source_name} "
+        f"--markdown-name {args.markdown_name} "
+        f"--json-name {args.json_name} "
+        f"--notes-name {args.notes_name} "
+        f"--scenario \"{args.scenario}\""
+    )
+    payload = json.loads(json_report)
+    _write_packet_notes(
+        notes_path,
+        args.scenario,
+        markdown_path,
+        json_path,
+        command,
+        payload,
+        source_name,
+    )
+
+    print("Evidence packet generated:")
+    print(f"- {markdown_path}")
+    print(f"- {json_path}")
+    print(f"- {notes_path}")
+    return 0
+
+
 def main(argv: list[object] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args([str(arg) for arg in argv] if argv is not None else None)
@@ -298,6 +420,13 @@ def main(argv: list[object] | None = None) -> int:
         else:
             sys.stdout.write(report)
         return 1 if args.fail_on_findings and report_has_findings else 0
+
+    if args.command == "packet":
+        try:
+            return _packet_command(args)
+        except ValueError as error:
+            parser.error(str(error))
+            return 1
 
     try:
         text = _read_text(args.input)

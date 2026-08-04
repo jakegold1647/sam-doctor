@@ -354,7 +354,7 @@ not security, legal, or production-operations advice.
 For reproducible, repeatable collaboration:
 
 ```bash
-python scripts/export-evidence-packet.py deployment.log
+sam-doctor packet deployment.log
 ```
 
 Then share only a minimal sanitized packet (commands, key context, and outputs)
