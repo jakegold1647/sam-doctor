@@ -182,6 +182,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "PythonPipBuilder:ResolveDependencies - Binary validation failed: failed to build wheel for cryptography",
             "python dependency build validation failed",
         ),
+        (
+            "Error: PythonPipBuilder:ResolveDependencies - {pip_failure_reason: ERROR: Could not find a version that satisfies the requirement pydantic-core==2.18.4 (from versions: none)}",
+            "python dependency resolution failed",
+        ),
+        (
+            "Error: PythonPipBuilder:Validation - Binary validation failed for python, searched for python in following locations: ['/usr/local/bin/python3'] which did not satisfy constraints for runtime: python3.12 on your PATH?",
+            "runtime binary is incompatible",
+        ),
         ("Deploy this changeset? [y/N]:", "interactive changeset confirmation"),
         (
             "AWS::CloudFormation::Stack ROLLBACK_FAILED ... The following resource(s) failed to delete: [IAMRoleDeployment]",
@@ -342,16 +350,16 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
             "Error: Failed to create changeset for the stack sam-app: An error occurred (ExpiredToken) when calling the CreateChangeSet operation: The security token included in the request is expired",
             "credentials used by the deployment have expired",
         ),
-        (
-            "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
-            "throttled the deployment",
+            (
+                "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
+                "throttled the deployment",
+            ),
+            (
+                "Error: Failed to create changeset for the stack sam-app: PythonPipBuilder:ResolveDependencies - Binary validation failed: Python executable not found",
+                "runtime binary is incompatible",
+            ),
         ),
-        (
-            "Error: Failed to create changeset for the stack sam-app: PythonPipBuilder:ResolveDependencies - Binary validation failed: Python executable not found",
-            "python dependency build validation failed",
-        ),
-    ),
-)
+    )
 def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment: str) -> None:
     findings = diagnose(log)
 

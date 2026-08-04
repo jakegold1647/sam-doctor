@@ -554,16 +554,61 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-typescript.html",
     ),
     Rule(
-        title="SAM Python dependency build validation failed",
+        title="SAM Python dependency resolution failed",
         confidence="high",
         patterns=(
             r"PythonPipBuilder:ResolveDependencies",
+            r"Could not find a version that satisfies the requirement",
+        ),
+        explanation=(
+            "SAM could not resolve one or more Python dependencies during "
+            "build. The failure usually comes from a pinned package/version that "
+            "is not available for the build environment."
+        ),
+        verification=(
+            "Check the package and pin in the function dependency file and confirm "
+            "it is available for the target architecture and Python version.",
+            "Reproduce with a local `pip install` using the same build-time Python "
+            "version to confirm the missing/invalid requirement.",
+            "Align constraints with a build-compatible version or wheel source and retry.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+        suppressed_by=(r"Binary validation failed",),
+    ),
+    Rule(
+        title="SAM Python runtime binary is incompatible with the build runtime",
+        confidence="high",
+        patterns=(
+            r"PythonPipBuilder:Validation - Binary validation failed for python",
+            r"Python executable.*not found",
+            r"Your build environment.*runtime.*python",
+            r"The runtime python[0-9.]+ binary was not found",
+            r"Do you have python for runtime",
+        ),
+        explanation=(
+            "SAM reached Python binary validation and confirmed the builder did not "
+            "have a matching interpreter for the SAM function runtime."
+        ),
+        verification=(
+            "Compare the function runtime in the template (for example `python3.12`) "
+            "to the local/interpreter runtime used by the build.",
+            "Use a matching SAM build image or pinned runtime image that provides the "
+            "required Python binary.",
+            "If using native extensions, prefer `sam build --use-container` with a "
+            "container that matches the SAM runtime.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+    ),
+    Rule(
+        title="SAM Python dependency build validation failed",
+        confidence="high",
+        patterns=(
             r"Binary validation failed",
         ),
         explanation=(
-            "SAM reached the Python dependency builder, but dependency installation/validation "
-            "failed. Common causes include Python/runtime mismatch, missing system libraries, "
-            "or binary wheels incompatible with the build environment."
+            "SAM reached the Python dependency validation path and failed before a "
+            "build artifact was produced. Keep the fix specific to the highest-confidence "
+            "scenario in the failure output."
         ),
         verification=(
             "Compare the Python runtime in the build environment with the runtime declared in the SAM template.",
@@ -571,6 +616,11 @@ _RULES = (
             "Use lockfile-pinned dependencies and compatible wheels, then retry with a clean build environment.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+        suppressed_by=(
+            r"PythonPipBuilder:Validation - Binary validation failed",
+            r"Python executable.*not found",
+            r"Could not find a version that satisfies the requirement",
+        ),
     ),
     Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
