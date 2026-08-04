@@ -69,7 +69,7 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     output = output_path.read_text(encoding="utf-8")
     assert "finding-count=1\n" in output
     assert "has-findings=true\n" in output
-    assert "sam-doctor-version=0.7.7\n" in output
+    assert "sam-doctor-version=0.8.0\n" in output
 
 
 def test_action_wrapper_can_disable_notices(tmp_path: Path):
@@ -113,7 +113,7 @@ def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
     output = output_path.read_text(encoding="utf-8")
     assert "finding-count=1\n" in output
     assert "has-findings=true\n" in output
-    assert "sam-doctor-version=0.7.7\n" in output
+    assert "sam-doctor-version=0.8.0\n" in output
 
 
 def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
@@ -148,6 +148,6 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     assert "SAM_DOCTOR_BATCH" not in result.stderr
     assert "finding-count=1" in output_path.read_text(encoding="utf-8")
     assert "has-findings=true" in output_path.read_text(encoding="utf-8")
-    assert "sam-doctor-version=0.7.7" in output_path.read_text(encoding="utf-8")
+    assert "sam-doctor-version=0.8.0" in output_path.read_text(encoding="utf-8")
     assert "::notice file=" in result.stdout
     assert "GitHub Actions cannot assume" in result.stdout

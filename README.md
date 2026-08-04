@@ -29,7 +29,7 @@ authoritative root cause. It detects known patterns in the text you provide,
 redacts common identifiers, and gives safe verification steps and the relevant
 official documentation.
 
-Current release: **v0.7.7**.
+Current release: **v0.8.0**.
 
 ## Contributing
 
@@ -414,11 +414,11 @@ pipx install sam-doctor      # isolated global CLI
 uvx sam-doctor demo          # run without installing
 ```
 
-To pin the tested release exactly, use `sam-doctor==0.7.7`; to install from
+To pin the tested release exactly, use `sam-doctor==0.8.0`; to install from
 the tagged source instead:
 
 ```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.7"
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.8.0"
 ```
 
 If your shell cannot find `sam-doctor` after installation, activate the

@@ -2,7 +2,7 @@
 
 All notable changes to SAM Doctor are documented here.
 
-## Unreleased
+## v0.8.0 - 2026-08-04
 
 - Added a rule for Lambda per-function package size limits (`Unzipped size
   must be smaller than`, `Request must be smaller than ... bytes`), kept
