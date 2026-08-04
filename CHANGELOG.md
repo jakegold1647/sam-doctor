@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added two advanced diagnostics: resource stabilization failures
+  (`did not stabilize`, `HandlerErrorCode: NotStabilized`, `Exceeded attempts
+  to wait`) that surface the nested handler status reason first and route
+  guidance for slow-by-design resource families (ACM, CloudFront, RDS, custom
+  resources), and in-use stack exports (`Export ... cannot be updated/deleted
+  as it is in use by`) with the `list-imports` staged-migration path and an
+  explicit warning against deleting consumer stacks as a shortcut. Both
+  suppress the generic CREATE/UPDATE/DELETE_FAILED findings for their logs.
+  Catalog is now 36 rules.
 - Split IAM access denials into two new high-confidence diagnostics with
   parsed denial context: an explicit-deny rule (including service control
   policies, which cannot be fixed from the member account) and an

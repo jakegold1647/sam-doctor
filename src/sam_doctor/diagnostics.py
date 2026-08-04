@@ -49,6 +49,12 @@ class Rule:
     # principal and resource were named, and which policy layer the error
     # wording attributes the denial to.
     parse_denial_context: bool = False
+    # When set, the finding's explanation is prefixed with the nested status
+    # reason parsed from the (already redacted) evidence: the quoted resource
+    # handler message and the resource type, when the log includes them. The
+    # nested reason leads because it names the actual failure; the
+    # stabilization wording around it is only the wrapper.
+    parse_stabilization_context: bool = False
 
 
 # The action name (e.g. `iam:CreateRole`) is service metadata, not an account
@@ -98,6 +104,58 @@ def _denial_context_note(evidence: tuple[str, ...]) -> str:
             layer = implicit.group(1).strip()
             parts.append(f"an implicit deny: no {layer} policy allows it")
         return "Denial context parsed from the evidence: " + "; ".join(parts) + "."
+    return ""
+
+
+_HANDLER_MESSAGE = re.compile(r'Resource handler returned message:\s*"([^"]+)"', re.IGNORECASE)
+_RESOURCE_TYPE = re.compile(r"\b((?:AWS|Custom)::[A-Za-z0-9]+(?:::[A-Za-z0-9]+)?)\b")
+
+# Resource families with a known slow or externally-gated stabilization path.
+# The note routes to the family-specific check; anything else gets the generic
+# guidance in the rule's verification steps.
+_SLOW_RESOURCE_HINTS = (
+    (
+        "AWS::CertificateManager::",
+        "ACM certificates stay pending until their DNS or email validation completes",
+    ),
+    (
+        "AWS::CloudFront::",
+        "CloudFront distributions propagate globally and routinely take tens of minutes",
+    ),
+    ("AWS::RDS::", "RDS instances and clusters have long provisioning windows"),
+    (
+        "Custom::",
+        (
+            "a custom resource stabilizes only when its handler signals completion, "
+            "so check the handler function's own logs"
+        ),
+    ),
+)
+
+
+def _stabilization_context_note(evidence: tuple[str, ...]) -> str:
+    """Surface the nested status reason from redacted evidence, or an empty string."""
+
+    for line in evidence:
+        message_match = _HANDLER_MESSAGE.search(line)
+        type_match = _RESOURCE_TYPE.search(line)
+        if not (message_match or type_match):
+            continue
+        parts = []
+        if message_match:
+            parts.append(
+                "the service handler reported: "
+                f'"{message_match.group(1).strip()}" - inspect that reason before '
+                "the stabilization timeout itself"
+            )
+        if type_match:
+            resource_type = type_match.group(1)
+            parts.append(f"resource type `{resource_type}`")
+            for prefix, hint in _SLOW_RESOURCE_HINTS:
+                if resource_type.startswith(prefix):
+                    parts.append(hint)
+                    break
+        return "Underlying status reason parsed from the evidence: " + "; ".join(parts) + "."
     return ""
 
 
@@ -488,6 +546,31 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-apigateway-deployment.html",
     ),
     Rule(
+        title="A resource was accepted by its service but never reached a stable state",
+        confidence="high",
+        patterns=(
+            r"did not stabilize",
+            r"HandlerErrorCode:\s*NotStabilized",
+            r"Exceeded attempts to wait",
+        ),
+        explanation=(
+            "The service accepted CloudFormation's create or update call, but the "
+            "resource never reached its steady state within the wait window, so "
+            "CloudFormation gave up and failed the operation. The stabilization "
+            "wording is only the wrapper: the real cause is the nested status "
+            "reason from the service handler when the log includes one, a "
+            "resource that is genuinely slow to provision, or a handler that "
+            "never signals completion."
+        ),
+        verification=(
+            "Find the quoted message inside `Resource handler returned message` (or the resource's own event in the service console) and treat that nested reason as the failure to fix; only fall back to the guidance below when there is none.",
+            "For slow-by-design resources - ACM certificates waiting on DNS validation, CloudFront distributions, RDS instances - confirm the external dependency (validation records, quotas) and retry; the same template often succeeds once the dependency clears.",
+            "For custom resources and third-party handlers, check the handler function's own logs for the invocation: a handler that crashed or never sent its response leaves CloudFormation waiting until the timeout.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
+        parse_stabilization_context=True,
+    ),
+    Rule(
         title="CloudFormation resource creation or update failed",
         confidence="high",
         patterns=(r"\bCREATE_FAILED\b", r"\bUPDATE_FAILED\b"),
@@ -510,6 +593,10 @@ _RULES = (
             r"The specified bucket is not valid",
             r"(?s:access has been denied by S3.*permission.*GetObject)",
             r"The REST API does(?:n't| not) contain any methods",
+            r"did not stabilize",
+            r"HandlerErrorCode:\s*NotStabilized",
+            r"Exceeded attempts to wait",
+            r"cannot be (?:updated|deleted) as it is in use by",
         ),
     ),
     Rule(
@@ -614,12 +701,36 @@ _RULES = (
             "If a resource should survive the stack, retry with `aws cloudformation delete-stack --retain-resources` for that logical ID after the blocker is understood.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
-        # A role deletion blocker keeps its dedicated, more actionable finding.
+        # A role deletion blocker keeps its dedicated, more actionable finding,
+        # and an in-use export refusal is a dependency safeguard with its own
+        # migration path rather than a resource-deletion failure.
         suppressed_by=(
             r"The following resource\(s\) failed to delete:.*Role\b",
             r"failed to delete.*IAM Role",
             r"Unable to delete.*AWS::IAM::Role",
+            r"cannot be (?:updated|deleted) as it is in use by",
         ),
+    ),
+    Rule(
+        title="A stack export cannot change while another stack imports it",
+        confidence="high",
+        patterns=(
+            r"Export\s+\S+\s+cannot be (?:updated|deleted) as it is in use by",
+            r"Cannot (?:update|delete) (?:an )?export\s+\S+\s+as it is in use",
+        ),
+        explanation=(
+            "CloudFormation refused to change or remove an exported output "
+            "because at least one other stack imports it with `Fn::ImportValue`. "
+            "This is a dependency safeguard, not a failure in the exporting "
+            "stack: consumers pin the export's name and value until they stop "
+            "importing it."
+        ),
+        verification=(
+            "List every consumer with `aws cloudformation list-imports --export-name <name>` and record which stacks pin the export.",
+            "Migrate in stages: add a new export alongside the old one, update each consumer stack to import the new name, then remove the old export once `list-imports` shows no consumers.",
+            "Do not delete or force-update the consumer stacks as a shortcut - they are load-bearing for whoever owns them; coordinate the migration with those owners instead.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html",
     ),
     Rule(
         title="CloudFormation needs an explicit capability acknowledgement",
@@ -931,6 +1042,12 @@ def diagnose(text: str) -> list[Finding]:
             note = _denial_context_note(evidence)
             if note:
                 explanation = f"{explanation}\n\n{note}"
+        if rule.parse_stabilization_context:
+            note = _stabilization_context_note(evidence)
+            if note:
+                # The nested reason leads: it names the actual failure, and the
+                # generic stabilization explanation is only the wrapper.
+                explanation = f"{note}\n\n{explanation}"
         matched_findings.append(
             (
                 line_matches[0][0],

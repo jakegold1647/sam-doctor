@@ -1107,3 +1107,77 @@ def test_ecr_auth_denial_does_not_fire_the_new_denial_rules() -> None:
     assert "A deployment action was denied because no policy allows it" not in titles
     assert "An explicit deny blocked a deployment action" not in titles
 
+
+def test_not_stabilized_surfaces_the_nested_handler_reason_first() -> None:
+    log = (
+        "MyDistribution CREATE_FAILED AWS::CloudFront::Distribution "
+        'Resource handler returned message: "Resource of type '
+        "'AWS::CloudFront::Distribution' did not stabilize.\" "
+        "(RequestToken: 3f1a2b, HandlerErrorCode: NotStabilized)"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["A resource was accepted by its service but never reached a stable state"]
+    explanation = findings[0].explanation
+    assert explanation.startswith("Underlying status reason parsed from the evidence")
+    assert "did not stabilize" in explanation
+    assert "`AWS::CloudFront::Distribution`" in explanation
+    assert "propagate globally" in explanation
+
+
+def test_exceeded_wait_attempts_without_handler_message_reports_generic_guidance() -> None:
+    log = "MyPeering CREATE_FAILED Exceeded attempts to wait"
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["A resource was accepted by its service but never reached a stable state"]
+    assert not findings[0].explanation.startswith("Underlying status reason")
+
+
+def test_not_stabilized_with_nested_denial_reports_both_denial_first() -> None:
+    log = (
+        "MyResource CREATE_FAILED Custom::Provisioner "
+        'Resource handler returned message: "User: '
+        "arn:aws:iam::123456789012:user/deploy is not authorized to perform: "
+        'iam:CreateRole with an explicit deny" '
+        "(HandlerErrorCode: NotStabilized)"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == [
+        "An explicit deny blocked a deployment action",
+        "A resource was accepted by its service but never reached a stable state",
+    ]
+    assert all("123456789012" not in evidence for finding in findings for evidence in finding.evidence)
+
+
+def test_export_in_use_reports_the_staged_migration_not_the_delete_failure() -> None:
+    log = (
+        "MyStack DELETE_FAILED "
+        "Export shared-vpc-id cannot be deleted as it is in use by consumer-service-prod"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["A stack export cannot change while another stack imports it"]
+    steps = " ".join(findings[0].verification)
+    assert "list-imports" in steps
+    assert "Do not delete or force-update the consumer stacks" in steps
+
+
+def test_export_update_refusal_suppresses_the_generic_update_failure() -> None:
+    log = (
+        "MyStack UPDATE_FAILED "
+        "Export api-endpoint cannot be updated as it is in use by web-frontend"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert titles == ["A stack export cannot change while another stack imports it"]
+
