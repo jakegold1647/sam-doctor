@@ -117,6 +117,25 @@
         </ul>
       </section>
 
+      <section class="steps" aria-labelledby="use-case-title">
+        <p class="eyebrow">Use case</p>
+        <h2 id="use-case-title">Fix a blocked OIDC deploy in under 90 seconds.</h2>
+        <p class="muted">
+          Your teammate reports a blocked deployment with this line:
+        </p>
+        <p><code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code></p>
+        <p>
+          Run one command on the pasted log or file:
+        </p>
+        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
+        <p class="muted">SAM Doctor returns a ranked, redacted finding with the first safe follow-up command and source docs.</p>
+        <ul>
+          <li>Confirm the workflow includes <code>id-token: write</code>.</li>
+          <li>Validate the role trust audience and subject matching the expected token claim.</li>
+          <li>Re-run deploy only after the trust policy check passes.</li>
+        </ul>
+      </section>
+
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
         <h2 id="install-title">Install v0.7.7 in one command.</h2>

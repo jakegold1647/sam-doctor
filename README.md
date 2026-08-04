@@ -69,6 +69,37 @@ SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
    Docs: https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
 ```
 
+## Use-case: fix a blocked deployment in one pass
+
+Use this exact flow when a teammate shares an OIDC error in CI:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown
+```
+
+If the failure text matches the expected pattern, the report starts with a short
+actionable finding and the one safe check to run first:
+
+```text
+SAM Doctor found 1 possible issue(s) in deployment.log.
+
+1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
+   Matched on line: 3
+   Evidence:
+   - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+   Verify:
+   - Confirm the workflow or job permissions include `id-token: write`.
+   - Confirm the role trust policy includes subject and audience conditions that match
+     GitHub's OIDC token.
+```
+
+This is built for team handoffs: teammate sends the sanitized excerpt, you run one
+diagnosis, then share one verification command before changing IAM or deploy
+configuration.
+
+If the error is real, this usually shortens the back-and-forth from “who changed
+what?” to “check this trust-policy field” in the same thread.
+
 To diagnose a real deployment log:
 
 ```bash
