@@ -63,3 +63,8 @@ sam_doctor = ["data/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+# Keep in sync with requires-python: stops lint from suggesting APIs
+# (e.g. datetime.UTC) that do not exist on the oldest supported Python.
+target-version = "py310"
