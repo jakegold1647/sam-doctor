@@ -4,18 +4,22 @@ inputs:
   log-file:
     description: Path to the deployment log to diagnose.
     required: true
+    type: string
   summary:
     description: Add the redacted Markdown report to the GitHub Actions job summary.
     required: false
-    default: "false"
+    type: boolean
+    default: false
   annotations:
     description: Add a redacted GitHub Actions notice for the first supported finding.
     required: false
-    default: "true"
+    type: boolean
+    default: true
   fail-on-findings:
     description: Fail the action when one or more supported findings are detected.
     required: false
-    default: "false"
+    type: boolean
+    default: false
 outputs:
   finding-count:
     description: Number of supported findings in the supplied log.

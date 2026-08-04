@@ -29,10 +29,14 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
   uses: jakegold1647/sam-doctor@v0.7.7
   with:
     log-file: deployment.log
-    summary: "true"
+    summary: true
 ```
 
 The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds one redacted GitHub Actions notice for the first finding, so the likely cause is visible in the run UI. Set `annotations: "false"` if your workflow should not create that notice. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
+
+You can copy the full starter workflow from
+`examples/github-actions-workflow.yml` and adjust your deploy command and
+permissions.
 
 ## Optional: make recognized failures fail the job
 
@@ -41,7 +45,7 @@ Start by observing the diagnostics. When the rule set matches the failures you c
 ```yaml
 with:
   log-file: deployment.log
-  summary: "true"
+  summary: true
   fail-on-findings: "true"
 ```
 

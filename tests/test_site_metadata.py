@@ -30,8 +30,12 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
 def test_action_examples_show_opt_in_failure_gate() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    starter = ROOT / "examples" / "github-actions-workflow.yml"
 
-    assert 'fail-on-findings: "true"' in readme
-    assert 'fail-on-findings: "true"' in site
+    assert "fail-on-findings: true" in readme
+    assert "fail-on-findings: true" in site
     assert "--fail-on-findings" in readme
     assert "--fail-on-findings" in site
+    assert "examples/github-actions-workflow.yml" in readme
+    assert "sam-doctor GitHub Actions starter" in site
+    assert starter.exists()

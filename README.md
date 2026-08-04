@@ -198,18 +198,27 @@ Use the included action when a workflow already saves a deployment log:
   uses: jakegold1647/sam-doctor@v0.7.7
   with:
     log-file: deployment.log
-    summary: "true"
+    summary: true
     # Uncomment to fail this job when a supported finding is detected.
-    # fail-on-findings: "true"
+    # fail-on-findings: true
+```
+
+Use this ready-to-copy starter workflow as your starting point:
+
+```bash
+curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
 ```
 
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set
-`fail-on-findings: "true"` only when you want a supported diagnostic to fail
+`fail-on-findings: true` only when you want a supported diagnostic to fail
 the job; the commented line above shows the opt-in placement. The Markdown job
 summary is opt-in and contains only matched, redacted
 evidence; review it before sharing a workflow run outside your team. The action also adds one redacted GitHub Actions notice for the first finding by default; set `annotations: "false"` to disable it.
+
+You can also adapt the full example from
+[`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml).
 
 ## What a report includes
 

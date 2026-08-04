@@ -160,15 +160,19 @@
   uses: jakegold1647/sam-doctor@v0.7.7
   with:
     log-file: deployment.log
-    summary: "true"
-    # fail-on-findings: "true"</code></pre>
+    summary: true
+    # fail-on-findings: true</code></pre>
         <p>
           Put the action after the command that writes the log and keep
           <code>if: always()</code>, or GitHub skips it when deployment fails.
           It exposes <code>finding-count</code> and <code>has-findings</code> outputs;
           job summaries and failure gating are opt-in. Uncomment
-          <code>fail-on-findings: "true"</code> when a supported diagnosis should
+          <code>fail-on-findings: true</code> when a supported diagnosis should
           fail the job.
+        </p>
+        <p>
+          Download the same starter as a base workflow:
+          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml">sam-doctor GitHub Actions starter</a>.
         </p>
         <p>
           For shell-based CI, run
