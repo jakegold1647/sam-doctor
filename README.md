@@ -218,6 +218,10 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
 - **CloudFormation package/deploy commandline**
   - Start with [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
 
+You can also use the examples index to track what you changed:
+
+[`examples/README.md`](examples/README.md)
+
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set

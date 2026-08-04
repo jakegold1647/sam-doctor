@@ -43,6 +43,10 @@ If your stack uses different deployment flow, start from one of these:
 - `examples/github-actions-workflow-sam-sync.yml` for `sam sync`
 - `examples/github-actions-workflow-cf-pipeline.yml` for `aws cloudformation deploy`
 
+Keep a short per-repo checklist in
+[`examples/README.md`](../examples/README.md)
+while you validate these templates in your CI.
+
 ## Optional: make recognized failures fail the job
 
 Start by observing the diagnostics. When the rule set matches the failures you care about, opt into a diagnostic gate:

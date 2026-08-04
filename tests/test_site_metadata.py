@@ -44,8 +44,30 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "sam-doctor GitHub Actions starter" in site
     assert "github-actions-workflow-sam-sync.yml" in readme
     assert "github-actions-workflow-cf-pipeline.yml" in readme
+    assert "examples/README.md" in readme
     assert "github-actions-workflow-sam-sync.yml" in site
     assert "github-actions-workflow-cf-pipeline.yml" in site
+    assert "examples/README.md" in site
     assert starter.exists()
+    assert starter_sync.exists()
+    assert starter_cf.exists()
+
+
+def test_examples_index_and_starters_are_documented() -> None:
+    examples_readme = ROOT / "examples" / "README.md"
+    starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
+    starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
+    starter_default = ROOT / "examples" / "github-actions-workflow.yml"
+
+    assert examples_readme.exists()
+    contents = examples_readme.read_text(encoding="utf-8")
+    for name in [
+        "github-actions-workflow.yml",
+        "github-actions-workflow-sam-sync.yml",
+        "github-actions-workflow-cf-pipeline.yml",
+    ]:
+        assert name in contents
+
+    assert starter_default.exists()
     assert starter_sync.exists()
     assert starter_cf.exists()
