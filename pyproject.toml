@@ -10,21 +10,42 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{name = "Jacob Goldstein"}]
-keywords = ["aws", "cloudformation", "github-actions", "iam", "sam", "serverless"]
+keywords = [
+    "aws",
+    "cloudformation",
+    "github-actions",
+    "iam",
+    "sam",
+    "serverless",
+    "lambda",
+    "oidc",
+    "deployment",
+    "diagnostics",
+    "troubleshooting",
+    "ci",
+    "devops",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
 ]
 
 [project.urls]
 Homepage = "https://jakegold1647.github.io/sam-doctor/"
 Repository = "https://github.com/jakegold1647/sam-doctor"
+Documentation = "https://github.com/jakegold1647/sam-doctor/tree/main/docs"
 Issues = "https://github.com/jakegold1647/sam-doctor/issues"
 Changelog = "https://github.com/jakegold1647/sam-doctor/blob/main/CHANGELOG.md"
 
