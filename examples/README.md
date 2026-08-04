@@ -16,6 +16,12 @@ Use these templates to onboard quickly.
   - Works for direct `aws cloudformation deploy` invocations.
   - Replace template path, stack name, and capabilities.
 
+## AWS CDK Actions starter
+
+- `github-actions-workflow-cdk.yml`
+  - Works for `cdk deploy` command flows.
+  - Keep `2>&1 | tee deployment.log` on the deploy step and replace `--all --require-approval never` with your team's command.
+
 ## GitHub Actions batch logs
 
 - `github-actions-workflow-batch-logs.yml`

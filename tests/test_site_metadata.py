@@ -57,6 +57,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     starter = ROOT / "examples" / "github-actions-workflow.yml"
     starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
+    starter_cdk = ROOT / "examples" / "github-actions-workflow-cdk.yml"
     starter_gitlab = ROOT / "examples" / "gitlab-ci-sam-doctor.yml"
     starter_circle = ROOT / "examples" / "circleci-sam-doctor.yml"
     starter_azure = ROOT / "examples" / "azure-pipelines-sam-doctor.yml"
@@ -69,6 +70,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "examples/github-actions-workflow.yml" in readme
     assert "sam-doctor GitHub Actions starter" in site
     assert "github-actions-workflow-sam-sync.yml" in readme
+    assert "github-actions-workflow-cdk.yml" in readme
     assert "github-actions-workflow-cf-pipeline.yml" in readme
     assert "gitlab-ci-sam-doctor.yml" in readme
     assert "circleci-sam-doctor.yml" in readme
@@ -83,6 +85,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "sam sync" in matrix_doc
     assert "examples/README.md" in readme
     assert "github-actions-workflow-sam-sync.yml" in site
+    assert "github-actions-workflow-cdk.yml" in site
     assert "github-actions-workflow-cf-pipeline.yml" in site
     assert "gitlab-ci-sam-doctor.yml" in site
     assert "circleci-sam-doctor.yml" in site
@@ -92,6 +95,7 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert starter.exists()
     assert starter_sync.exists()
     assert starter_cf.exists()
+    assert starter_cdk.exists()
     assert starter_gitlab.exists()
     assert starter_circle.exists()
     assert starter_azure.exists()
@@ -110,6 +114,7 @@ def test_examples_index_and_starters_are_documented() -> None:
         "github-actions-workflow.yml",
         "github-actions-workflow-sam-sync.yml",
         "github-actions-workflow-cf-pipeline.yml",
+        "github-actions-workflow-cdk.yml",
         "gitlab-ci-sam-doctor.yml",
         "circleci-sam-doctor.yml",
         "azure-pipelines-sam-doctor.yml",
@@ -121,6 +126,7 @@ def test_examples_index_and_starters_are_documented() -> None:
     assert starter_default.exists()
     assert starter_sync.exists()
     assert starter_cf.exists()
+    assert (ROOT / "examples" / "github-actions-workflow-cdk.yml").exists()
     assert (ROOT / "examples" / "gitlab-ci-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "circleci-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "azure-pipelines-sam-doctor.yml").exists()

@@ -569,6 +569,8 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
   - Start with [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
 - **CloudFormation package/deploy commandline**
   - Start with [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
+- **AWS CDK deploy command**
+  - Start with [`examples/github-actions-workflow-cdk.yml`](examples/github-actions-workflow-cdk.yml)
 - **Batched deploy logs in one pipeline run**
   - Start with [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
