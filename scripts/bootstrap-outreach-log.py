@@ -41,7 +41,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "path",
         nargs="?",
-        default="launch/outreach-log-template.csv",
+        default="notes/sam-doctor-outreach-log.csv",
         help="Path for the outreach tracker CSV.",
     )
     return parser.parse_args(argv)

@@ -335,7 +335,7 @@ def main() -> int:
     parser.add_argument(
         "path",
         nargs="?",
-        default="launch/outreach-log-template.csv",
+        default="notes/sam-doctor-outreach-log.csv",
         help="Path to the local outreach CSV (kept outside commit history).",
     )
     parser.add_argument(

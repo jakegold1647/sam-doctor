@@ -246,7 +246,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--outreach-log",
-        default="launch/outreach-log-template.csv",
+        default="notes/sam-doctor-outreach-log.csv",
         help="Outreach log CSV for ethical check (keep this file in working tree only; it's ignored).",
     )
     parser.add_argument(

@@ -21,14 +21,14 @@ For a quick machine-check before tag push, run:
 ```powershell
 python scripts/check-launch.py --skip-outreach
 python scripts/check-launch.py --skip-distribution \
-  --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md \
+  --outreach-log notes/sam-doctor-outreach-log.csv \
+  --outreach-summary notes\\sam-doctor-outreach-summary.md \
   --strict-ethical --min-feedback-ratio 100
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
-  --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md
+  --outreach-log notes/sam-doctor-outreach-log.csv \
+  --outreach-summary notes\\sam-doctor-outreach-summary.md
 ```
 
 ## 2. Publish the public tool
@@ -89,6 +89,6 @@ Three $39 founder purchases from people who are not friends or family. Record th
 Use `--outreach-log` to point to your local outreach file:
 
 ```powershell
-python scripts/bootstrap-outreach-log.py launch/outreach-log-template.csv
-python scripts/check-launch.py --skip-distribution --outreach-log launch/outreach-log-template.csv --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md
+python scripts/bootstrap-outreach-log.py notes/sam-doctor-outreach-log.csv
+python scripts/check-launch.py --skip-distribution --outreach-log notes/sam-doctor-outreach-log.csv --outreach-summary notes\\sam-doctor-outreach-summary.md
 ```
