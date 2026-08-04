@@ -119,6 +119,11 @@
           Optional bootstrap: <code>sam-doctor init</code> writes a starter GitHub Actions
           workflow that captures a deployment failure log and runs SAM Doctor.
         </p>
+        <pre><code># Non-blocking pilot workflow
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations
+
+# Strict mode after a few stable runs
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations --fail-on-findings --force</code></pre>
         <p class="note">Use this in Slack/Discord:</p>
         <pre><code>I triaged a deploy failure with SAM Doctor:
 sam-doctor diagnose deployment.log --format markdown
@@ -163,7 +168,12 @@ sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</
     log-file: deployment.log
     summary: true
     annotations: true
-    fail-on-findings: true</code></pre>
+    fail-on-findings: false</code></pre>
+        <p class="muted">
+          Keep this non-blocking initially. When your team is comfortable with the signal quality,
+          flip on enforcement with <code>--fail-on-findings: true</code> (or
+          run <code>sam-doctor init --fail-on-findings --force</code> to regenerate your workflow).
+        </p>
         <p class="muted">
           Keep the deployment command unchanged. SAM Doctor only reads the local log and
           suggests the next safe verification path.
