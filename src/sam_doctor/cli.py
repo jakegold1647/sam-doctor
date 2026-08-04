@@ -6,7 +6,7 @@ import argparse
 import glob
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html import escape
 from importlib.resources import files
 from pathlib import Path
@@ -316,7 +316,7 @@ def _write_packet_notes(
         "\n".join(
             [
                 "# Researcher evidence packet",
-                f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+                f"- Generated: {datetime.now(UTC).isoformat()}",
                 f"- Scenario: {scenario}",
                 f"- Source: {redact(source)}",
                 f"- Command: {redact(command)}",
