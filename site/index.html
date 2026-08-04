@@ -136,6 +136,26 @@
         </ul>
       </section>
 
+      <section class="steps" aria-labelledby="use-case-rollback-title">
+        <p class="eyebrow">Use case</p>
+        <h2 id="use-case-rollback-title">Unpack rollback noise in under 2 minutes.</h2>
+        <p class="muted">
+          A teammate says the stack is stuck in <code>ROLLBACK_COMPLETE</code> and asks what failed first.
+        </p>
+        <p>
+          Run one command:
+        </p>
+        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
+        <p class="muted">
+          The report points to the first actionable resource/event instead of the final rollback symptom.
+        </p>
+        <ul>
+          <li>Share the first non-rollback failure event, not the end-of-stack state.</li>
+          <li>Resolve that root event and rerun deployment after verification.</li>
+          <li>Repeat only if another explicit failure is shown.</li>
+        </ul>
+      </section>
+
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
         <h2 id="install-title">Install v0.7.7 in one command.</h2>

@@ -100,6 +100,38 @@ configuration.
 If the error is real, this usually shortens the back-and-forth from “who changed
 what?” to “check this trust-policy field” in the same thread.
 
+## Use-case: triage a CloudFormation rollback in one pass
+
+When a teammate posts stack failure noise, search for the first actual signal instead
+of treating `ROLLBACK_COMPLETE` as the root cause:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown
+```
+
+A typical output starts with the earliest actionable finding and then your first
+safe check:
+
+```text
+SAM Doctor found 1 possible issue(s) in deployment.log.
+
+1. CloudFormation rollback-related failure in resource MyResource (high confidence)
+   Matched on line: 4
+   Evidence:
+   - Received FAILED for resource MyResource in CREATE_FAILED/ROLLBACK_COMPLETE flow.
+   Verify:
+   - Check the earliest non-rollback resource event and the first AWS error line it includes.
+   - Verify the policy/resource dependency and retry after the blocking condition is fixed.
+```
+
+Use this sequence in an incident thread:
+
+1. Run `sam-doctor diagnose deployment.log --format markdown`.
+2. Share only the first matched line and docs link.
+3. Run one targeted fix based on that first event, then re-run deploy.
+
+If your log is only a stack event excerpt, feed it directly with `sam-doctor diagnose -`.
+
 To diagnose a real deployment log:
 
 ```bash
