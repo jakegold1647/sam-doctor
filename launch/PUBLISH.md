@@ -22,13 +22,13 @@ For a quick machine-check before tag push, run:
 python scripts/check-launch.py --skip-outreach
 python scripts/check-launch.py --skip-distribution \
   --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary artifacts/outreach-summary.md \
+  --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md \
   --strict-ethical --min-feedback-ratio 100
 python scripts/check-launch.py \
   --strict-distribution-during-release \
   --strict-ethical --min-feedback-ratio 100 \
   --outreach-log launch/outreach-log-template.csv \
-  --outreach-summary artifacts/outreach-summary.md
+  --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md
 ```
 
 ## 2. Publish the public tool
@@ -90,5 +90,5 @@ Use `--outreach-log` to point to your local outreach file:
 
 ```powershell
 python scripts/bootstrap-outreach-log.py launch/outreach-log-template.csv
-python scripts/check-launch.py --skip-distribution --outreach-log launch/outreach-log-template.csv --outreach-summary artifacts/outreach-summary.md
+python scripts/check-launch.py --skip-distribution --outreach-log launch/outreach-log-template.csv --outreach-summary ..\\notes\\sam-doctor-outreach-summary.md
 ```
