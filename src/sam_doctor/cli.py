@@ -29,6 +29,7 @@ _DEMO_FILES = {
     "api-gateway": "api-gateway-no-methods-failure.txt",
     "s3-bucket-conflict": "s3-bucket-conflict-failure.txt",
     "esbuild": "esbuild-missing-failure.txt",
+    "python-pip": "python-pip-build-failure.txt",
     "interactive-changeset": "interactive-changeset-failure.txt",
 }
 

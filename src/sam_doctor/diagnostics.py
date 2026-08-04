@@ -486,6 +486,25 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-typescript.html",
     ),
     Rule(
+        title="SAM Python dependency build validation failed",
+        confidence="high",
+        patterns=(
+            r"PythonPipBuilder:ResolveDependencies",
+            r"Binary validation failed",
+        ),
+        explanation=(
+            "SAM reached the Python dependency builder, but dependency installation/validation "
+            "failed. Common causes include Python/runtime mismatch, missing system libraries, "
+            "or binary wheels incompatible with the build environment."
+        ),
+        verification=(
+            "Compare the Python runtime in the build environment with the runtime declared in the SAM template.",
+            "Reproduce locally with `sam build --debug` to capture the full dependency failure and missing module output.",
+            "Use lockfile-pinned dependencies and compatible wheels, then retry with a clean build environment.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+    ),
+    Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
         patterns=(
@@ -512,6 +531,7 @@ _RULES = (
             r"Requires capabilities",
             r"Cannot use both --resolve-s3 and --s3-bucket",
             r"Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
+            r"PythonPipBuilder:ResolveDependencies",
             r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",

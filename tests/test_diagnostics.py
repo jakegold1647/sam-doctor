@@ -169,6 +169,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "NodejsNpmEsbuildBuilder:EsbuildBundle - Esbuild Failed: Cannot find esbuild.",
             "cannot find the configured esbuild",
         ),
+        (
+            "PythonPipBuilder:ResolveDependencies - Binary validation failed: failed to build wheel for cryptography",
+            "python dependency build validation failed",
+        ),
         ("Deploy this changeset? [y/N]:", "interactive changeset confirmation"),
         (
             "AWS::CloudFormation::Stack ROLLBACK_FAILED ... The following resource(s) failed to delete: [IAMRoleDeployment]",
@@ -308,6 +312,10 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
             "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
             "throttled the deployment",
         ),
+        (
+            "Error: Failed to create changeset for the stack sam-app: PythonPipBuilder:ResolveDependencies - Binary validation failed: Python executable not found",
+            "python dependency build validation failed",
+        ),
     ),
 )
 def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment: str) -> None:
@@ -366,6 +374,7 @@ def test_packaged_capability_demo_is_available() -> None:
         ("api-gateway", "API Gateway deployment started"),
         ("s3-bucket-conflict", "managed and explicit S3 bucket"),
         ("esbuild", "configured esbuild"),
+        ("python-pip", "python dependency build validation"),
         ("interactive-changeset", "interactive changeset confirmation"),
     ),
 )
@@ -377,7 +386,16 @@ def test_packaged_scenario_demos_are_available(scenario: str, title_fragment: st
 
 @pytest.mark.parametrize(
     "scenario",
-    ("oidc", "cloudformation", "capabilities", "api-gateway", "s3-bucket-conflict", "esbuild", "interactive-changeset"),
+    (
+        "oidc",
+        "cloudformation",
+        "capabilities",
+        "api-gateway",
+        "s3-bucket-conflict",
+        "esbuild",
+        "python-pip",
+        "interactive-changeset",
+    ),
 )
 def test_demo_command_supports_scenarios(tmp_path, scenario: str, capsys: pytest.CaptureFixture[str]) -> None:
     output_file = tmp_path / f"{scenario}.md"

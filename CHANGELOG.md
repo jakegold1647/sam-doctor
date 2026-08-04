@@ -4,7 +4,9 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
-No unreleased changes.
+- Added diagnostic coverage for Python SAM build dependency validation failures
+  (`PythonPipBuilder:ResolveDependencies`/`Binary validation failed`) with
+  demo fixture and ordered rule matching.
 
 ## v0.7.7 - 2026-08-03
 
