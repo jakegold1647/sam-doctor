@@ -50,6 +50,7 @@ prints a real report:
 SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
 
 1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
+   Matched on line: 1
    The workflow reached AWS STS but the role trust relationship did not accept
    the GitHub-issued OIDC token. ...
    Evidence:
@@ -150,8 +151,14 @@ sam-doctor diagnose deployment.log --format json --output diagnosis.json
 
 The terminal format is intended for a quick local check, Markdown is convenient
 for a human-readable handoff, and JSON is stable enough for scripts and CI
-annotations. All three formats contain matched evidence rather than the full
-input log.
+annotations. All three formats include the first matching line number and matched
+evidence, not the full input log.
+
+### CLI exit codes
+
+- `0`: command completed successfully.
+- `1`: command input could not be read, arguments were invalid, or `--fail-on-findings`
+  found supported matches (for `diagnose`).
 
 You can also process multiple files in batch mode:
 

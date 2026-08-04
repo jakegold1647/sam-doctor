@@ -28,10 +28,12 @@ def test_oidc_failure_is_detected_and_redacted() -> None:
 
     assert len(findings) == 1
     assert findings[0].title.startswith("GitHub Actions cannot assume")
+    assert findings[0].line_number == 1
     report = markdown_report(findings, "failure.log")
     assert "[REDACTED_ARN]" in report
     assert "[REDACTED_EMAIL]" in report
     assert "123456789012" not in report
+    assert "Matched on line: 1" in report
 
 
 def test_unknown_log_has_no_finding() -> None:
@@ -167,6 +169,8 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
         "API Gateway CORS preflight configuration conflicts with an existing OPTIONS method",
         "AWS denied an API action required by the deployment",
     ]
+    assert findings[0].line_number == 1
+    assert findings[1].line_number == 2
 
 
 @pytest.mark.parametrize(
@@ -347,6 +351,7 @@ def test_json_report_is_redacted_and_machine_readable() -> None:
     report = json.loads(json_report(findings, "failure.log"))
 
     assert report["finding_count"] == 1
+    assert report["findings"][0]["line_number"] == 1
     assert report["sam_doctor_version"] == __version__
     assert report["source"] == "failure.log"
     assert "[REDACTED_ARN]" in report["findings"][0]["evidence"][0]

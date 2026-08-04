@@ -24,6 +24,7 @@ class Finding:
     verification: tuple[str, ...]
     documentation_url: str
     evidence: tuple[str, ...]
+    line_number: int
 
 
 @dataclass(frozen=True)
@@ -460,17 +461,23 @@ def _compact_evidence(line: str) -> str:
     return f"{line[:half]} ... {line[-half:]}"
 
 
-def _matching_evidence(
+def _matching_evidence_with_lines(
     text: str, patterns: tuple[str, ...], excluded_patterns: tuple[str, ...] = ()
-) -> tuple[str, ...]:
+) -> tuple[tuple[int, str], ...]:
     lines = text.splitlines()
-    matches = [
-        _compact_evidence(line.strip())
-        for line in lines
-        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns)
-        and not any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns)
-    ]
-    return tuple(dict.fromkeys(redact(line) for line in matches[:3]))
+    matching_lines: list[tuple[int, str]] = []
+    seen = set[str]()
+    for line_number, line in enumerate(lines, start=1):
+        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns) and not any(
+            re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns
+        ):
+            compacted = _compact_evidence(redact(line.strip()))
+            if compacted not in seen:
+                matching_lines.append((line_number, compacted))
+                seen.add(compacted)
+        if len(matching_lines) >= 3:
+            break
+    return tuple(matching_lines)
 
 
 def _first_matching_line(
@@ -536,8 +543,9 @@ def diagnose(text: str) -> list[Finding]:
             # provides a more precise and actionable explanation than the
             # generic IAM finding.
             excluded_patterns = (r"AssumeRoleWithWebIdentity", r"ECR image")
-        evidence = _matching_evidence(text, rule.patterns, excluded_patterns)
-        if evidence:
+        line_matches = _matching_evidence_with_lines(text, rule.patterns, excluded_patterns)
+        if line_matches:
+            evidence = tuple(line for _, line in line_matches)
             matched_findings.append(
                 (
                     _first_matching_line(text, rule.patterns, excluded_patterns),
@@ -549,6 +557,7 @@ def diagnose(text: str) -> list[Finding]:
                     verification=rule.verification,
                     documentation_url=rule.documentation_url,
                     evidence=evidence,
+                    line_number=line_matches[0][0],
                     ),
                 )
             )
@@ -594,6 +603,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 finding.explanation,
                 "",
                 "### Evidence",
+                f"- Matched on line: {finding.line_number}",
                 *[f"- <code>{escape(evidence)}</code>" for evidence in finding.evidence],
                 "",
                 "### Safe verification steps",
@@ -623,6 +633,7 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
             [
                 "",
                 f"{index}. {finding.title} ({finding.confidence} confidence)",
+                f"   Matched on line: {finding.line_number}",
                 f"   {finding.explanation}",
                 "   Evidence:",
                 *[f"   - {line}" for line in finding.evidence],
@@ -642,11 +653,12 @@ def json_report(findings: list[Finding], source_name: str) -> str:
         "source": redact(source_name),
         "finding_count": len(findings),
         "findings": [
-            {
-                "title": finding.title,
-                "confidence": finding.confidence,
-                "explanation": finding.explanation,
-                "evidence": list(finding.evidence),
+                {
+                    "line_number": finding.line_number,
+                    "title": finding.title,
+                    "confidence": finding.confidence,
+                    "explanation": finding.explanation,
+                    "evidence": list(finding.evidence),
                 "verification": list(finding.verification),
                 "documentation_url": finding.documentation_url,
             }
