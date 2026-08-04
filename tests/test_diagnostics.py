@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft202012Validator
 
 from sam_doctor import __version__
 from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
@@ -26,6 +27,12 @@ def _assert_object_shape(payload: object, schema: dict[str, object], *, required
     required = schema.get("required", [])
     assert all(key in payload for key in required), f"{required_key} payload missing required keys"
     return payload
+
+
+def _assert_json_schema_matches(schema_relative_path: str, payload: dict[str, object]) -> None:
+    schema = _load_schema(schema_relative_path)
+    validator = Draft202012Validator(schema)
+    validator.validate(payload)
 
 
 def _finding_shape(finding: object, finding_schema: dict[str, object], index: int) -> None:
@@ -61,6 +68,7 @@ def test_diagnose_json_payload_matches_schema_shape() -> None:
     finding_schema = diagnose_schema["definitions"]["finding"]
     for index, finding in enumerate(output["findings"]):
         _finding_shape(finding, finding_schema, index)
+    _assert_json_schema_matches("docs/schemas/diagnose-report.schema.json", output)
 
 
 def test_batch_json_payload_matches_schema_shape() -> None:
@@ -79,6 +87,7 @@ def test_batch_json_payload_matches_schema_shape() -> None:
 
     report = json.loads(report_text)
     _assert_object_shape(report, batch_schema, required_key="batch")
+    _assert_json_schema_matches("docs/schemas/batch-report.schema.json", report)
     assert report["sam_doctor_version"] == __version__
     assert report["batch_count"] == len(report["results"])
     assert isinstance(report["results"], list)
@@ -520,6 +529,7 @@ def test_long_evidence_is_bounded() -> None:
 
 def test_rule_catalog_is_machine_readable() -> None:
     catalog = json.loads(rules_report("json"))
+    _assert_json_schema_matches("docs/schemas/rules-report.schema.json", catalog)
 
     assert catalog["rule_count"] >= 7
     assert catalog["sam_doctor_version"] == __version__

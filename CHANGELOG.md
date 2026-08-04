@@ -7,6 +7,9 @@ All notable changes to SAM Doctor are documented here.
 - Added diagnostic coverage for Python SAM build dependency validation failures
   (`PythonPipBuilder:ResolveDependencies`/`Binary validation failed`) with
   demo fixture and ordered rule matching.
+- Added published JSON Schema documents for diagnose, batch, and rules JSON outputs,
+  with schema-backed tests and a dev dependency on `jsonschema` for local CI
+  validation.
 
 ## v0.7.7 - 2026-08-03
 

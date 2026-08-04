@@ -375,6 +375,12 @@ and `github` emits GitHub workflow command annotations directly. All formats
 include the first matching line number and matched evidence, not the full input
 log.
 
+For machine integrations, the JSON payload shape is documented in checked-in schemas:
+
+- `docs/schemas/diagnose-report.schema.json`
+- `docs/schemas/batch-report.schema.json`
+- `docs/schemas/rules-report.schema.json`
+
 ### CLI exit codes
 
 | Status | Meaning |

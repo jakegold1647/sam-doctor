@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/rules-report.schema.json",
+  "title": "SAM Doctor rules catalog payload",
+  "type": "object",
+  "required": ["sam_doctor_version", "rule_count", "rules"],
+  "properties": {
+    "sam_doctor_version": {
+      "type": "string",
+      "description": "Version string from sam_doctor.__version__."
+    },
+    "rule_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/rule"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "required": ["title", "confidence", "documentation_url"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium"]
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

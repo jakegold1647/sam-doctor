@@ -37,8 +37,52 @@
         "findings": {
           "type": "array",
           "items": {
-            "$ref": "diagnose-report.schema.json#/definitions/finding"
+            "$ref": "#/definitions/finding"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "title",
+        "confidence",
+        "explanation",
+        "verification",
+        "documentation_url",
+        "evidence",
+        "line_number"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "verification": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentation_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "line_number": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "additionalProperties": false
