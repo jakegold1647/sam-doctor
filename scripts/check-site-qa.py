@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Site QA checks for the published SAM Doctor website."""
 
 from __future__ import annotations

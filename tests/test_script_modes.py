@@ -22,11 +22,12 @@ def test_shebanged_files_are_executable_in_git() -> None:
         check=True,
     ).stdout
 
-    offenders = []
+    missing_bit = []
+    missing_shebang = []
     for line in listing.splitlines():
         meta, _, path = line.partition("\t")
         mode = meta.split()[0]
-        if mode != "100644":
+        if mode not in ("100644", "100755"):
             continue
         file_path = REPO_ROOT / path
         try:
@@ -34,10 +35,15 @@ def test_shebanged_files_are_executable_in_git() -> None:
                 starts_with_shebang = handle.read(2) == b"#!"
         except OSError:
             continue
-        if starts_with_shebang:
-            offenders.append(path)
+        if mode == "100644" and starts_with_shebang:
+            missing_bit.append(path)
+        if mode == "100755" and not starts_with_shebang:
+            missing_shebang.append(path)
 
-    assert not offenders, (
+    assert not missing_bit, (
         "Files with a shebang must be executable in the git index "
-        f"(git update-index --chmod=+x <file>): {offenders}"
+        f"(git update-index --chmod=+x <file>): {missing_bit}"
+    )
+    assert not missing_shebang, (
+        f"Executable files must start with a shebang: {missing_shebang}"
     )
