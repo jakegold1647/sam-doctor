@@ -422,7 +422,7 @@ python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doct
 ```
 
 If your shell cannot find `sam-doctor` after installation, activate the
-environment where it was installed or use `python -m sam_doctor.cli` in the
+environment where it was installed or use `python -m sam_doctor` in the
 commands below.
 
 ## Help improve SAM Doctor

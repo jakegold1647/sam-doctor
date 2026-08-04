@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- `python -m sam_doctor` now works as an alias for the `sam-doctor` console
+  script, matching what the README suggests when the script is not on PATH.
 - Added two advanced diagnostics: resource stabilization failures
   (`did not stabilize`, `HandlerErrorCode: NotStabilized`, `Exceeded attempts
   to wait`) that surface the nested handler status reason first and route
