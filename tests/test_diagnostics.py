@@ -123,6 +123,26 @@ def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
     assert diagnose(log_line) == []
 
 
+@pytest.mark.parametrize(
+    ("log_line", "expected_titles"),
+    (
+        ("AssumeRoleWithWebIdentity request succeeded on retry", ()),
+        ("OIDC token audience was accepted after a handled retry", ()),
+        (
+            "AccessDeniedException: iam:GetRole is not authorized",
+            ("AWS denied an API action required by the deployment",),
+        ),
+    ),
+)
+def test_oidc_near_matches_do_not_trigger_oidc_findings(
+    log_line: str, expected_titles: tuple[str, ...]
+) -> None:
+    findings = diagnose(log_line)
+
+    assert all("oidc" not in finding.title.lower() for finding in findings)
+    assert tuple(finding.title for finding in findings) == expected_titles
+
+
 def test_packaged_demo_is_available() -> None:
     assert "AssumeRoleWithWebIdentity" in _read_demo()
 
