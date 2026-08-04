@@ -286,8 +286,8 @@ def _write_summary(summary: dict[str, object], path: str) -> None:
         f"- voluntary_stars: {summary['voluntary_stars']}",
         f"- voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}",
         f"- star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%",
-        f"- organic_growth_score: {summary['organic_growth_score']:.1f}%",
         f"- ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%",
+        f"- organic_growth_score: {summary['organic_growth_score']:.1f}%",
         f"- feedback_signals: {summary['positive_outcome_count']}",
         f"- repeat_contacts: {summary['repeat_contacts']}",
         f"- stars_without_feedback: {summary['stars_without_feedback']}",
@@ -314,8 +314,8 @@ def _print_summary(summary: dict[str, object]) -> None:
         f"voluntary_stars_with_feedback: {summary['voluntary_stars_with_feedback']}"
     )
     print(f"star_feedback_ratio: {summary['star_feedback_ratio']:.1f}%")
-    print(f"organic_growth_score: {summary['organic_growth_score']:.1f}%")
     print(f"ethical_signal_strength: {summary['ethical_signal_strength']:.1f}%")
+    print(f"organic_growth_score: {summary['organic_growth_score']:.1f}%")
     print(f"rows_with_feedback: {summary['rows_with_feedback']}")
     print(f"repeat_contacts: {summary['repeat_contacts']}")
     print(f"feedback_signals: {summary['positive_outcome_count']}")

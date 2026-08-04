@@ -260,3 +260,69 @@ def test_outreach_next_growth_actions_are_included_for_blank_sample(tmp_path: Pa
     assert isinstance(actions, list)
     assert actions
     assert any("seed the outreach tracker" in action.lower() for action in actions)
+
+
+def _create_log(path: Path) -> None:
+    path.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,asked for follow-up,no\n"
+        "2026-W31,2026-08-02,LinkedIn,CloudFormation,pilot follow-up,share update,0,ignored,did not reply,no\n",
+        encoding="utf-8",
+    )
+
+
+def test_growth_score_prefers_feedback_and_follow_through():
+    module = _load_script(Path(__file__).resolve().parent.parent)
+
+    score = module._growth_score(
+        voluntary_stars=4,
+        stars_with_feedback=2,
+        repeat_contacts=1,
+        rows_with_feedback=3,
+        rows=5,
+    )
+
+    # 0.55*50 + 0.25*60 + 0.2*25 = 27.5 + 15 + 5 = 47.5
+    assert score == 47.5
+
+
+def test_next_growth_actions_are_included_in_summary(tmp_path):
+    module = _load_script(Path(__file__).resolve().parent.parent)
+
+    log = tmp_path / "outreach.csv"
+    _create_log(log)
+
+    summary = module.summarize(log)
+    assert summary["rows"] == 2
+    assert summary["voluntary_stars"] == 1
+    assert summary["stars_without_feedback"] == 0
+    assert summary["ethical_signal"] == "strong"
+    assert summary["organic_growth_score"] == module._growth_score(
+        voluntary_stars=1,
+        stars_with_feedback=1,
+        repeat_contacts=0,
+        rows_with_feedback=1,
+        rows=2,
+    )
+
+    output = tmp_path / "outreach-summary.md"
+    module._write_summary(summary, str(output))
+    text = output.read_text(encoding="utf-8")
+    assert "organic_growth_score" in text
+    assert "next_growth_actions" in text
+
+
+def test_summary_marked_mixed_for_no_feedback_stars(tmp_path: Path):
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    log = tmp_path / "tmp_outreach_mixed.csv"
+    log.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,voluntary_star,outcome,feedback_signal,repeat_contact\n"
+        "2026-W31,2026-08-01,GitHub Issue,OIDC,interview completed,share report,1,accepted helpful report,,no\n",
+        encoding="utf-8",
+    )
+
+    summary = module.summarize(log)
+    assert summary["ethical_signal"] == "mixed"
+    assert summary["stars_without_feedback"] == 1
+    actions = module._next_growth_actions(summary)
+    assert any("Follow up with each volunteer" in action for action in actions)
