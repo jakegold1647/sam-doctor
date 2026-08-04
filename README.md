@@ -36,6 +36,27 @@ Current release: **v0.7.7**.
 - It is most useful for actionable deployment logs with explicit error lines and
   rollback context.
 
+## Who should use it first
+
+If you are:
+
+- **Developer on-call:** use SAM Doctor before escalating to an engineering lead.
+- **SRE/DevOps:** use it as a first triage step before opening deeper incident
+  tickets.
+- **Team lead / reviewer:** use it as a shared triage template for faster
+  incident handoffs.
+
+### Paste this in Slack/Teams/Email
+
+```text
+I ran @sam-doctor on the shared deploy excerpt:
+- Finding: [top finding]
+- Evidence: [top evidence line]
+- Safe next check: [first command]
+- Confidence: [high/med/low]
+If this is real, next step is: [one action].
+```
+
 ## Try it in 60 seconds
 
 ```bash

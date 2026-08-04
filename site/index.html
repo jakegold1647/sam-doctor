@@ -117,6 +117,24 @@
         </ul>
       </section>
 
+      <section class="steps" aria-labelledby="adoption-title">
+        <p class="eyebrow">WHO SHOULD USE NOW</p>
+        <h2 id="adoption-title">Use it where the incident loop slows down.</h2>
+        <ul>
+          <li><strong>Developers on-call:</strong> run in the first 60 seconds, then ask for one safety check.</li>
+          <li><strong>SRE/DevOps:</strong> use as a deterministic triage step before paging additional owners.</li>
+          <li><strong>Team leads:</strong> standardize handoffs with one finding + one follow-up per thread.</li>
+        </ul>
+        <p class="muted">
+          Slack/Teams post template:
+        </p>
+        <pre><code>I ran sam-doctor on the failing excerpt.
+Finding: [top finding]
+Evidence: [top evidence]
+Safety check: [next verification command]
+Next action: [one specific change to validate]</code></pre>
+      </section>
+
       <section class="steps" aria-labelledby="use-case-title">
         <p class="eyebrow">Use case</p>
         <h2 id="use-case-title">Fix a blocked OIDC deploy in under 90 seconds.</h2>
