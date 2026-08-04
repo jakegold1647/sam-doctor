@@ -124,6 +124,7 @@ the command you ran.
 - API Gateway deployments created before methods exist
 - SAM deployment/configuration errors, including conflicting artifact-bucket settings
   and missing `esbuild` dependencies
+- SAM build/containerization errors where Docker is unavailable for `sam build --use-container`
 - Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
 - API Gateway CORS preflight conflicts
 - Terminal, Markdown, and JSON reports

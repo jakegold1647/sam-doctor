@@ -297,6 +297,27 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-lambda-layerversion-content.html",
     ),
     Rule(
+        title="SAM build requires Docker for containerized builds",
+        confidence="high",
+        patterns=(
+            r"Cannot connect to the Docker daemon",
+            r"Error response from daemon",
+            r"is the docker daemon running\?",
+            r"No such file or directory.*docker\.sock",
+        ),
+        explanation=(
+            "The build job reached a containerized SAM build path and could not reach "
+            "a usable Docker daemon. Container builds require Docker even for transient "
+            "validation steps in CI."
+        ),
+        verification=(
+            "Run `docker version` on the failing runner and confirm Docker is started.",
+            "If using a self-hosted runner, check permissions for `docker.sock` and that the Docker service is running.",
+            "If Docker is not available in your environment, disable containerized build paths (`sam build` without `--use-container`) and retry.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html#sam-cli-command-reference-sam-build-use-container",
+    ),
+    Rule(
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
         patterns=(

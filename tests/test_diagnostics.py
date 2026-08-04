@@ -190,6 +190,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "ResourceStatusReason: Rate exceeded (Service: CloudFormation, Status Code: 400, Request ID: 6f1c0e2a-example)",
             "throttled the deployment",
         ),
+        (
+            "sam build --use-container failed: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?",
+            "requires docker for containerized builds",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:
@@ -206,6 +210,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
         "InvalidIdentityToken was handled by a retrying client",
         "Deployment values include Capabilities: [CAPABILITY_IAM]",
         "sam build completed after esbuild bundled the function",
+        "Docker version 24.0.5, build 3713ee1",
         "SAM template property StageName is valid for AWS::Serverless::Api",
         "Configured CORS for the API",
         "The preflight request returned 204",
