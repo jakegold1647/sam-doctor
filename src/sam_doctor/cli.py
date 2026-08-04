@@ -248,6 +248,45 @@ def _render_github(findings: list[Finding], source_name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _findings_from_payload_items(items: list[object]) -> list[Finding]:
+    findings: list[Finding] = []
+    for item in items:
+        finding = dict(item)
+        findings.append(
+            Finding(
+                title=str(finding["title"]),
+                confidence=str(finding["confidence"]),
+                explanation=str(finding["explanation"]),
+                verification=tuple(str(step) for step in finding.get("verification", ())),
+                documentation_url=str(finding["documentation_url"]),
+                evidence=tuple(str(evidence) for evidence in finding.get("evidence", ())),
+                line_number=int(finding["line_number"]),
+            )
+        )
+    return findings
+
+
+def github_notices_from_payload(payload: dict[str, object], is_batch: bool) -> str:
+    notices: list[str] = []
+    if is_batch:
+        for raw_result in payload.get("results", []):
+            result = dict(raw_result)
+            source = str(result.get("source", ""))
+            raw_findings = result.get("findings", [])
+            if not isinstance(raw_findings, list):
+                continue
+            findings = _findings_from_payload_items(raw_findings)
+            rendered = _render_github(findings, source)
+            if rendered.strip():
+                notices.append(rendered.rstrip())
+        return "\n".join(notices) + ("\n" if notices else "")
+
+    findings = _findings_from_payload_items(payload.get("findings", []))
+    source = str(payload.get("source", ""))
+    rendered = _render_github(findings, source)
+    return rendered
+
+
 def _render(text: str, source_name: str, output_format: str) -> str:
     return _render_findings(diagnose(text), source_name, output_format)
 

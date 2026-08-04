@@ -143,11 +143,18 @@ PY
 fi
 
 if [[ "$SAM_DOCTOR_ANNOTATIONS" == "true" && "$finding_count" -gt 0 ]]; then
-  if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
-    "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format github
-  else
-    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format github
-  fi
+  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" <<'PY'
+import json
+import sys
+
+from sam_doctor.cli import github_notices_from_payload
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+is_batch = sys.argv[2].lower() == "true"
+notices = github_notices_from_payload(payload, is_batch)
+if notices:
+    print(notices, end="")
+PY
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then

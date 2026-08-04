@@ -665,6 +665,43 @@ def test_batch_render_github_emits_annotations_only_for_findings(tmp_path: Path)
     assert "with_finding.log" in lines[0]
 
 
+def test_github_notices_from_json_payload_skips_noise() -> None:
+    from sam_doctor.cli import github_notices_from_payload
+
+    payload = {
+        "sam_doctor_version": "0.7.7",
+        "batch": True,
+        "results": [
+            {
+                "source": "with-finding.log",
+                "finding_count": 1,
+                "findings": [
+                    {
+                        "title": "SAM deployment prompt",
+                        "confidence": "high",
+                        "explanation": "A prompt blocked automation.",
+                        "verification": ["Set --no-confirm-changeset."],
+                        "documentation_url": "https://docs.aws.com/",
+                        "evidence": ["Deploy this changeset? [y/N]:"],
+                        "line_number": 12,
+                    }
+                ],
+            },
+            {
+                "source": "clean.log",
+                "finding_count": 0,
+                "findings": [],
+            },
+        ],
+    }
+
+    output = github_notices_from_payload(payload, True)
+
+    assert output.count("\n") == 1
+    assert "with-finding.log" in output
+    assert "clean.log" not in output
+
+
 def test_batch_command_does_not_fail_without_fail_on_findings(tmp_path: Path) -> None:
     (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
     (tmp_path / "b.log").write_text(
