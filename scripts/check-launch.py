@@ -251,10 +251,10 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--outreach-summary",
-        default="",
+        default="notes/sam-doctor-outreach-summary.md",
         help=(
             "Optional output path for outreach summary markdown. "
-            "Prefer a local notes file outside the repo."
+            "Defaults to local notes path (ignored by git)."
         ),
     )
     parser.add_argument(
