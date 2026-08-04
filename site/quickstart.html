@@ -195,6 +195,18 @@ sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</
     echo "Findings: ${{ steps.sam-doctor.outputs.finding-count }}"</code></pre>
       </section>
 
+      <section class="steps" aria-labelledby="intent-lp-title">
+        <p class="eyebrow">SEARCH-FIRST START</p>
+        <h2 id="intent-lp-title">Start with your exact failure</h2>
+        <ul>
+          <li><strong>OIDC token failures:</strong> paste the first failing <code>AssumeRoleWithWebIdentity</code> block and run <code>sam-doctor diagnose</code>.</li>
+          <li><strong>Rollback noise:</strong> use the first full failure excerpt before <code>ROLLBACK_COMPLETE</code> messages.</li>
+          <li><strong>Capability requirement errors:</strong> run the first 20 lines around the <code>CAPABILITY_IAM</code> line through SAM Doctor.</li>
+          <li><strong>Container image pushes:</strong> include the registry auth and image pull failure lines in your excerpt.</li>
+          <li><strong>CDK/SAM package/build:</strong> point SAM Doctor at your `cdk deploy` or `sam package` excerpt for the first actionable finding.</li>
+        </ul>
+      </section>
+
       <section class="founder">
         <p class="eyebrow">GROW WITH US</p>
         <h2>Help improve this project</h2>

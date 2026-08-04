@@ -133,6 +133,21 @@ If you need deterministic local triage for another AWS deployment error, open a
 rule request with the first 5–15 lines of a sanitized excerpt and the command
 you used.
 
+## Share this with your team in 30 seconds
+
+If you're onboarding engineers through Slack, Discord, or post-incident handoffs,
+post one line and a link:
+
+```text
+I used SAM Doctor on a deploy failure and got a fast, actionable first finding:
+`sam-doctor diagnose deployment.log --format markdown`
+Try it here: https://jakegold1647.github.io/sam-doctor/
+```
+
+For error-specific outreach drafts and one-click templates, use the
+community sharing kit:
+https://github.com/jakegold1647/sam-doctor/blob/main/docs/community-sharing-kit.md
+
 ## New contributor smoke check
 
 Verify your installation and first output in one command:
