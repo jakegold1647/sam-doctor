@@ -132,6 +132,19 @@ If this result is wrong or unclear, open a
 [`diagnostic report` issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)
 with the pasted excerpt and command output.
 
+Use this copy/paste block for fast, high-signal reporting:
+
+```text
+Title: sam-doctor report - [short summary]
+Version: sam-doctor [version]
+Command: sam-doctor diagnose deployment-failure.log --format markdown
+Finding: [top finding title]
+Source: deployment-failure.log
+Verify: [one command or doc check]
+Excerpt:
+<paste 1-3 sanitized lines around first matching error>
+```
+
 The bundled demo needs no AWS credentials and makes no network calls. It
 prints a real report:
 
