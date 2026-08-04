@@ -9,6 +9,12 @@ body:
         Do not post raw logs, AWS account IDs, ARNs, access keys, session tokens,
         customer data, or private repository names. A short, sanitized error is enough.
         Include the command where the failure appeared and one expected safe next check.
+
+        Want to implement a rule yourself? The
+        [rule roadmap](https://github.com/jakegold1647/sam-doctor/blob/main/docs/rule-roadmap.md)
+        lists pre-specified candidates you can claim, and
+        [Contributing a diagnostic rule](https://github.com/jakegold1647/sam-doctor/blob/main/docs/contributing-a-diagnostic-rule.md)
+        walks through a full example PR. Say "I'd like to take this" and we will assign it to you.
   - type: input
     id: service
     attributes:
