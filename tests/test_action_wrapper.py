@@ -66,7 +66,10 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     assert "::notice file=oidc-assume-role-failure.txt,line=" in result.stdout
     assert "GitHub Actions cannot assume" in result.stdout
     assert "123456789012" not in result.stdout
-    assert output_path.read_text(encoding="utf-8") == "finding-count=1\nhas-findings=true\n"
+    output = output_path.read_text(encoding="utf-8")
+    assert "finding-count=1\n" in output
+    assert "has-findings=true\n" in output
+    assert "sam-doctor-version=0.7.7\n" in output
 
 
 def test_action_wrapper_can_disable_notices(tmp_path: Path):
@@ -107,7 +110,10 @@ def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
 
     assert result.returncode == 1, result.stderr
     assert "SAM Doctor found 1 supported issue(s)." in result.stderr
-    assert output_path.read_text(encoding="utf-8") == "finding-count=1\nhas-findings=true\n"
+    output = output_path.read_text(encoding="utf-8")
+    assert "finding-count=1\n" in output
+    assert "has-findings=true\n" in output
+    assert "sam-doctor-version=0.7.7\n" in output
 
 
 def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
@@ -142,5 +148,6 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     assert "SAM_DOCTOR_BATCH" not in result.stderr
     assert "finding-count=1" in output_path.read_text(encoding="utf-8")
     assert "has-findings=true" in output_path.read_text(encoding="utf-8")
+    assert "sam-doctor-version=0.7.7" in output_path.read_text(encoding="utf-8")
     assert "::notice file=" in result.stdout
     assert "GitHub Actions cannot assume" in result.stdout

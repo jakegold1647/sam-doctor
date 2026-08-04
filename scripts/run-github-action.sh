@@ -78,16 +78,23 @@ fi
 
 if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
   finding_count="$("$PYTHON_BIN" -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); print(sum(result["finding_count"] for result in payload.get("results", [])))' "$report_path")"
+  report_version="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["sam_doctor_version"])' "$report_path")"
 else
   finding_count="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
+  report_version="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["sam_doctor_version"])' "$report_path")"
 fi
 
 if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
   echo "Could not parse finding-count from JSON output: $finding_count" >&2
   exit 2
 fi
+if [[ -z "$report_version" ]]; then
+  echo "Could not parse sam_doctor_version from JSON output." >&2
+  exit 2
+fi
 
 echo "finding-count=${finding_count}" >> "$GITHUB_OUTPUT"
+echo "sam-doctor-version=${report_version}" >> "$GITHUB_OUTPUT"
 if [[ "$finding_count" -gt 0 ]]; then
   echo "has-findings=true" >> "$GITHUB_OUTPUT"
 else

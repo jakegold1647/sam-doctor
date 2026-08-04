@@ -36,10 +36,11 @@ sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-
 
 ## GitHub Action behavior
 
-The Action wraps the CLI and exposes two stable outputs:
+The Action wraps the CLI and exposes three stable outputs:
 
 - `finding-count`: total supported findings for all scanned inputs.
 - `has-findings`: `true` if `finding-count` is greater than `0`.
+- `sam-doctor-version`: version string used by the action run.
 
 Action exit behavior:
 

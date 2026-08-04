@@ -33,6 +33,9 @@ outputs:
   has-findings:
     description: Whether the supplied log contains one or more supported findings.
     value: ${{ steps.diagnose.outputs.has-findings }}
+  sam-doctor-version:
+    description: Version string reported by the executed sam-doctor package.
+    value: ${{ steps.diagnose.outputs.sam-doctor-version }}
 branding:
   icon: activity
   color: yellow
