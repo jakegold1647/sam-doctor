@@ -231,9 +231,9 @@ blocking on early warm-up timing.
 
 ## Guides
 
-- [Diagnose a GitHub Actions to AWS OIDC deployment failure](docs/oidc-deployment-debugging.md)
-- [Find the first useful error in a CloudFormation rollback](docs/cloudformation-first-failure.md)
-- [Fix InsufficientCapabilities in an AWS SAM deployment](docs/capability-acknowledgement.md)
+- [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
+- [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
+- [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
 
 ## Supported signals
 
