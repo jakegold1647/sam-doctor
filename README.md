@@ -682,6 +682,7 @@ expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 
 - [Add SAM Doctor to an existing GitHub Actions deployment](docs/github-actions-integration.md)
 - [Adopter onboarding kit (team templates + rollout sequence)](docs/adopter-onboarding-kit.md)
+- [First-3 teams onboarding playbook (3-week rollout)](docs/first-3-teams-onboarding-playbook.md)
 - [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
