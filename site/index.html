@@ -232,6 +232,17 @@ curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/example
         </p>
       </section>
 
+      <section class="steps" aria-labelledby="decision-title">
+        <p class="eyebrow">CHOOSE YOUR STARTING PATH</p>
+        <h2 id="decision-title">Start with the option that matches how you got here.</h2>
+        <ul>
+          <li><strong>Single failed log file:</strong> run <code>sam-doctor diagnose deployment.log --format markdown</code>.</li>
+          <li><strong>CI output available now:</strong> add <code>sam-doctor diagnose --format json --output diagnosis.json</code> in the failed step.</li>
+          <li><strong>Team rollout:</strong> use the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adopter-onboarding-kit.md">Adopter onboarding kit</a> first, then switch to the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/first-3-teams-onboarding-playbook.md">first-3 teams playbook</a>.</li>
+          <li><strong>Research / review loop:</strong> run <code>sam-doctor packet deployment.log</code> and export the reproducible evidence packet.</li>
+        </ul>
+      </section>
+
       <section class="steps" aria-labelledby="who-for-title">
         <p class="eyebrow">WHO THIS IS FOR</p>
         <h2 id="who-for-title">Use it if you need a fast first-pass on deployment failures.</h2>

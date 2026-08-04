@@ -59,6 +59,19 @@ If you are:
 - **You're onboarding a team:** use the [Adopter onboarding kit](docs/adopter-onboarding-kit.md)
   for role-based templates and copy/paste text.
 
+### Choose your path in 20 seconds (new team rollout version)
+
+- **You are debugging one incident now:** run
+  `sam-doctor diagnose deployment.log --format markdown`.
+- **You have CI output in text form:** append
+  `sam-doctor diagnose - --format json --output diagnosis.json` after your log command.
+- **You need non-blocking CI:** set action `summary: true` first and keep
+  `fail-on-findings: false` for one week.
+- **You are ready to enforce gates:** switch that action to
+  `fail-on-findings: true` after a low-friction pilot.
+- **You work with one team:** follow the
+  [first-3 teams onboarding playbook](docs/first-3-teams-onboarding-playbook.md).
+
 ### Paste this in Slack/Teams/Email
 
 ```text
