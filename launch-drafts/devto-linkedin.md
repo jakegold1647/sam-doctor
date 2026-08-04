@@ -1,4 +1,4 @@
-# Draft: dev.to article / LinkedIn post
+﻿# Draft: dev.to article / LinkedIn post
 
 > Two versions below: the dev.to article (longer) and a LinkedIn cut of the
 > same story. Publish manually. On dev.to, suggested tags: #aws #serverless
@@ -33,7 +33,7 @@ GitHub Actions deployment log locally and matches it against hand-written
 rules for failures like this one - plus IAM AccessDenied, CloudFormation
 rollbacks (it finds the first CREATE_FAILED event instead of the rollback
 noise), capability acknowledgement errors, SAM config conflicts, and a
-handful of others. 22 rules right now.
+handful of others. 24 rules right now.
 
 Constraints I held myself to, because they're what I wanted as a user:
 
@@ -73,7 +73,7 @@ sts:AssumeRoleWithWebIdentity" - and kept forgetting that it has three
 different causes hiding behind one error message.
 
 So I built sam-doctor, a small open-source CLI that reads SAM/CloudFormation/
-GitHub Actions deployment logs locally and matches them against 22 known
+GitHub Actions deployment logs locally and matches them against 24 known
 failure patterns. It prints the evidence, what to verify, and the official
 doc link.
 

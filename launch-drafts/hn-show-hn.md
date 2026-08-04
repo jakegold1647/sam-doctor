@@ -1,4 +1,4 @@
-# Draft: Hacker News "Show HN"
+﻿# Draft: Hacker News "Show HN"
 
 > Publish manually from your own account. HN convention: title starts with
 > "Show HN:", URL points at the repo, and the text below goes in the text
@@ -6,7 +6,7 @@
 
 ---
 
-**Title:** Show HN: Sam-doctor – offline, deterministic diagnosis of AWS SAM/CloudFormation deploy failures
+**Title:** Show HN: Sam-doctor â€“ offline, deterministic diagnosis of AWS SAM/CloudFormation deploy failures
 
 **URL:** https://github.com/jakegold1647/sam-doctor
 
@@ -19,7 +19,7 @@ and CloudFormation rollbacks where the first CREATE_FAILED event is buried
 under rollback noise.
 
 sam-doctor is a zero-dependency Python CLI that reads the deployment log
-locally and matches it against 22 hand-written failure rules. For each match
+locally and matches it against 24 hand-written failure rules. For each match
 it prints the evidence lines, a confidence level, the specific things to
 verify before changing anything, and a link to the official doc page.
 

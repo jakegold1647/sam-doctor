@@ -178,6 +178,18 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
         ("Stack entered ROLLBACK_FAILED after a resource failure", "rollback"),
         ("Error: Failed to create changeset", "SAM deployment"),
         ("CORS conflict: duplicate OPTIONS method", "CORS preflight"),
+        (
+            "An error occurred (ExpiredTokenException) when calling the AssumeRole operation: The security token included in the request is expired",
+            "credentials used by the deployment have expired",
+        ),
+        (
+            "An error occurred (SignatureDoesNotMatch) when calling the DescribeStacks operation: Signature expired: 20260803T101500Z is now earlier than 20260803T104500Z (20260803T105000Z - 5 min.)",
+            "credentials used by the deployment have expired",
+        ),
+        (
+            "ResourceStatusReason: Rate exceeded (Service: CloudFormation, Status Code: 400, Request ID: 6f1c0e2a-example)",
+            "throttled the deployment",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:
@@ -283,6 +295,14 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
             "Failed to delete AWS::IAM::Role MyRole",
             "rollback could not delete an iam role",
         ),
+        (
+            "Error: Failed to create changeset for the stack sam-app: An error occurred (ExpiredToken) when calling the CreateChangeSet operation: The security token included in the request is expired",
+            "credentials used by the deployment have expired",
+        ),
+        (
+            "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
+            "throttled the deployment",
+        ),
     ),
 )
 def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment: str) -> None:
@@ -290,6 +310,11 @@ def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment
 
     assert len(findings) == 1
     assert title_fragment.lower() in findings[0].title.lower()
+
+
+def test_expired_wording_alone_is_not_a_credential_finding() -> None:
+    assert diagnose("The CloudFront distribution's TLS certificate expired last week.") == []
+    assert diagnose("Waiting for the changeset to be created; the rate of progress is slow.") == []
 
 
 def test_multiline_s3_denial_still_suppresses_generic_access_denied() -> None:

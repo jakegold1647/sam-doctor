@@ -166,6 +166,49 @@ _RULES = (
         excluded_line_patterns=(r"AssumeRoleWithWebIdentity", r"ECR image"),
     ),
     Rule(
+        title="The AWS credentials used by the deployment have expired",
+        confidence="high",
+        patterns=(
+            r"ExpiredToken(?:Exception)?",
+            r"security token included in the request is expired",
+            r"Signature expired:.*is now earlier than",
+        ),
+        explanation=(
+            "AWS rejected the request because the temporary credentials were no "
+            "longer valid when it arrived. This is a credential-lifetime or "
+            "clock problem, not a permissions or template problem: the session "
+            "expired (cached SSO login, long-lived shell, short OIDC session "
+            "duration), or the machine's clock is far enough off that the "
+            "request signature is treated as stale."
+        ),
+        verification=(
+            "Refresh the credentials for the environment that failed: re-run `aws sso login`, rotate the CI secret, or re-assume the role; for OIDC deployments check the role's maximum session duration.",
+            "For a `Signature expired ... is now earlier than` message, compare the two timestamps in the error: a gap of more than a few minutes means the runner's clock is skewed, so sync it (NTP) rather than rotating credentials.",
+            "Confirm the deployment picks up the refreshed credentials (no stale AWS_* environment variables or cached profiles) before retrying.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html",
+    ),
+    Rule(
+        title="CloudFormation throttled the deployment's API calls",
+        confidence="medium",
+        patterns=(
+            r"An error occurred \(Throttling\)",
+            r"\bRate exceeded\b",
+        ),
+        explanation=(
+            "AWS rejected API calls because the account exceeded a request rate "
+            "limit in this Region. This is a transient capacity condition, not a "
+            "template or permission problem; the same deployment can succeed on "
+            "retry once the call rate drops."
+        ),
+        verification=(
+            "Retry the deployment after a pause; if this recurs, add backoff or retries around the deploy step instead of changing the template.",
+            "Reduce the number of parallel stack operations from CI (matrix jobs, monorepo fan-out) targeting the same account and Region.",
+            "Check for other automation (drift detection, scheduled deployments, dashboards polling DescribeStacks) hammering CloudFormation in the same account and Region, and request a quota increase only if the steady-state rate is genuinely higher.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
+    ),
+    Rule(
         title="A SAM template property is not valid for its resource type",
         confidence="high",
         patterns=(
@@ -452,6 +495,11 @@ _RULES = (
             r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",
+            r"ExpiredToken(?:Exception)?",
+            r"security token included in the request is expired",
+            r"Signature expired:.*is now earlier than",
+            r"An error occurred \(Throttling\)",
+            r"\bRate exceeded\b",
         ),
     ),
     Rule(
