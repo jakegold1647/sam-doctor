@@ -213,6 +213,21 @@ Check that the identity-based policy attached to the role allows id-token:write.
         <p class="muted">No account IDs, ARNs, or tokens are printed in this flow.</p>
       </section>
 
+      <section class="steps" aria-labelledby="playbook-title">
+        <p class="eyebrow">Quickstart</p>
+        <h2 id="playbook-title">On-call playbook, ready to run.</h2>
+        <p>
+          Teams can use one shared sequence and a single handoff template for every incident:
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/on-call-playbook.md">SAM Doctor on-call playbook</a>.
+        </p>
+        <ul>
+          <li>60-second triage sequence with one diagnosis command.</li>
+          <li>Slack/Teams handoff message format.</li>
+          <li>Failure-type checks for OIDC, rollback, and IAM capabilities.</li>
+          <li>Escalation rule when evidence is not yet actionable.</li>
+        </ul>
+      </section>
+
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
         <h2 id="install-title">Install v0.7.7 in one command.</h2>

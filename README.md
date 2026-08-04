@@ -219,6 +219,18 @@ SAM Doctor found 1 possible issue(s) in incident_excerpt.txt.
 This output is deterministic for the same input and does not contain account IDs,
 ARNs, or tokens.
 
+## On-call playbook
+
+If your team handles deployment incidents, use the ready-to-share playbook:
+
+- [docs/on-call-playbook.md](docs/on-call-playbook.md)
+
+It includes:
+- A 60-second triage sequence
+- Slack/Teams handoff template
+- OIDC, rollback, and capability-specific follow-up checks
+- A clear escalation threshold
+
 To diagnose a real deployment log:
 
 ```bash
