@@ -10,7 +10,9 @@ from html import escape
 from . import __version__
 from .redaction import redact
 
-_RULE_REQUEST_URL = "https://github.com/jakegold1647/sam-doctor/issues/new/choose"
+_RULE_REQUEST_URL = (
+    "https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml"
+)
 
 
 @dataclass(frozen=True)

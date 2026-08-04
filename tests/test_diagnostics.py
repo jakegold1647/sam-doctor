@@ -133,9 +133,9 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
 
     assert "sam-doctor rules" in markdown
     assert "diagnostic rule request" in markdown
-    assert "issues/new/choose" in markdown
+    assert "template=rule_request.yml" in markdown
     assert "sam-doctor rules" in terminal
-    assert "issues/new/choose" in terminal
+    assert "template=rule_request.yml" in terminal
 
 
 @pytest.mark.parametrize(
