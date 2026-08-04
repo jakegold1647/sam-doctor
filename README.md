@@ -286,6 +286,21 @@ If your shell cannot find `sam-doctor` after installation, activate the
 environment where it was installed or use `python -m sam_doctor.cli` in the
 commands below.
 
+## Help improve SAM Doctor
+
+If a diagnosis was wrong or unclear, open a small reproducible issue and include:
+
+- SAM Doctor version
+- exact command used
+- sanitized first relevant excerpt
+- what outcome you expected
+
+For new rules, open a rule request with the command family that hit the failure
+and one safe follow-up check you expected.
+
+For first-time contributors, keep the change small: one rule or one
+documentation improvement, with a focused test.
+
 ## Pick your starting flow (fastest)
 
 Use the first row that matches your current situation:
