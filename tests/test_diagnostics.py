@@ -878,6 +878,9 @@ def test_help_includes_exit_code_guide(capsys: pytest.CaptureFixture[str]) -> No
     output = capsys.readouterr().out
     assert "Exit codes:" in output
     assert "GitHub Action behavior:" in output
+    assert "Command behavior:" in output
+    assert "diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings." in output
+    assert "batch: default exit 0 (no enforced failure), 1 with --fail-on-findings." in output
 
 
 def test_batch_command_preserves_path_for_duplicate_filenames(

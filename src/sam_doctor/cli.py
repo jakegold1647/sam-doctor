@@ -79,9 +79,14 @@ _SCHEMA_URLS = {
 def _build_parser() -> argparse.ArgumentParser:
     epilog = """
 Exit codes:
-  0  - command completed successfully, or no findings hit a fail gate.
-  1  - one or more supported findings detected while fail-on-findings is enabled.
+  0  - command completed successfully, or no enforced fail gate was hit.
+  1  - findings were detected and --fail-on-findings was used.
   2  - usage/runtime error (missing input, invalid arguments, I/O failure).
+
+Command behavior:
+  diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings.
+  batch: default exit 0 (no enforced failure), 1 with --fail-on-findings.
+  demo, rules, schemas, packet, init: 0 on successful execution.
 
 GitHub Action behavior:
   0  - action runs without enforced fail-on-findings failure.
