@@ -383,6 +383,30 @@ def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment
     assert title_fragment.lower() in findings[0].title.lower()
 
 
+def test_detects_sam_empty_changeset_failure() -> None:
+    findings = diagnose(
+        "Error: Failed to create changeset for the stack sam-app: Waiter ChangeSetCreateComplete "
+        "failed: Waiter encountered a terminal failure state: For expression \"Status\" we matched "
+        "expected path: \"FAILED\" Status: FAILED. Reason: The submitted information didn't contain "
+        "changes. Submit different information to create a change set."
+    )
+
+    assert len(findings) == 1
+    assert findings[0].title == "The deployment failed only because there were no changes to deploy"
+
+
+def test_detects_cloudformation_deploy_empty_changeset_failure() -> None:
+    findings = diagnose("No changes to deploy. Stack my-service-prod is up to date")
+
+    assert len(findings) == 1
+    assert "no changes to deploy" in findings[0].title.lower()
+
+
+def test_changed_stack_deploy_output_is_not_an_empty_changeset_finding() -> None:
+    assert diagnose("Successfully created/updated stack - my-service-prod. Changes deployed.") == []
+    assert diagnose("Changeset created successfully; waiting for stack update to complete.") == []
+
+
 def test_expired_wording_alone_is_not_a_credential_finding() -> None:
     assert diagnose("The CloudFront distribution's TLS certificate expired last week.") == []
     assert diagnose("Waiting for the changeset to be created; the rate of progress is slow.") == []

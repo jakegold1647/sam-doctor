@@ -4,6 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a diagnostic for deployments that fail only because the change set was
+  empty (`No changes to deploy`, `The submitted information didn't contain
+  changes`, `No updates are to be performed`), pointing CI users at
+  `--no-fail-on-empty-changeset`. Catalog is now 32 rules.
 - Added seven diagnostic rules: expired AWS credentials and runner clock skew
   (`ExpiredToken`, `Signature expired`), CloudFormation API throttling
   (`Rate exceeded`), stack deletion blocked by termination protection, general

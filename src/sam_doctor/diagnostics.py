@@ -622,6 +622,29 @@ _RULES = (
         ),
     ),
     Rule(
+        title="The deployment failed only because there were no changes to deploy",
+        confidence="high",
+        patterns=(
+            r"No changes to deploy\.?\s*Stack .{0,120}is up to date",
+            r"The submitted information didn't contain changes",
+            r"No updates are to be performed",
+        ),
+        explanation=(
+            "The stack already matches the template, so CloudFormation produced an "
+            "empty change set and the deploy command exited with an error. In a "
+            "pipeline this is usually a configuration choice, not a real failure."
+        ),
+        verification=(
+            "For automated pipelines, pass `--no-fail-on-empty-changeset` to `sam deploy` "
+            + "(or set `fail_on_empty_changeset = false` in `samconfig.toml`); "
+            + "`aws cloudformation deploy` supports the same flag.",
+            "If this run was expected to change the stack, confirm the build step ran and "
+            + "produced updated artifacts before the deploy step.",
+            "Confirm the deploy targeted the intended stack name, region, and configuration environment.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
+    ),
+    Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
         patterns=(
@@ -657,6 +680,9 @@ _RULES = (
             r"Signature expired:.*is now earlier than",
             r"An error occurred \(Throttling\)",
             r"\bRate exceeded\b",
+            r"No changes to deploy",
+            r"The submitted information didn't contain changes",
+            r"No updates are to be performed",
         ),
     ),
     Rule(
