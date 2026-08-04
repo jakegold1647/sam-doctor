@@ -71,9 +71,23 @@ jobs:
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    epilog = """
+Exit codes:
+  0  - command completed successfully, or no findings hit a fail gate.
+  1  - one or more supported findings detected while fail-on-findings is enabled.
+  2  - usage/runtime error (missing input, invalid arguments, I/O failure).
+
+GitHub Action behavior:
+  0  - action runs without enforced fail-on-findings failure.
+  1  - findings are present and fail-on-findings is enabled.
+  2  - invalid action input or action runtime failure.
+"""
+
     parser = argparse.ArgumentParser(
         prog="sam-doctor",
         description="Diagnose common AWS SAM and GitHub Actions deployment failure patterns locally.",
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subcommands = parser.add_subparsers(dest="command", required=True)

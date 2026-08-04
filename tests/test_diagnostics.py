@@ -854,6 +854,13 @@ def test_main_returns_zero_for_help_request() -> None:
     assert main(["batch", "--help"]) == 0
 
 
+def test_help_includes_exit_code_guide(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["--help"]) == 0
+    output = capsys.readouterr().out
+    assert "Exit codes:" in output
+    assert "GitHub Action behavior:" in output
+
+
 def test_batch_command_preserves_path_for_duplicate_filenames(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
