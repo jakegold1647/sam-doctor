@@ -158,7 +158,7 @@ evidence, not the full input log.
 
 - `0`: command completed successfully.
 - `1`: command input could not be read, arguments were invalid, or `--fail-on-findings`
-  found supported matches (for `diagnose`).
+  found supported matches (for `diagnose` or `batch`).
 
 You can also process multiple files in batch mode:
 
@@ -172,6 +172,13 @@ the report, then exits with status 1 only when a supported finding is present:
 ```bash
 sam-doctor diagnose deployment.log --format json \
   --output diagnosis.json --fail-on-findings
+```
+
+For multi-file CI input:
+
+```bash
+sam-doctor batch logs/*.log logs/*.txt --format json \
+  --output batch-results.json --fail-on-findings
 ```
 
 ## GitHub Actions

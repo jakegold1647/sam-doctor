@@ -409,6 +409,43 @@ def test_batch_command_json_has_aggregate_counts(tmp_path: Path, capsys: pytest.
     assert any(entry["finding_count"] == 1 for entry in report["results"])
 
 
+def test_batch_command_does_not_fail_without_fail_on_findings(tmp_path: Path) -> None:
+    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
+    (tmp_path / "b.log").write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            ["batch", str(tmp_path / "a.txt"), str(tmp_path / "b.log"), "--format", "json"],
+        )
+        == 0
+    )
+
+
+def test_batch_command_fails_with_fail_on_findings(tmp_path: Path) -> None:
+    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
+    (tmp_path / "b.log").write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                str(tmp_path / "b.log"),
+                "--format",
+                "json",
+                "--fail-on-findings",
+            ]
+        )
+        == 1
+    )
+
+
 def test_batch_command_preserves_path_for_duplicate_filenames(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

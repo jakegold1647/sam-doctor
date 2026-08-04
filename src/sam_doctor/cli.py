@@ -93,6 +93,14 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Write the batch report to this path instead of stdout.",
     )
+    batch_parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help=(
+            "Exit with status 1 when any analyzed file returns one or more supported "
+            "findings."
+        ),
+    )
     return parser
 
 
@@ -148,25 +156,29 @@ def _expand_input_paths(input_value: str) -> list[Path]:
     return sorted(set(expanded))
 
 
-def _batch_render(inputs: list[str], output_format: str) -> str:
+def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
     if not inputs:
         raise ValueError("No inputs provided for batch mode.")
 
     text_reports: list[str] = []
     batch_payload: list[dict[str, object]] = []
+    report_has_findings = False
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
             text = _read_text(file_path)
             source = str(file_path)
-            report = _render(text, source, output_format)
+            findings = diagnose(text)
+            if findings:
+                report_has_findings = True
+            report = _render_findings(findings, source, output_format)
 
             if output_format == "json":
-                findings = json.loads(report)
+                rendered_json = json.loads(json_report(findings, source))
                 batch_payload.append(
                     {
-                        "source": findings["source"],
-                        "finding_count": findings["finding_count"],
-                        "findings": findings["findings"],
+                        "source": rendered_json["source"],
+                        "finding_count": rendered_json["finding_count"],
+                        "findings": rendered_json["findings"],
                     }
                 )
             else:
@@ -178,16 +190,23 @@ def _batch_render(inputs: list[str], output_format: str) -> str:
                     text_reports.append(f"{source}\n{report.rstrip()}")
 
     if output_format == "json":
-        return json.dumps(
-            {
-                "sam_doctor_version": __version__,
-                "batch_count": len(batch_payload),
-                "results": batch_payload,
-            },
-            indent=2,
-        ) + "\n"
+        return (
+            json.dumps(
+                {
+                    "sam_doctor_version": __version__,
+                    "batch_count": len(batch_payload),
+                    "results": batch_payload,
+                },
+                indent=2,
+            )
+            + "\n",
+            report_has_findings,
+        )
 
-    return "\n\n".join(text_reports) + ("\n" if text_reports else "")
+    return (
+        "\n\n".join(text_reports) + ("\n" if text_reports else ""),
+        report_has_findings,
+    )
 
 
 def _read_demo(scenario: str = "oidc") -> str:
@@ -233,7 +252,7 @@ def main(argv: list[object] | None = None) -> int:
 
     if args.command == "batch":
         try:
-            report = _batch_render(args.inputs, args.format)
+            report, report_has_findings = _batch_render(args.inputs, args.format)
         except ValueError as error:
             parser.error(str(error))
             return 1
@@ -246,7 +265,7 @@ def main(argv: list[object] | None = None) -> int:
             print(f"Wrote batch {args.format} report to {args.output}")
         else:
             sys.stdout.write(report)
-        return 0
+        return 1 if args.fail_on_findings and report_has_findings else 0
 
     try:
         text = _read_text(args.input)
