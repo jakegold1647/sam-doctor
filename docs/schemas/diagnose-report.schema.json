@@ -25,7 +25,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "definitions": {
     "finding": {
       "type": "object",
@@ -43,7 +43,8 @@
           "type": "string"
         },
         "confidence": {
-          "type": "string"
+          "type": "string",
+          "enum": ["high", "medium"]
         },
         "explanation": {
           "type": "string"

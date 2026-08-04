@@ -451,6 +451,10 @@ For machine integrations, the JSON payload shape is documented in checked-in sch
 - `docs/schemas/batch-report.schema.json`
 - `docs/schemas/rules-report.schema.json`
 
+`sam-doctor` treats the JSON schema contracts as additive-compatible: additive top-level
+fields are allowed, but removing or renaming documented required fields is a breaking
+change and requires a coordinated version bump.
+
 ### CLI exit codes
 
 | Status | Meaning |

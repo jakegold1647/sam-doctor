@@ -20,7 +20,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "definitions": {
     "result": {
       "type": "object",
@@ -59,7 +59,8 @@
           "type": "string"
         },
         "confidence": {
-          "type": "string"
+          "type": "string",
+          "enum": ["high", "medium"]
         },
         "explanation": {
           "type": "string"
