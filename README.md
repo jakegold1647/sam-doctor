@@ -43,6 +43,13 @@ python -m pip install sam-doctor
 sam-doctor demo
 ```
 
+You can also use:
+
+```bash
+pipx install sam-doctor      # isolated install (no environment changes)
+uvx sam-doctor demo          # run without install (if uv is available)
+```
+
 The bundled demo needs no AWS credentials and makes no network calls. It
 prints a real report:
 
@@ -100,6 +107,14 @@ If you need a quick signal from pasted text, skip the file step:
 ```bash
 printf '%s\n' "Your pasted AWS failure excerpt" | sam-doctor diagnose -
 ```
+
+If you use a CI step, this is often enough:
+
+```bash
+sam-doctor diagnose deployment.log --format github | tee /tmp/sam-doctor.txt
+```
+
+Then share the redacted diagnostic text only, or use it directly in a job summary.
 
 Then reply with this pattern:
 
