@@ -8,6 +8,7 @@ body:
       value: |
         Do not post raw logs, AWS account IDs, ARNs, access keys, session tokens,
         customer data, or private repository names. Use a short, sanitized excerpt.
+        Include at least one reproducer line and the command that produced it.
   - type: input
     id: version
     attributes:
@@ -16,6 +17,22 @@ body:
       placeholder: sam-doctor 0.x.y
     validations:
       required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command used
+      description: >
+        Command that generated the excerpt (for example
+        `sam-doctor diagnose deployment.log` or `sam deploy ... | tee deployment.log`).
+      placeholder: sam-doctor diagnose deployment.log --format json
+    validations:
+      required: true
+  - type: input
+    id: output_format
+    attributes:
+      label: Report format
+      description: Use the output format you selected in SAM Doctor (terminal, json, markdown, github).
+      placeholder: terminal
   - type: dropdown
     id: problem
     attributes:
@@ -35,10 +52,28 @@ body:
       placeholder: "Error: Failed to create changeset ..."
     validations:
       required: true
+  - type: input
+    id: environment
+    attributes:
+      label: CI or local environment
+      description: >
+        Briefly identify where this happened (for example local macOS, GitHub Actions,
+        GitLab CI, self-hosted runner).
+      placeholder: GitHub Actions ubuntu-latest
   - type: textarea
     id: expected
     attributes:
       label: Expected result
       description: What safe next check or diagnostic outcome did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: redaction_confirmed
+    attributes:
+      label: Has the excerpt been sanitized?
+      description: Check this before submitting to avoid exposing sensitive identifiers.
+      options:
+        - "Yes"
+        - "Not sure — please review"
     validations:
       required: true

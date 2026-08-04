@@ -8,11 +8,22 @@ body:
       value: |
         Do not post raw logs, AWS account IDs, ARNs, access keys, session tokens,
         customer data, or private repository names. A short, sanitized error is enough.
+        Include the command where the failure appeared and one expected safe next check.
   - type: input
     id: service
     attributes:
       label: AWS or CI service
       placeholder: CloudFormation, IAM, API Gateway, GitHub Actions, or AWS SAM
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Deployment command used
+      description: >
+        The exact command family that produced the failure (for example `sam deploy`,
+        `sam sync`, `aws cloudformation deploy`, etc).
+      placeholder: sam deploy --no-confirm-changeset
     validations:
       required: true
   - type: textarea
@@ -27,5 +38,15 @@ body:
     attributes:
       label: Useful next check
       description: What should a safe, evidence-based report ask a developer to verify?
+    validations:
+      required: true
+  - type: dropdown
+    id: redaction_confirmed
+    attributes:
+      label: Has the excerpt been sanitized?
+      description: Check this before submitting to avoid exposing sensitive identifiers.
+      options:
+        - "Yes"
+        - "Not sure — please review"
     validations:
       required: true
