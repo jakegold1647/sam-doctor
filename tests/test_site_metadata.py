@@ -33,6 +33,8 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
     starter = ROOT / "examples" / "github-actions-workflow.yml"
+    starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
+    starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
 
     assert "fail-on-findings: true" in readme
     assert "fail-on-findings: true" in site
@@ -40,4 +42,10 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
     assert "--fail-on-findings" in site
     assert "examples/github-actions-workflow.yml" in readme
     assert "sam-doctor GitHub Actions starter" in site
+    assert "github-actions-workflow-sam-sync.yml" in readme
+    assert "github-actions-workflow-cf-pipeline.yml" in readme
+    assert "github-actions-workflow-sam-sync.yml" in site
+    assert "github-actions-workflow-cf-pipeline.yml" in site
     assert starter.exists()
+    assert starter_sync.exists()
+    assert starter_cf.exists()

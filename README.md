@@ -209,6 +209,15 @@ Use this ready-to-copy starter workflow as your starting point:
 curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
 ```
 
+### 90-second onboarding by stack type
+
+- **AWS SAM deploy command**
+  - Start with [`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml)
+- **AWS SAM sync workflows**
+  - Start with [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
+- **CloudFormation package/deploy commandline**
+  - Start with [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
+
 Put the diagnostic step after the command that writes the log and keep
 `if: always()`; otherwise GitHub Actions skips it when the deployment fails.
 The action exposes `finding-count` and `has-findings` outputs. Set

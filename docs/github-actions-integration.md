@@ -38,6 +38,11 @@ You can copy the full starter workflow from
 `examples/github-actions-workflow.yml` and adjust your deploy command and
 permissions.
 
+If your stack uses different deployment flow, start from one of these:
+
+- `examples/github-actions-workflow-sam-sync.yml` for `sam sync`
+- `examples/github-actions-workflow-cf-pipeline.yml` for `aws cloudformation deploy`
+
 ## Optional: make recognized failures fail the job
 
 Start by observing the diagnostics. When the rule set matches the failures you care about, opt into a diagnostic gate:
@@ -46,7 +51,7 @@ Start by observing the diagnostics. When the rule set matches the failures you c
 with:
   log-file: deployment.log
   summary: true
-  fail-on-findings: "true"
+  fail-on-findings: true
 ```
 
 This setting does not replace the exit status from `sam deploy`; it makes a recognized diagnostic fail the job as well.
