@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Split IAM access denials into two new high-confidence diagnostics with
+  parsed denial context: an explicit-deny rule (including service control
+  policies, which cannot be fixed from the member account) and an
+  implicit-deny rule for `because no ... policy allows` errors that names the
+  policy layer AWS expected the permission in. Findings now append the denied
+  action, redacted principal/resource presence, and denial type parsed from
+  the evidence; the generic access-denied rule still catches bare
+  `AccessDenied` lines. Catalog is now 34 rules.
 - Contributor on-ramp: CONTRIBUTING gained a full development-setup guide
   (fork/clone, virtual environments including Windows PowerShell, baseline
   commands that reproduce CI); the README now has a Contributing section near

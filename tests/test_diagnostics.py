@@ -1,4 +1,4 @@
-import io
+﻿import io
 import json
 from pathlib import Path
 
@@ -1018,3 +1018,92 @@ def test_render_findings_github_escapes_workflow_command_delimiters() -> None:
     # not split the workflow command.
     assert output.count("\n") == len(findings)
     assert all(line.startswith("::notice ") for line in output.rstrip("\n").splitlines())
+
+
+def test_explicit_scp_deny_gets_the_specific_finding_with_parsed_context() -> None:
+    log = (
+        "An error occurred (AccessDeniedException) when calling the CreateRole operation: "
+        "User: arn:aws:sts::123456789012:assumed-role/deploy-role/GitHubActions is not "
+        "authorized to perform: iam:CreateRole on resource: "
+        "arn:aws:iam::123456789012:role/app-role with an explicit deny in a service "
+        "control policy"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["An explicit deny blocked a deployment action"]
+    explanation = findings[0].explanation
+    assert "Denial context parsed from the evidence" in explanation
+    assert "`iam:CreateRole`" in explanation
+    assert "service control policy" in explanation
+    assert "123456789012" not in explanation
+    assert all("123456789012" not in evidence for evidence in findings[0].evidence)
+
+
+def test_implicit_deny_gets_the_specific_finding_and_names_the_layer() -> None:
+    log = (
+        "An error occurred (AccessDeniedException) when calling the PutObject operation: "
+        "User: arn:aws:iam::123456789012:user/deploy is not authorized to perform: "
+        "s3:PutObject on resource: arn:aws:s3:::artifact-bucket/app.zip because no "
+        "identity-based policy allows the s3:PutObject action"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["A deployment action was denied because no policy allows it"]
+    explanation = findings[0].explanation
+    assert "Denial context parsed from the evidence" in explanation
+    assert "`s3:PutObject`" in explanation
+    assert "no identity-based policy allows it" in explanation
+
+
+def test_bare_access_denied_still_reports_the_generic_rule_without_context() -> None:
+    log = (
+        "Deployment step reached AWS\n"
+        "An error occurred (AccessDenied) when calling the DescribeStacks operation"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["AWS denied an API action required by the deployment"]
+    assert "Denial context parsed from the evidence" not in findings[0].explanation
+
+
+def test_mixed_denials_report_the_specific_and_generic_rules_side_by_side() -> None:
+    log = (
+        "User: arn:aws:iam::123456789012:user/deploy is not authorized to perform: "
+        "cloudformation:CreateChangeSet with an explicit deny\n"
+        "Later: An error occurred (AccessDenied) when calling the DescribeStacks operation"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert "An explicit deny blocked a deployment action" in titles
+    assert "AWS denied an API action required by the deployment" in titles
+
+
+def test_denial_rules_never_recommend_administrator_access_as_a_fix() -> None:
+    from sam_doctor.diagnostics import supported_rules
+
+    for rule in supported_rules():
+        for step in rule.verification:
+            assert "attach AdministratorAccess" not in step or "never" in step
+
+
+def test_ecr_auth_denial_does_not_fire_the_new_denial_rules() -> None:
+    log = (
+        "An error occurred (AccessDeniedException) when calling the GetAuthorizationToken "
+        "operation: User: arn:aws:sts::123456789012:assumed-role/deploy-role/GitHubActions "
+        "is not authorized to perform: ecr:GetAuthorizationToken on resource: * because no "
+        "identity-based policy allows the ecr:GetAuthorizationToken action"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert "A deployment action was denied because no policy allows it" not in titles
+    assert "An explicit deny blocked a deployment action" not in titles
+

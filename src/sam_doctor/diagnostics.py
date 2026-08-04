@@ -44,6 +44,61 @@ class Rule:
     # Per-line patterns: a line matching any of these never counts as evidence
     # for this rule, even when a primary pattern also matches it.
     excluded_line_patterns: tuple[str, ...] = ()
+    # When set, the finding's explanation is extended with a denial context
+    # parsed from the (already redacted) evidence: the denied action, whether a
+    # principal and resource were named, and which policy layer the error
+    # wording attributes the denial to.
+    parse_denial_context: bool = False
+
+
+# The action name (e.g. `iam:CreateRole`) is service metadata, not an account
+# identifier, so it is safe to surface after redaction has replaced ARNs and
+# account ids in the evidence line.
+_DENIED_ACTION = re.compile(r"not authorized to perform:?\s*([A-Za-z0-9-]+:[A-Za-z0-9*]+)")
+_DENIED_PRINCIPAL = re.compile(r"User:\s*\[REDACTED_ARN\]", re.IGNORECASE)
+_DENIED_RESOURCE = re.compile(r"on resource:?\s*(\[REDACTED_ARN\]|\*)", re.IGNORECASE)
+_EXPLICIT_DENY_SCP = re.compile(r"explicit deny in a service control policy", re.IGNORECASE)
+_EXPLICIT_DENY = re.compile(r"(?:with|due to) an explicit deny", re.IGNORECASE)
+_IMPLICIT_DENY_LAYER = re.compile(
+    r"because no ([a-z][a-z -]*?)\s*polic(?:y|ies) allows", re.IGNORECASE
+)
+
+
+def _denial_context_note(evidence: tuple[str, ...]) -> str:
+    """Describe the parsed denial from redacted evidence, or an empty string."""
+
+    for line in evidence:
+        action_match = _DENIED_ACTION.search(line)
+        scp = _EXPLICIT_DENY_SCP.search(line)
+        explicit = scp or _EXPLICIT_DENY.search(line)
+        implicit = _IMPLICIT_DENY_LAYER.search(line)
+        if not (action_match or explicit or implicit):
+            continue
+        parts = []
+        if action_match:
+            parts.append(f"denied action `{action_match.group(1)}`")
+        if _DENIED_PRINCIPAL.search(line):
+            parts.append("for the caller identity shown (redacted) in the evidence")
+        resource_match = _DENIED_RESOURCE.search(line)
+        if resource_match:
+            target = (
+                "all resources (`*`)"
+                if resource_match.group(1) == "*"
+                else "the specific resource shown (redacted) in the evidence"
+            )
+            parts.append(f"on {target}")
+        if scp:
+            parts.append(
+                "blocked by an explicit deny in a service control policy "
+                "(set at the AWS Organizations level, not in this account)"
+            )
+        elif explicit:
+            parts.append("blocked by an explicit deny statement")
+        elif implicit:
+            layer = implicit.group(1).strip()
+            parts.append(f"an implicit deny: no {layer} policy allows it")
+        return "Denial context parsed from the evidence: " + "; ".join(parts) + "."
+    return ""
 
 
 _RULES = (
@@ -162,6 +217,64 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html",
     ),
     Rule(
+        title="An explicit deny blocked a deployment action",
+        confidence="high",
+        patterns=(
+            r"(?:with|due to) an explicit deny",
+        ),
+        explanation=(
+            "AWS evaluated the request and found a Deny statement that matched it. "
+            "An explicit deny always wins: adding or broadening Allow policies "
+            "cannot fix this. The deny lives in one of the policy layers that "
+            "apply to the caller - a service control policy from the AWS "
+            "Organizations management account (the error says so when it is the "
+            "cause), or a Deny in an identity, resource, permissions-boundary, "
+            "or session policy."
+        ),
+        verification=(
+            "Record the exact action, caller, and resource from the error, and run `aws sts get-caller-identity` in the same environment to confirm which identity actually made the call.",
+            "If the message names a service control policy, inspect SCPs from the AWS Organizations management account; the deny cannot be seen or changed from the member account.",
+            "Otherwise search for matching `\"Effect\": \"Deny\"` statements across the caller's identity policies, permissions boundary, session policy, and the target's resource policy, and confirm the layer with the IAM Policy Simulator.",
+            "Look up the request in CloudTrail (by request ID from the error when present) to see the full denied request context.",
+            "Fix by amending the specific Deny (add a condition or exception for the deployment identity); do not broaden Allow policies, and never attach AdministratorAccess to work around a deny.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
+        excluded_line_patterns=(
+            r"AssumeRoleWithWebIdentity",
+            r"ECR image",
+            r"ecr:GetAuthorizationToken",
+        ),
+        parse_denial_context=True,
+    ),
+    Rule(
+        title="A deployment action was denied because no policy allows it",
+        confidence="high",
+        patterns=(
+            r"because no [a-z -]*polic(?:y|ies) allows",
+        ),
+        explanation=(
+            "AWS denied the action because no applicable policy grants it - an "
+            "implicit deny. The error wording names the policy layer AWS "
+            "expected the permission in (identity-based, resource-based, or "
+            "session policy). The fix is a least-privilege Allow for exactly "
+            "the denied action and resource in that layer, not a broader role."
+        ),
+        verification=(
+            "Run `aws sts get-caller-identity` in the failing environment to confirm the request used the identity you expected (a wrong profile often looks like a missing permission).",
+            "Grant the exact denied action on the exact resource in the policy layer the error names: the deploy role's identity policy, or the resource policy of the named bucket, key, or queue.",
+            "Confirm the change with the IAM Policy Simulator before re-running the deployment.",
+            "If it is unclear which policy applies, look up the denied event in CloudTrail (by request ID when the error includes one).",
+            "Keep the grant least-privilege; never attach AdministratorAccess to make a deployment pass.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html",
+        excluded_line_patterns=(
+            r"AssumeRoleWithWebIdentity",
+            r"ECR image",
+            r"ecr:GetAuthorizationToken",
+        ),
+        parse_denial_context=True,
+    ),
+    Rule(
         title="AWS denied an API action required by the deployment",
         confidence="medium",
         patterns=(r"AccessDenied(?:Exception)?", r"is not authorized to perform:"),
@@ -190,7 +303,14 @@ _RULES = (
             r"AssumeRoleWithWebIdentity",
             r"ECR image",
             r"ecr:GetAuthorizationToken",
+            # Lines with explicit-deny or no-policy-allows wording are claimed
+            # by the two higher-confidence denial rules above; keeping them out
+            # here (per line, not whole log) lets this rule still report bare
+            # AccessDenied lines elsewhere in the same log.
+            r"(?:with|due to) an explicit deny",
+            r"because no [a-z -]*polic(?:y|ies) allows",
         ),
+        parse_denial_context=True,
     ),
     Rule(
         title="The AWS credentials used by the deployment have expired",
@@ -806,6 +926,11 @@ def diagnose(text: str) -> list[Finding]:
         ):
             continue
         evidence = tuple(line for _, line in line_matches)
+        explanation = rule.explanation
+        if rule.parse_denial_context:
+            note = _denial_context_note(evidence)
+            if note:
+                explanation = f"{explanation}\n\n{note}"
         matched_findings.append(
             (
                 line_matches[0][0],
@@ -813,7 +938,7 @@ def diagnose(text: str) -> list[Finding]:
                 Finding(
                     title=rule.title,
                     confidence=rule.confidence,
-                    explanation=rule.explanation,
+                    explanation=explanation,
                     verification=rule.verification,
                     documentation_url=rule.documentation_url,
                     evidence=evidence,
