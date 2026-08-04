@@ -79,7 +79,8 @@ def run_distribution(
         if append_csv:
             previous = module._read_last_csv_row(append_csv)
         elif summary:
-            previous = module._read_last_csv_row((Path(repo_root) / "artifacts" / "distribution.csv").as_posix())
+            previous_path = Path(summary).resolve().parent / "distribution.csv"
+            previous = module._read_last_csv_row(previous_path.as_posix())
 
     if output_format == "json":
         print(module.json.dumps(snapshot, indent=2, sort_keys=True))
@@ -226,12 +227,12 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--append-csv",
-        default="",
+        default="notes/distribution.csv",
         help="Append distribution rows to CSV path.",
     )
     parser.add_argument(
         "--summary",
-        default="",
+        default="notes/distribution-summary.md",
         help="Write distribution summary file.",
     )
     parser.add_argument(

@@ -33,6 +33,16 @@ python scripts/check-launch.py \
   --outreach-summary notes/sam-doctor-outreach-summary.md
 ```
 
+Daily launch tracking files are local-only by default:
+
+- `notes/distribution.csv`
+- `notes/distribution-summary.md`
+- `notes/sam-doctor-outreach-log.csv`
+- `notes/sam-doctor-outreach-summary.md`
+
+These paths are ignored by git, so growth/outreach notes stay in your working copy
+only and are never committed.
+
 ## 2. Publish the public tool
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
