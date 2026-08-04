@@ -767,7 +767,10 @@ def test_init_command_writes_starter_workflow(tmp_path: Path, capsys) -> None:
     assert "uses: jakegold1647/sam-doctor@v0" in text
     assert "sam deploy --no-confirm-changeset" in text
     assert "has-findings" in text
-    assert "Optional: fail CI when a supported diagnosis is found." in text
+    assert "summary: true" in text
+    assert "annotations: true" in text
+    assert "batch: false" in text
+    assert "fail-on-findings: false" in text
 
 
 def test_init_command_rejects_existing_file_without_force(tmp_path: Path, capsys) -> None:
@@ -806,6 +809,36 @@ def test_init_command_custom_deploy_command(tmp_path: Path) -> None:
         == 0
     )
     assert custom in workflow.read_text(encoding="utf-8")
+
+
+def test_init_command_supports_ci_options(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+    custom = "sam sync --no-confirm-changeset"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+                "--deploy-command",
+                custom,
+                "--no-summary",
+                "--no-annotations",
+                "--batch",
+                "--fail-on-findings",
+                "--force",
+            ]
+        )
+        == 0
+    )
+
+    text = workflow.read_text(encoding="utf-8")
+    assert "summary: false" in text
+    assert "annotations: false" in text
+    assert "batch: true" in text
+    assert "fail-on-findings: true" in text
+    assert custom in text
 
 
 def test_main_returns_zero_for_help_request() -> None:

@@ -59,10 +59,10 @@ jobs:
         uses: jakegold1647/sam-doctor@v0
         with:
           log-file: deployment.log
-          summary: true
-      # Optional: fail CI when a supported diagnosis is found.
-      # fail-on-findings: true
-      #
+          summary: {summary}
+          annotations: {annotations}
+          batch: {batch}
+          fail-on-findings: {fail_on_findings}
       # Optional: route high-signal failures to a follow-up job/thread.
       # - name: Open a follow-up note when issues are found
       #   if: steps.sam-doctor.outputs.has-findings == 'true'
@@ -191,10 +191,47 @@ def _build_parser() -> argparse.ArgumentParser:
         default="sam deploy --no-confirm-changeset",
         help="Deployment command to capture in the starter workflow.",
     )
+    summary_group = init_parser.add_mutually_exclusive_group()
+    summary_group.add_argument(
+        "--summary",
+        action="store_true",
+        dest="summary",
+        help="Write a GitHub Actions summary from the diagnosis output.",
+    )
+    summary_group.add_argument(
+        "--no-summary",
+        action="store_false",
+        dest="summary",
+        help="Disable the GitHub Actions summary output in the generated workflow.",
+    )
+    annotation_group = init_parser.add_mutually_exclusive_group()
+    annotation_group.add_argument(
+        "--annotations",
+        action="store_true",
+        dest="annotations",
+        help="Emit GitHub Actions notices for findings.",
+    )
+    annotation_group.add_argument(
+        "--no-annotations",
+        action="store_false",
+        dest="annotations",
+        help="Disable GitHub Actions notices for findings.",
+    )
+    init_parser.set_defaults(summary=True, annotations=True)
+    init_parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Use batch mode on a directory or glob in the generated workflow.",
+    )
     init_parser.add_argument(
         "--force",
         action="store_true",
         help="Overwrite an existing workflow file.",
+    )
+    init_parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help="Fail the action step when one or more findings are found.",
     )
     return parser
 
@@ -382,12 +419,32 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
     )
 
 
-def _init_workflow_command(command: str, workflow_file: str, force: bool) -> None:
+def _init_workflow_command(
+    command: str,
+    workflow_file: str,
+    force: bool,
+    *,
+    summary: bool,
+    annotations: bool,
+    batch: bool,
+    fail_on_findings: bool,
+) -> None:
     target = Path(workflow_file).expanduser().resolve()
     if target.exists() and not force:
         raise ValueError(f"Workflow file already exists: {target}. Use --force to overwrite.")
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(textwrap.dedent(_WORKFLOW_TEMPLATE.format(deploy_command=command)), encoding="utf-8")
+    target.write_text(
+        textwrap.dedent(
+            _WORKFLOW_TEMPLATE.format(
+                deploy_command=command,
+                summary=str(summary).lower(),
+                annotations=str(annotations).lower(),
+                batch=str(batch).lower(),
+                fail_on_findings=str(fail_on_findings).lower(),
+            )
+        ),
+        encoding="utf-8",
+    )
 
 
 
@@ -550,7 +607,15 @@ def main(argv: list[object] | None = None) -> int:
 
     if args.command == "init":
         try:
-            _init_workflow_command(args.deploy_command, args.workflow_file, args.force)
+            _init_workflow_command(
+                args.deploy_command,
+                args.workflow_file,
+                args.force,
+                summary=args.summary,
+                annotations=args.annotations,
+                batch=args.batch,
+                fail_on_findings=args.fail_on_findings,
+            )
         except ValueError as error:
             _print_error(parser, str(error))
             return 2
