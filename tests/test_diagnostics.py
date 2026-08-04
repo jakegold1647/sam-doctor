@@ -498,6 +498,16 @@ def test_redaction_covers_common_ci_credentials() -> None:
     assert result.count("[REDACTED_SECRET]") == 2
 
 
+def test_redaction_covers_bare_session_tokens() -> None:
+    token = "IQoJb3JpZ2luX2VjENr" + "A1b2C3d4" * 12
+    result = redact(f"Credentials: AccessKeyId=ASIAIOSFODNN7EXAMPLE SessionToken={token}")
+
+    assert token not in result
+    assert "[REDACTED_AWS_SESSION_TOKEN]" in result
+    # A short base64-looking word with the same prefix is left alone.
+    assert redact("IQoJb3JpZ2lu is a prefix") == "IQoJb3JpZ2lu is a prefix"
+
+
 def test_redaction_covers_quoted_secret_values() -> None:
     text = (
         "password=\"hunter2\" "
