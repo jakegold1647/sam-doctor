@@ -63,10 +63,21 @@ If your stack uses different deployment flow, start from one of these:
 
 - `examples/github-actions-workflow-sam-sync.yml` for `sam sync`
 - `examples/github-actions-workflow-cf-pipeline.yml` for `aws cloudformation deploy`
+- `examples/github-actions-workflow-cdk.yml` for `cdk deploy`
 
 Keep a short per-repo checklist in
 [`examples/README.md`](../examples/README.md)
 while you validate these templates in your CI.
+
+If your workflow already uses a direct `run:` deployment command, you can keep the
+integration shell-only and emit workflow-command annotations directly:
+
+```yaml
+- name: Diagnose deployment log
+  if: always()
+  run: |
+    python -m sam_doctor.cli diagnose deployment.log --format github
+```
 
 ## Non-GitHub CI starters
 
