@@ -143,50 +143,11 @@ PY
 fi
 
 if [[ "$SAM_DOCTOR_ANNOTATIONS" == "true" && "$finding_count" -gt 0 ]]; then
-  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" <<'PY'
-import json
-import sys
-
-from sam_doctor.cli import _escape_github_command_property, _escape_github_command_value
-from sam_doctor.redaction import redact
-
-
-def emit_github_notices(payload: dict[str, object], is_batch: bool) -> None:
-    if is_batch:
-        results = payload.get("results", [])
-        for item in results:
-            source = str(item.get("source", ""))
-            findings = item.get("findings", [])
-            for finding in findings:
-                _emit_notice(source, finding)
-        return
-
-    source = str(payload.get("source", ""))
-    findings = payload.get("findings", [])
-    for finding in findings:
-        _emit_notice(source, finding)
-
-
-def _emit_notice(source: str, finding: object) -> None:
-    finding_dict = dict(finding)
-    verification = finding_dict.get("verification", ["Review the documentation link."])[0]
-    message = (
-        f"{finding_dict.get('title', 'Deployment issue detected')}. Line "
-        f"{finding_dict.get('line_number', 0)}: {verification}. "
-        f"Docs: {finding_dict.get('documentation_url', 'about:blank')}"
-    )
-    escaped_source = _escape_github_command_property(redact(source))
-    print(
-        f"::notice file={escaped_source},line={finding_dict.get('line_number', 0)},title=SAM Doctor::"
-        f"{_escape_github_command_value(message)}"
-    )
-
-
-report_path = sys.argv[1]
-is_batch = sys.argv[2].lower() == "true"
-payload = json.load(open(report_path, encoding="utf-8"))
-emit_github_notices(payload, is_batch)
-PY
+  if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+    "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format github
+  else
+    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format github
+  fi
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then

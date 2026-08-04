@@ -445,6 +445,10 @@ and `github` emits GitHub workflow command annotations directly. All formats
 include the first matching line number and matched evidence, not the full input
 log.
 
+For batch mode, `--format github` still emits one annotation per supported finding
+and skips successful inputs, so a large batch can be scanned quickly in workflow
+logs.
+
 For machine integrations, the JSON payload shape is documented in checked-in schemas:
 
 - `docs/schemas/diagnose-report.schema.json`

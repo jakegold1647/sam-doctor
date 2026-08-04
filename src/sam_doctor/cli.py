@@ -308,13 +308,16 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
                         "findings": rendered_json["findings"],
                     }
                 )
-            else:
-                if output_format == "markdown":
-                    text_reports.append(
-                        f"## Source: <code>{escape(str(file_path))}</code>\n\n{report.rstrip()}"
-                    )
-                else:
-                    text_reports.append(f"{source}\n{report.rstrip()}")
+                continue
+            if output_format == "github":
+                if report:
+                    text_reports.append(report.rstrip())
+                continue
+            text_reports.append(
+                f"## Source: <code>{escape(str(file_path))}</code>\n\n{report.rstrip()}"
+                if output_format == "markdown"
+                else f"{source}\n{report.rstrip()}"
+            )
 
     if output_format == "json":
         return (
@@ -329,7 +332,11 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
             + "\n",
             report_has_findings,
         )
-
+    if output_format == "github":
+        return (
+            "\n".join(text_reports) + ("\n" if text_reports else ""),
+            report_has_findings,
+        )
     return (
         "\n\n".join(text_reports) + ("\n" if text_reports else ""),
         report_has_findings,

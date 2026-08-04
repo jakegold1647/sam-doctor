@@ -645,6 +645,26 @@ def test_batch_command_json_has_aggregate_counts(tmp_path: Path, capsys: pytest.
     assert any(entry["finding_count"] == 1 for entry in report["results"])
 
 
+def test_batch_render_github_emits_annotations_only_for_findings(tmp_path: Path) -> None:
+    from sam_doctor.cli import _batch_render
+
+    finding_log = tmp_path / "with_finding.log"
+    clean_log = tmp_path / "clean.log"
+    finding_log.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    clean_log.write_text("sam deploy completed successfully", encoding="utf-8")
+
+    report, has_findings = _batch_render(
+        [str(finding_log), str(clean_log)],
+        "github",
+    )
+
+    assert has_findings
+    lines = [line for line in report.splitlines() if line.strip()]
+    assert len(lines) == 1
+    assert lines[0].startswith("::notice ")
+    assert "with_finding.log" in lines[0]
+
+
 def test_batch_command_does_not_fail_without_fail_on_findings(tmp_path: Path) -> None:
     (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
     (tmp_path / "b.log").write_text(
