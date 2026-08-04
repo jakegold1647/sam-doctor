@@ -68,11 +68,12 @@
     <header class="topbar" aria-label="Primary navigation">
       <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
       <nav>
-        <a href="#install">Install</a>
-        <a href="#ci">Use in CI</a>
-        <a href="#workflow">How it works</a>
-        <a href="#founder">Feedback</a>
-        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      <a href="#install">Install</a>
+      <a href="#ci">Use in CI</a>
+      <a href="#researcher-title">Research</a>
+      <a href="#workflow">How it works</a>
+      <a href="#founder">Feedback</a>
+      <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
       </nav>
     </header>
     <main id="main-content">
@@ -263,6 +264,23 @@
           <li><strong>See the evidence.</strong> Matching lines are redacted and kept short.</li>
           <li><strong>Verify the cause.</strong> Use the linked docs and review every suggested change.</li>
         </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="researcher-title">
+        <p class="eyebrow">RESEARCHER-READY</p>
+        <h2 id="researcher-title">Create a reproducible evidence packet</h2>
+        <p>
+          For collaboration or reproducible discussion, generate both human and machine
+          outputs, then share only sanitized artifacts:
+        </p>
+        <pre><code>sam-doctor diagnose deployment.log --format markdown > diagnosis.md
+sam-doctor diagnose deployment.log --format json --output diagnosis.json</code></pre>
+        <p class="muted">
+          Use the same packet approach for papers, code reviews, and practitioner notes.
+          Start with the minimal excerpt, and include
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/researcher-evidence-packet.md">the template</a>
+          for repeatable reporting.
+        </p>
       </section>
 
       <section id="founder" class="founder">

@@ -335,6 +335,7 @@ expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
 - [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
+- [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
 
 ## Supported signals
 
@@ -347,6 +348,26 @@ access; the report is still a prompt to verify the cause, not an automatic fix.
 Run this only on logs you are authorized to inspect. Review every suggested
 command and policy change before applying it. SAM Doctor is diagnostic help,
 not security, legal, or production-operations advice.
+
+## Researcher-ready evidence packet
+
+For reproducible, repeatable collaboration:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown > diagnosis.md
+sam-doctor diagnose deployment.log --format json --output diagnosis.json
+```
+
+Then share only a minimal sanitized packet (commands, key context, and outputs)
+instead of raw logs:
+
+- `diagnosis.md`
+- `diagnosis.json`
+- `docs/researcher-evidence-packet.md` (template)
+
+Start here:
+
+`docs/researcher-evidence-packet.md`
 
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
 bearer tokens, JWT-style tokens, and common GitHub token formats before matched
