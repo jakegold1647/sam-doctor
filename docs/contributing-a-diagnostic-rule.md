@@ -15,6 +15,8 @@ inspect an AWS account or claim an authoritative root cause.
 6. Link the relevant official AWS, GitHub, or service documentation.
 7. Add redaction coverage if the evidence can contain identifiers.
 8. Add the rule to the supported-category documentation when appropriate.
+9. Add a short changelog entry and include this PR in the next release if the
+   rule is accepted.
 
 ## Local workflow
 
@@ -25,9 +27,8 @@ python -m build
 ```
 
 The core rule catalog lives in `src/sam_doctor/diagnostics.py`. The main
-regression cases are in `tests/test_diagnostics.py`. A focused contribution
-usually changes one rule, its positive and negative tests, and a short changelog
-entry.
+regression cases are in `tests/test_diagnostics.py`. A focused contribution usually
+changes one rule, its positive and negative tests, and a short changelog entry.
 
 ## Safe fixture example
 
@@ -36,8 +37,8 @@ MyFunction CREATE_FAILED
 Lambda does not have permission to access the ECR image.
 ```
 
-Do not include account IDs, ARNs, email addresses, tokens, customer data, or a
-complete production log. Review every excerpt manually before submitting it.
+Do not include account IDs, ARNs, emails, tokens, customer data, or full
+production logs. Review every excerpt manually before submitting it.
 
 ## Worked example (minimal end-to-end)
 
@@ -47,46 +48,51 @@ When your branch adds one new pattern, touch only one rule block and one test pa
 
 ```python
 Rule(
-    id="SAM-NEW-0001",
-    title="S3 artifact bucket permission is not configured",
+    title="CloudFormation resource access to artifact bucket is blocked",
     confidence="medium",
     patterns=(
-        r"Access\\s+Denied|AccessDenied|not\\s+authorized\\s+to\\s+s3",
+        r"access denied\\s*.*GetObject.*artifact-bucket",
+        r"Could not read object from S3:.*AccessDenied",
     ),
-    evidence_label="Bucket access",
-    evidence="S3 artifact access appears blocked in the deployment output.",
-    verify=(
-        "Confirm the artifact bucket and object key permissions for the build role.",
+    explanation=(
+        "SAM could not read or write a build artifact from S3 during deployment. "
+        "A review of the role and bucket policy is needed before retrying."
+    ),
+    verification=(
+        "Confirm the deployment role has the required artifact bucket permissions for this path.",
+        "Check the bucket policy and KMS policy for the same role and artifact key.",
         "Verify the deploy IAM policy still allows `s3:GetObject` and `s3:PutObject` as needed.",
     ),
-    docs_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html",
+    documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-policies.html",
+    suppressed_by=(),
+    excluded_line_patterns=(),
 ),
 ```
 
-Use one stable title, one confidence, 2–4 verify steps, and one official link.
+Use one stable title, one confidence value, two to four verification steps, and
+one official link.
 
 ### 2) Add focused positive/negative tests in `tests/test_diagnostics.py`
 
 ```python
-def test_detects_bucket_access_block() -> None:
-    findings = diagnose("AccessDenied: User is not authorized to perform s3:PutObject")
+def test_detects_artifact_bucket_access_block() -> None:
+    findings = diagnose("Could not read object from S3: AccessDenied for my-artifact-bucket/packaged.yaml")
     assert len(findings) == 1
-    assert findings[0].id == "SAM-NEW-0001"
-    assert findings[0].title == "S3 artifact bucket permission is not configured"
+    assert findings[0].title == "CloudFormation resource access to artifact bucket is blocked"
 
 def test_does_not_match_unrelated_s3_output() -> None:
-    findings = diagnose("Created artifact bucket with standard permissions.")
+    findings = diagnose("Created artifact bucket with standard permissions and retried successfully.")
     assert findings == []
 ```
 
-If the pattern is multi-line, use a strict fixture with both supporting and
-exclusion lines so false positives are covered.
+If the pattern is multi-line, include adjacent non-matches in the positive fixture
+to reduce false positives.
 
 ### 3) Run and commit a focused PR
 
 ```bash
 python -m pytest -q \
-  tests/test_diagnostics.py::test_detects_bucket_access_block \
+  tests/test_diagnostics.py::test_detects_artifact_bucket_access_block \
   tests/test_diagnostics.py::test_does_not_match_unrelated_s3_output
 ```
 
