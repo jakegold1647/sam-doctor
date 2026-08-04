@@ -348,7 +348,7 @@ Use the first row that matches your current situation:
 | You have a deployment log file | `sam-doctor diagnose deployment.log --format markdown` |
 | You want machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
 | You want a CI annotation style report | `sam-doctor diagnose deployment.log --format github` |
-| You only have pasted excerpt text | `printf '%s\n' \"...error excerpt...\" \| sam-doctor diagnose - --format markdown` |
+| You only have pasted excerpt text | `printf '%s\n' "...error excerpt..." \| sam-doctor diagnose - --format markdown` |
 | You are testing in a GitHub Action | Use the composite action in the CI section below |
 
 ## 60-second first response checklist
@@ -491,7 +491,7 @@ Use the outputs for non-blocking workflows:
 - name: Route to dedicated triage when action reports findings
   if: steps.sam-doctor.outputs.has-findings == 'true'
   run: |
-    echo \"Routing failure with ${{ steps.sam-doctor.outputs.finding-count }} findings to a higher-signal runbook.\"
+    echo "Routing failure with ${{ steps.sam-doctor.outputs.finding-count }} findings to a higher-signal runbook."
 ```
 
 You can also process multiple files in batch mode:
