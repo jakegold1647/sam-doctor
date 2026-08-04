@@ -666,3 +666,17 @@ def test_render_findings_github_emits_one_or_more_annotations() -> None:
     assert "file=deployment.log" in output
     assert "line=1" in output
     assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output
+
+
+def test_render_findings_github_escapes_workflow_command_delimiters() -> None:
+    findings = diagnose("Not authorized to perform: sts:AssumeRoleWithWebIdentity")
+
+    output = _render_findings(
+        findings, "C:\\logs\\deploy,percent 100%\nrun.log", "github"
+    )
+
+    assert "file=C%3A\\logs\\deploy%2Cpercent 100%25%0Arun.log" in output
+    # One annotation line per finding: the raw newline in the source name must
+    # not split the workflow command.
+    assert output.count("\n") == len(findings)
+    assert all(line.startswith("::notice ") for line in output.rstrip("\n").splitlines())

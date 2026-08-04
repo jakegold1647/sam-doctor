@@ -168,11 +168,16 @@ def _escape_github_command_value(value: str) -> str:
     return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
+def _escape_github_command_property(value: str) -> str:
+    # Property values additionally reserve ':' and ',' as delimiters.
+    return _escape_github_command_value(value).replace(":", "%3A").replace(",", "%2C")
+
+
 def _render_github(findings: list[Finding], source_name: str) -> str:
     if not findings:
         return ""
 
-    escaped_source = _escape_github_command_value(redact(source_name))
+    escaped_source = _escape_github_command_property(redact(source_name))
     lines = []
     for finding in findings:
         verification = (
