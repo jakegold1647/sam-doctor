@@ -578,6 +578,11 @@ Start here:
 
 `docs/researcher-evidence-packet.md`
 
+If you're preparing a repeatable review packet for a teammate, maintainer, or
+researcher, use:
+
+- [RESEARCHER_OVERVIEW.md](RESEARCHER_OVERVIEW.md)
+
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
 bearer tokens, JWT-style tokens, and common GitHub token formats before matched
 evidence or a displayed source name is shared. This is a helpful guardrail, not a secret scanner:
@@ -595,3 +600,4 @@ See [CHANGELOG.md](CHANGELOG.md) for release history, [SECURITY.md](SECURITY.md)
 for vulnerability reporting, [SUPPORT.md](SUPPORT.md) for help boundaries, and
 [docs/pypi-publishing.md](docs/pypi-publishing.md) for the stable-release
 publishing setup.
+

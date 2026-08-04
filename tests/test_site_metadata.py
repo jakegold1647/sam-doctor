@@ -105,3 +105,13 @@ def test_examples_index_and_starters_are_documented() -> None:
     assert (ROOT / "examples" / "circleci-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "azure-pipelines-sam-doctor.yml").exists()
     assert (ROOT / "examples" / "bitbucket-pipelines-sam-doctor.yml").exists()
+
+
+def test_researcher_overview_doc_is_discoverable() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    overview = ROOT / "RESEARCHER_OVERVIEW.md"
+
+    assert overview.exists()
+    assert "RESEARCHER_OVERVIEW.md" in readme
+    assert "RESEARCHER_OVERVIEW.md" in site
