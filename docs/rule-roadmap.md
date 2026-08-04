@@ -353,38 +353,15 @@ get-caller-identity` once credentials are corrected.
 
 ## 9. CloudFormation refused the deployment for a missing capability
 
-**Status:** open for a contributor.
+**Status:** already covered — no contribution needed.
 
-**Failure family.** The change set is rejected with
-`InsufficientCapabilitiesException` because the template creates IAM
-resources (`CAPABILITY_IAM` / `CAPABILITY_NAMED_IAM`) or uses macros and
-nested applications (`CAPABILITY_AUTO_EXPAND`) and the deploy command did not
-acknowledge it.
-
-**Sanitized signal lines.**
-
-```text
-An error occurred (InsufficientCapabilitiesException) when calling the CreateChangeSet operation: Requires capabilities : [CAPABILITY_NAMED_IAM]
-```
-
-**Pattern hints.** Match `InsufficientCapabilitiesException` and
-`Requires capabilities`. Extract and repeat the exact capability named by the
-error in the finding.
-
-**Nearby non-matches to test.** A log that merely lists
-`--capabilities CAPABILITY_IAM` in a command echo.
-
-**Safe verification steps to include.** Add the named capability to the
-deploy (`sam deploy --capabilities ...` or the `capabilities` key in
-`samconfig.toml`); before adding `CAPABILITY_NAMED_IAM`, review which named
-IAM resources the template creates — the acknowledgement exists so IAM
-changes get looked at, so name what is being acknowledged rather than adding
-capabilities reflexively.
-
-**Documentation link.**
-<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#using-iam-capabilities>
-
-**Suggested confidence.** high.
+The shipped catalog already diagnoses this failure: the rule titled
+"CloudFormation needs an explicit capability acknowledgement" matches
+`InsufficientCapabilitiesException` / `Requires capabilities` and walks
+through `CAPABILITY_IAM`, `CAPABILITY_NAMED_IAM`, and
+`CAPABILITY_AUTO_EXPAND` with review-first guidance. This entry is kept only
+so the numbering of the other candidates stays stable; if you were eyeing
+this one, pick another open entry above or below.
 
 ---
 
