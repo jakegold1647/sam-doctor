@@ -447,7 +447,7 @@ For CI setups that write many logs per run, set `batch: true` and point
 - name: Diagnose logs in batch
   if: always()
   id: sam-doctor-batch
-  uses: jakegold1647/sam-doctor@v0.7.7
+  uses: jakegold1647/sam-doctor@v0
   with:
     log-file: logs/
     batch: true
@@ -470,7 +470,7 @@ Use the included action when a workflow already saves a deployment log:
 - name: Diagnose deployment log
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.7
+  uses: jakegold1647/sam-doctor@v0
   with:
     log-file: deployment.log
     summary: true

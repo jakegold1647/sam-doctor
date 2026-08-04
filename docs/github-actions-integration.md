@@ -26,7 +26,7 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
 - name: Diagnose deployment log
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.7
+  uses: jakegold1647/sam-doctor@v0
   with:
     log-file: deployment.log
     summary: true
@@ -41,7 +41,7 @@ set `batch: true` and point `log-file` to a directory or glob:
 - name: Diagnose batched deployment logs
   if: always()
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0.7.7
+  uses: jakegold1647/sam-doctor@v0
   with:
     log-file: logs/
     batch: true
