@@ -71,6 +71,36 @@ pipx install sam-doctor      # isolated install (no environment changes)
 uvx sam-doctor demo          # run without install (if uv is available)
 ```
 
+## Start using it in 90 seconds
+
+```bash
+mkdir -p .github/workflows
+curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
+```
+
+1. Save a short failing excerpt as `deployment-failure.log`.
+2. Run diagnosis:
+
+```bash
+sam-doctor diagnose deployment-failure.log --format markdown
+```
+
+3. Share only:
+
+- the top finding title
+- the first `verify` command
+- a sanitized excerpt of the original error
+
+```text
+I ran @sam-doctor and it found: [top finding]
+Next check: [one safe verification]
+Need: [optional follow-up permission or config check]
+```
+
+If this result is wrong or unclear, open a
+[`diagnostic report` issue](https://github.com/jakegold1647/sam-doctor/issues/new/choose)
+with the pasted excerpt and command output.
+
 The bundled demo needs no AWS credentials and makes no network calls. It
 prints a real report:
 

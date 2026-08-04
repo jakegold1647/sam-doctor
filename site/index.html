@@ -107,6 +107,25 @@
         <p class="note"><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md">Read the OIDC deployment debugging guide</a> | <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md">Find the first useful CloudFormation failure</a> | <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md">Fix InsufficientCapabilities</a></p>
       </section>
 
+      <section class="steps" aria-labelledby="quickstart-site-title">
+        <p class="eyebrow">START IN 90 SECONDS</p>
+        <h2 id="quickstart-site-title">Get a local triage flow in under two minutes.</h2>
+        <p>
+          Add a starter workflow, then run one diagnosis command:
+        </p>
+        <pre><code>mkdir -p .github/workflows
+curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml</code></pre>
+        <p>
+          Save a short failing excerpt to <code>deployment-failure.log</code> and run:
+        </p>
+        <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
+        <p class="muted">
+          Share only a top finding, one verification command, and a redacted excerpt.
+          If the result is wrong or unclear, open
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new/choose">an issue</a>.
+        </p>
+      </section>
+
       <section class="steps" aria-labelledby="who-for-title">
         <p class="eyebrow">WHO THIS IS FOR</p>
         <h2 id="who-for-title">Use it if you need a fast first-pass on deployment failures.</h2>
