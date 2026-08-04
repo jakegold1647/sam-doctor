@@ -6,6 +6,7 @@ import argparse
 import glob
 import json
 import sys
+import textwrap
 from datetime import datetime, timezone
 from html import escape
 from importlib.resources import files
@@ -32,6 +33,34 @@ _DEMO_FILES = {
     "python-pip": "python-pip-build-failure.txt",
     "interactive-changeset": "interactive-changeset-failure.txt",
 }
+
+_WORKFLOW_TEMPLATE = """name: diagnose deployment failures
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Deploy
+        shell: bash
+        run: |
+          set -o pipefail
+          {deploy_command} 2>&1 | tee deployment.log
+      - name: Diagnose deployment log
+        if: always()
+        id: sam-doctor
+        uses: jakegold1647/sam-doctor@v0
+        with:
+          log-file: deployment.log
+          summary: true
+"""
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -141,6 +170,24 @@ def _build_parser() -> argparse.ArgumentParser:
             "Exit with status 1 when any analyzed file returns one or more supported "
             "findings."
         ),
+    )
+    init_parser = subcommands.add_parser(
+        "init", help="Create a starter GitHub Actions workflow for SAM Doctor."
+    )
+    init_parser.add_argument(
+        "--workflow-file",
+        default=".github/workflows/sam-doctor.yml",
+        help="Path where the starter workflow should be written.",
+    )
+    init_parser.add_argument(
+        "--deploy-command",
+        default="sam deploy --no-confirm-changeset",
+        help="Deployment command to capture in the starter workflow.",
+    )
+    init_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite an existing workflow file.",
     )
     return parser
 
@@ -280,6 +327,15 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
         "\n\n".join(text_reports) + ("\n" if text_reports else ""),
         report_has_findings,
     )
+
+
+def _init_workflow_command(command: str, workflow_file: str, force: bool) -> None:
+    target = Path(workflow_file).expanduser().resolve()
+    if target.exists() and not force:
+        raise ValueError(f"Workflow file already exists: {target}. Use --force to overwrite.")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(textwrap.dedent(_WORKFLOW_TEMPLATE.format(deploy_command=command)), encoding="utf-8")
+
 
 
 def _read_demo(scenario: str = "oidc") -> str:
@@ -438,6 +494,15 @@ def main(argv: list[object] | None = None) -> int:
         else:
             sys.stdout.write(report)
         return 1 if args.fail_on_findings and report_has_findings else 0
+
+    if args.command == "init":
+        try:
+            _init_workflow_command(args.deploy_command, args.workflow_file, args.force)
+        except ValueError as error:
+            _print_error(parser, str(error))
+            return 2
+        print(f"Wrote workflow file to {args.workflow_file}")
+        return 0
 
     if args.command == "packet":
         try:

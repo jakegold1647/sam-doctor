@@ -74,6 +74,6 @@ body:
       description: Check this before submitting to avoid exposing sensitive identifiers.
       options:
         - "Yes"
-        - "Not sure — please review"
+        - "Not sure - please review"
     validations:
       required: true

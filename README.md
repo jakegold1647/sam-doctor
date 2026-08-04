@@ -89,6 +89,14 @@ uvx sam-doctor demo          # run without install (if uv is available)
 mkdir -p .github/workflows
 curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
 ```
+Prefer the CLI bootstrap command to avoid copy/paste mistakes:
+
+```bash
+sam-doctor init
+```
+
+Use `sam-doctor init --deploy-command "sam sync --no-confirm-changeset"` to match your
+deployment command style.
 
 ## New contributor smoke check
 

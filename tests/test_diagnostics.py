@@ -690,6 +690,65 @@ def test_main_returns_exit_code_2_for_usage_and_input_errors(tmp_path: Path) -> 
     assert main(["diagnose", str(missing)]) == 2
 
 
+def test_init_command_writes_starter_workflow(tmp_path: Path, capsys) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+            ]
+        )
+        == 0
+    )
+
+    assert workflow.exists()
+    assert "Wrote workflow file" in capsys.readouterr().out
+    text = workflow.read_text(encoding="utf-8")
+    assert "uses: jakegold1647/sam-doctor@v0" in text
+    assert "sam deploy --no-confirm-changeset" in text
+
+
+def test_init_command_rejects_existing_file_without_force(tmp_path: Path, capsys) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+    workflow.parent.mkdir(parents=True, exist_ok=True)
+    workflow.write_text("existing", encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+            ]
+        )
+        == 2
+    )
+    assert "already exists" in capsys.readouterr().err
+
+
+def test_init_command_custom_deploy_command(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+    custom = "sam sync --no-confirm-changeset"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+                "--deploy-command",
+                custom,
+                "--force",
+            ]
+        )
+        == 0
+    )
+    assert custom in workflow.read_text(encoding="utf-8")
+
+
 def test_main_returns_zero_for_help_request() -> None:
     assert main(["--help"]) == 0
     assert main(["batch", "--help"]) == 0
