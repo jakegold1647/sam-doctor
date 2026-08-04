@@ -113,6 +113,26 @@ sam-doctor init
 Use `sam-doctor init --deploy-command "sam sync --no-confirm-changeset"` to match your
 deployment command style.
 
+## I have this specific error; will this help?
+
+Use this if you need a first-pass answer for:
+
+- `Not authorized to perform: sts:AssumeRoleWithWebIdentity`
+- `ROLLBACK_COMPLETE` / `ROLLBACK_IN_PROGRESS`
+- `Resource handler returned message` / `CREATE_FAILED` failures
+- `InsufficientCapabilities` / missing `CAPABILITY_IAM` flags
+- `ECR auth token` or container image push failures in CI
+
+For each case, SAM Doctor does the same thing:
+
+1. capture the failure excerpt,
+2. produce one probable root pattern with redacted evidence,
+3. suggest the first safe verification command.
+
+If you need deterministic local triage for another AWS deployment error, open a
+rule request with the first 5–15 lines of a sanitized excerpt and the command
+you used.
+
 ## New contributor smoke check
 
 Verify your installation and first output in one command:

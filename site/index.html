@@ -234,6 +234,18 @@ curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/example
         </p>
       </section>
 
+      <section class="steps" aria-labelledby="intent-title">
+        <p class="eyebrow">LOOKING FOR A SPECIFIC ERROR?</p>
+        <h2 id="intent-title">Try these common failure families directly</h2>
+        <ul>
+          <li><strong>sts:AssumeRoleWithWebIdentity / OIDC failures:</strong> use the OIDC deployment debugging flow.</li>
+          <li><strong>ROLLBACK_COMPLETE and rollback noise:</strong> identify the first failed resource.</li>
+          <li><strong>CAPABILITY_IAM / CAPABILITY_NAMED_IAM:</strong> confirm required capability flags.</li>
+          <li><strong>ECR image access in CI:</strong> validate token and repository access before changing IAM.</li>
+          <li><strong>CDK / SAM packaging and build issues:</strong> route the first matching command output to SAM Doctor.</li>
+        </ul>
+      </section>
+
       <section class="steps" aria-labelledby="decision-title">
         <p class="eyebrow">CHOOSE YOUR STARTING PATH</p>
         <h2 id="decision-title">Start with the option that matches how you got here.</h2>
