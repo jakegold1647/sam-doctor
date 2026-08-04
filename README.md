@@ -7,9 +7,12 @@
 [![PyPI](https://img.shields.io/pypi/v/sam-doctor.svg)](https://pypi.org/project/sam-doctor/)
 [![GitHub release](https://img.shields.io/github/v/release/jakegold1647/sam-doctor?include_prereleases&label=release)](https://github.com/jakegold1647/sam-doctor/releases)
 
-SAM Doctor is a local, evidence-first command-line tool for turning AWS SAM,
-CloudFormation, IAM, and GitHub Actions deployment failures into a concise
-diagnostic report.
+**Find the next useful step in a failed AWS deployment - without uploading your
+logs or granting AWS access.**
+
+SAM Doctor reads AWS SAM, CloudFormation, IAM, and GitHub Actions deployment
+logs locally. It identifies supported failure patterns and returns short,
+redacted evidence, safe checks, and the relevant official documentation.
 
 **[See the project page](https://jakegold1647.github.io/sam-doctor/)** |
 **[Use on GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)** |
@@ -24,6 +27,21 @@ official documentation.
 
 Current release: **v0.7.7**.
 
+## Try it in 60 seconds
+
+```bash
+python -m pip install sam-doctor
+sam-doctor demo
+```
+
+The bundled demo needs no AWS credentials and makes no network calls. To
+diagnose a real deployment log:
+
+```bash
+sam-doctor diagnose deployment.log
+```
+
+![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
 ## Current free core
 
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
@@ -41,17 +59,9 @@ Current release: **v0.7.7**.
 - Composite GitHub Action with opt-in redacted job summaries and CI gating
 - Local redaction for account IDs, ARNs, email addresses, and common CI credentials
 
-## Try it in 60 seconds
-
-```bash
-python -m pip install sam-doctor
-sam-doctor demo
-```
-
-This installs the latest stable release from PyPI. The bundled demo needs no AWS
-credentials and makes no network calls. To pin the tested release exactly, run
-`python -m pip install sam-doctor==0.7.7`. To install from the tagged source
-instead, run:
+This installs the latest stable release from PyPI. To pin the tested release
+exactly, run `python -m pip install sam-doctor==0.7.7`. To install from the
+tagged source instead, run:
 
 ```bash
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.7.7"

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">SAM Doctor terminal demonstration</title>
+  <desc id="desc">A deployment error is reduced to a concise diagnosis with evidence and safe next checks.</desc>
+  <rect width="1200" height="620" rx="18" fill="#101827"/>
+  <rect width="1200" height="54" rx="18" fill="#1d2a3d"/><rect y="36" width="1200" height="18" fill="#1d2a3d"/>
+  <circle cx="30" cy="27" r="7" fill="#ff6b6b"/><circle cx="54" cy="27" r="7" fill="#ffd166"/><circle cx="78" cy="27" r="7" fill="#62d394"/>
+  <text x="108" y="34" fill="#a9b8cc" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">deployment.log - sam-doctor</text>
+  <text x="42" y="98" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="21">$ sam-doctor diagnose deployment.log</text>
+  <text x="42" y="145" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="20">SAM Doctor found 1 possible issue</text>
+  <text x="42" y="190" fill="#fbbf24" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="21">1. GitHub Actions cannot assume the configured AWS role through OIDC</text>
+  <text x="42" y="232" fill="#a9b8cc" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">Confidence: high</text>
+  <text x="42" y="274" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">Evidence:</text>
+  <text x="70" y="308" fill="#f8fafc" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">Not authorized to perform: sts:AssumeRoleWithWebIdentity</text>
+  <text x="42" y="352" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">Next checks:</text>
+  <text x="70" y="386" fill="#86efac" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">- grant id-token: write to the deployment job</text>
+  <text x="70" y="420" fill="#86efac" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">- verify the OIDC audience and trust-policy subject</text>
+  <text x="70" y="454" fill="#86efac" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">- compare the repository, branch, or Environment claim</text>
+  <text x="42" y="520" fill="#60a5fa" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">Docs: docs.github.com/actions/.../oidc-in-aws</text>
+  <text x="42" y="568" fill="#64748b" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="16">Local input. Redacted evidence. No AWS calls. No automatic changes.</text>
+</svg>
