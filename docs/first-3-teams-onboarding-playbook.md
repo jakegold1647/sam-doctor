@@ -37,8 +37,18 @@ Next step: [one action]
   - first verification command
   - a sanitized excerpt line
 - Ask:
-  - “Did the suggested verification match the incident outcome?”
+  - "Did the suggested verification match the incident outcome?"
 
+If you want a reusable non-blocking pilot template, copy this starter workflow:
+
+```bash
+mkdir -p .github/workflows
+curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml \
+  -o .github/workflows/sam-doctor.yml
+```
+
+Keep this runset non-blocking (`rollout-mode: pilot`) for the first 1-2 weeks, then
+use `workflow_dispatch` with `rollout-mode: strict` only after review.
 ## Week 2: onboard Team B (SRE/DevOps)
 
 - Copy the same workflow shape into their CI.
@@ -47,6 +57,16 @@ Next step: [one action]
   - no ticket creation until two repeated supported findings are confirmed
 - Enable strict gating only if Team A has validated stable behavior:
   - `fail-on-findings: true`
+
+Use one reusable routing step so strict-mode findings are visible without spamming:
+
+```bash
+- name: Route findings to triage
+  if: steps.sam-doctor.outputs.has-findings == 'true'
+  run: |
+    echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
+    echo "Investigate with: https://jakegold1647.github.io/sam-doctor/"
+```
 
 ## Week 3: onboard Team C (platform/reviewer)
 
@@ -93,5 +113,8 @@ after a short warm-up.
 - At least 2 of 3 teams have run `sam-doctor packet` at least once and can share
   one sanitized packet.
 - There are no recurring raw-log leaks in team handoffs.
+- Team A has completed at least 3 non-blocking runs with no escalation due to noisy outputs.
+- Team B has run one full week with a two-phase rollout without repeated manual fallback.
 
 If not, pause and fix the first friction point before next promotion step.
+
