@@ -3,30 +3,34 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SAM Doctor | AWS deployment diagnosis, locally</title>
+    <title>SAM Doctor | AWS SAM and CloudFormation deployment diagnostics</title>
     <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/" />
     <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="sitemap" type="application/xml" href="/sam-doctor/sitemap.xml" />
     <meta
       name="description"
-      content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment logs into an evidence-first diagnostic report locally."
+      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally. Find the next check for AssumeRoleWithWebIdentity, InsufficientCapabilities, rollback, and AccessDenied errors without AWS credentials or log uploads."
     />
     <meta property="og:site_name" content="SAM Doctor" />
-    <meta property="og:title" content="SAM Doctor | Local AWS deployment diagnostics" />
+    <meta property="og:title" content="SAM Doctor | AWS SAM and CloudFormation deployment diagnostics" />
     <meta
       property="og:description"
-      content="Find the next useful check in a failed AWS deployment without uploading your logs."
+      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally, including OIDC, rollback, capability, and AccessDenied errors."
     />
     <meta property="og:type" content="website" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta property="og:url" content="https://jakegold1647.github.io/sam-doctor/" />
     <meta
       property="og:image"
       content="https://jakegold1647.github.io/sam-doctor/assets/sam-doctor-social-preview.jpg"
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="SAM Doctor | Local AWS deployment diagnostics" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:title" content="SAM Doctor | AWS SAM and CloudFormation deployment diagnostics" />
     <meta
       name="twitter:description"
-      content="Find the next useful check in a failed AWS deployment without uploading your logs."
+      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally, including OIDC, rollback, capability, and AccessDenied errors."
     />
     <meta
       name="twitter:image"
@@ -40,7 +44,9 @@
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows, macOS, Linux",
         "softwareVersion": "0.7.7",
-        "description": "Local, evidence-first diagnostics for AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures.",
+        "description": "Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally without AWS credentials or log uploads.",
+        "keywords": "AWS SAM, CloudFormation deployment error, GitHub Actions OIDC, AssumeRoleWithWebIdentity, InsufficientCapabilities, IAM AccessDenied",
+        "featureList": ["Local log diagnosis", "Redacted evidence", "Safe verification steps", "GitHub Actions integration"],
         "url": "https://jakegold1647.github.io/sam-doctor/",
         "downloadUrl": "https://github.com/jakegold1647/sam-doctor/releases/latest",
         "license": "https://opensource.org/licenses/MIT",
@@ -68,7 +74,7 @@
     <main id="main-content">
       <section class="hero">
         <p class="eyebrow">LOCAL AWS DEPLOYMENT DIAGNOSTICS</p>
-        <h1>Find the next useful step in a failed AWS deployment.</h1>
+        <h1>Debug AWS SAM, CloudFormation, and GitHub Actions deployment failures.</h1>
         <p class="lede">
           SAM Doctor reads a deployment log on your machine, identifies supported
           SAM, CloudFormation, IAM, and GitHub Actions OIDC failure patterns, and

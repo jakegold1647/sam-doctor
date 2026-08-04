@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jakegold1647.github.io/sam-doctor/sitemap.xml
