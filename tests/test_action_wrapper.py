@@ -5,7 +5,9 @@ import subprocess
 
 
 def _bash_path(path: Path) -> str:
-    return "/mnt/" + path.drive[0].lower() + path.as_posix()[2:]
+    if path.drive:
+        return "/mnt/" + path.drive[0].lower() + path.as_posix()[2:]
+    return str(path)
 
 
 def _run_action(root: Path, environment: dict[str, str]) -> subprocess.CompletedProcess[str]:
