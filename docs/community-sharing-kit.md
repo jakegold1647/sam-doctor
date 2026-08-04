@@ -50,6 +50,19 @@ Share exactly:
 Keep the full raw log out of Slack, ticket threads, and external discussions unless
 the recipient is explicitly authorized and can handle redaction review.
 
+### Automated one-line generation
+
+If you are creating many outreach messages, generate fresh channel/error snippets with:
+
+```bash
+python scripts/generate-share-snippets.py \
+  --error oidc \
+  --channel x \
+  --utm-medium x
+```
+
+Replace `--error` and `--channel` per audience and send the generated output.
+
 ## 3) Quick outreach message drafts
 
 ### Short tweet/X-style
@@ -150,7 +163,7 @@ Share only:
 ### SAM/CDK packaging message
 
 ```
-If this is a SAM/CDK package/build failure, don’t guess from entire output.
+If this is a SAM/CDK package/build failure, don't guess from entire output.
 
 Use this flow:
 1) capture the smallest excerpt
@@ -174,3 +187,4 @@ For each channel, include only:
 2. the onboarding checklist above,
 3. one link to this kit,
 4. ask for one concrete use case for follow-up.
+
