@@ -60,6 +60,13 @@ jobs:
         with:
           log-file: deployment.log
           summary: true
+      # Optional: fail CI when a supported diagnosis is found.
+      # fail-on-findings: true
+      #
+      # Optional: route high-signal failures to a follow-up job/thread.
+      # - name: Open a follow-up note when issues are found
+      #   if: steps.sam-doctor.outputs.has-findings == 'true'
+      #   run: echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
 """
 
 

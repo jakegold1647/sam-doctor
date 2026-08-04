@@ -709,6 +709,8 @@ def test_init_command_writes_starter_workflow(tmp_path: Path, capsys) -> None:
     text = workflow.read_text(encoding="utf-8")
     assert "uses: jakegold1647/sam-doctor@v0" in text
     assert "sam deploy --no-confirm-changeset" in text
+    assert "has-findings" in text
+    assert "Optional: fail CI when a supported diagnosis is found." in text
 
 
 def test_init_command_rejects_existing_file_without_force(tmp_path: Path, capsys) -> None:
