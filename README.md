@@ -21,7 +21,8 @@ redacted evidence, safe checks, and the relevant official documentation.
   **[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)** |
   **[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)** |
   **[Request a feature](https://github.com/jakegold1647/sam-doctor/issues/new?template=feature_request.yml)** |
-**[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)**
+**[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)** |
+  **[Contribute a rule (roadmap)](docs/rule-roadmap.md)**
 
 It does **not** access AWS, upload logs, change resources, or promise an
 authoritative root cause. It detects known patterns in the text you provide,

@@ -41,6 +41,11 @@ To lower contributor friction, labels to look for:
 - `documentation`
 - `help wanted`
 
+Want a ready-made first PR? The [rule roadmap](docs/rule-roadmap.md) lists
+fully specified diagnostic rules waiting for a contributor — each with sample
+log lines, pattern hints, non-match cases, and verification steps already
+drafted, so the PR is mostly a translation exercise.
+
 For rule proposals, use `docs/contributing-a-diagnostic-rule.md` and keep the
 change scope to one signal and one fixture pair.
 

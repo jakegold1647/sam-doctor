@@ -4,6 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `docs/rule-roadmap.md`: fully specified diagnostic-rule candidates
+  (sample log lines, pattern hints, non-matches, verification steps) that a
+  first-time contributor can claim and land in one focused PR; linked from the
+  README and CONTRIBUTING.
 - Added a diagnostic for deployments that fail only because the change set was
   empty (`No changes to deploy`, `The submitted information didn't contain
   changes`, `No updates are to be performed`), pointing CI users at
