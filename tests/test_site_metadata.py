@@ -1,8 +1,20 @@
 import json
 import re
 from pathlib import Path
+from typing import Any
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover
+    import tomli as tomllib  # type: ignore[no-redef]
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _current_version() -> str:
+    payload = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project: dict[str, Any] = payload["project"]
+    return str(project["version"])
 
 
 def test_site_has_canonical_social_metadata_and_application_schema() -> None:
@@ -28,7 +40,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     schema = json.loads(match.group(1))
     assert schema["@type"] == "SoftwareApplication"
     assert schema["name"] == "SAM Doctor"
-    assert schema["softwareVersion"] == "0.7.7"
+    assert schema["softwareVersion"] == _current_version()
     assert schema["offers"]["price"] == "0"
     assert schema["publisher"]["name"] == "Jake Goldstein"
     assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"

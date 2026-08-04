@@ -11,6 +11,7 @@ in local, ignored paths such as `../notes/` (outside this repository).
 ```powershell
 python -m pip install -e ".[dev]"
 python -m pytest -q
+python scripts/sync-site-metadata.py
 python -m build
 python -m sam_doctor.cli demo
 ```
