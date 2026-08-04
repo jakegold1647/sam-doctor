@@ -210,6 +210,24 @@ sam-doctor batch logs/*.log logs/*.txt --format json \
   --output batch-results.json --fail-on-findings
 ```
 
+### GitHub Action batch mode
+
+For CI setups that write many logs per run, set `batch: true` and point
+`log-file` at a directory or glob:
+
+```yaml
+- name: Diagnose logs in batch
+  if: always()
+  id: sam-doctor-batch
+  uses: jakegold1647/sam-doctor@v0.7.7
+  with:
+    log-file: logs/
+    batch: true
+    summary: true
+    # Enable strict gating only after a short warm-up period.
+    # fail-on-findings: true
+```
+
 ## GitHub Actions
 
 Use the included action when a workflow already saves a deployment log:

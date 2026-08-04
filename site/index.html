@@ -220,6 +220,11 @@
           It writes the report and returns status 1 only when a supported finding
           is present.
         </p>
+        <p>
+          For batched pipeline logs, set <code>batch: true</code> in the action
+          and pass a directory or wildcard to <code>log-file</code>:
+          <code>log-file: logs/</code>. The action aggregates finding counts across files.
+        </p>
         <p class="muted">
           In 90 seconds: run a log through SAM Doctor, share the first finding (or
           no-signal outcome), then run one safe check from the report before changing

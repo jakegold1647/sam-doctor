@@ -15,6 +15,11 @@ inputs:
     required: false
     type: boolean
     default: true
+  batch:
+    description: Diagnose multiple files from a directory or glob path using batch mode.
+    required: false
+    type: boolean
+    default: false
   fail-on-findings:
     description: Fail the action when one or more supported findings are detected.
     required: false
@@ -41,5 +46,6 @@ runs:
         SAM_DOCTOR_LOG_FILE: ${{ inputs.log-file }}
         SAM_DOCTOR_SUMMARY: ${{ inputs.summary }}
         SAM_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
+        SAM_DOCTOR_BATCH: ${{ inputs.batch }}
         SAM_DOCTOR_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
       run: bash "$GITHUB_ACTION_PATH/scripts/run-github-action.sh"

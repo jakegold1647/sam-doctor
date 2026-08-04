@@ -14,6 +14,7 @@ fi
 : "${SAM_DOCTOR_LOG_FILE:?SAM_DOCTOR_LOG_FILE is required.}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
 : "${SAM_DOCTOR_ANNOTATIONS:=true}"
+: "${SAM_DOCTOR_BATCH:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
 
@@ -35,6 +36,11 @@ fi
 
 if [[ "$SAM_DOCTOR_ANNOTATIONS" != "true" && "$SAM_DOCTOR_ANNOTATIONS" != "false" ]]; then
   echo "SAM_DOCTOR_ANNOTATIONS must be 'true' or 'false'." >&2
+  exit 2
+fi
+
+if [[ "$SAM_DOCTOR_BATCH" != "true" && "$SAM_DOCTOR_BATCH" != "false" ]]; then
+  echo "SAM_DOCTOR_BATCH must be 'true' or 'false'." >&2
   exit 2
 fi
 
@@ -64,9 +70,17 @@ if ! "$PYTHON_BIN" -c "import sam_doctor.cli" >/dev/null 2>&1; then
   fi
 fi
 
-"$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
+if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+  "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
+else
+  "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
+fi
 
-finding_count="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
+if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+  finding_count="$("$PYTHON_BIN" -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); print(sum(result["finding_count"] for result in payload.get("results", [])))' "$report_path")"
+else
+  finding_count="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["finding_count"])' "$report_path")"
+fi
 
 if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
   echo "Could not parse finding-count from JSON output: $finding_count" >&2
@@ -81,11 +95,19 @@ else
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
-  "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+  if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+    "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+  else
+    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format markdown >> "$GITHUB_STEP_SUMMARY"
+  fi
 fi
 
 if [[ "$SAM_DOCTOR_ANNOTATIONS" == "true" && "$finding_count" -gt 0 ]]; then
-  "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format github
+  if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+    "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format github
+  else
+    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format github
+  fi
 fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then

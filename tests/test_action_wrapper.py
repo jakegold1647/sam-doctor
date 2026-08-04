@@ -87,3 +87,39 @@ def test_action_wrapper_can_disable_notices(tmp_path: Path):
 
     assert result.returncode == 0, result.stderr
     assert "::notice" not in result.stdout
+
+
+def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
+    root = ROOT
+    logs_dir = tmp_path / "logs"
+    logs_dir.mkdir()
+    failing_log = logs_dir / "failure.txt"
+    clean_log = logs_dir / "clean.txt"
+    failing_log.write_text(
+        Path(
+            ROOT / "src" / "sam_doctor" / "data" / "oidc-assume-role-failure.txt"
+        ).read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    clean_log.write_text("Deployment completed with no failures.\n", encoding="utf-8")
+    output_path = tmp_path / "github-output.txt"
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(output_path),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(logs_dir),
+            "SAM_DOCTOR_BATCH": "true",
+            "SAM_DOCTOR_SUMMARY": "true",
+            "SAM_DOCTOR_ANNOTATIONS": "true",
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "SAM_DOCTOR_BATCH" not in result.stderr
+    assert "finding-count=1" in output_path.read_text(encoding="utf-8")
+    assert "has-findings=true" in output_path.read_text(encoding="utf-8")
+    assert "::notice file=" in result.stdout
+    assert "GitHub Actions cannot assume" in result.stdout

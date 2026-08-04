@@ -34,6 +34,20 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
 
 The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds redacted GitHub Actions notices for each finding, so issues are visible in the run UI. Set `annotations: "false"` if your workflow should not create annotations. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
 
+For repositories that collect several deployment logs per run (for example, matrix jobs),
+set `batch: true` and point `log-file` to a directory or glob:
+
+```yaml
+- name: Diagnose batched deployment logs
+  if: always()
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0.7.7
+  with:
+    log-file: logs/
+    batch: true
+    summary: true
+```
+
 You can copy the full starter workflow from
 `examples/github-actions-workflow.yml` and adjust your deploy command and
 permissions.
