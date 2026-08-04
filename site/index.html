@@ -457,6 +457,11 @@ Check that the identity-based policy attached to the role allows id-token:write.
           <code>log-file: logs/</code>. The action aggregates finding counts across files.
         </p>
         <p class="muted">
+          After you confirm these batches are stable and high-signal, you can add
+          <code>fail-on-findings: true</code> in the action to fail the diagnose
+          step when any supported finding appears in the batched inputs.
+        </p>
+        <p class="muted">
           In 90 seconds: run a log through SAM Doctor, share the first finding (or
           no-signal outcome), then run one safe check from the report before changing
           IAM, policy, or deployment configuration.

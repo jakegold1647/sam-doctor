@@ -371,6 +371,16 @@ kubectl logs deploy/my-api | sam-doctor diagnose -
 sam-doctor diagnose deployment.log --format json --output diagnosis.json
 ```
 
+For teams with multi-log workflows, batch reporting works with one command:
+
+```bash
+sam-doctor batch logs/*.log logs/*.txt --format json --fail-on-findings \
+  --output batch-results.json
+```
+
+This returns `1` only when supported findings are detected and still emits a full
+batch report for your artifacts.
+
 The terminal format is intended for a quick local check, Markdown is convenient
 for a human-readable handoff, JSON is stable for scripts and machine workflows,
 and `github` emits GitHub workflow command annotations directly. All formats
