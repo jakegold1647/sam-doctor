@@ -39,6 +39,11 @@ jobs:
       - run: python -m build
       - name: Publish distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # A re-dispatch of an already-published tag is a no-op, not a
+          # failure: PyPI rejects identical filenames, and re-running the
+          # recovery path must stay safe.
+          skip-existing: true
       - name: Trigger strict post-release launch health check
         env:
           GH_TOKEN: ${{ github.token }}
