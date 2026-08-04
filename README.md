@@ -18,8 +18,9 @@ redacted evidence, safe checks, and the relevant official documentation.
 
 **[See the project page](https://jakegold1647.github.io/sam-doctor/)** |
 **[Use on GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)** |
-**[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)** |
-**[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)** |
+  **[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)** |
+  **[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)** |
+  **[Request a feature](https://github.com/jakegold1647/sam-doctor/issues/new?template=feature_request.yml)** |
 **[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)**
 
 It does **not** access AWS, upload logs, change resources, or promise an

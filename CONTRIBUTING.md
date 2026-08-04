@@ -20,6 +20,12 @@ If you are helping spread the project, include short onboarding notes and share 
 closed reproduction with a link to the community kit:
 `docs/community-sharing-kit.md`.
 
+For tooling improvements, use the feature request template and include:
+
+1. the command or workflow family,
+2. the behavior gap,
+3. expected adoption impact.
+
 ## First contribution path
 
 If this is your first contribution, start with this three-step flow:

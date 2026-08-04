@@ -1,0 +1,56 @@
+name: Request a new feature
+description: Suggest a feature or workflow improvement for SAM Doctor.
+title: "feature: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve SAM Doctor. Include a real use case and expected
+        result so we can keep requests practical and easy to implement.
+  - type: input
+    id: use_case
+    attributes:
+      label: Use case
+      description: What deployment workflow or environment is this for?
+      placeholder: "GitHub Actions, GitLab CI, or local troubleshooting..."
+    validations:
+      required: true
+  - type: input
+    id: service
+    attributes:
+      label: Service or command family
+      description: The command where the gap appears (for example `sam deploy`, `sam sync`, `cdk deploy`).
+      placeholder: "sam deploy --no-confirm-changeset"
+    validations:
+      required: true
+  - type: textarea
+    id: desired_behavior
+    attributes:
+      label: Proposed behavior
+      description: What do you want SAM Doctor to surface or automate?
+    validations:
+      required: true
+  - type: textarea
+    id: output_context
+    attributes:
+      label: Suggested command output
+      description: Paste a short sanitized example or exact command output shape.
+      placeholder: |
+        Example:
+        sam-doctor diagnose deployment.log --format markdown
+  - type: input
+    id: version
+    attributes:
+      label: Current version (if known)
+      description: Run `sam-doctor --version`.
+      placeholder: 0.7.7
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the urgency for your workflow.
+      options:
+        - Low
+        - Medium
+        - High
