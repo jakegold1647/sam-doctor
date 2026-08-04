@@ -327,7 +327,10 @@ _RULES = (
         patterns=(
             r"Cannot connect to the Docker daemon",
             r"Error response from daemon",
+            r"Error:\s*Docker is unavailable or not running",
+            r"Building image for .* requires Docker\.",
             r"is the docker daemon running\?",
+            r"is docker running\?",
             r"No such file or directory.*docker\.sock",
         ),
         explanation=(
