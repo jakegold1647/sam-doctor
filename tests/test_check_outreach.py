@@ -271,7 +271,7 @@ def _create_log(path: Path) -> None:
     )
 
 
-def test_growth_score_prefers_feedback_and_follow_through():
+def test_growth_score_prefers_feedback_and_follow_through_repeated_inputs():
     module = _load_script(Path(__file__).resolve().parent.parent)
 
     score = module._growth_score(

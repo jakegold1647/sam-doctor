@@ -1,0 +1,33 @@
+name: Diagnose batched deployment logs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  diagnose-batched-logs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run deployment command(s)
+        shell: bash
+        run: |
+          mkdir -p logs
+          # Replace this block with your team's actual deployment matrix jobs.
+          sam deploy --no-confirm-changeset 2>&1 | tee logs/deploy-1.log
+
+      - name: Diagnose all captured logs
+        if: always()
+        id: sam-doctor
+        uses: jakegold1647/sam-doctor@v0.7.7
+        with:
+          log-file: logs/
+          batch: true
+          summary: true
+          # Optional strict gate: require no recognized supported failures.
+          # fail-on-findings: true

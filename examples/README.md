@@ -16,6 +16,12 @@ Use these templates to onboard quickly.
   - Works for direct `aws cloudformation deploy` invocations.
   - Replace template path, stack name, and capabilities.
 
+## GitHub Actions batch logs
+
+- `github-actions-workflow-batch-logs.yml`
+  - Use when a single run produces multiple deployment logs (matrix, multi-region, multiple stacks).
+  - Point `log-file` at a directory or wildcard and set `batch: true`.
+
 ## GitLab CI starter
 
 - `gitlab-ci-sam-doctor.yml`

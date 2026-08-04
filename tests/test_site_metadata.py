@@ -75,7 +75,6 @@ def test_action_examples_show_opt_in_failure_gate() -> None:
 
 def test_examples_index_and_starters_are_documented() -> None:
     examples_readme = ROOT / "examples" / "README.md"
-    matrix_doc = (ROOT / "docs" / "ci-command-matrix.md").read_text(encoding="utf-8")
     starter_sync = ROOT / "examples" / "github-actions-workflow-sam-sync.yml"
     starter_cf = ROOT / "examples" / "github-actions-workflow-cf-pipeline.yml"
     starter_default = ROOT / "examples" / "github-actions-workflow.yml"

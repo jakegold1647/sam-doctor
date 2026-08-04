@@ -21,6 +21,13 @@ Use this matrix to quickly choose the right starting template.
 4. Keep an optional non-blocking diagnose flag until your team is ready.
 5. Turn strict failure gating on only after a few stable runs.
 
+### Batched logs in GitHub Actions
+
+If your workflow writes multiple logs, keep the diagnosis step at the end and set
+`batch: true`, then pass a directory or glob:
+
+`log-file: logs/`
+
 ## Notes
 
 - `findings` can be surfaced in JSON for scripts and chat ops.
