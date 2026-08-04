@@ -337,7 +337,12 @@ the command you ran.
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
   trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
 - IAM `AccessDenied` failures
+- Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
+- CloudFormation API throttling (`Rate exceeded`)
 - CloudFormation failed-resource events and rollback states
+- Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
+- ECR push authentication failures from the CI runner (missing login, expired token,
+  denied `ecr:GetAuthorizationToken`)
 - CloudFormation capability acknowledgement errors
 - Lambda container-image failures caused by missing ECR image access
 - API Gateway deployments created before methods exist
@@ -347,7 +352,7 @@ the command you ran.
 - Python dependency resolution or validation errors in SAM/Python builds
 - Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
 - API Gateway CORS preflight conflicts
-- Terminal, Markdown, and JSON reports
+- Terminal, Markdown, JSON, and GitHub-annotation reports
 - Composite GitHub Action with opt-in redacted job summaries and CI gating
 - Local redaction for account IDs, ARNs, email addresses, and common CI credentials
 
@@ -618,6 +623,7 @@ researcher, use:
 - [RESEARCHER_OVERVIEW.md](RESEARCHER_OVERVIEW.md)
 
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
+bare STS session tokens, quoted and unquoted secret assignments,
 bearer tokens, JWT-style tokens, and common GitHub token formats before matched
 evidence or a displayed source name is shared. This is a helpful guardrail, not a secret scanner:
 review a report before sharing it.
