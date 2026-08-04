@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS SAM and CloudFormation Deployment Error Index | SAM Doctor</title>
+    <meta name="description" content="Exact-error reference pages for common AWS SAM, CloudFormation, and GitHub Actions deployment failures: what each error means, the concrete fix, and how to diagnose it automatically." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-index-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-index-content">
+      <section class="hero" aria-labelledby="index-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="index-title">AWS deployment error index</h1>
+        <p class="lede">
+          One page per exact error string: what it means, what actually causes it,
+          and the concrete fix. Each failure here is also recognized by
+          <code>sam-doctor diagnose</code>.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="identity-title">
+        <p class="eyebrow">IDENTITY AND CREDENTIALS</p>
+        <h2 id="identity-title">Identity, OIDC, and credential errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — GitHub Actions OIDC trust-policy rejection.</li>
+          <li><a href="./expired-token.html">The security token included in the request is expired (ExpiredToken)</a> — stale sessions, short OIDC durations, and clock skew.</li>
+          <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — unauthenticated Docker push to Amazon ECR.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="stack-title">
+        <p class="eyebrow">CLOUDFORMATION STACK STATES</p>
+        <h2 id="stack-title">Stack lifecycle errors</h2>
+        <ul>
+          <li><a href="./rollback-complete-cannot-be-updated.html">Stack is in ROLLBACK_COMPLETE state and can not be updated</a> — the failed-first-deploy dead end.</li>
+          <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
+          <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
+          <li><a href="./rate-exceeded.html">An error occurred (Throttling): Rate exceeded</a> — per-account API rate limits, usually from CI fan-out.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="build-title">
+        <p class="eyebrow">BUILD AND TEMPLATE</p>
+        <h2 id="build-title">Build and template errors</h2>
+        <ul>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — container builds without a reachable Docker daemon.</li>
+          <li><a href="./esbuild-not-found.html">Esbuild Failed: Cannot find esbuild</a> — the bundler missing from the function project or runner.</li>
+          <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — API Gateway deployment/method ordering races.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="cli-title">
+        <p class="eyebrow">ONE COMMAND</p>
+        <h2 id="cli-title">Diagnose any of these automatically</h2>
+        <p class="muted">
+          SAM Doctor matches these errors — and the rest of its rule catalog —
+          against your deployment log locally, with redacted evidence and safe
+          verification steps. No AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+        <p class="muted">
+          Hit a failure that is not listed here or not matched by the CLI?
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">Request a diagnostic rule</a>
+          with a short sanitized excerpt.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

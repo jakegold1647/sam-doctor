@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stack is in ROLLBACK_COMPLETE state and can not be updated | SAM Doctor</title>
+    <meta name="description" content="Fix 'Stack is in ROLLBACK_COMPLETE state and can not be updated': find the original CREATE_FAILED event, delete the failed initial stack, and redeploy safely." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/rollback-complete-cannot-be-updated.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Stack is in ROLLBACK_COMPLETE state and can not be updated</h1>
+        <p class="lede">
+          The very first deployment of this stack failed, CloudFormation rolled
+          everything back, and a stack that rolled back from its initial create
+          can never be updated — only deleted and recreated.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          <code>ROLLBACK_COMPLETE</code> is a terminal state that only exists after a
+          failed <em>initial</em> stack creation. There is no last-known-good version
+          for CloudFormation to update from, so every subsequent
+          <code>sam deploy</code> or <code>aws cloudformation deploy</code> against
+          the same stack name fails with this message — regardless of whether you
+          fixed the template.
+        </p>
+        <p>
+          Two separate problems are stacked here, and retry loops in CI make it easy
+          to conflate them:
+        </p>
+        <ul>
+          <li><strong>The original failure.</strong> Some resource hit <code>CREATE_FAILED</code> on the first deploy. That root cause still exists and will fail the recreate too if you skip it.</li>
+          <li><strong>The stuck stack.</strong> The rolled-back stack occupies the stack name and blocks all updates until it is deleted.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Find the original failure first.</strong> List the stack events and
+            locate the earliest <code>CREATE_FAILED</code> entry — that status reason is
+            the actual root cause:
+            <pre><code>aws cloudformation describe-stack-events --stack-name YOUR_STACK \
+  --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].[LogicalResourceId,ResourceStatusReason]" \
+  --output table</code></pre>
+          </li>
+          <li>
+            <strong>Fix that root cause</strong> in the template, parameters, or
+            permissions. Deleting and redeploying without this step reproduces the
+            same failure.
+          </li>
+          <li>
+            <strong>Review what the failed stack holds, then delete it.</strong> A
+            rolled-back initial create normally retains nothing valuable, but confirm
+            before deleting — some resources (buckets, log groups) can be configured
+            to be retained:
+            <pre><code>aws cloudformation delete-stack --stack-name YOUR_STACK
+aws cloudformation wait stack-delete-complete --stack-name YOUR_STACK</code></pre>
+          </li>
+          <li>
+            <strong>Deploy again with the same stack name.</strong> With the root cause
+            fixed and the name free, the create can proceed normally.
+          </li>
+          <li>
+            <strong>Optional, for iterating on new stacks:</strong>
+            <code>sam deploy --disable-rollback</code> keeps successfully created
+            resources on failure so you can fix forward during development instead of
+            hitting this state repeatedly. Use it consciously — it leaves partial
+            stacks behind.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes this state (high confidence), separates it from
+          ordinary rollback noise, and points you at the first failed resource
+          event instead of the end-of-stack symptom. Runs locally; no AWS access,
+          no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./delete-failed.html">DELETE_FAILED</a> — the cleanup itself gets blocked by a non-empty bucket or attached network interface.</li>
+          <li><a href="./insufficient-capabilities.html">InsufficientCapabilitiesException</a> — a common root cause of the original CREATE_FAILED.</li>
+          <li><a href="./rate-exceeded.html">Rate exceeded (Throttling)</a> — transient API throttling that can fail an initial create.</li>
+        </ul>
+        <p class="muted">
+          Longer walkthrough:
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md">finding the first useful CloudFormation failure</a>.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

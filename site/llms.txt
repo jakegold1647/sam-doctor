@@ -13,6 +13,17 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 
 ## Exact-error guides
 
+- [Deployment error index](https://jakegold1647.github.io/sam-doctor/errors/): one page per exact error string with causes, fixes, and the diagnose command.
+- [Not authorized to perform: sts:AssumeRoleWithWebIdentity](https://jakegold1647.github.io/sam-doctor/errors/assume-role-with-web-identity.html): GitHub Actions OIDC trust-policy rejection.
+- [Stack is in ROLLBACK_COMPLETE state and can not be updated](https://jakegold1647.github.io/sam-doctor/errors/rollback-complete-cannot-be-updated.html): recover from a failed initial stack create.
+- [InsufficientCapabilitiesException](https://jakegold1647.github.io/sam-doctor/errors/insufficient-capabilities.html): when to pass CAPABILITY_IAM, CAPABILITY_NAMED_IAM, or CAPABILITY_AUTO_EXPAND.
+- [The security token included in the request is expired](https://jakegold1647.github.io/sam-doctor/errors/expired-token.html): expired sessions, OIDC session duration, and clock skew.
+- [no basic auth credentials](https://jakegold1647.github.io/sam-doctor/errors/no-basic-auth-credentials.html): unauthenticated Docker push to Amazon ECR.
+- [An error occurred (Throttling): Rate exceeded](https://jakegold1647.github.io/sam-doctor/errors/rate-exceeded.html): CloudFormation API rate limits from CI fan-out.
+- [DELETE_FAILED](https://jakegold1647.github.io/sam-doctor/errors/delete-failed.html): blocked stack deletion and --retain-resources.
+- [Cannot connect to the Docker daemon](https://jakegold1647.github.io/sam-doctor/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
+- [Esbuild Failed: Cannot find esbuild](https://jakegold1647.github.io/sam-doctor/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
+- [The REST API doesn't contain any methods](https://jakegold1647.github.io/sam-doctor/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.
 - [GitHub Actions integration](https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md): add SAM Doctor after an existing AWS SAM deployment command without changing its AWS authentication model.
 - [AssumeRoleWithWebIdentity / GitHub Actions OIDC](https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md): check `id-token: write`, the STS audience, and the trust-policy subject.
 - [CloudFormation ROLLBACK_COMPLETE](https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md): find the first failed resource event instead of treating rollback as the root cause.

@@ -2,6 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://jakegold1647.github.io/sam-doctor/</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/quickstart.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/assume-role-with-web-identity.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rollback-complete-cannot-be-updated.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/insufficient-capabilities.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/expired-token.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/no-basic-auth-credentials.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rate-exceeded.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/delete-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/docker-unavailable.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/esbuild-not-found.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rest-api-no-methods.html</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md</loc></url>

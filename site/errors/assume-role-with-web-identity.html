@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Not authorized to perform: sts:AssumeRoleWithWebIdentity | SAM Doctor</title>
+    <meta name="description" content="Fix 'Not authorized to perform: sts:AssumeRoleWithWebIdentity' in GitHub Actions: check id-token: write, the OIDC audience, and the trust policy sub condition." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/assume-role-with-web-identity.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Not authorized to perform: sts:AssumeRoleWithWebIdentity</h1>
+        <p class="lede">
+          Your GitHub Actions job reached AWS STS, but the role's trust relationship
+          rejected the GitHub-issued OIDC token. The deployment identity was never
+          established, so everything after this line is noise.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          The workflow asked STS to exchange a GitHub OIDC token for temporary AWS
+          credentials via <code>AssumeRoleWithWebIdentity</code>, and STS said no.
+          The token itself arrived, so the network path and the credentials action
+          are working. The mismatch is between what the token claims and what the
+          IAM role's trust policy requires. In practice one of three things is wrong:
+        </p>
+        <ul>
+          <li><strong>The job never got a real token.</strong> The workflow or job is missing the <code>id-token: write</code> permission, so the credentials action falls back and STS receives nothing it can trust.</li>
+          <li><strong>The audience does not match.</strong> The trust policy checks <code>token.actions.githubusercontent.com:aud</code>, and the token was minted for something other than <code>sts.amazonaws.com</code>.</li>
+          <li><strong>The <code>sub</code> condition does not match this run.</strong> The trust policy pins a repository, branch, tag, or GitHub Environment, and the job that ran does not match it exactly — a renamed repo, a deploy from a different branch, or an Environment name that differs from the condition.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Confirm the job can request a token.</strong> The workflow or the
+            deployment job must declare:
+            <pre><code>permissions:
+  id-token: write
+  contents: read</code></pre>
+            A job-level <code>permissions</code> block overrides the workflow-level
+            one, and reusable workflows need the permission granted by the caller.
+          </li>
+          <li>
+            <strong>Check the audience.</strong> The role trust policy should accept
+            <code>token.actions.githubusercontent.com:aud</code> equal to
+            <code>sts.amazonaws.com</code> — that is what
+            <code>aws-actions/configure-aws-credentials</code> requests by default.
+            If you passed a custom <code>audience</code> input, the trust policy must
+            match it.
+          </li>
+          <li>
+            <strong>Compare the <code>sub</code> condition with the actual run.</strong>
+            A branch deploy produces a claim like
+            <code>repo:OWNER/REPO:ref:refs/heads/main</code>; a job bound to a GitHub
+            Environment produces <code>repo:OWNER/REPO:environment:NAME</code> instead.
+            The two forms are not interchangeable. Use <code>StringLike</code> with an
+            explicit wildcard only where you have decided that breadth is acceptable.
+            Note that newer repositories can include immutable owner and repository IDs
+            in the claim.
+          </li>
+          <li>
+            <strong>Verify the OIDC provider exists in the target account.</strong>
+            The account needs an IAM OIDC identity provider for
+            <code>token.actions.githubusercontent.com</code>, and the role's federated
+            principal must name that provider's ARN. Assuming a role in the wrong
+            account is a common variant of this failure.
+          </li>
+          <li>
+            <strong>Re-run the deploy only after a trust-policy check passes.</strong>
+            Rotating secrets or widening permissions does not help here — the failure
+            is in the trust relationship, not in an identity policy.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes this failure (high confidence) plus the neighboring
+          OIDC variants — missing <code>id-token: write</code>, wrong audience, and
+          missing OIDC provider — and tells you which one your log shows. Runs
+          locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./expired-token.html">The security token included in the request is expired</a> — the credentials worked earlier and then aged out mid-job.</li>
+          <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — the OIDC role works but the runner never logged in to ECR.</li>
+          <li><a href="./insufficient-capabilities.html">InsufficientCapabilitiesException</a> — the identity is fine and CloudFormation wants an explicit IAM acknowledgement.</li>
+        </ul>
+        <p class="muted">
+          Longer walkthrough:
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md">the OIDC deployment debugging guide</a>.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
