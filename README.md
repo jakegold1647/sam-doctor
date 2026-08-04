@@ -132,6 +132,36 @@ Use this sequence in an incident thread:
 
 If your log is only a stack event excerpt, feed it directly with `sam-doctor diagnose -`.
 
+## Use-case: resolve IAM capability blocks in under 2 minutes
+
+When a deployment stops on capability approval, this is the common signature:
+
+```text
+CAPABILITY_IAM is required but was not acknowledged in the template
+```
+
+Use the same command you already use:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown
+```
+
+A focused report usually includes:
+
+```text
+1. CloudFormation requires CAPABILITY_IAM (high confidence)
+   Matched on line: 7
+   Evidence:
+   - CAPABILITY_IAM is required but was not provided.
+   Verify:
+   - Confirm whether you expect IAM changes from this template.
+   - Re-run with the specific capability and deployment mode intended:
+     `--capabilities CAPABILITY_IAM` (or CAPABILITY_NAMED_IAM when required).
+```
+
+In practice this shortens “why did it fail?” to “which flag is actually needed?” and
+reduces repeated guess-and-retry cycles.
+
 To diagnose a real deployment log:
 
 ```bash

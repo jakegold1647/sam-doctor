@@ -156,6 +156,28 @@
         </ul>
       </section>
 
+      <section class="steps" aria-labelledby="use-case-capability-title">
+        <p class="eyebrow">Use case</p>
+        <h2 id="use-case-capability-title">Resolve IAM capability failures in one step.</h2>
+        <p class="muted">
+          A teammate sees a capability prompt instead of a deeper root cause:
+        </p>
+        <p><code>CAPABILITY_IAM is required but was not acknowledged</code></p>
+        <p>
+          Run:
+        </p>
+        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
+        <p class="muted">
+          Then apply only the specific required capability flag from the report, re-run,
+          and continue only after the IAM change intent is confirmed.
+        </p>
+        <ul>
+          <li>Confirm whether IAM resources are intentionally changed by this template.</li>
+          <li>Use the smallest required capability flag first (CAPABILITY_IAM vs CAPABILITY_NAMED_IAM).</li>
+          <li>Re-run deploy and use SAM Doctor on the next failure if needed.</li>
+        </ul>
+      </section>
+
       <section id="install" class="install" aria-labelledby="install-title">
         <p class="eyebrow">GET STARTED</p>
         <h2 id="install-title">Install v0.7.7 in one command.</h2>
