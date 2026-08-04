@@ -247,6 +247,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "Error: Building image for HelloWorldFunction requires Docker. is Docker running?",
             "requires docker for containerized builds",
         ),
+        (
+            "sam build --use-container failed: exec: \"docker\": executable file not found in $PATH",
+            "requires docker for containerized builds",
+        ),
+        (
+            "sam build --use-container --cached failed: /bin/sh: docker: not found",
+            "requires docker for containerized builds",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:

@@ -331,9 +331,11 @@ _RULES = (
             r"Error response from daemon",
             r"Error:\s*Docker is unavailable or not running",
             r"Building image for .* requires Docker\.",
+            r"sam build --use-container.*(?:cannot execute|executable file not found|not found|is not recognized|command not found)",
             r"is the docker daemon running\?",
             r"is docker running\?",
             r"No such file or directory.*docker\.sock",
+            r"sh: docker: not found",
         ),
         explanation=(
             "The build job reached a containerized SAM build path and could not reach "
