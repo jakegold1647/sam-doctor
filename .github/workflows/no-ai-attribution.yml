@@ -1,0 +1,66 @@
+name: No AI attribution
+
+# Commits here are read as the author's own work. This check fails loudly if an
+# attribution trailer reaches the repo. A local commit-msg hook catches it on the
+# maintainer's machine; this catches everything else - other machines, agents,
+# and commits created through the GitHub API, which no local hook can see.
+#
+# On a pull request it inspects only that PR's commits, so a contributor is never
+# blamed for history that predates them.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan commit messages for AI attribution
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE" ]; then
+            RANGE="$BASE..$HEAD"
+            echo "Scanning pull request commits: $RANGE"
+          else
+            RANGE="${{ github.event.before }}..$HEAD"
+            # A new branch or force-push can leave 'before' unusable; fall back to the tip.
+            if ! git rev-parse --quiet --verify "${{ github.event.before }}^{commit}" >/dev/null 2>&1; then
+              RANGE="$HEAD~1..$HEAD"
+              echo "Previous SHA unavailable; scanning tip commit only"
+            else
+              echo "Scanning pushed commits: $RANGE"
+            fi
+          fi
+
+          PATTERN='co-authored-by:.*(claude|anthropic)|claude-session:|generated with .*claude|noreply@anthropic'
+          FAILED=0
+
+          for sha in $(git rev-list "$RANGE" 2>/dev/null || echo "$HEAD"); do
+            MSG=$(git log -1 --format='%B' "$sha")
+            if echo "$MSG" | grep -qiE "$PATTERN"; then
+              echo "::error::Commit $(git rev-parse --short "$sha") carries AI attribution"
+              echo "$MSG" | grep -iE "$PATTERN" | sed 's/^/    /'
+              FAILED=1
+            fi
+            AUTHOR="$(git log -1 --format='%an <%ae>' "$sha")"
+            case "$(printf '%s' "$AUTHOR" | tr '[:upper:]' '[:lower:]')" in
+              *claude*|*anthropic*)
+                echo "::error::Commit $(git rev-parse --short "$sha") has an AI author identity: $AUTHOR"
+                FAILED=1 ;;
+            esac
+          done
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "Remove the offending trailer and amend or rebase before merging."
+            exit 1
+          fi
+          echo "Clean - no AI attribution in the scanned commits."
