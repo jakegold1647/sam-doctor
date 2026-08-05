@@ -3,10 +3,10 @@
 A short punch list, kept honest. 1.0 does not mean "every rule exists"; it
 means a user can rely on what is already here.
 
-1. Cut a release. Everything in the changelog's Unreleased section (five new
-   rules, the catalog gate, `check-pr.py`, the contributor docs) is on main
-   but not on PyPI. PyPI still serves 0.7.7. Cutting 0.8.0 is the single
-   biggest gap between the repo and what users actually install.
+1. Keep the release channels in step. 0.8.x ships to PyPI and to a GitHub tag
+   automatically, but the GitHub Marketplace listing has to be republished by
+   hand after each release. Until that is part of the release checklist,
+   Action users can sit on an older version than PyPI users get.
 2. Settle the open rule requests. #24 is assigned; #28-#33 are open for
    contributors. Each should land or be explicitly deferred before 1.0 so the
    issue tracker reflects reality, not ambition.

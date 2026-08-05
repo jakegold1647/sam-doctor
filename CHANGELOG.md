@@ -4,6 +4,19 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.8.1 - 2026-08-05
+
+- Shortened the GitHub Action `description` in `action.yml` from 134 to 120
+  characters. The GitHub Marketplace rejects any description of 125 characters
+  or more, which failed validation on the v0.8.0 publish and left the
+  Marketplace listing stuck on v0.7.4. No input, output, or behavior of the
+  action changed.
+- Corrected every README sample output so each block shows what the CLI
+  actually prints. The demo, OIDC, rollback, capability, and proof blocks were
+  verified against a fresh install; the proof section had shown a
+  suggested-next-command line the tool has never emitted, and two use-case
+  blocks paired `--format markdown` with terminal-format output.
+
 ## v0.8.0 - 2026-08-04
 
 - Added a rule for Lambda per-function package size limits (`Unzipped size
