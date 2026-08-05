@@ -31,17 +31,21 @@ official documentation.
 
 Current release: **v0.8.0**.
 
-## Contributing
+## Try it in 60 seconds
 
-New contributors are welcome, and the best first changes are small: a
-documentation correction, a reproducible false positive or missed diagnostic,
-or one new diagnostic rule with a positive and a nearby-negative test. Start
-with the [contributor setup](CONTRIBUTING.md), pick a fully specified rule
-from the [rule roadmap](docs/rule-roadmap.md) or an issue labeled
-[`good first issue`](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
-and run `python scripts/check-pr.py` before opening the PR — it is the same
-gate CI runs. Before sharing any log excerpt, remove account IDs, ARNs,
-credentials, tokens, and customer data.
+```bash
+python -m pip install sam-doctor
+sam-doctor demo
+```
+
+The bundled demo needs no AWS credentials and makes no network calls. You can also use:
+
+```bash
+pipx install sam-doctor      # isolated install (no environment changes)
+uvx sam-doctor demo          # run without install (if uv is available)
+```
+
+![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
 
 ## Who this is for
 
@@ -64,28 +68,16 @@ If you are:
 
 ### Choose your path in 20 seconds
 
-- **You have a failing deployment log file:** run one command and share one finding:
+- **You are debugging one incident now:** run one command and share one finding:
   `sam-doctor diagnose deployment.log --format markdown`.
 - **You use GitHub Actions for deployment:** add one diagnostics step from one of the
-  starter workflows in the [CI matrix](docs/ci-command-matrix.md).
+  starter workflows in the [CI matrix](docs/ci-command-matrix.md). Keep
+  `fail-on-findings: false` for a week, then enforce.
 - **You need a research-ready packet:** run
   `sam-doctor packet deployment.log` and share `diagnosis.md` + `diagnosis.json`
   only.
 - **You're onboarding a team:** use the [Adopter onboarding kit](docs/adopter-onboarding-kit.md)
-  for role-based templates and copy/paste text.
-
-### Choose your path in 20 seconds (new team rollout version)
-
-- **You are debugging one incident now:** run
-  `sam-doctor diagnose deployment.log --format markdown`.
-- **You have CI output in text form:** append
-  `sam-doctor diagnose - --format json --output diagnosis.json` after your log command.
-- **You need non-blocking CI:** set action `summary: true` first and keep
-  `fail-on-findings: false` for one week.
-- **You are ready to enforce gates:** switch that action to
-  `fail-on-findings: true` after a low-friction pilot.
-- **You work with one team:** follow the
-  [first-3 teams onboarding playbook](docs/first-3-teams-onboarding-playbook.md).
+  or the [first-3 teams onboarding playbook](docs/first-3-teams-onboarding-playbook.md).
 
 ### Paste this in Slack/Teams/Email
 
@@ -96,20 +88,6 @@ I ran @sam-doctor on the shared deploy excerpt:
 - Safe next check: [first command]
 - Confidence: [high/med/low]
 If this is real, next step is: [one action].
-```
-
-## Try it in 60 seconds
-
-```bash
-python -m pip install sam-doctor
-sam-doctor demo
-```
-
-You can also use:
-
-```bash
-pipx install sam-doctor      # isolated install (no environment changes)
-uvx sam-doctor demo          # run without install (if uv is available)
 ```
 
 ## Start using it in 90 seconds
@@ -491,8 +469,6 @@ If the tool did not match the failure and this was a real production issue, open
 `Report a bad diagnosis` immediately and include a short, sanitized excerpt plus
 the command you ran.
 
-![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
-
 ## Current free core
 
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
@@ -501,6 +477,12 @@ the command you ran.
 - Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
 - CloudFormation API throttling (`Rate exceeded`)
 - CloudFormation failed-resource events and rollback states
+- Empty change sets (`No changes to deploy` in CI)
+- IAM denials with parsed context: explicit denies (including service control
+  policies) distinguished from missing-policy denials
+- Resources that fail to stabilize, with the nested handler message surfaced first
+- Exports that cannot change because another stack imports them
+- Lambda deployment packages over a size limit
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
 - ECR push authentication failures from the CI runner (missing login, expired token,
   denied `ecr:GetAuthorizationToken`)
@@ -837,6 +819,18 @@ bare STS session tokens, quoted and unquoted secret assignments,
 bearer tokens, JWT-style tokens, and common GitHub token formats before matched
 evidence or a displayed source name is shared. This is a helpful guardrail, not a secret scanner:
 review a report before sharing it.
+
+## Contributing
+
+New contributors are welcome, and the best first changes are small: a
+documentation correction, a reproducible false positive or missed diagnostic,
+or one new diagnostic rule with a positive and a nearby-negative test. Start
+with the [contributor setup](CONTRIBUTING.md), pick a fully specified rule
+from the [rule roadmap](docs/rule-roadmap.md) or an issue labeled
+[`good first issue`](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
+and run `python scripts/check-pr.py` before opening the PR — it is the same
+gate CI runs. Before sharing any log excerpt, remove account IDs, ARNs,
+credentials, tokens, and customer data.
 
 ## Development
 
