@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for the Lambda regional code storage quota
+  (`CodeStorageExceededException`, `Code storage limit exceeded`), which counts
+  deployed packages, retained versions, and layers together and is distinct
+  from the per-function package size limit added in v0.8.0. It suppresses the
+  generic `CREATE_FAILED` finding so the report names the cause rather than the
+  symptom. Contributed in #35. Catalog is now 38 rules.
+
 ## v0.8.1 - 2026-08-05
 
 - Shortened the GitHub Action `description` in `action.yml` from 134 to 120
