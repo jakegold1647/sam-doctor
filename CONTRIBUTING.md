@@ -16,15 +16,10 @@ For a diagnostic problem, include:
 3. A short, sanitized excerpt containing the first relevant error.
 4. What you expected the report to say and what it said instead.
 
-If you are helping spread the project, include short onboarding notes and share one
-closed reproduction with a link to the community kit:
-`docs/community-sharing-kit.md`.
-
 For tooling improvements, use the feature request template and include:
 
 1. the command or workflow family,
-2. the behavior gap,
-3. expected adoption impact.
+2. the behavior gap.
 
 ## First contribution path
 
