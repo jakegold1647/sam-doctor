@@ -1380,3 +1380,7 @@ def test_lambda_code_storage_limit_exceeded_suppression() -> None:
     assert "AWS Lambda code storage limit exceeded" in rule_titles
 
     assert "CloudFormation resource creation or update failed" not in rule_titles
+
+
+def test_code_storage_wording_alone_is_not_a_quota_finding() -> None:
+    assert diagnose("Code storage cleanup finished; usage is well below the limit.") == []
