@@ -1,9 +1,9 @@
-# SAM Doctor case studies
+# Worked examples
 
-These examples show concrete, production-like flows with the minimal excerpt you
-need to send.
+Three end-to-end examples showing how to run SAM Doctor on a real failure and
+what to do with the output. Each starts from the smallest useful log excerpt.
 
-## Case study: blocked IAM OIDC role assumption (single incident)
+## Blocked IAM OIDC role assumption (single incident)
 
 **Situation**
 
@@ -13,7 +13,7 @@ need to send.
 Not authorized to perform: sts:AssumeRoleWithWebIdentity
 ```
 
-**Action**
+**Steps**
 
 1. Save the smallest useful excerpt as `deployment-failure.log`.
 2. Run:
@@ -30,10 +30,8 @@ SAM Doctor reports one finding first:
 - Evidence line around the exact failure
 - Verification step to confirm the `id-token: write` permission and OIDC trust-policy
 
-**Why this converts**
-
-- The triage moves from “debug everywhere” to one targeted check.
-- A teammate can run the same flow and report one concrete verification command.
+The triage moves from "debug everywhere" to one targeted check, and a teammate
+can run the same command and compare results.
 
 Copy/paste handoff:
 
@@ -45,14 +43,14 @@ Next action: verify role trust `aud` and `sub` against GitHub OIDC claims
 
 ---
 
-## Case study: rollback noise hides first failure
+## Rollback noise hides the first failure
 
 **Situation**
 
 - CI shows a final stack state like `ROLLBACK_COMPLETE`.
-- The team can’t quickly identify which resource failed first.
+- It is not obvious which resource failed first.
 
-**Action**
+**Steps**
 
 ```bash
 sam-doctor diagnose deployment.log --format json --output diagnosis.json
@@ -64,24 +62,20 @@ SAM Doctor identifies the earliest actionable event and ranks the next check.
 
 - It avoids chasing the rollback terminus.
 - It points to the original create/update failure first.
-
-**Why this converts**
-
-- Incident threads move from speculation to a single reviewable finding.
-- The report provides the exact command to verify before any cleanup or policy
+- The report includes the exact command to verify before any cleanup or policy
   changes.
 
 ---
 
-## Case study: team pilot with non-blocking gating
+## Non-blocking CI diagnostics, then strict gating
 
 **Situation**
 
 - A team wants diagnostics in CI without changing failure behavior immediately.
 
-**Action**
+**Steps**
 
-1. Run SAM Doctor in non-blocking mode for a short pilot:
+1. Run SAM Doctor in non-blocking mode first:
 
 ```yaml
 - name: Diagnose deployment log
@@ -99,7 +93,7 @@ SAM Doctor identifies the earliest actionable event and ranks the next check.
 - `finding-count`
 - `has-findings`
 
-3. After 1–2 stable weeks, switch to strict mode:
+3. Once the signal has proven reliable on your own logs, switch to strict mode:
 
 ```yaml
 fail-on-findings: true
@@ -107,18 +101,13 @@ fail-on-findings: true
 
 **Result**
 
-The team builds trust in the tool’s signal quality before converting to an enforced
-gate.
-
-**Why this converts**
-
-- Adoption becomes incremental, reversible, and safe.
-- Product value is proven in the team’s own incident stream before full rollout.
+The change is incremental and reversible: diagnostics run on every deploy from
+day one, and the enforced gate is enabled only after the output has been
+reviewed against real failures.
 
 ---
 
-Pair this with the rollout docs:
+Related docs:
 
-- [Adopter onboarding kit](adopter-onboarding-kit.md)
-- [First-3 teams onboarding playbook](first-3-teams-onboarding-playbook.md)
-- [Community sharing kit](community-sharing-kit.md)
+- [GitHub Actions integration](github-actions-integration.md)
+- [On-call playbook](on-call-playbook.md)
