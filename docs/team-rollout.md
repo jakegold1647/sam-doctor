@@ -1,7 +1,7 @@
-# SAM Doctor adopter onboarding kit
+# Rolling out SAM Doctor on a team
 
-Use this when sharing SAM Doctor with a new team, community, or partner.
-It gives ready-to-run commands by role and a one-thread handoff template.
+Ready-to-run commands by role, plus a short checklist for putting SAM Doctor
+into a team's CI without changing failure behavior on day one.
 
 ## 1) 20-second decision path
 
@@ -17,11 +17,11 @@ It gives ready-to-run commands by role and a one-thread handoff template.
   `sam-doctor diagnose deployment.log --format json --output diagnosis.json`
 - You need a **review-ready packet**:
   `sam-doctor packet deployment.log`
-- You are evaluating a **new failure family**:
+- You hit a **failure family SAM Doctor does not cover**:
   open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
   with the sanitized excerpt and command family.
 
-## 2) Team-specific command set
+## 2) Commands by role
 
 ### A) On-call engineer
 
@@ -53,7 +53,7 @@ Add this in CI immediately after deploy writes logs:
 Keep non-blocking initially (`fail-on-findings: false`), then switch to strict
 gating after 2-3 stable runs.
 
-If you want SAM Doctor to generate the exact workflow for your team in one step:
+To generate the exact workflow in one step:
 
 ```bash
 sam-doctor init \
@@ -88,7 +88,7 @@ sam-doctor packet deployment.log
 
 Share only sanitized outputs, never full raw logs.
 
-### D) Research partner
+### D) Researcher
 
 Provide reproducibility and controls:
 
@@ -100,50 +100,27 @@ sam-doctor packet deployment.log
 
 Pair with `docs/researcher-evidence-packet.md` if writing for publication or review.
 
-### E) Platform engineer introducing SAM Doctor
+### E) Platform engineer setting this up
 
-Use a smoke check before announcing:
+Run a smoke check first:
 
 ```bash
 python scripts/run-smoke.py
 ```
 
-Then ask two adopters to run the same command on a non-sensitive failure.
+Then have one or two other engineers run the same command on a non-sensitive
+failure and compare output.
 
-## 3) Shareable one-thread message template
-
-```text
-Trying SAM Doctor on a live failure:
-- Finding: [top finding title]
-- Verified: [safe follow-up command]
-- Result: [pass/fail]
-- Next: [one exact action]
-
-If this matches your failure family, we can add a tailored starter workflow in 10 minutes.
-```
-
-## 4) Outreach-ready 3-message sequence
-
-1. **Starter post (first touch)**  
-   "I'm sharing a quick OSS tool for deterministic AWS deployment triage:
-   SAM Doctor. You can install in 60s and get one redacted, actionable finding from a deployment log."
-
-2. **How it works (second touch)**  
-   "Run `sam-doctor diagnose deployment.log --format markdown`, add one follow-up check, then proceed."
-
-3. **Proof + invite (third touch)**  
-   "I can share the exact starter for GitHub Actions / your CI system and a copy/paste issue template for your first rule request."
-
-## 5) 5-minute rollout checklist
+## 3) Rollout checklist
 
 - [ ] Run `python scripts/run-smoke.py` on a clean machine
-- [ ] Add starter to one active workflow
-- [ ] Run one real incident and produce a packet
-- [ ] Share only sanitized outputs in handoff
-- [ ] File one rule request if a real non-covered failure appears
-- [ ] Link to the ecosystem context (`RESEARCHER_OVERVIEW.md`, `docs/researcher-evidence-packet.md`)
+- [ ] Add the starter workflow to one active pipeline, non-blocking
+- [ ] Run one real incident through it and produce a packet
+- [ ] Share only sanitized outputs in handoffs
+- [ ] File a rule request if a real non-covered failure appears
+- [ ] Enable `fail-on-findings: true` only after 2-3 stable runs
 
-## 6) Safe sharing reminder
+## 4) Safe sharing reminder
 
 Never include:
 
@@ -152,4 +129,5 @@ Never include:
 - secrets
 - full raw logs
 
-The same workflow that helps adoption also protects privacy and makes the tool credible in external collaboration.
+See the [worked examples](worked-examples.md) for full incident flows,
+including the non-blocking-to-strict gating sequence.
