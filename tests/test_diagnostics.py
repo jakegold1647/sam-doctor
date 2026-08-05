@@ -1355,21 +1355,20 @@ def test_export_update_refusal_suppresses_the_generic_update_failure() -> None:
     assert titles == ["A stack export cannot change while another stack imports it"]
 
 
-def test_lambda_code_storage_limit_exceeded_positive():
+def test_lambda_code_storage_limit_exceeded_positive() -> None:
     sample_log = (
         "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "
         "(Service: Lambda, Status Code: 400; Error Code: CodeStorageExceededException)"
     )
     findings = diagnose(
         sample_log
-    )  # Adjust to the actual analyzer function in test_diagnostics.py
+    )
 
-    # Assert your specific rule triggered
     rule_titles = [f.title for f in findings]
     assert "AWS Lambda code storage limit exceeded" in rule_titles
 
 
-def test_lambda_code_storage_limit_exceeded_suppression():
+def test_lambda_code_storage_limit_exceeded_suppression() -> None:
     log = (
         "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "
         "(Service: Lambda, Status Code: 400; Error Code: CodeStorageExceededException)"
@@ -1378,8 +1377,6 @@ def test_lambda_code_storage_limit_exceeded_suppression():
 
     rule_titles = [f.title for f in findings]
 
-    # Assert specific rule is present
     assert "AWS Lambda code storage limit exceeded" in rule_titles
 
-    # Assert generic CloudFormation rule was suppressed and is NOT present
     assert "CloudFormation resource creation or update failed" not in rule_titles
