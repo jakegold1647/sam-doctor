@@ -646,7 +646,7 @@ _RULES = (
             r"Code storage limit exceeded",
         ),
         explanation=(
-            "AWS Lambda reached the regional code storage limit (default 75 GB) for your account"
+            "AWS Lambda reached the regional code storage limit (default 75 GB) for your account. "
             "This total includes all present and past deployed function code, layers, and saved function versions across the region."
         ),
         verification=(
