@@ -70,13 +70,8 @@ a ready-to-edit deployment command.
 - `--batch`
 - `--fail-on-findings`
 
-For example, generate a non-blocking pilot workflow in one command:
-
-```bash
-sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
-```
-
-Later, regenerate with stricter behavior:
+The command above generates a non-blocking pilot workflow. Later, regenerate
+with stricter behavior:
 
 ```bash
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --fail-on-findings --force
