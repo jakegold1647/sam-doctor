@@ -61,8 +61,8 @@ The packet command writes:
 - `diagnosis.json` (structured result),
 - `researcher-notes.md` (brief method note).
 
-To share this workflow quickly with collaborators, reviewers, or community posts,
-use the [community sharing kit](docs/community-sharing-kit.md).
+To share this workflow with collaborators or reviewers, see the
+[team rollout guide](docs/team-rollout.md).
 
 ## Why this supports reliable reporting
 

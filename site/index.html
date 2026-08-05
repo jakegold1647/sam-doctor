@@ -231,12 +231,9 @@ curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/example
           (runs one demo + one diagnose flow and validates output shape).
         </p>
         <p class="muted">
-          If you're onboarding a team, use the
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adopter-onboarding-kit.md">Adopter onboarding kit</a>
-          (role-specific templates + rollout sequence).
-          For a 3-team pilot playbook with concrete week-by-week templates,
-          also use the
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/first-3-teams-onboarding-playbook.md">first-3 teams onboarding playbook</a>.
+          If you're setting this up for a team, see
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md">rolling out SAM Doctor on a team</a>
+          (ready-to-run commands by role).
         </p>
       </section>
 
@@ -258,9 +255,8 @@ curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/example
         <ul>
           <li><strong>Single failed log file:</strong> run <code>sam-doctor diagnose deployment.log --format markdown</code>.</li>
           <li><strong>CI output available now:</strong> add <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json</code> in the failed step.</li>
-          <li><strong>Team rollout:</strong> use the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adopter-onboarding-kit.md">Adopter onboarding kit</a> first, then switch to the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/first-3-teams-onboarding-playbook.md">first-3 teams playbook</a>.</li>
-          <li><strong>Safe pilot rollout:</strong> start with the <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml">two-phase GitHub Actions template</a> (pilot → strict) for low-risk adoption.</li>
-          <li><strong>Community outreach:</strong> copy and send the templates in <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/community-sharing-kit.md">the community sharing kit</a> before asking for feedback.</li>
+          <li><strong>Team rollout:</strong> use the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md">team rollout guide</a>.</li>
+          <li><strong>Safe pilot rollout:</strong> start with the <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml">two-phase GitHub Actions template</a> (pilot → strict).</li>
           <li><strong>Research / review loop:</strong> run <code>sam-doctor packet deployment.log</code> and export the reproducible evidence packet.</li>
         </ul>
       </section>

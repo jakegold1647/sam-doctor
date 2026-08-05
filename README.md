@@ -357,10 +357,8 @@ not security, legal, or production-operations advice.
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
 - [Worked examples (incident-to-action workflows)](docs/worked-examples.md)
-- [Adopter onboarding kit (team templates and rollout sequence)](docs/adopter-onboarding-kit.md)
-- [First-3 teams onboarding playbook (3-week rollout)](docs/first-3-teams-onboarding-playbook.md)
+- [Rolling out SAM Doctor on a team (commands by role)](docs/team-rollout.md)
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
-- [Community sharing kit (onboarding and announcement templates)](docs/community-sharing-kit.md)
 
 ## Contributing
 

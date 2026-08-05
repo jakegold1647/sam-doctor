@@ -34,5 +34,5 @@ This packet is intentionally small, reproducible, and safe to discuss in:
 - internal postmortems,
 - reproducibility discussions.
 
-For a short onboarding flow and community-ready messaging, use
-[community-sharing-kit.md](community-sharing-kit.md).
+For role-specific commands when setting this up on a team, see
+[team-rollout.md](team-rollout.md).
