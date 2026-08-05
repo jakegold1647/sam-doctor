@@ -78,15 +78,7 @@ after publish, trigger `distribution-check.yml` manually and enable:
 - (Optional for founder checks) `strict-ethical: true`
 - (Optional) `min-feedback-ratio` to set your ethical ratio bar (example: `100`)
 
-## 3. Prepare a founder checkout only after validation
-
-Create a Lemon Squeezy one-time product using `launch/PRODUCT-LISTING.md`.
-
-Do not activate a purchase button until the product description includes the
-delivery condition and refund terms. If you add a checkout link, place it in
-`site/index.html` only after the terms are visible.
-
-## 4. First distribution
+## 3. First distribution
 
 Use a local outreach note file (for example `notes/sam-doctor-launch-notes.md`) for personalized conversations with developers who have a recent, public SAM, CloudFormation, IAM, or GitHub Actions error.
 Keep that note file outside the repository so it is never committed.
