@@ -22,23 +22,33 @@ def _load_schema(relative_path: str) -> dict[str, object]:
     return json.loads(schema_path.read_text(encoding="utf-8"))
 
 
-def _assert_object_shape(payload: object, schema: dict[str, object], *, required_key: str) -> dict[str, object]:
+def _assert_object_shape(
+    payload: object, schema: dict[str, object], *, required_key: str
+) -> dict[str, object]:
     assert isinstance(payload, dict), f"{required_key} payload is not a JSON object"
     required = schema.get("required", [])
-    assert all(key in payload for key in required), f"{required_key} payload missing required keys"
+    assert all(
+        key in payload for key in required
+    ), f"{required_key} payload missing required keys"
     return payload
 
 
-def _assert_json_schema_matches(schema_relative_path: str, payload: dict[str, object]) -> None:
+def _assert_json_schema_matches(
+    schema_relative_path: str, payload: dict[str, object]
+) -> None:
     schema = _load_schema(schema_relative_path)
     validator = Draft202012Validator(schema)
     validator.validate(payload)
 
 
-def _finding_shape(finding: object, finding_schema: dict[str, object], index: int) -> None:
+def _finding_shape(
+    finding: object, finding_schema: dict[str, object], index: int
+) -> None:
     assert isinstance(finding, dict), f"finding {index} is not an object"
     required = finding_schema.get("required", [])
-    assert all(key in finding for key in required), f"finding {index} missing required keys"
+    assert all(
+        key in finding for key in required
+    ), f"finding {index} missing required keys"
     assert isinstance(finding["title"], str)
     assert isinstance(finding["confidence"], str)
     assert isinstance(finding["explanation"], str)
@@ -110,7 +120,9 @@ def test_package_version_matches_release() -> None:
     pyproject = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(
         encoding="utf-8"
     )
-    match = re.search(r'^version = "(?P<version>\d+\.\d+\.\d+)"$', pyproject, re.MULTILINE)
+    match = re.search(
+        r'^version = "(?P<version>\d+\.\d+\.\d+)"$', pyproject, re.MULTILINE
+    )
     assert match is not None
     assert __version__ == match.group("version")
 
@@ -150,8 +162,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
     ("log_line", "title_fragment"),
     (
         ("InvalidIdentityToken: Incorrect token audience", "token audience"),
-        ("Unable to get ID Token: missing id-token: write permission", "cannot request an oidc token"),
-        ("No OpenIDConnect provider found in your account", "missing the github actions oidc provider"),
+        (
+            "Unable to get ID Token: missing id-token: write permission",
+            "cannot request an oidc token",
+        ),
+        (
+            "No OpenIDConnect provider found in your account",
+            "missing the github actions oidc provider",
+        ),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
         (
             "property StageName: not defined for resource of type AWS::Serverless::Api",
@@ -166,7 +184,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "Lambda does not have permission to access the ECR image. Check the ECR permissions.",
             "cannot access the configured ecr image",
         ),
-        ("The specified bucket is not valid. Error Code: InvalidBucketName", "S3 bucket name"),
+        (
+            "The specified bucket is not valid. Error Code: InvalidBucketName",
+            "S3 bucket name",
+        ),
         (
             "Your access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
             "cannot read a Lambda layer artifact",
@@ -176,8 +197,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "explicit capability acknowledgement",
         ),
         ("The REST API doesn't contain any methods", "API Gateway deployment started"),
-        ("MyFunction CREATE_FAILED Resource handler returned message: denied", "resource creation"),
-        ("Stack: example is in ROLLBACK_COMPLETE state and can not be updated.", "failed initial stack"),
+        (
+            "MyFunction CREATE_FAILED Resource handler returned message: denied",
+            "resource creation",
+        ),
+        (
+            "Stack: example is in ROLLBACK_COMPLETE state and can not be updated.",
+            "failed initial stack",
+        ),
         (
             "Cannot use both --resolve-s3 and --s3-bucket parameters. Please use only one.",
             "managed and explicit S3 bucket",
@@ -248,7 +275,7 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "requires docker for containerized builds",
         ),
         (
-            "sam build --use-container failed: exec: \"docker\": executable file not found in $PATH",
+            'sam build --use-container failed: exec: "docker": executable file not found in $PATH',
             "requires docker for containerized builds",
         ),
         (
@@ -265,11 +292,12 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
         ),
     ),
 )
-def test_supported_failure_categories_are_detected(log_line: str, title_fragment: str) -> None:
+def test_supported_failure_categories_are_detected(
+    log_line: str, title_fragment: str
+) -> None:
     findings = diagnose(log_line)
 
     assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
-
 
 
 @pytest.mark.parametrize(
@@ -290,6 +318,7 @@ def test_supported_failure_categories_are_detected(log_line: str, title_fragment
 def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
     assert diagnose(log_line) == []
 
+
 def test_lambda_package_size_rule_does_not_match_code_storage_quota_errors() -> None:
     log = (
         "An error occurred (CodeStorageExceededException) when calling the "
@@ -299,7 +328,9 @@ def test_lambda_package_size_rule_does_not_match_code_storage_quota_errors() -> 
     findings = diagnose(log)
 
     titles = [finding.title for finding in findings]
-    assert "The Lambda deployment package exceeds a per-function size limit" not in titles
+    assert (
+        "The Lambda deployment package exceeds a per-function size limit" not in titles
+    )
 
 
 @pytest.mark.parametrize(
@@ -386,17 +417,19 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
             "Error: Failed to create changeset for the stack sam-app: An error occurred (ExpiredToken) when calling the CreateChangeSet operation: The security token included in the request is expired",
             "credentials used by the deployment have expired",
         ),
-            (
-                "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
-                "throttled the deployment",
-            ),
-            (
-                "Error: Failed to create changeset for the stack sam-app: PythonPipBuilder:ResolveDependencies - Binary validation failed: Python executable not found",
-                "runtime binary is incompatible",
-            ),
+        (
+            "Error: Failed to create changeset for the stack sam-app: An error occurred (Throttling) when calling the CreateChangeSet operation (reached max retries: 4): Rate exceeded",
+            "throttled the deployment",
         ),
-    )
-def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment: str) -> None:
+        (
+            "Error: Failed to create changeset for the stack sam-app: PythonPipBuilder:ResolveDependencies - Binary validation failed: Python executable not found",
+            "runtime binary is incompatible",
+        ),
+    ),
+)
+def test_specific_findings_suppress_broader_diagnostics(
+    log: str, title_fragment: str
+) -> None:
     findings = diagnose(log)
 
     assert len(findings) == 1
@@ -406,13 +439,16 @@ def test_specific_findings_suppress_broader_diagnostics(log: str, title_fragment
 def test_detects_sam_empty_changeset_failure() -> None:
     findings = diagnose(
         "Error: Failed to create changeset for the stack sam-app: Waiter ChangeSetCreateComplete "
-        "failed: Waiter encountered a terminal failure state: For expression \"Status\" we matched "
-        "expected path: \"FAILED\" Status: FAILED. Reason: The submitted information didn't contain "
+        'failed: Waiter encountered a terminal failure state: For expression "Status" we matched '
+        'expected path: "FAILED" Status: FAILED. Reason: The submitted information didn\'t contain '
         "changes. Submit different information to create a change set."
     )
 
     assert len(findings) == 1
-    assert findings[0].title == "The deployment failed only because there were no changes to deploy"
+    assert (
+        findings[0].title
+        == "The deployment failed only because there were no changes to deploy"
+    )
 
 
 def test_detects_cloudformation_deploy_empty_changeset_failure() -> None:
@@ -423,17 +459,40 @@ def test_detects_cloudformation_deploy_empty_changeset_failure() -> None:
 
 
 def test_changed_stack_deploy_output_is_not_an_empty_changeset_finding() -> None:
-    assert diagnose("Successfully created/updated stack - my-service-prod. Changes deployed.") == []
-    assert diagnose("Changeset created successfully; waiting for stack update to complete.") == []
+    assert (
+        diagnose(
+            "Successfully created/updated stack - my-service-prod. Changes deployed."
+        )
+        == []
+    )
+    assert (
+        diagnose(
+            "Changeset created successfully; waiting for stack update to complete."
+        )
+        == []
+    )
 
 
 def test_expired_wording_alone_is_not_a_credential_finding() -> None:
-    assert diagnose("The CloudFront distribution's TLS certificate expired last week.") == []
-    assert diagnose("Waiting for the changeset to be created; the rate of progress is slow.") == []
+    assert (
+        diagnose("The CloudFront distribution's TLS certificate expired last week.")
+        == []
+    )
+    assert (
+        diagnose(
+            "Waiting for the changeset to be created; the rate of progress is slow."
+        )
+        == []
+    )
 
 
 def test_delete_wording_alone_is_not_a_deletion_finding() -> None:
-    assert diagnose("DELETE_IN_PROGRESS then DELETE_COMPLETE; termination protection was already off.") == []
+    assert (
+        diagnose(
+            "DELETE_IN_PROGRESS then DELETE_COMPLETE; termination protection was already off."
+        )
+        == []
+    )
     assert diagnose("Login Succeeded; pushed all layers to the registry.") == []
 
 
@@ -499,7 +558,10 @@ def test_packaged_capability_demo_is_available() -> None:
     findings = diagnose(_read_demo("capabilities"))
 
     assert len(findings) == 1
-    assert any("explicit capability acknowledgement" in finding.title.lower() for finding in findings)
+    assert any(
+        "explicit capability acknowledgement" in finding.title.lower()
+        for finding in findings
+    )
 
 
 @pytest.mark.parametrize(
@@ -512,7 +574,9 @@ def test_packaged_capability_demo_is_available() -> None:
         ("interactive-changeset", "interactive changeset confirmation"),
     ),
 )
-def test_packaged_scenario_demos_are_available(scenario: str, title_fragment: str) -> None:
+def test_packaged_scenario_demos_are_available(
+    scenario: str, title_fragment: str
+) -> None:
     findings = diagnose(_read_demo(scenario))
 
     assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
@@ -531,10 +595,25 @@ def test_packaged_scenario_demos_are_available(scenario: str, title_fragment: st
         "interactive-changeset",
     ),
 )
-def test_demo_command_supports_scenarios(tmp_path, scenario: str, capsys: pytest.CaptureFixture[str]) -> None:
+def test_demo_command_supports_scenarios(
+    tmp_path, scenario: str, capsys: pytest.CaptureFixture[str]
+) -> None:
     output_file = tmp_path / f"{scenario}.md"
 
-    assert main(["demo", "--scenario", scenario, "--format", "json", "--output", output_file]) == 0
+    assert (
+        main(
+            [
+                "demo",
+                "--scenario",
+                scenario,
+                "--format",
+                "json",
+                "--output",
+                output_file,
+            ]
+        )
+        == 0
+    )
     assert output_file.exists()
 
     captured = capsys.readouterr().out
@@ -572,7 +651,7 @@ def test_redaction_covers_bare_session_tokens() -> None:
 
 def test_redaction_covers_quoted_secret_values() -> None:
     text = (
-        "password=\"hunter2\" "
+        'password="hunter2" '
         "aws_secret_access_key = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY' "
         "api_key: `topsecret123` "
         '"github_token": "not-a-real-token"'
@@ -656,7 +735,9 @@ def test_json_report_is_redacted_and_machine_readable() -> None:
 
 
 def test_long_evidence_is_bounded() -> None:
-    findings = diagnose("prefix " + ("x" * 500) + " AccessDeniedException " + ("y" * 500))
+    findings = diagnose(
+        "prefix " + ("x" * 500) + " AccessDeniedException " + ("y" * 500)
+    )
 
     evidence = findings[0].evidence[0]
 
@@ -680,7 +761,9 @@ def test_rules_command_prints_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert report["rule_count"] >= 7
 
 
-def test_schemas_command_prints_schema_locations(capsys: pytest.CaptureFixture[str]) -> None:
+def test_schemas_command_prints_schema_locations(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     assert main(["schemas"]) == 0
     output = capsys.readouterr().out
 
@@ -699,11 +782,17 @@ def test_schemas_command_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert output["rules"].endswith("rules-report.schema.json")
 
 
-def test_batch_command_analyzes_directory(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_batch_command_analyzes_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     logs = tmp_path / "logs"
     logs.mkdir()
-    (logs / "first.log").write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
-    (logs / "second.txt").write_text("Everything completed successfully.", encoding="utf-8")
+    (logs / "first.log").write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
+    (logs / "second.txt").write_text(
+        "Everything completed successfully.", encoding="utf-8"
+    )
 
     assert main(["batch", str(logs), "--format", "terminal"]) == 0
     output = capsys.readouterr().out
@@ -715,23 +804,44 @@ def test_batch_command_analyzes_directory(tmp_path: Path, capsys: pytest.Capture
     assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output
 
 
-def test_batch_command_json_has_aggregate_counts(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
-    (tmp_path / "b.log").write_text("sam deploy completed successfully", encoding="utf-8")
+def test_batch_command_json_has_aggregate_counts(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "a.txt").write_text(
+        "The REST API doesn't contain any methods", encoding="utf-8"
+    )
+    (tmp_path / "b.log").write_text(
+        "sam deploy completed successfully", encoding="utf-8"
+    )
 
-    assert main(["batch", str(tmp_path / "a.txt"), str(tmp_path / "b.log"), "--format", "json"]) == 0
+    assert (
+        main(
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                str(tmp_path / "b.log"),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
 
     report = json.loads(capsys.readouterr().out)
     assert report["batch_count"] == 2
     assert any(entry["finding_count"] == 1 for entry in report["results"])
 
 
-def test_batch_render_github_emits_annotations_only_for_findings(tmp_path: Path) -> None:
+def test_batch_render_github_emits_annotations_only_for_findings(
+    tmp_path: Path,
+) -> None:
     from sam_doctor.cli import _batch_render
 
     finding_log = tmp_path / "with_finding.log"
     clean_log = tmp_path / "clean.log"
-    finding_log.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    finding_log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
     clean_log.write_text("sam deploy completed successfully", encoding="utf-8")
 
     report, has_findings = _batch_render(
@@ -784,7 +894,9 @@ def test_github_notices_from_json_payload_skips_noise() -> None:
 
 
 def test_batch_command_does_not_fail_without_fail_on_findings(tmp_path: Path) -> None:
-    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
+    (tmp_path / "a.txt").write_text(
+        "The REST API doesn't contain any methods", encoding="utf-8"
+    )
     (tmp_path / "b.log").write_text(
         "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
         encoding="utf-8",
@@ -792,14 +904,22 @@ def test_batch_command_does_not_fail_without_fail_on_findings(tmp_path: Path) ->
 
     assert (
         main(
-            ["batch", str(tmp_path / "a.txt"), str(tmp_path / "b.log"), "--format", "json"],
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                str(tmp_path / "b.log"),
+                "--format",
+                "json",
+            ],
         )
         == 0
     )
 
 
 def test_batch_command_fails_with_fail_on_findings(tmp_path: Path) -> None:
-    (tmp_path / "a.txt").write_text("The REST API doesn't contain any methods", encoding="utf-8")
+    (tmp_path / "a.txt").write_text(
+        "The REST API doesn't contain any methods", encoding="utf-8"
+    )
     (tmp_path / "b.log").write_text(
         "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
         encoding="utf-8",
@@ -815,7 +935,7 @@ def test_batch_command_fails_with_fail_on_findings(tmp_path: Path) -> None:
                 "json",
                 "--fail-on-findings",
             ]
-    )
+        )
         == 1
     )
 
@@ -854,7 +974,9 @@ def test_init_command_writes_starter_workflow(tmp_path: Path, capsys) -> None:
     assert "fail-on-findings: false" in text
 
 
-def test_init_command_rejects_existing_file_without_force(tmp_path: Path, capsys) -> None:
+def test_init_command_rejects_existing_file_without_force(
+    tmp_path: Path, capsys
+) -> None:
     workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
     workflow.parent.mkdir(parents=True, exist_ok=True)
     workflow.write_text("existing", encoding="utf-8")
@@ -933,8 +1055,14 @@ def test_help_includes_exit_code_guide(capsys: pytest.CaptureFixture[str]) -> No
     assert "Exit codes:" in output
     assert "GitHub Action behavior:" in output
     assert "Command behavior:" in output
-    assert "diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings." in output
-    assert "batch: default exit 0 (no enforced failure), 1 with --fail-on-findings." in output
+    assert (
+        "diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings."
+        in output
+    )
+    assert (
+        "batch: default exit 0 (no enforced failure), 1 with --fail-on-findings."
+        in output
+    )
 
 
 def test_batch_command_preserves_path_for_duplicate_filenames(
@@ -947,7 +1075,9 @@ def test_batch_command_preserves_path_for_duplicate_filenames(
 
     first_file = first_dir / "duplicate.log"
     second_file = second_dir / "duplicate.log"
-    first_file.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
+    first_file.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
     second_file.write_text("The REST API doesn't contain any methods", encoding="utf-8")
 
     assert main(["batch", str(first_dir), str(second_dir), "--format", "terminal"]) == 0
@@ -962,10 +1092,16 @@ def test_batch_markdown_output_includes_file_sections(
 ) -> None:
     first_file = tmp_path / "first.log"
     second_file = tmp_path / "second.log"
-    first_file.write_text("Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8")
-    second_file.write_text("AccessDeniedException: action is not authorized", encoding="utf-8")
+    first_file.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
+    second_file.write_text(
+        "AccessDeniedException: action is not authorized", encoding="utf-8"
+    )
 
-    assert main(["batch", str(first_file), str(second_file), "--format", "markdown"]) == 0
+    assert (
+        main(["batch", str(first_file), str(second_file), "--format", "markdown"]) == 0
+    )
 
     output = capsys.readouterr().out
     assert "## Source:" in output
@@ -983,17 +1119,20 @@ def test_diagnose_can_fail_on_findings_after_writing_report(
         encoding="utf-8",
     )
 
-    assert main(
-        [
-            "diagnose",
-            log,
-            "--format",
-            "json",
-            "--output",
-            report,
-            "--fail-on-findings",
-        ]
-    ) == 1
+    assert (
+        main(
+            [
+                "diagnose",
+                log,
+                "--format",
+                "json",
+                "--output",
+                report,
+                "--fail-on-findings",
+            ]
+        )
+        == 1
+    )
     assert report.exists()
     assert "Wrote json report" in capsys.readouterr().out
 
@@ -1012,7 +1151,9 @@ def test_render_findings_matches_report_format_selection() -> None:
 
     assert "## 1." in _render_findings(findings, "failure.log", "markdown")
     assert '"finding_count": 1' in _render_findings(findings, "failure.log", "json")
-    assert "SAM Doctor found 1 possible issue" in _render_findings(findings, "failure.log", "terminal")
+    assert "SAM Doctor found 1 possible issue" in _render_findings(
+        findings, "failure.log", "terminal"
+    )
 
 
 def test_render_findings_github_emits_one_or_more_annotations() -> None:
@@ -1037,7 +1178,9 @@ def test_render_findings_github_escapes_workflow_command_delimiters() -> None:
     # One annotation line per finding: the raw newline in the source name must
     # not split the workflow command.
     assert output.count("\n") == len(findings)
-    assert all(line.startswith("::notice ") for line in output.rstrip("\n").splitlines())
+    assert all(
+        line.startswith("::notice ") for line in output.rstrip("\n").splitlines()
+    )
 
 
 def test_explicit_scp_deny_gets_the_specific_finding_with_parsed_context() -> None:
@@ -1139,7 +1282,9 @@ def test_not_stabilized_surfaces_the_nested_handler_reason_first() -> None:
     findings = diagnose(log)
 
     titles = [finding.title for finding in findings]
-    assert titles == ["A resource was accepted by its service but never reached a stable state"]
+    assert titles == [
+        "A resource was accepted by its service but never reached a stable state"
+    ]
     explanation = findings[0].explanation
     assert explanation.startswith("Underlying status reason parsed from the evidence")
     assert "did not stabilize" in explanation
@@ -1147,13 +1292,17 @@ def test_not_stabilized_surfaces_the_nested_handler_reason_first() -> None:
     assert "propagate globally" in explanation
 
 
-def test_exceeded_wait_attempts_without_handler_message_reports_generic_guidance() -> None:
+def test_exceeded_wait_attempts_without_handler_message_reports_generic_guidance() -> (
+    None
+):
     log = "MyPeering CREATE_FAILED Exceeded attempts to wait"
 
     findings = diagnose(log)
 
     titles = [finding.title for finding in findings]
-    assert titles == ["A resource was accepted by its service but never reached a stable state"]
+    assert titles == [
+        "A resource was accepted by its service but never reached a stable state"
+    ]
     assert not findings[0].explanation.startswith("Underlying status reason")
 
 
@@ -1173,7 +1322,11 @@ def test_not_stabilized_with_nested_denial_reports_both_denial_first() -> None:
         "An explicit deny blocked a deployment action",
         "A resource was accepted by its service but never reached a stable state",
     ]
-    assert all("123456789012" not in evidence for finding in findings for evidence in finding.evidence)
+    assert all(
+        "123456789012" not in evidence
+        for finding in findings
+        for evidence in finding.evidence
+    )
 
 
 def test_export_in_use_reports_the_staged_migration_not_the_delete_failure() -> None:
@@ -1201,3 +1354,32 @@ def test_export_update_refusal_suppresses_the_generic_update_failure() -> None:
 
     assert titles == ["A stack export cannot change while another stack imports it"]
 
+
+def test_lambda_code_storage_limit_exceeded_positive():
+    sample_log = (
+        "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "
+        "(Service: Lambda, Status Code: 400; Error Code: CodeStorageExceededException)"
+    )
+    findings = diagnose(
+        sample_log
+    )  # Adjust to the actual analyzer function in test_diagnostics.py
+
+    # Assert your specific rule triggered
+    rule_titles = [f.title for f in findings]
+    assert "AWS Lambda code storage limit exceeded" in rule_titles
+
+
+def test_lambda_code_storage_limit_exceeded_suppression():
+    log = (
+        "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "
+        "(Service: Lambda, Status Code: 400; Error Code: CodeStorageExceededException)"
+    )
+    findings = diagnose(log)
+
+    rule_titles = [f.title for f in findings]
+
+    # Assert specific rule is present
+    assert "AWS Lambda code storage limit exceeded" in rule_titles
+
+    # Assert generic CloudFormation rule was suppressed and is NOT present
+    assert "CloudFormation resource creation or update failed" not in rule_titles

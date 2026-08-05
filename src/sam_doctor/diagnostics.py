@@ -60,10 +60,14 @@ class Rule:
 # The action name (e.g. `iam:CreateRole`) is service metadata, not an account
 # identifier, so it is safe to surface after redaction has replaced ARNs and
 # account ids in the evidence line.
-_DENIED_ACTION = re.compile(r"not authorized to perform:?\s*([A-Za-z0-9-]+:[A-Za-z0-9*]+)")
+_DENIED_ACTION = re.compile(
+    r"not authorized to perform:?\s*([A-Za-z0-9-]+:[A-Za-z0-9*]+)"
+)
 _DENIED_PRINCIPAL = re.compile(r"User:\s*\[REDACTED_ARN\]", re.IGNORECASE)
 _DENIED_RESOURCE = re.compile(r"on resource:?\s*(\[REDACTED_ARN\]|\*)", re.IGNORECASE)
-_EXPLICIT_DENY_SCP = re.compile(r"explicit deny in a service control policy", re.IGNORECASE)
+_EXPLICIT_DENY_SCP = re.compile(
+    r"explicit deny in a service control policy", re.IGNORECASE
+)
 _EXPLICIT_DENY = re.compile(r"(?:with|due to) an explicit deny", re.IGNORECASE)
 _IMPLICIT_DENY_LAYER = re.compile(
     r"because no ([a-z][a-z -]*?)\s*polic(?:y|ies) allows", re.IGNORECASE
@@ -107,7 +111,9 @@ def _denial_context_note(evidence: tuple[str, ...]) -> str:
     return ""
 
 
-_HANDLER_MESSAGE = re.compile(r'Resource handler returned message:\s*"([^"]+)"', re.IGNORECASE)
+_HANDLER_MESSAGE = re.compile(
+    r'Resource handler returned message:\s*"([^"]+)"', re.IGNORECASE
+)
 _RESOURCE_TYPE = re.compile(r"\b((?:AWS|Custom)::[A-Za-z0-9]+(?:::[A-Za-z0-9]+)?)\b")
 
 # Resource families with a known slow or externally-gated stabilization path.
@@ -155,7 +161,11 @@ def _stabilization_context_note(evidence: tuple[str, ...]) -> str:
                 if resource_type.startswith(prefix):
                     parts.append(hint)
                     break
-        return "Underlying status reason parsed from the evidence: " + "; ".join(parts) + "."
+        return (
+            "Underlying status reason parsed from the evidence: "
+            + "; ".join(parts)
+            + "."
+        )
     return ""
 
 
@@ -277,9 +287,7 @@ _RULES = (
     Rule(
         title="An explicit deny blocked a deployment action",
         confidence="high",
-        patterns=(
-            r"(?:with|due to) an explicit deny",
-        ),
+        patterns=(r"(?:with|due to) an explicit deny",),
         explanation=(
             "AWS evaluated the request and found a Deny statement that matched it. "
             "An explicit deny always wins: adding or broadening Allow policies "
@@ -292,7 +300,7 @@ _RULES = (
         verification=(
             "Record the exact action, caller, and resource from the error, and run `aws sts get-caller-identity` in the same environment to confirm which identity actually made the call.",
             "If the message names a service control policy, inspect SCPs from the AWS Organizations management account; the deny cannot be seen or changed from the member account.",
-            "Otherwise search for matching `\"Effect\": \"Deny\"` statements across the caller's identity policies, permissions boundary, session policy, and the target's resource policy, and confirm the layer with the IAM Policy Simulator.",
+            'Otherwise search for matching `"Effect": "Deny"` statements across the caller\'s identity policies, permissions boundary, session policy, and the target\'s resource policy, and confirm the layer with the IAM Policy Simulator.',
             "Look up the request in CloudTrail (by request ID from the error when present) to see the full denied request context.",
             "Fix by amending the specific Deny (add a condition or exception for the deployment identity); do not broaden Allow policies, and never attach AdministratorAccess to work around a deny.",
         ),
@@ -307,9 +315,7 @@ _RULES = (
     Rule(
         title="A deployment action was denied because no policy allows it",
         confidence="high",
-        patterns=(
-            r"because no [a-z -]*polic(?:y|ies) allows",
-        ),
+        patterns=(r"because no [a-z -]*polic(?:y|ies) allows",),
         explanation=(
             "AWS denied the action because no applicable policy grants it - an "
             "implicit deny. The error wording names the policy layer AWS "
@@ -450,7 +456,9 @@ _RULES = (
     Rule(
         title="Lambda code signing is incompatible with a container-image function",
         confidence="high",
-        patterns=(r"Code signing is not supported for functions created with container images",),
+        patterns=(
+            r"Code signing is not supported for functions created with container images",
+        ),
         explanation=(
             "Lambda does not support a code signing configuration for a function packaged "
             "as a container image. The template must use a supported packaging and signing "
@@ -527,7 +535,6 @@ _RULES = (
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html#sam-cli-command-reference-sam-build-use-container",
     ),
-
     Rule(
         title="The Lambda deployment package exceeds a per-function size limit",
         confidence="high",
@@ -559,13 +566,10 @@ _RULES = (
             r"Code storage limit exceeded",
         ),
     ),
-
     Rule(
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
-        patterns=(
-            r"The REST API does(?:n't| not) contain any methods",
-        ),
+        patterns=(r"The REST API does(?:n't| not) contain any methods",),
         explanation=(
             "API Gateway rejected the deployment because no methods existed when the "
             "deployment resource was created. This often happens when a SAM-generated "
@@ -630,7 +634,27 @@ _RULES = (
             r"HandlerErrorCode:\s*NotStabilized",
             r"Exceeded attempts to wait",
             r"cannot be (?:updated|deleted) as it is in use by",
+            r"CodeStorageExceededException",
+            r"Code storage limit exceeded",
         ),
+    ),
+    Rule(
+        title="AWS Lambda code storage limit exceeded",
+        confidence="high",
+        patterns=(
+            r"CodeStorageExceededException",
+            r"Code storage limit exceeded",
+        ),
+        explanation=(
+            "AWS Lambda reached the regional code storage limit (default 75 GB) for your account"
+            "This total includes all present and past deployed function code, layers, and saved function versions across the region."
+        ),
+        verification=(
+            "Check total or current storage usage using `aws lambda get-account-settings`.",
+            "List unused or old function versions using `aws lambda list-versions-by-function`.",
+            "Delete unnecessary versions with `aws lambda delete-function --qualifier <version>` or set up automated lifecycle cleanup.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
     ),
     Rule(
         title="A failed initial stack must be recreated before it can be deployed again",
@@ -787,9 +811,7 @@ _RULES = (
     Rule(
         title="SAM deployment configured both a managed and explicit S3 bucket",
         confidence="high",
-        patterns=(
-            r"Cannot use both --resolve-s3 and --s3-bucket parameters",
-        ),
+        patterns=(r"Cannot use both --resolve-s3 and --s3-bucket parameters",),
         explanation=(
             "The deployment selected two mutually exclusive artifact-bucket mechanisms. "
             "SAM cannot both resolve a managed S3 bucket and use an explicit `--s3-bucket` "
@@ -865,9 +887,7 @@ _RULES = (
     Rule(
         title="SAM Python dependency build validation failed",
         confidence="high",
-        patterns=(
-            r"Binary validation failed",
-        ),
+        patterns=(r"Binary validation failed",),
         explanation=(
             "SAM reached the Python dependency validation path and failed before a "
             "build artifact was produced. Keep the fix specific to the highest-confidence "
@@ -1032,8 +1052,11 @@ def _matching_evidence_with_lines(
     matching_lines: list[tuple[int, str]] = []
     seen = set[str]()
     for line_number, line in candidate_lines:
-        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns) and not any(
-            re.search(pattern, line, flags=re.IGNORECASE) for pattern in excluded_patterns
+        if any(
+            re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns
+        ) and not any(
+            re.search(pattern, line, flags=re.IGNORECASE)
+            for pattern in excluded_patterns
         ):
             compacted = _compact_evidence(redact(line.strip()))
             if compacted not in seen:
@@ -1066,7 +1089,8 @@ def diagnose(text: str) -> list[Finding]:
         if not line_matches:
             continue
         if any(
-            re.search(pattern, text, flags=re.IGNORECASE) for pattern in rule.suppressed_by
+            re.search(pattern, text, flags=re.IGNORECASE)
+            for pattern in rule.suppressed_by
         ):
             continue
         evidence = tuple(line for _, line in line_matches)
@@ -1139,7 +1163,10 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 "",
                 "### Evidence",
                 f"- Matched on line: {finding.line_number}",
-                *[f"- <code>{escape(evidence)}</code>" for evidence in finding.evidence],
+                *[
+                    f"- <code>{escape(evidence)}</code>"
+                    for evidence in finding.evidence
+                ],
                 "",
                 "### Safe verification steps",
                 *[f"- {step}" for step in finding.verification],
@@ -1162,7 +1189,9 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
             f"share a short, sanitized excerpt at {_RULE_REQUEST_URL}."
         )
 
-    blocks = [f"SAM Doctor found {len(findings)} possible issue(s) in {redact(source_name)}."]
+    blocks = [
+        f"SAM Doctor found {len(findings)} possible issue(s) in {redact(source_name)}."
+    ]
     for index, finding in enumerate(findings, start=1):
         blocks.extend(
             [
@@ -1188,12 +1217,12 @@ def json_report(findings: list[Finding], source_name: str) -> str:
         "source": redact(source_name),
         "finding_count": len(findings),
         "findings": [
-                {
-                    "line_number": finding.line_number,
-                    "title": finding.title,
-                    "confidence": finding.confidence,
-                    "explanation": finding.explanation,
-                    "evidence": list(finding.evidence),
+            {
+                "line_number": finding.line_number,
+                "title": finding.title,
+                "confidence": finding.confidence,
+                "explanation": finding.explanation,
+                "evidence": list(finding.evidence),
                 "verification": list(finding.verification),
                 "documentation_url": finding.documentation_url,
             }
