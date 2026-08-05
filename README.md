@@ -8,218 +8,44 @@
 [![GitHub stars](https://img.shields.io/github/stars/jakegold1647/sam-doctor?style=social)](https://github.com/jakegold1647/sam-doctor/stargazers)
 [![GitHub release](https://img.shields.io/github/v/release/jakegold1647/sam-doctor?include_prereleases&label=release)](https://github.com/jakegold1647/sam-doctor/releases)
 
-**Find the next useful step in a failed AWS deployment - without uploading your
-logs or granting AWS access.** Use SAM Doctor for faster triage of `sam deploy`,
-`cdk deploy`, and `aws cloudformation deploy` failures.
+SAM Doctor reads a failed `sam deploy`, `cdk deploy`, or
+`aws cloudformation deploy` log locally and reports the first supported failure
+pattern it finds: a short diagnosis, redacted evidence lines, safe verification
+commands, and a link to the relevant official documentation.
 
-SAM Doctor reads AWS SAM, CloudFormation, IAM, and GitHub Actions deployment
-logs locally. It identifies supported failure patterns and returns short,
-redacted evidence, safe checks, and the relevant official documentation.
+It does **not** access AWS, upload logs, change resources, or claim an
+authoritative root cause. It matches known patterns in text you provide. When
+nothing matches, it says so instead of guessing.
 
-**[See the project page](https://jakegold1647.github.io/sam-doctor/)** |
-**[Use on GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics)** |
-  **[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)** |
-  **[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)** |
-  **[Request a feature](https://github.com/jakegold1647/sam-doctor/issues/new?template=feature_request.yml)** |
-**[Join the feedback discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)** |
-  **[Contribute a rule (roadmap)](docs/rule-roadmap.md)**
+[Project page](https://jakegold1647.github.io/sam-doctor/) |
+[GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics) |
+[Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml) |
+[Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 
-It does **not** access AWS, upload logs, change resources, or promise an
-authoritative root cause. It detects known patterns in the text you provide,
-redacts common identifiers, and gives safe verification steps and the relevant
-official documentation.
-
-Current release: **v0.8.1**.
-
-## Try it in 60 seconds
+## Try it
 
 ```bash
 python -m pip install sam-doctor
 sam-doctor demo
 ```
 
-The bundled demo needs no AWS credentials and makes no network calls. You can also use:
+The bundled demo needs no AWS credentials and makes no network calls. Other
+install paths:
 
 ```bash
-pipx install sam-doctor      # isolated install (no environment changes)
-uvx sam-doctor demo          # run without install (if uv is available)
+pipx install sam-doctor      # isolated global CLI
+uvx sam-doctor demo          # run without installing
 ```
+
+To install from a tagged source release instead of PyPI, use
+`pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@<tag>"`
+with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/releases).
+If your shell cannot find `sam-doctor` after installing, use
+`python -m sam_doctor` instead.
 
 ![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
 
-## Who this is for
-
-- Use this tool if you need a fast local first pass when a SAM/CloudFormation/GitHub
-  Actions deployment fails.
-- Skip it if you need account-state inspection, drift analysis, quota checks, or
-  automatic fixes.
-- It is most useful for actionable deployment logs with explicit error lines and
-  rollback context.
-
-## Who should use it first
-
-If you are:
-
-- **Developer on-call:** use SAM Doctor before escalating to an engineering lead.
-- **SRE/DevOps:** use it as a first triage step before opening deeper incident
-  tickets.
-- **Team lead / reviewer:** use it as a shared triage template for faster
-  incident handoffs.
-
-### Choose your path in 20 seconds
-
-- **You are debugging one incident now:** run one command and share one finding:
-  `sam-doctor diagnose deployment.log --format markdown`.
-- **You use GitHub Actions for deployment:** add one diagnostics step from one of the
-  starter workflows in the [CI matrix](docs/ci-command-matrix.md). Keep
-  `fail-on-findings: false` for a week, then enforce.
-- **You need a research-ready packet:** run
-  `sam-doctor packet deployment.log` and share `diagnosis.md` + `diagnosis.json`
-  only.
-- **You're onboarding a team:** use the [Adopter onboarding kit](docs/adopter-onboarding-kit.md)
-  or the [first-3 teams onboarding playbook](docs/first-3-teams-onboarding-playbook.md).
-
-### Paste this in Slack/Teams/Email
-
-```text
-I ran @sam-doctor on the shared deploy excerpt:
-- Finding: [top finding]
-- Evidence: [top evidence line]
-- Safe next check: [first command]
-- Confidence: [high/med/low]
-If this is real, next step is: [one action].
-```
-
-## Start using it in 90 seconds
-
-```bash
-mkdir -p .github/workflows
-curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
-```
-Prefer the CLI bootstrap command to avoid copy/paste mistakes:
-
-```bash
-sam-doctor init
-```
-
-Use `sam-doctor init --deploy-command "sam sync --no-confirm-changeset"` to match your
-deployment command style.
-
-A quick rollout pattern:
-
-1. Start non-blocking:
-
-```bash
-sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary \
-  --annotations
-```
-
-2. After 3–5 stable runs, switch to strict gating:
-
-```bash
-sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary \
-  --annotations --fail-on-findings --force
-```
-
-If you prefer to avoid regenerating on each mode switch, use the two-phase starter
-workflow:
-
-```bash
-curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml \
-  -o .github/workflows/sam-doctor.yml
-```
-
-The two-phase workflow stays non-blocking by default and only enforces strict
-gating when you intentionally run a manual rollout (`workflow_dispatch` with
-`rollout-mode: strict`).
-
-For repo-level batch diagnostics, set `--batch` and point `log-file` at a directory
-or glob in the generated workflow.
-
-## I have this specific error; will this help?
-
-Use this if you need a first-pass answer for:
-
-- `Not authorized to perform: sts:AssumeRoleWithWebIdentity`
-- `ROLLBACK_COMPLETE` / `ROLLBACK_IN_PROGRESS`
-- `Resource handler returned message` / `CREATE_FAILED` failures
-- `InsufficientCapabilities` / missing `CAPABILITY_IAM` flags
-- `ECR auth token` or container image push failures in CI
-
-For each case, SAM Doctor does the same thing:
-
-1. capture the failure excerpt,
-2. produce one probable root pattern with redacted evidence,
-3. suggest the first safe verification command.
-
-If you need deterministic local triage for another AWS deployment error, open a
-rule request with the first 5–15 lines of a sanitized excerpt and the command
-you used.
-
-## Share this with your team in 30 seconds
-
-If you're onboarding engineers through Slack, Discord, or post-incident handoffs,
-post one line and a link:
-
-```text
-I used SAM Doctor on a deploy failure and got a fast, actionable first finding:
-`sam-doctor diagnose deployment.log --format markdown`
-Try it here: https://jakegold1647.github.io/sam-doctor/
-```
-
-For error-specific outreach drafts and one-click templates, use the
-community sharing kit:
-https://github.com/jakegold1647/sam-doctor/blob/main/docs/community-sharing-kit.md
-
-## New contributor smoke check
-
-Verify your installation and first output in one command:
-
-```bash
-python scripts/run-smoke.py
-```
-
-It runs a packaged demo and a sample diagnosis locally, then confirms JSON output is
-well-formed and contains findings before you add the tool to CI.
-
-1. Save a short failing excerpt as `deployment-failure.log`.
-2. Run diagnosis:
-
-```bash
-sam-doctor diagnose deployment-failure.log --format markdown
-```
-
-3. Share only:
-
-- the top finding title
-- the first `verify` command
-- a sanitized excerpt of the original error
-
-```text
-I ran @sam-doctor and it found: [top finding]
-Next check: [one safe verification]
-Need: [optional follow-up permission or config check]
-```
-
-If this result is wrong or unclear, open a
-[`diagnostic report` issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml)
-with the pasted excerpt and command output.
-
-Use this copy/paste block for fast, high-signal reporting:
-
-```text
-Title: sam-doctor report - [short summary]
-Version: sam-doctor [version]
-Command: sam-doctor diagnose deployment-failure.log --format markdown
-Finding: [top finding title]
-Source: deployment-failure.log
-Verify: [one command or doc check]
-Excerpt:
-<paste 1-3 sanitized lines around first matching error>
-```
-
-The bundled demo needs no AWS credentials and makes no network calls. It
-prints a real report:
+The demo diagnoses a bundled GitHub Actions OIDC failure:
 
 ```text
 SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
@@ -240,54 +66,49 @@ SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
 ```
 
 The description line is truncated here; the CLI prints it in full, along with a
-third trust-policy `sub` check.
+third trust-policy `sub` check. Output is deterministic for the same input, and
+evidence is redacted before display.
 
-## Use-case: fix a blocked deployment in one pass
+## Who this is for
 
-Use this exact flow when a teammate shares an OIDC error in CI:
+Use it as a fast local first pass when a SAM, CloudFormation, or GitHub Actions
+deployment fails and the useful error line is buried under rollback noise. It
+works best on logs with explicit error lines and rollback context.
 
-```bash
-sam-doctor diagnose deployment.log
-```
+Skip it if you need account-state inspection, drift analysis, quota checks, or
+automatic fixes. See [When not to use this](#when-not-to-use-this).
 
-If the failure text matches the expected pattern, the report starts with a short
-actionable finding and the safe checks to run first (excerpt; line number depends
-on your log):
+## Usage
 
-```text
-SAM Doctor found 1 possible issue(s) in deployment.log.
-
-1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
-   Evidence:
-   - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
-   Verify:
-   - Confirm the workflow or job permissions include `id-token: write`.
-   - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
-     equal to `sts.amazonaws.com`.
-```
-
-Add `--format markdown` when you want the same findings as a Markdown document
-for a ticket or thread.
-
-This is built for team handoffs: teammate sends the sanitized excerpt, you run one
-diagnosis, then share one verification command before changing IAM or deploy
-configuration.
-
-If the error is real, this usually shortens the back-and-forth from "who changed
-what?" to "check this trust-policy field" in the same thread.
-
-## Use-case: triage a CloudFormation rollback in one pass
-
-When a teammate posts stack failure noise, search for the first actual signal instead
-of treating `ROLLBACK_COMPLETE` as the root cause:
+Diagnose a log file:
 
 ```bash
 sam-doctor diagnose deployment.log
 ```
 
-The report puts the failed resource first and the rollback second, because the
-rollback is downstream noise. You can reproduce this exact shape with
-`sam-doctor demo --scenario cloudformation`:
+Pick the output format for where the report is going:
+
+| Situation | Command |
+| --- | --- |
+| Handoff in a ticket or thread | `sam-doctor diagnose deployment.log --format markdown` |
+| Machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
+| GitHub workflow annotations | `sam-doctor diagnose deployment.log --format github` |
+| Pasted excerpt, no file | `printf '%s\n' "...error excerpt..." \| sam-doctor diagnose -` |
+| A workflow that saves a log | The [GitHub Action](#github-actions) below |
+
+All formats include the first matching line number and the matched evidence,
+not the full input log. Standard input works anywhere a file path does, so you
+can pipe from other tools:
+
+```bash
+kubectl logs deploy/my-api | sam-doctor diagnose -
+```
+
+### Multiple findings
+
+When several supported patterns appear, findings are ordered by their first
+matching log line, which puts the root failure before the rollback it caused.
+`sam-doctor demo --scenario cloudformation` reproduces this shape:
 
 ```text
 SAM Doctor found 2 possible issue(s) in cloudformation-resource-failure.txt.
@@ -310,362 +131,47 @@ SAM Doctor found 2 possible issue(s) in cloudformation-resource-failure.txt.
      `CREATE_FAILED` or `UPDATE_FAILED` resource.
 ```
 
-Use this sequence in an incident thread:
+Other bundled scenarios: `sam-doctor demo --scenario capabilities`,
+`api-gateway`, `esbuild`, `python-pip`.
 
-1. Run `sam-doctor diagnose deployment.log --format markdown`.
-2. Share only the first matched line and docs link.
-3. Run one targeted fix based on that first event, then re-run deploy.
+### Batch mode
 
-If your log is only a stack event excerpt, feed it directly with `sam-doctor diagnose -`.
-
-## Use-case: resolve IAM capability blocks in under 2 minutes
-
-When a deployment stops on capability approval, this is the common signature:
-
-```text
-CAPABILITY_IAM is required but was not acknowledged in the template
-```
-
-Use the same command you already use:
+Diagnose many logs in one run:
 
 ```bash
-sam-doctor diagnose deployment.log
+sam-doctor batch logs/*.log logs/*.txt --format json --output batch-results.json
 ```
 
-You can reproduce the report shape with `sam-doctor demo --scenario capabilities`:
+Add `--fail-on-findings` to exit `1` when any file has a supported finding;
+the full batch report is still written first. With `--format github`, batch
+mode emits one annotation per finding and skips successful inputs.
 
-```text
-1. CloudFormation needs an explicit capability acknowledgement (high confidence)
-   Evidence:
-   - An error occurred (InsufficientCapabilitiesException) when calling the
-     CreateChangeSet operation: Requires capabilities : [CAPABILITY_NAMED_IAM]
-   Verify:
-   - Read the capability named in the error and inspect the relevant template
-     resources before changing deployment settings.
-   - For IAM resources, configure `CAPABILITY_IAM`; use `CAPABILITY_NAMED_IAM`
-     when the template gives IAM resources custom names.
-```
+### Exit codes
 
-In practice this shortens "why did it fail?" to "which flag is actually needed?" and
-reduces repeated guess-and-retry cycles.
-
-## Proof: one real pattern, redacted and repeatable
-
-The goal is speed and confidence, not secrets. Here is a real-style flow you can
-reuse verbatim with customer-safe redaction:
-
-```text
-# incident_excerpt.txt (sanitized)
-An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
-Check that the identity-based policy attached to the role allows id-token:write.
-```
-
-Run:
-
-```bash
-sam-doctor diagnose incident_excerpt.txt
-```
-
-Result:
-
-```text
-SAM Doctor found 1 possible issue(s) in incident_excerpt.txt.
-
-1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
-   Matched on line: 1
-   The workflow reached AWS STS but the role trust relationship did not accept
-   the GitHub-issued OIDC token. The usual cause is a missing `id-token: write`
-   permission, an incorrect token audience, or a `sub` condition that does not
-   match the repository, branch, or GitHub Environment.
-   Evidence:
-   - An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
-   Verify:
-   - Confirm the workflow or job permissions include `id-token: write`.
-   - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
-     equal to `sts.amazonaws.com`.
-   - Compare the trust policy's `sub` condition with the exact branch or GitHub
-     Environment that ran the job; newer repositories can include immutable owner
-     and repository IDs in that claim.
-   Docs: https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
-```
-
-This output is deterministic for the same input and does not contain account IDs,
-ARNs, or tokens.
-
-## On-call playbook
-
-If your team handles deployment incidents, use the ready-to-share playbook:
-
-- [docs/on-call-playbook.md](docs/on-call-playbook.md)
-
-It includes:
-- A 60-second triage sequence
-- Slack/Teams handoff template
-- OIDC, rollback, and capability-specific follow-up checks
-- A clear escalation threshold
-
-To diagnose a real deployment log:
-
-```bash
-sam-doctor diagnose deployment.log
-```
-
-`pip` installs the latest stable release from PyPI. Other install paths that
-work the same way:
-
-```bash
-pipx install sam-doctor      # isolated global CLI
-uvx sam-doctor demo          # run without installing
-```
-
-To pin the tested release exactly, use `sam-doctor==0.8.1`; to install from
-the tagged source instead:
-
-```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v0.8.1"
-```
-
-If your shell cannot find `sam-doctor` after installation, activate the
-environment where it was installed or use `python -m sam_doctor` in the
-commands below.
-
-## Help improve SAM Doctor
-
-If a diagnosis was wrong or unclear, open a small reproducible issue and include:
-
-- SAM Doctor version
-- exact command used
-- sanitized first relevant excerpt
-- what outcome you expected
-
-For new rules, open a rule request with the command family that hit the failure
-and one safe follow-up check you expected.
-
-For first-time contributors, keep the change small: one rule or one
-documentation improvement, with a focused test.
-
-## Related projects and ecosystem
-
-- **Portfolio:** [jacobgoldstein.dev](https://jacobgoldstein.dev)
-- **Research and historical text tooling:** [aktreader (public)](https://github.com/jakegold1647/aktreader)
-- **Research edition:** [aktreader-research](https://github.com/jakegold1647/aktreader-research)
-- **Historical records corpus project:** [congress-poland-registers](https://github.com/jakegold1647/congress-poland-registers)
-
-## Pick your starting flow (fastest)
-
-Use the first row that matches your current situation:
-
-| Situation | First command |
+| Status | Meaning |
 | --- | --- |
-| You have a deployment log file | `sam-doctor diagnose deployment.log --format markdown` |
-| You want machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
-| You want a CI annotation style report | `sam-doctor diagnose deployment.log --format github` |
-| You only have pasted excerpt text | `printf '%s\n' "...error excerpt..." \| sam-doctor diagnose - --format markdown` |
-| You are testing in a GitHub Action | Use the composite action in the CI section below |
+| `0` | Command completed with no enforced fail gate hit. |
+| `1` | `--fail-on-findings` found one or more supported findings (`diagnose` or `batch`). |
+| `2` | CLI usage or error-path failure (missing inputs, invalid arguments). |
 
-## 60-second first response checklist
+Details and examples: [docs/cli-exit-and-action-exit-codes.md](docs/cli-exit-and-action-exit-codes.md).
 
-Use this when a teammate posts an error:
+### JSON schemas
 
-```bash
-sam-doctor diagnose deployment.log --format markdown
-```
-
-If you need a quick signal from pasted text, skip the file step:
-
-```bash
-printf '%s\n' "Your pasted AWS failure excerpt" | sam-doctor diagnose -
-```
-
-If you use a CI step, this is often enough:
-
-```bash
-sam-doctor diagnose deployment.log --format github | tee /tmp/sam-doctor.txt
-```
-
-Then share the redacted diagnostic text only, or use it directly in a job summary.
-
-Then reply with this pattern:
-
-1. Quote the top finding (or say none supported yet).
-2. Include one safe verification command from the report.
-3. Ask for one follow-up: did that check pass?
-
-If the tool did not match the failure and this was a real production issue, open
-`Report a bad diagnosis` immediately and include a short, sanitized excerpt plus
-the command you ran.
-
-## Current free core
-
-- GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
-  trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
-- IAM `AccessDenied` failures
-- Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
-- CloudFormation API throttling (`Rate exceeded`)
-- CloudFormation failed-resource events and rollback states
-- Empty change sets (`No changes to deploy` in CI)
-- IAM denials with parsed context: explicit denies (including service control
-  policies) distinguished from missing-policy denials
-- Resources that fail to stabilize, with the nested handler message surfaced first
-- Exports that cannot change because another stack imports them
-- Lambda deployment packages over a size limit
-- Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
-- ECR push authentication failures from the CI runner (missing login, expired token,
-  denied `ecr:GetAuthorizationToken`)
-- CloudFormation capability acknowledgement errors
-- Lambda container-image failures caused by missing ECR image access
-- API Gateway deployments created before methods exist
-- SAM deployment/configuration errors, including conflicting artifact-bucket settings
-  and missing `esbuild` dependencies
-- SAM build/containerization errors where Docker is unavailable for `sam build --use-container`
-- Python dependency resolution or validation errors in SAM/Python builds
-- Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
-- API Gateway CORS preflight conflicts
-- Terminal, Markdown, JSON, and GitHub-annotation reports
-- Composite GitHub Action with opt-in redacted job summaries and CI gating
-- Local redaction for account IDs, ARNs, email addresses, and common CI credentials
-
-For more bundled examples, try `sam-doctor demo --scenario cloudformation`,
-`sam-doctor demo --scenario api-gateway`, `sam-doctor demo --scenario esbuild`,
-or `sam-doctor demo --scenario python-pip`.
-Run `sam-doctor rules --format json` to inspect the exact set of supported
-diagnostic categories before sharing a log.
-
-To save a report:
-
-```bash
-sam-doctor diagnose deployment.log --format markdown --output diagnosis.md
-```
-
-The input can also be read from standard input, which is useful for CI steps and
-shell pipelines:
-
-```bash
-kubectl logs deploy/my-api | sam-doctor diagnose -
-sam-doctor diagnose deployment.log --format json --output diagnosis.json
-```
-
-For teams with multi-log workflows, batch reporting works with one command:
-
-```bash
-sam-doctor batch logs/*.log logs/*.txt --format json --fail-on-findings \
-  --output batch-results.json
-```
-
-This returns `1` only when supported findings are detected and still emits a full
-batch report for your artifacts.
-
-The terminal format is intended for a quick local check, Markdown is convenient
-for a human-readable handoff, JSON is stable for scripts and machine workflows,
-and `github` emits GitHub workflow command annotations directly. All formats
-include the first matching line number and matched evidence, not the full input
-log.
-
-For batch mode, `--format github` still emits one annotation per supported finding
-and skips successful inputs, so a large batch can be scanned quickly in workflow
-logs.
-
-For machine integrations, the JSON payload shape is documented in checked-in schemas:
+The JSON payload shapes are documented in checked-in schemas:
 
 - `docs/schemas/diagnose-report.schema.json`
 - `docs/schemas/batch-report.schema.json`
 - `docs/schemas/rules-report.schema.json`
 
-You can print these schema URLs directly from the CLI:
-
-```bash
-sam-doctor schemas
-sam-doctor schemas --format json
-```
-
-`sam-doctor` treats the JSON schema contracts as additive-compatible: additive top-level
-fields are allowed, but removing or renaming documented required fields is a breaking
-change and requires a coordinated version bump.
-
-### CLI exit codes
-
-For a copy-paste friendly matrix and examples, see
-[`docs/cli-exit-and-action-exit-codes.md`](docs/cli-exit-and-action-exit-codes.md).
-
-| Status | Meaning |
-| --- | --- |
-| `0` | Command completed successfully with no enforced fail gate hit. |
-| `1` | `--fail-on-findings` found one or more supported findings (for `diagnose` or `batch`). |
-| `2` | CLI usage/error-path failures (for example, missing inputs or invalid arguments). |
-
-For `batch`, `--fail-on-findings` gates the whole run the same way: if any file has
-a supported finding, the command exits `1` after reporting all files.
-
-### GitHub Action exit behavior
-
-Action step exit status is `0` unless `fail-on-findings: true` and findings are detected.
-
-- `0`: no enforced action failure (findings may exist).
-- `1`: findings present and `fail-on-findings: true`.
-- `2`: action runtime/precondition failure (for example, invalid boolean inputs or missing Python in the runner).
-- `finding-count` and `has-findings` are available as action outputs:
-  - `finding-count` is the number of supported findings.
-  - `has-findings` is `true` when `finding-count` is greater than `0`, else `false`.
-
-Use the outputs for non-blocking workflows:
-
-```yaml
-- name: Diagnose deployment log
-  if: always()
-  id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0
-  with:
-    log-file: deployment.log
-    summary: true
-
-- name: Route to dedicated triage when action reports findings
-  if: steps.sam-doctor.outputs.has-findings == 'true'
-  run: |
-    echo "Routing failure with ${{ steps.sam-doctor.outputs.finding-count }} findings to a higher-signal runbook."
-```
-
-You can also process multiple files in batch mode:
-
-```bash
-sam-doctor batch logs/*.log logs/*.txt --format json > batch-results.json
-```
-
-For a shell-based CI gate, add `--fail-on-findings`. The command still writes
-the report, then exits with status 1 only when a supported finding is present:
-
-```bash
-sam-doctor diagnose deployment.log --format json \
-  --output diagnosis.json --fail-on-findings
-```
-
-For multi-file CI input:
-
-```bash
-sam-doctor batch logs/*.log logs/*.txt --format json \
-  --output batch-results.json --fail-on-findings
-```
-
-### GitHub Action batch mode
-
-For CI setups that write many logs per run, set `batch: true` and point
-`log-file` at a directory or glob:
-
-```yaml
-- name: Diagnose logs in batch
-  if: always()
-  id: sam-doctor-batch
-  uses: jakegold1647/sam-doctor@v0
-  with:
-    log-file: logs/
-    batch: true
-    summary: true
-    # Enable strict gating only after a short warm-up period.
-    # fail-on-findings: true
-```
+`sam-doctor schemas` prints the schema URLs. The contracts are
+additive-compatible: new top-level fields may appear, but removing or renaming
+a documented required field is a breaking change and gets a coordinated
+version bump.
 
 ## GitHub Actions
 
-Use the included action when a workflow already saves a deployment log:
+Add a diagnostics step after any step that saves a deployment log:
 
 ```yaml
 - name: Deploy
@@ -685,70 +191,127 @@ Use the included action when a workflow already saves a deployment log:
     # fail-on-findings: true
 ```
 
-Use this ready-to-copy starter workflow as your starting point:
+Keep `if: always()`; otherwise GitHub Actions skips the step exactly when the
+deployment fails. The Markdown job summary is opt-in and contains only matched,
+redacted evidence. The action also adds redacted workflow annotations for each
+finding by default; set `annotations: "false"` to disable them.
+
+`sam-doctor init` generates this workflow for you:
 
 ```bash
-curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations
 ```
 
-### 90-second onboarding by stack type
+A rollout pattern that works: run non-blocking for 3-5 stable runs, then add
+`--fail-on-findings --force` to regenerate with strict gating. If you would
+rather not regenerate per mode, the
+[two-phase starter workflow](examples/github-actions-workflow-two-phase-gating.yml)
+stays non-blocking by default and enforces only on a manual
+`workflow_dispatch` with `rollout-mode: strict`.
 
-- **AWS SAM deploy command**
-  - Start with [`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml)
-- **AWS SAM sync workflows**
-  - Start with [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
-- **CloudFormation package/deploy commandline**
-  - Start with [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
-- **AWS CDK deploy command**
-  - Start with [`examples/github-actions-workflow-cdk.yml`](examples/github-actions-workflow-cdk.yml)
-- **Batched deploy logs in one pipeline run**
-  - Start with [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
+### Action exit codes and outputs
 
-You can also use the examples index to track what you changed:
+- `0`: no enforced failure (findings may still exist).
+- `1`: findings present and `fail-on-findings: true`.
+- `2`: runtime or precondition failure (invalid boolean inputs, missing Python).
 
-[`examples/README.md`](examples/README.md)
+The action exposes `finding-count` and `has-findings` outputs for non-blocking
+routing:
 
-### Deployment onboarding matrix
+```yaml
+- name: Route to dedicated triage when action reports findings
+  if: steps.sam-doctor.outputs.has-findings == 'true'
+  run: |
+    echo "Routing failure with ${{ steps.sam-doctor.outputs.finding-count }} findings to a higher-signal runbook."
+```
 
-Use the command-to-template matrix for your exact deploy command:
+### Action batch mode
 
-[`docs/ci-command-matrix.md`](docs/ci-command-matrix.md)
+For CI setups that write many logs per run, set `batch: true` and point
+`log-file` at a directory or glob:
 
-## Non-GitHub CI starter templates
+```yaml
+- name: Diagnose logs in batch
+  if: always()
+  id: sam-doctor-batch
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: logs/
+    batch: true
+    summary: true
+```
 
-If your repo uses another CI system, copy:
+### Starter workflows
+
+Pick the template that matches your deploy command:
+
+- SAM deploy: [`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml)
+- SAM sync: [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
+- CloudFormation package/deploy: [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
+- CDK deploy: [`examples/github-actions-workflow-cdk.yml`](examples/github-actions-workflow-cdk.yml)
+- Batched logs in one run: [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
+
+The [CI command matrix](docs/ci-command-matrix.md) maps exact deploy commands
+to templates, and [`examples/README.md`](examples/README.md) indexes everything.
+
+### Other CI systems
 
 - GitLab: [`examples/gitlab-ci-sam-doctor.yml`](examples/gitlab-ci-sam-doctor.yml)
 - CircleCI: [`examples/circleci-sam-doctor.yml`](examples/circleci-sam-doctor.yml)
 - Azure Pipelines: [`examples/azure-pipelines-sam-doctor.yml`](examples/azure-pipelines-sam-doctor.yml)
 - Bitbucket Pipelines: [`examples/bitbucket-pipelines-sam-doctor.yml`](examples/bitbucket-pipelines-sam-doctor.yml)
-- Batch logs: [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
-Put the diagnostic step after the command that writes the log and keep
-`if: always()`; otherwise GitHub Actions skips it when the deployment fails.
-The action exposes `finding-count` and `has-findings` outputs. Set
-`fail-on-findings: true` only when you want a supported diagnostic to fail
-the job; the commented line above shows the opt-in placement. The Markdown job
-summary is opt-in and contains only matched, redacted
-evidence; review it before sharing a workflow run outside your team. The action
-also adds redacted GitHub Actions notices for every finding by default; set
-`annotations: "false"` to disable it.
+## What it detects
 
-You can also adapt the full example from
-[`examples/github-actions-workflow.yml`](examples/github-actions-workflow.yml).
+Run `sam-doctor rules` (or `rules --format json`) for the current
+machine-readable catalog. Each rule triggers on an explicit error signal in the
+log, not on template inspection or AWS account access. The current set:
+
+- GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
+  trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
+- IAM `AccessDenied` failures, with explicit denies (including service control
+  policies) distinguished from missing-policy denials
+- Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
+- CloudFormation API throttling (`Rate exceeded`)
+- CloudFormation failed-resource events and rollback states
+- Empty change sets (`No changes to deploy` in CI)
+- Resources that fail to stabilize, with the nested handler message surfaced first
+- Exports that cannot change because another stack imports them
+- Lambda deployment packages over a size limit
+- Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
+- ECR push authentication failures from the CI runner (missing login, expired
+  token, denied `ecr:GetAuthorizationToken`)
+- CloudFormation capability acknowledgement errors (`InsufficientCapabilities`)
+- Lambda container-image failures caused by missing ECR image access
+- API Gateway deployments created before methods exist
+- API Gateway CORS preflight conflicts
+- SAM deployment/configuration errors, including conflicting artifact-bucket
+  settings and missing `esbuild` dependencies
+- SAM build errors where Docker is unavailable for `sam build --use-container`
+- Python dependency resolution or validation errors in SAM/Python builds
+- Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
+
+If a deployment error you hit is not covered, open a
+[rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
+with a sanitized 5-15 line excerpt and the command you ran.
 
 ## What a report includes
-
-SAM Doctor deliberately reports only what its rules can support:
 
 1. A likely failure category and confidence level.
 2. Up to three matched log lines, redacted before output.
 3. Safe checks to validate the diagnosis before changing a policy or stack.
 4. A link to the relevant official documentation.
 
-It is most useful when you start with the first failure in a deployment log,
-not a later rollback message. When multiple supported patterns appear, SAM
-Doctor presents findings in the order of their first matching log line.
+Reports redact AWS account IDs, ARNs, email addresses, common AWS access key
+IDs, bare STS session tokens, secret assignments, bearer tokens, JWT-style
+tokens, and common GitHub token formats before matched evidence is shown. This
+is a guardrail, not a secret scanner: review a report before sharing it.
+
+To package a diagnosis for handoff, `sam-doctor packet deployment.log` writes
+`diagnosis.md` and `diagnosis.json`; the
+[evidence packet template](docs/researcher-evidence-packet.md) describes what
+to share alongside them, and [RESEARCHER_OVERVIEW.md](RESEARCHER_OVERVIEW.md)
+is the summary to hand a reviewer or researcher.
 
 ## How it compares
 
@@ -775,35 +338,10 @@ Doctor presents findings in the order of their first matching log line.
   this reads deployment logs, not CloudWatch application logs.
 - You need account-state inspection (drift, quotas, existing resources). SAM
   Doctor never calls AWS, by design.
-- Your failure is outside the [supported rules](#supported-signals) - you get
-  an honest "no supported pattern found", not a guess.
-- You want an automatic fix. Every report is a prompt to verify, not a
-  change to apply.
-
-## Feedback and roadmap
-
-The free core will stay useful for individual deployment failures. Please open
-an issue when a report is wrong, unclear, or missing a failure pattern. For a
-new rule, include only a sanitized error excerpt and the safe next check you
-expected to see. See [CONTRIBUTING.md](CONTRIBUTING.md) for the exact format.
-
-## Guides
-
-- [Add SAM Doctor to an existing GitHub Actions deployment](docs/github-actions-integration.md)
-- [Adopter onboarding kit (team templates + rollout sequence)](docs/adopter-onboarding-kit.md)
-- [First-3 teams onboarding playbook (3-week rollout)](docs/first-3-teams-onboarding-playbook.md)
-- [Case studies (incident-to-action workflows)](docs/case-studies.md)
-- [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
-- [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
-- [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
-- [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
-- [Community sharing kit (onboarding + announcement templates)](docs/community-sharing-kit.md)
-
-## Supported signals
-
-Run `sam-doctor rules` for the current machine-readable catalog. Each rule is
-triggered by an explicit error signal, not by template inspection or AWS account
-access; the report is still a prompt to verify the cause, not an automatic fix.
+- Your failure is outside the [supported rules](#what-it-detects) - you get an
+  honest "no supported pattern found", not a guess.
+- You want an automatic fix. Every report is a prompt to verify, not a change
+  to apply.
 
 ## Scope and safety
 
@@ -811,40 +349,18 @@ Run this only on logs you are authorized to inspect. Review every suggested
 command and policy change before applying it. SAM Doctor is diagnostic help,
 not security, legal, or production-operations advice.
 
-## Researcher-ready evidence packet
+## Guides
 
-For reproducible, repeatable collaboration:
-
-```bash
-sam-doctor packet deployment.log
-```
-
-Then share only a minimal sanitized packet (commands, key context, and outputs)
-instead of raw logs:
-
-- `diagnosis.md`
-- `diagnosis.json`
-- `docs/researcher-evidence-packet.md` (template)
-
-Start here:
-
-`docs/researcher-evidence-packet.md`
-
-If you want a ready-to-use onboarding script and short announcement drafts for
-community posting, use:
-
-- [docs/community-sharing-kit.md](docs/community-sharing-kit.md)
-
-If you're preparing a repeatable review packet for a teammate, maintainer, or
-researcher, use:
-
-- [RESEARCHER_OVERVIEW.md](RESEARCHER_OVERVIEW.md)
-
-Reports redact AWS account IDs, ARNs, email addresses, common AWS access key IDs,
-bare STS session tokens, quoted and unquoted secret assignments,
-bearer tokens, JWT-style tokens, and common GitHub token formats before matched
-evidence or a displayed source name is shared. This is a helpful guardrail, not a secret scanner:
-review a report before sharing it.
+- [Add SAM Doctor to an existing GitHub Actions deployment](docs/github-actions-integration.md)
+- [On-call playbook: triage sequence, handoff template, escalation threshold](docs/on-call-playbook.md)
+- [Fix "Not authorized to perform: sts:AssumeRoleWithWebIdentity" in GitHub Actions](docs/oidc-deployment-debugging.md)
+- [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
+- [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
+- [Case studies (incident-to-action workflows)](docs/case-studies.md)
+- [Adopter onboarding kit (team templates and rollout sequence)](docs/adopter-onboarding-kit.md)
+- [First-3 teams onboarding playbook (3-week rollout)](docs/first-3-teams-onboarding-playbook.md)
+- [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
+- [Community sharing kit (onboarding and announcement templates)](docs/community-sharing-kit.md)
 
 ## Contributing
 
@@ -858,6 +374,10 @@ and run `python scripts/check-pr.py` before opening the PR — it is the same
 gate CI runs. Before sharing any log excerpt, remove account IDs, ARNs,
 credentials, tokens, and customer data.
 
+When you report a wrong or unclear diagnosis, include the SAM Doctor version,
+the exact command, a sanitized excerpt, and what you expected. Small
+reproducible reports get fixed fastest.
+
 ## Development
 
 ```bash
@@ -866,8 +386,17 @@ python -m pytest -q
 python -m build
 ```
 
+`python scripts/run-smoke.py` runs the packaged demo and a sample diagnosis,
+then checks that the JSON output is well-formed and contains findings.
+
 See [CHANGELOG.md](CHANGELOG.md) for release history, [SECURITY.md](SECURITY.md)
 for vulnerability reporting, [SUPPORT.md](SUPPORT.md) for help boundaries, and
 [docs/pypi-publishing.md](docs/pypi-publishing.md) for the stable-release
 publishing setup.
 
+## Related projects
+
+- Portfolio: [jacobgoldstein.dev](https://jacobgoldstein.dev)
+- Historical text tooling: [aktreader](https://github.com/jakegold1647/aktreader)
+  and [aktreader-research](https://github.com/jakegold1647/aktreader-research)
+- Records corpus: [congress-poland-registers](https://github.com/jakegold1647/congress-poland-registers)
