@@ -225,11 +225,13 @@ prints a real report:
 SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
 
 1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
-   Matched on line: 1
+   Matched on line: 2
    The workflow reached AWS STS but the role trust relationship did not accept
    the GitHub-issued OIDC token. ...
    Evidence:
    - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+   - An error occurred (AccessDenied) when calling the AssumeRoleWithWebIdentity
+     operation: Not authorized to perform sts:AssumeRoleWithWebIdentity
    Verify:
    - Confirm the workflow or job permissions include `id-token: write`.
    - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
@@ -237,29 +239,35 @@ SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
    Docs: https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
 ```
 
+The description line is truncated here; the CLI prints it in full, along with a
+third trust-policy `sub` check.
+
 ## Use-case: fix a blocked deployment in one pass
 
 Use this exact flow when a teammate shares an OIDC error in CI:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown
+sam-doctor diagnose deployment.log
 ```
 
 If the failure text matches the expected pattern, the report starts with a short
-actionable finding and the one safe check to run first:
+actionable finding and the safe checks to run first (excerpt; line number depends
+on your log):
 
 ```text
 SAM Doctor found 1 possible issue(s) in deployment.log.
 
 1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
-   Matched on line: 3
    Evidence:
    - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
    Verify:
    - Confirm the workflow or job permissions include `id-token: write`.
-   - Confirm the role trust policy includes subject and audience conditions that match
-     GitHub's OIDC token.
+   - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
+     equal to `sts.amazonaws.com`.
 ```
+
+Add `--format markdown` when you want the same findings as a Markdown document
+for a ticket or thread.
 
 This is built for team handoffs: teammate sends the sanitized excerpt, you run one
 diagnosis, then share one verification command before changing IAM or deploy
@@ -274,22 +282,32 @@ When a teammate posts stack failure noise, search for the first actual signal in
 of treating `ROLLBACK_COMPLETE` as the root cause:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown
+sam-doctor diagnose deployment.log
 ```
 
-A typical output starts with the earliest actionable finding and then your first
-safe check:
+The report puts the failed resource first and the rollback second, because the
+rollback is downstream noise. You can reproduce this exact shape with
+`sam-doctor demo --scenario cloudformation`:
 
 ```text
-SAM Doctor found 1 possible issue(s) in deployment.log.
+SAM Doctor found 2 possible issue(s) in cloudformation-resource-failure.txt.
 
-1. CloudFormation rollback-related failure in resource MyResource (high confidence)
-   Matched on line: 4
+1. CloudFormation resource creation or update failed (high confidence)
+   Matched on line: 1
    Evidence:
-   - Received FAILED for resource MyResource in CREATE_FAILED/ROLLBACK_COMPLETE flow.
+   - ... MyApiDeployment CREATE_FAILED Resource handler returned message: "Invalid
+     request provided: API Gateway deployment cannot be created because the stage
+     already exists." ...
    Verify:
-   - Check the earliest non-rollback resource event and the first AWS error line it includes.
-   - Verify the policy/resource dependency and retry after the blocking condition is fixed.
+   - Identify the failed logical resource ID and preserve its exact status reason.
+   - Check the underlying service event or API error named in that status reason.
+   - Fix the resource-level cause before retrying the stack operation.
+
+2. CloudFormation stack entered rollback after an earlier resource failure (medium confidence)
+   Matched on line: 2
+   Verify:
+   - Inspect stack events in chronological order and locate the first
+     `CREATE_FAILED` or `UPDATE_FAILED` resource.
 ```
 
 Use this sequence in an incident thread:
@@ -311,20 +329,21 @@ CAPABILITY_IAM is required but was not acknowledged in the template
 Use the same command you already use:
 
 ```bash
-sam-doctor diagnose deployment.log --format markdown
+sam-doctor diagnose deployment.log
 ```
 
-A focused report usually includes:
+You can reproduce the report shape with `sam-doctor demo --scenario capabilities`:
 
 ```text
-1. CloudFormation requires CAPABILITY_IAM (high confidence)
-   Matched on line: 7
+1. CloudFormation needs an explicit capability acknowledgement (high confidence)
    Evidence:
-   - CAPABILITY_IAM is required but was not provided.
+   - An error occurred (InsufficientCapabilitiesException) when calling the
+     CreateChangeSet operation: Requires capabilities : [CAPABILITY_NAMED_IAM]
    Verify:
-   - Confirm whether you expect IAM changes from this template.
-   - Re-run with the specific capability and deployment mode intended:
-     `--capabilities CAPABILITY_IAM` (or CAPABILITY_NAMED_IAM when required).
+   - Read the capability named in the error and inspect the relevant template
+     resources before changing deployment settings.
+   - For IAM resources, configure `CAPABILITY_IAM`; use `CAPABILITY_NAMED_IAM`
+     when the template gives IAM resources custom names.
 ```
 
 In practice this shortens "why did it fail?" to "which flag is actually needed?" and
@@ -344,7 +363,7 @@ Check that the identity-based policy attached to the role allows id-token:write.
 Run:
 
 ```bash
-sam-doctor diagnose incident_excerpt.txt --format markdown
+sam-doctor diagnose incident_excerpt.txt
 ```
 
 Result:
@@ -354,13 +373,20 @@ SAM Doctor found 1 possible issue(s) in incident_excerpt.txt.
 
 1. GitHub Actions cannot assume the configured AWS role through OIDC (high confidence)
    Matched on line: 1
+   The workflow reached AWS STS but the role trust relationship did not accept
+   the GitHub-issued OIDC token. The usual cause is a missing `id-token: write`
+   permission, an incorrect token audience, or a `sub` condition that does not
+   match the repository, branch, or GitHub Environment.
    Evidence:
-   - Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity
+   - An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
    Verify:
-   - Confirm the workflow includes `id-token: write`.
-   - Verify the AWS role trust policy audience and subject conditions.
-   Suggested next command:
-   - sam deploy --no-confirm-changeset --skip-prompt
+   - Confirm the workflow or job permissions include `id-token: write`.
+   - Check that the role trust policy accepts `token.actions.githubusercontent.com:aud`
+     equal to `sts.amazonaws.com`.
+   - Compare the trust policy's `sub` condition with the exact branch or GitHub
+     Environment that ran the job; newer repositories can include immutable owner
+     and repository IDs in that claim.
+   Docs: https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
 ```
 
 This output is deterministic for the same input and does not contain account IDs,
