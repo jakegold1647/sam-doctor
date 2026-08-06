@@ -27,7 +27,9 @@ first so nothing gets duplicated.
 
 ## 1. Another CloudFormation operation is already in progress on the stack
 
-**Status:** open for a contributor.
+**Status:** landed — shipped as "Another CloudFormation operation is already
+in progress on the stack" (see the unreleased changelog entry). Kept here so
+the numbering of the other candidates stays stable.
 
 **Failure family.** Two deployments race on the same stack — a teammate,
 a second CI run, or a console operation — and CloudFormation rejects the new
@@ -67,7 +69,9 @@ group keyed by stack name.
 
 ## 2. SAM could not upload a build artifact referenced by the template
 
-**Status:** open for a contributor.
+**Status:** landed — shipped as "SAM could not upload a build artifact
+referenced by the template" (see the unreleased changelog entry). Kept here so
+the numbering of the other candidates stays stable.
 
 **Failure family.** `sam deploy`/`sam package` fails because a `CodeUri`,
 `ContentUri`, or `DefinitionUri` path does not exist — usually `sam build` was
