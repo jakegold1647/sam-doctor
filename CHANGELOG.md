@@ -4,6 +4,17 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for a concurrent CloudFormation operation blocking the deploy
+  (`is in CREATE/UPDATE/DELETE_IN_PROGRESS state and can not be updated`,
+  `OperationInProgressException`). Normal `*_IN_PROGRESS` progress events and
+  the rollback states stay with their existing rules, and the generic
+  change-set finding is suppressed so the report names the in-flight
+  operation as the cause. From roadmap entry 1.
+- Added a rule for a missing build artifact referenced by the template
+  (`Unable to upload artifact ... referenced by CodeUri`, `refers to a file
+  or folder that does not exist`), the classic deploy-before-`sam build`
+  failure. Suppresses the generic change-set finding on those logs. From
+  roadmap entry 2. Catalog is now 40 rules.
 - Added a rule for the Lambda regional code storage quota
   (`CodeStorageExceededException`, `Code storage limit exceeded`), which counts
   deployed packages, retained versions, and layers together and is distinct
