@@ -657,6 +657,26 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
     ),
     Rule(
+        title="Another CloudFormation operation is already in progress on the stack",
+        confidence="high",
+        patterns=(
+            r"is in (?:CREATE|UPDATE|DELETE)_IN_PROGRESS state and (?:can not|cannot) be updated",
+            r"OperationInProgressException",
+        ),
+        explanation=(
+            "CloudFormation rejected the deployment because another operation is "
+            "still running on the same stack - a concurrent CI run, a teammate's "
+            "deploy, or a console operation. The new operation cannot start until "
+            "the in-flight one finishes."
+        ),
+        verification=(
+            "Check for a concurrent deployment against the same stack and let it finish before retrying.",
+            "Run `aws cloudformation describe-stack-events --stack-name <stack>` (read-only) to see the in-flight operation and how far it has progressed.",
+            "Serialize CI deploys to the same stack with a GitHub Actions `concurrency` group keyed by stack name.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
+    ),
+    Rule(
         title="A failed initial stack must be recreated before it can be deployed again",
         confidence="high",
         patterns=(
@@ -929,6 +949,26 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
     ),
     Rule(
+        title="SAM could not upload a build artifact referenced by the template",
+        confidence="high",
+        patterns=(
+            r"Unable to upload artifact .{0,120}referenced by (?:CodeUri|ContentUri|DefinitionUri)",
+            r"Parameter (?:CodeUri|ContentUri|DefinitionUri) of resource .{0,120}refers to a file or folder that does not exist",
+        ),
+        explanation=(
+            "A `CodeUri`, `ContentUri`, or `DefinitionUri` path in the template does "
+            "not exist where the deploy ran. Usually `sam build` was never run, the "
+            "deploy ran from a different directory than the build, or the source "
+            "template was deployed instead of `.aws-sam/build/template.yaml`."
+        ),
+        verification=(
+            "Run `sam build` first and deploy the built template it produces.",
+            "Confirm the CI job checks out the repository and runs build and deploy in the same working directory.",
+            "Verify the referenced path exists in the environment that runs the deploy, not only on the machine that authored the template.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+    ),
+    Rule(
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
         patterns=(
@@ -967,6 +1007,10 @@ _RULES = (
             r"No changes to deploy",
             r"The submitted information didn't contain changes",
             r"No updates are to be performed",
+            r"is in (?:CREATE|UPDATE|DELETE)_IN_PROGRESS state and (?:can not|cannot) be updated",
+            r"OperationInProgressException",
+            r"Unable to upload artifact",
+            r"refers to a file or folder that does not exist",
         ),
     ),
     Rule(

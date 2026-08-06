@@ -290,6 +290,22 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "An error occurred (RequestEntityTooLargeException) when calling the UpdateFunctionCode operation: Request must be smaller than 70167211 bytes for the UpdateFunctionCode operation",
             "package exceeds a per-function size limit",
         ),
+        (
+            "Stack my-service-prod is in UPDATE_IN_PROGRESS state and can not be updated.",
+            "operation is already in progress",
+        ),
+        (
+            "An error occurred (OperationInProgressException) when calling the UpdateStack operation",
+            "operation is already in progress",
+        ),
+        (
+            "Error: Unable to upload artifact HelloWorldFunction referenced by CodeUri parameter of HelloWorldFunction resource.",
+            "could not upload a build artifact",
+        ),
+        (
+            "Parameter CodeUri of resource HelloWorldFunction refers to a file or folder that does not exist",
+            "could not upload a build artifact",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(
@@ -317,6 +333,62 @@ def test_supported_failure_categories_are_detected(
 )
 def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
     assert diagnose(log_line) == []
+
+
+def test_normal_in_progress_events_do_not_report_a_concurrent_operation() -> None:
+    log = (
+        "sam-app UPDATE_IN_PROGRESS User Initiated\n"
+        "HelloWorldFunction UPDATE_IN_PROGRESS -\n"
+        "sam-app UPDATE_COMPLETE -"
+    )
+
+    assert diagnose(log) == []
+
+
+def test_rollback_in_progress_states_stay_with_the_rollback_rules() -> None:
+    log = "Stack my-app is in UPDATE_ROLLBACK_IN_PROGRESS state and can not be updated."
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "Another CloudFormation operation is already in progress on the stack"
+        not in titles
+    )
+    assert any("rollback" in title.lower() for title in titles)
+
+
+def test_successful_artifact_upload_does_not_report_a_missing_artifact() -> None:
+    log = "Uploading to my-deploy-bucket/artifact.zip (100%)"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "SAM could not upload a build artifact referenced by the template" not in titles
+    )
+
+
+def test_concurrent_operation_finding_suppresses_the_generic_changeset_rule() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app, "
+        "An error occurred (OperationInProgressException) when calling the "
+        "UpdateStack operation"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "Another CloudFormation operation is already in progress on the stack" in titles
+    assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
+
+
+def test_missing_artifact_finding_suppresses_the_generic_changeset_rule() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "Error: Unable to upload artifact HelloWorldFunction referenced by "
+        "CodeUri parameter of HelloWorldFunction resource.\n"
+        "Parameter CodeUri of resource HelloWorldFunction refers to a file or "
+        "folder that does not exist"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "SAM could not upload a build artifact referenced by the template" in titles
+    assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
 
 
 def test_lambda_package_size_rule_does_not_match_code_storage_quota_errors() -> None:
