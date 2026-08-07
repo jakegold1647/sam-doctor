@@ -102,5 +102,13 @@ pattern compiles, that none can fire on ordinary successful deploy output, and
 that the rule's metadata (title, confidence, verification steps, documentation
 link) is complete. Run it first — it reports every structural problem at once.
 
+If the rule's family already has entries in `scripts/check-rule-fixtures.py`
+(`RULE_FIXTURES`), add this rule's title alongside them so the registry stays
+complete for that family:
+
+```bash
+python scripts/check-rule-fixtures.py --rule "part of the new rule's title"
+```
+
 If the rule is accepted, keep the fixture text short, add a short changelog entry,
 and update the matching docs page where practical.

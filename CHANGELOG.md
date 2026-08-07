@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `scripts/check-rule-fixtures.py`, a fixture registry that pairs each
+  rule title with a sanitized positive log line and a nearby non-match, and
+  checks that the positive fires the rule, the negative does not, and neither
+  contains an account id, ARN, access key, or email address. It ships in
+  `scripts/check-pr.py`, CI, and the test suite (`tests/test_rule_fixtures.py`)
+  alongside the existing rule catalog gate. This first PR migrates the GitHub
+  Actions OIDC rule family (4 rules); the rest of the catalog is a follow-up,
+  per issue #40.
 - Added a rule for a deployment bucket that denies access to the packaged
   artifacts (`S3 error: Access Denied` from `CreateChangeSet`, and a denied
   `PutObject`/`GetObject`/`HeadObject` while uploading to the artifact bucket).
