@@ -25,6 +25,10 @@ CI and local automation without guessing.
 - `sam-doctor packet`
   - Returns evidence packets and exits `0` when files are readable and report writes succeed.
 
+- `sam-doctor request-packet`
+  - Writes a small, sanitized excerpt for a rule request and exits `0`, whether or not a
+    likely error line was found. Exits `2` on a read/write failure (for example, empty stdin).
+
 - `sam-doctor init`, `demo`, `rules`
   - Exit `0` on successful command execution.
 

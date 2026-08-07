@@ -10,7 +10,7 @@ from html import escape
 from . import __version__
 from .redaction import redact
 
-_RULE_REQUEST_URL = (
+RULE_REQUEST_URL = (
     "https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml"
 )
 
@@ -1304,6 +1304,45 @@ def _matching_evidence_with_lines(
     return tuple(matching_lines)
 
 
+# Generic error wording, used only when diagnose() finds no rule match. This
+# is deliberately broader and noisier than any single rule pattern - it is a
+# starting point for a human excerpt, not a diagnosis.
+_LIKELY_ERROR_LINE = re.compile(
+    r"(?i)\b(error|exception|fail(?:ed|ure)?|denied|not authorized|invalid|unable to|"
+    r"cannot|traceback|panic|rejected|refused|throttl(?:ed|ing)|expired|blocked)\b"
+)
+
+_DEFAULT_EXCERPT_CONTEXT = 2
+_DEFAULT_EXCERPT_MAX_LINES = 15
+
+
+def likely_error_excerpt(
+    text: str,
+    context: int = _DEFAULT_EXCERPT_CONTEXT,
+    max_lines: int = _DEFAULT_EXCERPT_MAX_LINES,
+) -> tuple[tuple[int, str], ...]:
+    """Return a short, redacted window around the first likely error line.
+
+    This is a heuristic for unmatched logs, not a rule: it is meant to save a
+    contributor from copying an entire log into a rule request when nothing
+    in `diagnose()` matched. Returns an empty tuple when no line looks like an
+    error at all.
+    """
+
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if not _LIKELY_ERROR_LINE.search(line):
+            continue
+        start = max(0, index - context)
+        end = min(len(lines), index + context + 1, start + max_lines)
+        return tuple(
+            (line_number, redact(lines[line_number - 1].strip()))
+            for line_number in range(start + 1, end + 1)
+            if lines[line_number - 1].strip()
+        )
+    return ()
+
+
 def diagnose(text: str) -> list[Finding]:
     """Return all deterministic findings supported by the supplied text.
 
@@ -1385,7 +1424,7 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
                 "### What to do next",
                 "",
                 "Run `sam-doctor rules` to review current coverage. If this was a real "
-                + f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({_RULE_REQUEST_URL}).",
+                + f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({RULE_REQUEST_URL}).",
             ]
         )
         return "\n".join(lines) + "\n"
@@ -1424,7 +1463,7 @@ def terminal_report(findings: list[Finding], source_name: str) -> str:
             f"No supported diagnostic pattern found in {redact(source_name)}.\n"
             "Keep the first failure event and inspect the relevant AWS documentation.\n"
             "Run `sam-doctor rules` for current coverage; if this was a real failure, "
-            f"share a short, sanitized excerpt at {_RULE_REQUEST_URL}."
+            f"share a short, sanitized excerpt at {RULE_REQUEST_URL}."
         )
 
     blocks = [
