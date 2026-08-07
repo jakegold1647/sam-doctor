@@ -326,6 +326,7 @@ def _findings_from_payload_items(items: list[object]) -> list[Finding]:
         finding = dict(item)
         findings.append(
             Finding(
+                rule_id=str(finding.get("rule_id", "")),
                 title=str(finding["title"]),
                 confidence=str(finding["confidence"]),
                 explanation=str(finding["explanation"]),

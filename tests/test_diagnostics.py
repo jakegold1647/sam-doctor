@@ -49,6 +49,7 @@ def _finding_shape(
     assert all(
         key in finding for key in required
     ), f"finding {index} missing required keys"
+    assert isinstance(finding["rule_id"], str)
     assert isinstance(finding["title"], str)
     assert isinstance(finding["confidence"], str)
     assert isinstance(finding["explanation"], str)
