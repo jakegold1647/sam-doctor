@@ -853,6 +853,29 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
     ),
     Rule(
+        title="The template exceeds a CloudFormation size or count quota",
+        confidence="medium",
+        patterns=(
+            r"Value at 'template(?:Body|URL)' failed to satisfy constraint: Member must have length less than or equal to",
+            r"Template format error: Number of \S+ .{0,40}is greater than maximum allowed",
+            r"Template (?:body )?may not exceed [\d,]+ bytes",
+        ),
+        explanation=(
+            "CloudFormation rejected the template itself, before evaluating any "
+            "resource, because it is past a service quota: the template body is "
+            "larger than the limit for how it was submitted (51,200 bytes inline, "
+            "460,800 bytes from S3), or it declares more resources, parameters, or "
+            "outputs than a stack may hold. No template change other than shrinking "
+            "or splitting it will get past this."
+        ),
+        verification=(
+            "Measure the rendered template before deploying - `wc -c .aws-sam/build/template.yaml` - and compare it with the byte limit named in the error.",
+            "Submit the template through S3 rather than inline: `sam deploy --resolve-s3` (or an explicit `--s3-bucket`) raises the ceiling to 460,800 bytes, and `aws cloudformation validate-template --template-url <s3-url>` confirms it read-only.",
+            "For a count quota, read the number the error reports and move part of the stack into nested stacks or a separate stack; the CloudFormation quotas page lists the current per-stack maximums.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
+    ),
+    Rule(
         title="SAM deployment configured both a managed and explicit S3 bucket",
         confidence="high",
         patterns=(r"Cannot use both --resolve-s3 and --s3-bucket parameters",),
@@ -1037,6 +1060,9 @@ _RULES = (
             r"OperationInProgressException",
             r"Unable to upload artifact",
             r"refers to a file or folder that does not exist",
+            r"Value at 'template(?:Body|URL)' failed to satisfy constraint: Member must have length less than or equal to",
+            r"Template format error: Number of \S+ .{0,40}is greater than maximum allowed",
+            r"Template (?:body )?may not exceed [\d,]+ bytes",
         ),
     ),
     Rule(

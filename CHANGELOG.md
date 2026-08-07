@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for a template that exceeds a CloudFormation size or count quota
+  (the `templateBody` length constraint, `Template format error: Number of ...
+  is greater than maximum allowed`, and the `may not exceed N bytes` wording).
+  CloudFormation rejects the template before it evaluates any resource, so the
+  guidance is to measure the rendered template, submit it through S3 for the
+  larger 460,800-byte ceiling, or split the stack. Patterns stay anchored to
+  template quota wording so an ordinary `ValidationError` about a missing
+  parameter still gets the generic change-set finding, which this rule
+  suppresses when it fires. From roadmap entry 4, issue #46. Catalog is now 42
+  rules.
 - Added a rule for an S3 bucket name that is already taken
   (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`). Bucket names are globally
   unique, so an explicit `BucketName` can collide with another account or with
