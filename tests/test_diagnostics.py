@@ -183,6 +183,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "property StageName: not defined for resource of type AWS::Serverless::Api",
             "SAM template property",
         ),
+        (
+            "InvalidSamDocumentException: Encountered unsupported property MemorySize",
+            "schema validation",
+        ),
+        (
+            "Resource with id [HelloFunction] is invalid. property Handler not defined for resource of type AWS::Serverless::StateMachine",
+            "schema validation",
+        ),
         ("Has prohibited field Resource", "trust policy contains"),
         (
             "Code signing is not supported for functions created with container images.",
@@ -361,6 +369,7 @@ def test_supported_failure_categories_are_detected(
         "SAM template property StageName is valid for AWS::Serverless::Api",
         "Configured CORS for the API",
         "The preflight request returned 204",
+        "sam validate --lint completed with no errors",
     ),
 )
 def test_success_like_lines_do_not_create_false_findings(log_line: str) -> None:
@@ -504,6 +513,44 @@ def test_handler_wording_collision_keeps_unrelated_resource_failures_visible() -
     titles = [finding.title for finding in diagnose(log)]
     assert "An S3 bucket name in the template is already taken" in titles
     assert "CloudFormation resource creation or update failed" in titles
+
+
+def test_a_missing_parameter_validation_error_is_not_a_schema_validation_failure() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "An error occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: Parameters: [DbPassword] must have values"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The template failed SAM or CloudFormation schema validation" not in titles
+
+
+def test_colon_variant_property_mismatch_keeps_only_the_specific_finding() -> None:
+    log = "property StageName: not defined for resource of type AWS::Serverless::Api"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "A SAM template property is not valid for its resource type" in titles
+    assert "The template failed SAM or CloudFormation schema validation" not in titles
+
+
+def test_unsupported_property_wording_reports_schema_validation() -> None:
+    log = "InvalidSamDocumentException: Encountered unsupported property MemorySize"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The template failed SAM or CloudFormation schema validation" in titles
+    assert "A SAM template property is not valid for its resource type" not in titles
+
+
+def test_property_mismatch_without_a_colon_reports_schema_validation() -> None:
+    log = (
+        "Resource with id [HelloFunction] is invalid. property Handler not "
+        "defined for resource of type AWS::Serverless::StateMachine"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The template failed SAM or CloudFormation schema validation" in titles
+    assert "A SAM template property is not valid for its resource type" not in titles
 
 
 def test_a_missing_parameter_validation_error_is_not_a_template_quota_failure() -> None:

@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for a template that fails SAM or CloudFormation schema
+  validation (`InvalidSamDocumentException`, `InvalidResourceException`,
+  `Encountered unsupported property`, and a `property ... not defined for
+  resource of type` mismatch without the colon the existing property rule
+  requires). The existing "A SAM template property is not valid for its
+  resource type" rule already owns the colon-and-`AWS::Serverless::` form of
+  that wording, so the new rule is suppressed whenever that specific form
+  matches - only one finding fires either way. From roadmap entry 7, issue
+  #30. Catalog is now 44 rules.
 - Added a rule for a deployment bucket that denies access to the packaged
   artifacts (`S3 error: Access Denied` from `CreateChangeSet`, and a denied
   `PutObject`/`GetObject`/`HeadObject` while uploading to the artifact bucket).
