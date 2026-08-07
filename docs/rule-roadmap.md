@@ -148,7 +148,10 @@ behind before reusing the name.
 
 ## 4. CloudFormation template exceeds a size or count quota
 
-**Status:** open for a contributor.
+**Status:** landed — shipped as "The template exceeds a CloudFormation size or
+count quota" in commit `63ba18e` (see the unreleased changelog entry), tracked
+in [issue #46](https://github.com/jakegold1647/sam-doctor/issues/46). Kept here so
+the numbering of the other candidates stays stable.
 
 **Failure family.** Deployment fails validation because the template body,
 parameter count, output count, or resource count exceeds a CloudFormation
