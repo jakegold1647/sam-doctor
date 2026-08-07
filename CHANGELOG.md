@@ -46,7 +46,10 @@ All notable changes to SAM Doctor are documented here.
   mode emits a single document whose results point at their own log files.
   Evidence and source paths go through the usual redaction first. The rule
   table lists only the rules that fired; the full catalog stays with
-  `sam-doctor rules`. From issue #43.
+  `sam-doctor rules`. From issue #43. The parallel #54 implementation
+  contributed `docs/schemas/sarif-report.schema.json`, a narrowed contract for
+  the emitted shape, now registered under `sam-doctor schemas` and validated
+  in the test suite.
 - Added a rule for a template that fails SAM or CloudFormation schema
   validation (`InvalidSamDocumentException`, `InvalidResourceException`,
   `Encountered unsupported property`, and a `property ... not defined for

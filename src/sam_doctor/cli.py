@@ -83,6 +83,7 @@ _SCHEMA_URLS = {
     "diagnose": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/diagnose-report.schema.json",
     "batch": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/batch-report.schema.json",
     "rules": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/rules-report.schema.json",
+    "sarif": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/sarif-report.schema.json",
 }
 
 

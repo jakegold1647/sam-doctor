@@ -10,6 +10,9 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
   `docs/schemas/batch-report.schema.json`, and
   `docs/schemas/rules-report.schema.json`. Existing fields keep their names
   and types. New optional fields may be added; parse leniently.
+  `docs/schemas/sarif-report.schema.json` narrows the same promise for the
+  SARIF output: it describes the shape sam-doctor emits, not the full
+  upstream SARIF 2.1.0 spec.
 - **Rule IDs.** Every rule has a short id such as `iam.deny.explicit`
   (the `rule_id` field on findings, `id` in the rule catalog). Unlike titles
   and explanations, ids do not change when a rule's wording is tightened or
