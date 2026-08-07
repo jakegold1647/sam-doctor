@@ -64,6 +64,7 @@ jobs:
           annotations: {annotations}
           batch: {batch}
           fail-on-findings: {fail_on_findings}
+          fail-on-confidence: "{fail_on_confidence}"
       # Optional: route high-signal failures to a follow-up job/thread.
       # - name: Open a follow-up note when issues are found
       #   if: steps.sam-doctor.outputs.has-findings == 'true'
@@ -333,6 +334,15 @@ GitHub Action behavior:
         help="Fail the action step when one or more findings are found.",
     )
     init_parser.add_argument(
+        "--fail-on-confidence",
+        choices=("high", "medium"),
+        help=(
+            "Write a fail-on-confidence threshold into the generated workflow, "
+            "so the action step fails only on findings at that confidence or "
+            "above."
+        ),
+    )
+    init_parser.add_argument(
         "--on-push",
         action="store_true",
         help=(
@@ -571,6 +581,7 @@ def _init_workflow_command(
     annotations: bool,
     batch: bool,
     fail_on_findings: bool,
+    fail_on_confidence: str | None,
     on_push: bool,
 ) -> None:
     target = Path(workflow_file).expanduser().resolve()
@@ -586,6 +597,7 @@ def _init_workflow_command(
                 annotations=str(annotations).lower(),
                 batch=str(batch).lower(),
                 fail_on_findings=str(fail_on_findings).lower(),
+                fail_on_confidence=fail_on_confidence or "",
             )
         ),
         encoding="utf-8",
@@ -826,6 +838,7 @@ def main(argv: list[object] | None = None) -> int:
                 annotations=args.annotations,
                 batch=args.batch,
                 fail_on_findings=args.fail_on_findings,
+                fail_on_confidence=args.fail_on_confidence,
                 on_push=args.on_push,
             )
         except ValueError as error:
