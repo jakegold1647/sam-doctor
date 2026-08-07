@@ -16,6 +16,7 @@ fi
 : "${SAM_DOCTOR_ANNOTATIONS:=true}"
 : "${SAM_DOCTOR_BATCH:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
+: "${SAM_DOCTOR_FAIL_ON_CONFIDENCE:=}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
 
 if [ -z "${GITHUB_ACTION_PATH:-}" ]; then
@@ -46,6 +47,11 @@ fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "true" && "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "false" ]]; then
   echo "SAM_DOCTOR_FAIL_ON_FINDINGS must be 'true' or 'false'." >&2
+  exit 2
+fi
+
+if [[ -n "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" && "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" != "high" && "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" != "medium" ]]; then
+  echo "SAM_DOCTOR_FAIL_ON_CONFIDENCE must be empty, 'high', or 'medium'." >&2
   exit 2
 fi
 
@@ -165,7 +171,29 @@ if notices:
 PY
 fi
 
-if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then
+if [[ -n "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" ]]; then
+  # The threshold is its own opt-in gate: count findings at or above it and
+  # fail on those alone, so reports keep showing everything.
+  gated_count="$("$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+is_batch = sys.argv[2].lower() == "true"
+rank = {"low": 0, "medium": 1, "high": 2}
+threshold = rank[sys.argv[3]]
+if is_batch:
+    findings = [f for result in payload.get("results", []) for f in result.get("findings", [])]
+else:
+    findings = payload.get("findings", [])
+print(sum(1 for f in findings if rank.get(f.get("confidence"), 0) >= threshold))
+PY
+)"
+  if [[ "$gated_count" -gt 0 ]]; then
+    echo "SAM Doctor found ${gated_count} issue(s) at ${SAM_DOCTOR_FAIL_ON_CONFIDENCE} confidence or above." >&2
+    exit 1
+  fi
+elif [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then
   echo "SAM Doctor found ${finding_count} supported issue(s)." >&2
   exit 1
 fi

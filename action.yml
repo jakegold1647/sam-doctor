@@ -26,6 +26,15 @@ inputs:
     required: false
     type: boolean
     default: false
+  fail-on-confidence:
+    description: >-
+      Fail the action only when a finding at this confidence or above is
+      detected ("high" or "medium"). Reports and outputs still include every
+      finding; only the exit status is gated. Works with or without
+      fail-on-findings.
+    required: false
+    type: string
+    default: ""
 outputs:
   finding-count:
     description: Number of supported findings in the supplied log.
@@ -52,4 +61,5 @@ runs:
         SAM_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
         SAM_DOCTOR_BATCH: ${{ inputs.batch }}
         SAM_DOCTOR_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        SAM_DOCTOR_FAIL_ON_CONFIDENCE: ${{ inputs.fail-on-confidence }}
       run: bash "$GITHUB_ACTION_PATH/scripts/run-github-action.sh"

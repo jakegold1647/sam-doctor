@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added an opt-in confidence gate: `--fail-on-confidence high` (or `medium`)
+  on `diagnose` and `batch`, and a matching `fail-on-confidence` input on the
+  Action. It fails the run only when a finding at that confidence or above is
+  present, so a team can start by gating on high-confidence findings and
+  tighten later. Reports, outputs, and annotations still include every
+  finding - only the exit status is gated - and `--fail-on-findings` keeps its
+  exact old meaning; when both are given, the explicit threshold is the gate.
+  From issue #38.
 - Added `--format sarif` to `diagnose`, `demo`, and `batch`: the same findings
   rendered as one SARIF 2.1.0 run, ready for `github/codeql-action/upload-sarif`
   or any other SARIF consumer. Results carry the stable rule id from #47 as

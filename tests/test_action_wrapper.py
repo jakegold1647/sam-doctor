@@ -151,3 +151,30 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     assert "sam-doctor-version=0.8.1" in output_path.read_text(encoding="utf-8")
     assert "::notice file=" in result.stdout
     assert "GitHub Actions cannot assume" in result.stdout
+
+
+def test_action_wrapper_gates_on_confidence_threshold(tmp_path: Path):
+    root = ROOT
+    data = root / "src" / "sam_doctor" / "data"
+
+    def run_with(log_name: str) -> "subprocess.CompletedProcess[str]":
+        return _run_action(
+            root,
+            {
+                "GITHUB_ACTION_PATH": _bash_path(root),
+                "GITHUB_OUTPUT": _bash_path(tmp_path / f"output-{log_name}.txt"),
+                "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / f"summary-{log_name}.md"),
+                "SAM_DOCTOR_LOG_FILE": _bash_path(data / log_name),
+                "SAM_DOCTOR_FAIL_ON_CONFIDENCE": "high",
+            },
+        )
+
+    high = run_with("oidc-assume-role-failure.txt")
+    assert high.returncode == 1, high.stderr
+    assert "at high confidence or above" in high.stderr
+
+    medium_only = run_with("interactive-changeset-failure.txt")
+    assert medium_only.returncode == 0, medium_only.stderr
+    assert "::notice file=" in medium_only.stdout, (
+        "the medium finding must still be reported even though it does not gate"
+    )

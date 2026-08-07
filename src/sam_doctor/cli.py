@@ -81,17 +81,21 @@ def _build_parser() -> argparse.ArgumentParser:
     epilog = """
 Exit codes:
   0  - command completed successfully, or no enforced fail gate was hit.
-  1  - findings were detected and --fail-on-findings was used.
+  1  - findings were detected and --fail-on-findings was used, or a finding
+       met the --fail-on-confidence threshold.
   2  - usage/runtime error (missing input, invalid arguments, I/O failure).
 
 Command behavior:
-  diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings.
-  batch: default exit 0 (no enforced failure), 1 with --fail-on-findings.
+  diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings
+            or a met --fail-on-confidence threshold.
+  batch: default exit 0 (no enforced failure), 1 with --fail-on-findings
+         or a met --fail-on-confidence threshold.
   demo, rules, schemas, packet, init: 0 on successful execution.
 
 GitHub Action behavior:
-  0  - action runs without enforced fail-on-findings failure.
-  1  - findings are present and fail-on-findings is enabled.
+  0  - action runs without an enforced failure gate being hit.
+  1  - findings are present and fail-on-findings is enabled, or a finding
+       meets the fail-on-confidence threshold.
   2  - invalid action input or action runtime failure.
 """
 
@@ -121,6 +125,15 @@ GitHub Action behavior:
         "--fail-on-findings",
         action="store_true",
         help="Exit with status 1 when one or more supported findings are detected.",
+    )
+    diagnose_parser.add_argument(
+        "--fail-on-confidence",
+        choices=("high", "medium"),
+        help=(
+            "Exit with status 1 only when a finding at this confidence or above "
+            "is detected. Reports still show every finding; only the exit "
+            "status is gated. Implies --fail-on-findings at the threshold."
+        ),
     )
 
     demo_parser = subcommands.add_parser("demo", help="Run a bundled deployment failure example.")
@@ -214,6 +227,16 @@ GitHub Action behavior:
             "findings."
         ),
     )
+    batch_parser.add_argument(
+        "--fail-on-confidence",
+        choices=("high", "medium"),
+        help=(
+            "Exit with status 1 only when any analyzed file has a finding at "
+            "this confidence or above. Reports still show every finding; only "
+            "the exit status is gated. Implies --fail-on-findings at the "
+            "threshold."
+        ),
+    )
     init_parser = subcommands.add_parser(
         "init", help="Create a starter GitHub Actions workflow for SAM Doctor."
     )
@@ -279,6 +302,30 @@ def _read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="replace")
     except OSError as error:
         raise ValueError(f"Could not read {path}: {error}") from error
+
+
+# Ordered so a threshold means "this confidence or above". "low" is in the
+# rule vocabulary even though no shipped rule uses it yet.
+_CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
+
+
+def _should_fail(
+    confidences: list[str], fail_on_findings: bool, fail_on_confidence: str | None
+) -> bool:
+    """Decide the exit gate; reports are never filtered, only the exit status.
+
+    A confidence threshold is its own opt-in gate: it fails on findings at or
+    above the threshold whether or not --fail-on-findings was also given, so
+    a team can gate on high confidence first and tighten later.
+    """
+
+    if fail_on_confidence is not None:
+        threshold = _CONFIDENCE_RANK[fail_on_confidence]
+        return any(
+            _CONFIDENCE_RANK.get(confidence, 0) >= threshold
+            for confidence in confidences
+        )
+    return fail_on_findings and bool(confidences)
 
 
 def _render_findings(findings: list[Finding], source_name: str, output_format: str) -> str:
@@ -398,21 +445,22 @@ def _expand_input_paths(input_value: str) -> list[Path]:
     return sorted(set(expanded))
 
 
-def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
+def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]]:
     if not inputs:
         raise ValueError("No inputs provided for batch mode.")
 
     text_reports: list[str] = []
     batch_payload: list[dict[str, object]] = []
     sarif_pairs: list[tuple[str, list[Finding]]] = []
-    report_has_findings = False
+    # The second return value feeds the exit gate: every finding's confidence,
+    # across all files. Truthiness keeps the old has-findings meaning.
+    confidences: list[str] = []
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
             text = _read_text(file_path)
             source = str(file_path)
             findings = diagnose(text)
-            if findings:
-                report_has_findings = True
+            confidences.extend(finding.confidence for finding in findings)
             if output_format == "sarif":
                 sarif_pairs.append((source, findings))
                 continue
@@ -449,18 +497,18 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
                 indent=2,
             )
             + "\n",
-            report_has_findings,
+            confidences,
         )
     if output_format == "sarif":
-        return sarif_report(sarif_pairs), report_has_findings
+        return sarif_report(sarif_pairs), confidences
     if output_format == "github":
         return (
             "\n".join(text_reports) + ("\n" if text_reports else ""),
-            report_has_findings,
+            confidences,
         )
     return (
         "\n\n".join(text_reports) + ("\n" if text_reports else ""),
-        report_has_findings,
+        confidences,
     )
 
 
@@ -645,7 +693,7 @@ def main(argv: list[object] | None = None) -> int:
 
     if args.command == "batch":
         try:
-            report, report_has_findings = _batch_render(args.inputs, args.format)
+            report, confidences = _batch_render(args.inputs, args.format)
         except ValueError as error:
             _print_error(parser, str(error))
             return 2
@@ -659,7 +707,7 @@ def main(argv: list[object] | None = None) -> int:
             print(f"Wrote batch {args.format} report to {args.output}")
         else:
             sys.stdout.write(report)
-        return 1 if args.fail_on_findings and report_has_findings else 0
+        return 1 if _should_fail(confidences, args.fail_on_findings, args.fail_on_confidence) else 0
 
     if args.command == "init":
         try:
@@ -706,7 +754,15 @@ def main(argv: list[object] | None = None) -> int:
         print(f"Wrote {args.format} report to {args.output}")
     else:
         sys.stdout.write(report)
-    return 1 if args.fail_on_findings and findings else 0
+    return (
+        1
+        if _should_fail(
+            [finding.confidence for finding in findings],
+            args.fail_on_findings,
+            args.fail_on_confidence,
+        )
+        else 0
+    )
 
 
 if __name__ == "__main__":
