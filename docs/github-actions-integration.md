@@ -106,6 +106,39 @@ integration shell-only and emit workflow-command annotations directly:
     python -m sam_doctor.cli diagnose deployment.log --format github
 ```
 
+## Optional: upload findings to GitHub code scanning
+
+`--format sarif` renders the same findings as a SARIF 2.1.0 document, which
+GitHub's code scanning UI (and any other SARIF consumer) can ingest. Each
+result carries the rule's stable id (`iam.deny.explicit`, and so on - see
+`docs/stability.md`), so alerts stay tied to the same rule across releases
+even when titles are reworded:
+
+```yaml
+- name: Diagnose deployment log as SARIF
+  if: always()
+  run: |
+    python -m sam_doctor.cli diagnose deployment.log --format sarif --output sam-doctor.sarif
+
+- name: Upload SARIF to code scanning
+  if: always()
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_path: sam-doctor.sarif
+    category: sam-doctor
+```
+
+Batch mode emits one document for the whole run, with each result pointing at
+its own log file:
+
+```yaml
+    python -m sam_doctor.cli batch logs/ --format sarif --output sam-doctor.sarif
+```
+
+High-confidence findings map to SARIF `error`, medium to `warning`. Evidence
+lines and source paths go through the same redaction as every other format
+before they leave the machine.
+
 ## Non-GitHub CI starters
 
 For teams outside GitHub Actions, start from one of these examples:
