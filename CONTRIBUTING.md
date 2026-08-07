@@ -134,6 +134,24 @@ When you add a rule, add its entry to `RULE_FIXTURES` in the same PR if the
 rule belongs to a family that already has fixtures registered; otherwise a
 fixture is optional until someone migrates that family.
 
+### Website error-page mapping
+
+`site/errors/` and the rule catalog are maintained separately, so
+`scripts/check-error-pages.py` keeps them from drifting apart: `ERROR_PAGE_MAP`
+lists every rule with a dedicated page, and the check fails on a mapping that
+points at a renamed or removed rule, a page that no longer exists, two rules
+sharing a page, or a page that exists (or is linked from `site/errors/index.html`)
+without an entry.
+
+```bash
+python scripts/check-error-pages.py
+```
+
+Not every rule needs a page - the index page's "Request a diagnostic rule"
+prompt is the fallback for anything unmapped. If you add, rename, or remove a
+page under `site/errors/`, update `ERROR_PAGE_MAP` and the link in
+`site/errors/index.html` in the same PR.
+
 ## Pull requests
 
 Use the repository PR template and keep a change narrow enough to review safely.

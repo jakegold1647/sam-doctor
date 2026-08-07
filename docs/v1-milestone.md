@@ -16,7 +16,11 @@ means a user can rely on what is already here.
    being a draft. Until then, 1.0 is a version number, not a commitment.
 4. Keep the site in step. Error-reference pages are hand-written; a release
    that adds rules without pages quietly breaks the "every rule is
-   documented" impression the site gives. Add a release-checklist item (or a
-   QA check) that counts rules against pages.
+   documented" impression the site gives. `scripts/check-error-pages.py` now
+   gates this in CI: it fails on a page mapped to a rule that was renamed or
+   removed, a mapped page that no longer exists, or a page that exists
+   without a mapping entry. It does not yet require every rule to have a
+   page - `ERROR_PAGE_MAP` only covers the 15 rules that already do, and
+   unmapped rules fall back to the index page's request-a-rule prompt.
 5. Nothing else. Resist adding scope here: the catalog grows through the
    roadmap and rule requests at its own pace, before and after 1.0.

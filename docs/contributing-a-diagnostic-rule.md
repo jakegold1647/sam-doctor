@@ -14,7 +14,10 @@ inspect an AWS account or claim an authoritative root cause.
 5. Add safe verification steps that help a developer confirm the diagnosis.
 6. Link the relevant official AWS, GitHub, or service documentation.
 7. Add redaction coverage if the evidence can contain identifiers.
-8. Add the rule to the supported-category documentation when appropriate.
+8. Add the rule to the supported-category documentation when appropriate. If
+   you rename a rule that already has an entry in
+   `scripts/check-error-pages.py`'s `ERROR_PAGE_MAP`, update the key there too
+   - the check fails on a mapping whose title no longer matches a rule.
 9. Add a short changelog entry and include this PR in the next release if the
    rule is accepted.
 

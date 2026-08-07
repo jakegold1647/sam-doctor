@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `scripts/check-error-pages.py`, an objective gate that keeps
+  `site/errors/` and the rule catalog from drifting apart per issue #39.
+  `ERROR_PAGE_MAP` inventories the 15 rules that already have a dedicated
+  page; the check fails on a mapping pointing at a renamed or removed rule,
+  a page that no longer exists, two rules sharing a page, or a page that
+  exists (or is linked from `site/errors/index.html`) without a mapping
+  entry. Rules without an entry keep using the index page's request-a-rule
+  prompt, per the `docs/v1-milestone.md` item 4 concern this closes. It ships
+  in `scripts/check-pr.py`, CI, and `tests/test_error_pages.py` alongside the
+  existing rule catalog gate.
 - Added `scripts/check-rule-fixtures.py`, a fixture registry that pairs each
   rule title with a sanitized positive log line and a nearby non-match, and
   checks that the positive fires the rule, the negative does not, and neither

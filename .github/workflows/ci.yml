@@ -34,6 +34,8 @@ jobs:
         run: python scripts/check-rule-catalog.py --format github
       - name: Rule fixture registry gate (annotated)
         run: python scripts/check-rule-fixtures.py --format github
+      - name: Error page mapping gate (annotated)
+        run: python scripts/check-error-pages.py --format github
       - run: python -m pytest -q
       - run: rm -rf dist
       - run: python -m build
