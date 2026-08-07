@@ -318,6 +318,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "MyBucket CREATE_FAILED my-app-logs already exists (Service: S3, Status Code: 409, Error Code: BucketAlreadyOwnedByYou)",
             "already taken",
         ),
+        (
+            "An error occurred (ValidationError) when calling the CreateChangeSet operation: 1 validation error detected: Value at 'templateBody' failed to satisfy constraint: Member must have length less than or equal to 51200",
+            "size or count quota",
+        ),
+        (
+            "Template format error: Number of resources, 501, is greater than maximum allowed, 500",
+            "size or count quota",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(
@@ -442,6 +450,30 @@ def test_bucket_already_owned_by_you_suppresses_the_generic_changeset_rule() -> 
     titles = [finding.title for finding in diagnose(log)]
     assert "An S3 bucket name in the template is already taken" in titles
     assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
+
+
+def test_a_missing_parameter_validation_error_is_not_a_template_quota_failure() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "An error occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: Parameters: [DbPassword] must have values"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The template exceeds a CloudFormation size or count quota" not in titles
+    assert "AWS SAM deployment configuration or parameter resolution failed" in titles
+
+
+def test_template_quota_finding_suppresses_the_generic_changeset_rule() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "An error occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: 1 validation error detected: Value at 'templateBody' failed "
+        "to satisfy constraint: Member must have length less than or equal to 51200"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert titles == ["The template exceeds a CloudFormation size or count quota"]
 
 
 def test_lambda_package_size_rule_does_not_match_code_storage_quota_errors() -> None:
