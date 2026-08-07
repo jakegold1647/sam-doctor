@@ -29,6 +29,21 @@ class Finding:
     line_number: int
 
 
+# Ordered lowest to highest severity. Rules only ever emit "medium" or "high"
+# today, but the ordering is kept generic so a future "low" tier does not
+# require touching every call site that gates on confidence.
+CONFIDENCE_LEVELS: tuple[str, ...] = ("medium", "high")
+
+
+def meets_confidence(confidence: str, threshold: str) -> bool:
+    """Return whether `confidence` is at or above `threshold` in severity."""
+
+    try:
+        return CONFIDENCE_LEVELS.index(confidence) >= CONFIDENCE_LEVELS.index(threshold)
+    except ValueError:
+        return False
+
+
 @dataclass(frozen=True)
 class Rule:
     # Short, stable identifier such as `iam.deny.explicit`. Titles and

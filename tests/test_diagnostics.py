@@ -11,6 +11,7 @@ from sam_doctor.diagnostics import (
     diagnose,
     json_report,
     markdown_report,
+    meets_confidence,
     rules_report,
     terminal_report,
 )
@@ -1403,6 +1404,156 @@ def test_diagnose_fail_on_findings_stays_zero_for_unknown_logs(
     log.write_text("Deployment completed successfully.", encoding="utf-8")
 
     assert main(["diagnose", log, "--fail-on-findings"]) == 0
+
+
+def test_meets_confidence_orders_medium_below_high() -> None:
+    assert meets_confidence("high", "medium") is True
+    assert meets_confidence("high", "high") is True
+    assert meets_confidence("medium", "high") is False
+    assert meets_confidence("medium", "medium") is True
+    assert meets_confidence("unknown", "medium") is False
+
+
+def test_diagnose_fail_on_confidence_ignores_findings_below_threshold(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "medium.log"
+    log.write_text("AccessDeniedException: action is not authorized", encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "diagnose",
+                str(log),
+                "--fail-on-findings",
+                "--fail-on-confidence",
+                "high",
+            ]
+        )
+        == 0
+    )
+
+
+def test_diagnose_fail_on_confidence_still_fails_at_or_above_threshold(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "high.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "diagnose",
+                str(log),
+                "--fail-on-findings",
+                "--fail-on-confidence",
+                "medium",
+            ]
+        )
+        == 1
+    )
+
+
+def test_diagnose_fail_on_confidence_requires_fail_on_findings(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log = tmp_path / "medium.log"
+    log.write_text("AccessDeniedException: action is not authorized", encoding="utf-8")
+
+    assert main(["diagnose", str(log), "--fail-on-confidence", "high"]) == 2
+    assert "--fail-on-confidence requires --fail-on-findings" in capsys.readouterr().err
+
+
+def test_batch_command_fail_on_confidence_ignores_findings_below_threshold(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "a.txt").write_text(
+        "AccessDeniedException: action is not authorized", encoding="utf-8"
+    )
+
+    assert (
+        main(
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                "--fail-on-findings",
+                "--fail-on-confidence",
+                "high",
+            ]
+        )
+        == 0
+    )
+
+
+def test_batch_command_fail_on_confidence_still_fails_at_or_above_threshold(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "a.txt").write_text(
+        "AccessDeniedException: action is not authorized", encoding="utf-8"
+    )
+    (tmp_path / "b.log").write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                str(tmp_path / "b.log"),
+                "--fail-on-findings",
+                "--fail-on-confidence",
+                "high",
+            ]
+        )
+        == 1
+    )
+
+
+def test_init_command_accepts_fail_on_confidence(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+                "--fail-on-findings",
+                "--fail-on-confidence",
+                "high",
+            ]
+        )
+        == 0
+    )
+
+    text = workflow.read_text(encoding="utf-8")
+    assert 'fail-on-confidence: "high"' in text
+
+
+def test_init_command_fail_on_confidence_requires_fail_on_findings(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(workflow),
+                "--fail-on-confidence",
+                "high",
+            ]
+        )
+        == 2
+    )
+    assert "--fail-on-confidence requires --fail-on-findings" in capsys.readouterr().err
+    assert not workflow.exists()
 
 
 def test_render_findings_matches_report_format_selection() -> None:

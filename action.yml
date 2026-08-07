@@ -26,6 +26,15 @@ inputs:
     required: false
     type: boolean
     default: false
+  fail-on-confidence:
+    description: >-
+      Only let fail-on-findings trip on findings at or above this confidence
+      ("medium" or "high"). Leave empty to fail on any finding, unchanged
+      from prior behavior. The job summary and annotations still show every
+      finding regardless of this setting.
+    required: false
+    type: string
+    default: ""
 outputs:
   finding-count:
     description: Number of supported findings in the supplied log.
@@ -52,4 +61,5 @@ runs:
         SAM_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
         SAM_DOCTOR_BATCH: ${{ inputs.batch }}
         SAM_DOCTOR_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        SAM_DOCTOR_FAIL_ON_CONFIDENCE: ${{ inputs.fail-on-confidence }}
       run: bash "$GITHUB_ACTION_PATH/scripts/run-github-action.sh"
