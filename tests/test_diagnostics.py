@@ -114,6 +114,110 @@ def test_batch_json_payload_matches_schema_shape() -> None:
             _finding_shape(finding, finding_schema, index=1000 * index + finding_index)
 
 
+def test_sarif_report_empty_findings_matches_schema() -> None:
+    from sam_doctor.diagnostics import sarif_report
+
+    payload = json.loads(sarif_report([], "clean-deploy.log"))
+
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    assert payload["version"] == "2.1.0"
+    run = payload["runs"][0]
+    assert run["results"] == []
+    assert run["tool"]["driver"]["rules"] == []
+
+
+def test_sarif_report_single_finding_maps_confidence_and_location() -> None:
+    from sam_doctor.diagnostics import sarif_report
+
+    findings = diagnose(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity "
+        "arn:aws:iam::123456789012:role/deploy owner@example.com"
+    )
+    payload = json.loads(sarif_report(findings, "failure.log"))
+
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    run = payload["runs"][0]
+    assert run["tool"]["driver"]["name"] == "sam-doctor"
+    assert run["tool"]["driver"]["version"] == __version__
+
+    rule = run["tool"]["driver"]["rules"][0]
+    assert rule["id"] == findings[0].rule_id
+    assert rule["helpUri"] == findings[0].documentation_url
+
+    result = run["results"][0]
+    assert result["ruleId"] == findings[0].rule_id
+    assert result["level"] == "error"
+    assert "123456789012" not in json.dumps(payload)
+    location = result["locations"][0]["physicalLocation"]
+    assert location["artifactLocation"]["uri"] == "failure.log"
+    assert location["region"]["startLine"] == findings[0].line_number
+
+
+def test_sarif_report_maps_medium_confidence_to_warning() -> None:
+    from sam_doctor.diagnostics import Finding, sarif_report
+
+    # Use a rule that ships at medium confidence in the current catalog.
+    catalog = json.loads(rules_report("json"))
+    medium_rule = next(rule for rule in catalog["rules"] if rule["confidence"] == "medium")
+
+    synthetic_finding = Finding(
+        rule_id=medium_rule["id"],
+        title=medium_rule["title"],
+        confidence="medium",
+        explanation="synthetic finding for level mapping",
+        verification=(),
+        documentation_url=medium_rule["documentation_url"],
+        evidence=(),
+        line_number=1,
+    )
+    payload = json.loads(sarif_report([synthetic_finding], "failure.log"))
+
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    assert payload["runs"][0]["results"][0]["level"] == "warning"
+
+
+def test_batch_sarif_report_combines_sources_into_one_run() -> None:
+    from sam_doctor.diagnostics import batch_sarif_report
+
+    first = diagnose(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity "
+        "arn:aws:iam::123456789012:role/deploy owner@example.com"
+    )
+    second = diagnose("AccessDeniedException for arn:aws:iam::999999999999:role/deploy")
+
+    payload = json.loads(
+        batch_sarif_report([("first.log", first), ("second.log", second)])
+    )
+
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    assert len(payload["runs"]) == 1
+    results = payload["runs"][0]["results"]
+    assert len(results) == len(first) + len(second)
+    sources = {
+        result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+        for result in results
+    }
+    assert sources == {"first.log", "second.log"}
+
+
+def test_diagnose_command_sarif_format(capsys: pytest.CaptureFixture[str]) -> None:
+    assert (
+        main(
+            [
+                "demo",
+                "--scenario",
+                "oidc",
+                "--format",
+                "sarif",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    assert payload["runs"][0]["results"]
+
+
 def test_package_version_matches_release() -> None:
     import re
     from pathlib import Path
@@ -1029,6 +1133,7 @@ def test_schemas_command_prints_schema_locations(
     assert "diagnose:" in output
     assert "batch:" in output
     assert "rules:" in output
+    assert "sarif:" in output
     assert "docs/schemas/" in output
 
 
@@ -1039,6 +1144,7 @@ def test_schemas_command_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert output["diagnose"].endswith("diagnose-report.schema.json")
     assert output["batch"].endswith("batch-report.schema.json")
     assert output["rules"].endswith("rules-report.schema.json")
+    assert output["sarif"].endswith("sarif-report.schema.json")
 
 
 def test_batch_command_analyzes_directory(
@@ -1089,6 +1195,35 @@ def test_batch_command_json_has_aggregate_counts(
     report = json.loads(capsys.readouterr().out)
     assert report["batch_count"] == 2
     assert any(entry["finding_count"] == 1 for entry in report["results"])
+
+
+def test_batch_command_sarif_combines_files_into_one_log(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "a.txt").write_text(
+        "The REST API doesn't contain any methods", encoding="utf-8"
+    )
+    (tmp_path / "b.log").write_text(
+        "sam deploy completed successfully", encoding="utf-8"
+    )
+
+    assert (
+        main(
+            [
+                "batch",
+                str(tmp_path / "a.txt"),
+                str(tmp_path / "b.log"),
+                "--format",
+                "sarif",
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    _assert_json_schema_matches("docs/schemas/sarif-report.schema.json", payload)
+    assert len(payload["runs"]) == 1
+    assert payload["runs"][0]["results"]
 
 
 def test_batch_render_github_emits_annotations_only_for_findings(

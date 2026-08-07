@@ -106,6 +106,32 @@ integration shell-only and emit workflow-command annotations directly:
     python -m sam_doctor.cli diagnose deployment.log --format github
 ```
 
+## Optional: upload findings to Code Scanning
+
+If your repo already reviews SARIF results (Code Scanning or another SARIF
+consumer), diagnose the log with `--format sarif` and upload it as a separate
+step:
+
+```yaml
+- name: Diagnose deployment log
+  if: always()
+  run: |
+    python -m sam_doctor.cli diagnose deployment.log --format sarif --output sam-doctor.sarif
+
+- name: Upload SARIF results
+  if: always()
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: sam-doctor.sarif
+```
+
+`batch` mode also accepts `--format sarif` and combines every analyzed file
+into a single log, so the same upload step works when you run SAM Doctor
+across a directory of logs. High-confidence findings map to SARIF's `error`
+level and medium-confidence findings map to `warning`; see
+[`docs/schemas/sarif-report.schema.json`](schemas/sarif-report.schema.json)
+for the exact shape.
+
 ## Non-GitHub CI starters
 
 For teams outside GitHub Actions, start from one of these examples:

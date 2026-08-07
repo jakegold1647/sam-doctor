@@ -1471,6 +1471,84 @@ def json_report(findings: list[Finding], source_name: str) -> str:
     return json.dumps(payload, indent=2) + "\n"
 
 
+_SARIF_SCHEMA_URI = (
+    "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/Schemata/sarif-schema-2.1.0.json"
+)
+_SARIF_INFORMATION_URI = "https://github.com/jakegold1647/sam-doctor"
+
+# high-confidence findings match well-known failure wording and are surfaced
+# as `error` so a CI gate can act on them without extra config; medium stays
+# `warning` so it's visible without failing a build on its own.
+_SARIF_LEVEL_BY_CONFIDENCE = {
+    "high": "error",
+    "medium": "warning",
+}
+
+
+def _sarif_level(confidence: str) -> str:
+    return _SARIF_LEVEL_BY_CONFIDENCE.get(confidence, "warning")
+
+
+def _sarif_log(sources: tuple[tuple[str, tuple[Finding, ...]], ...]) -> dict:
+    rules: dict[str, dict] = {}
+    results = []
+    for source_name, findings in sources:
+        redacted_source = redact(source_name)
+        for finding in findings:
+            if finding.rule_id not in rules:
+                rules[finding.rule_id] = {
+                    "id": finding.rule_id,
+                    "shortDescription": {"text": finding.title},
+                    "helpUri": finding.documentation_url,
+                }
+            results.append(
+                {
+                    "ruleId": finding.rule_id,
+                    "level": _sarif_level(finding.confidence),
+                    "message": {"text": finding.explanation},
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": redacted_source},
+                                "region": {"startLine": finding.line_number},
+                            }
+                        }
+                    ],
+                }
+            )
+    return {
+        "$schema": _SARIF_SCHEMA_URI,
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "sam-doctor",
+                        "version": __version__,
+                        "informationUri": _SARIF_INFORMATION_URI,
+                        "rules": list(rules.values()),
+                    }
+                },
+                "results": results,
+            }
+        ],
+    }
+
+
+def sarif_report(findings: list[Finding], source_name: str) -> str:
+    """Render a SARIF 2.1.0 log for GitHub Code Scanning or another SARIF consumer."""
+
+    payload = _sarif_log(((source_name, tuple(findings)),))
+    return json.dumps(payload, indent=2) + "\n"
+
+
+def batch_sarif_report(sources: list[tuple[str, list[Finding]]]) -> str:
+    """Render a single SARIF 2.1.0 log covering findings from several sources."""
+
+    payload = _sarif_log(tuple((source, tuple(findings)) for source, findings in sources))
+    return json.dumps(payload, indent=2) + "\n"
+
+
 def rules_report(output_format: str) -> str:
     """Render the supported-rule catalog for prospective users and CI checks."""
 
