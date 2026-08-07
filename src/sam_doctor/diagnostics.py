@@ -19,6 +19,7 @@ _RULE_REQUEST_URL = (
 class Finding:
     """A matched failure pattern and safe next actions."""
 
+    rule_id: str
     title: str
     confidence: str
     explanation: str
@@ -30,6 +31,11 @@ class Finding:
 
 @dataclass(frozen=True)
 class Rule:
+    # Short, stable identifier such as `aws.iam.explicit-deny`. Titles and
+    # explanations may be reworded as evidence improves; the id is the safe
+    # integration key downstream tools should match on instead. See
+    # docs/stability.md.
+    id: str
     title: str
     confidence: str
     patterns: tuple[str, ...]
@@ -171,6 +177,7 @@ def _stabilization_context_note(evidence: tuple[str, ...]) -> str:
 
 _RULES = (
     Rule(
+        id="github.oidc.token-request-denied",
         title="The GitHub Actions job cannot request an OIDC token",
         confidence="high",
         patterns=(
@@ -190,6 +197,7 @@ _RULES = (
         documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
     ),
     Rule(
+        id="github.oidc.assume-role-rejected",
         title="GitHub Actions cannot assume the configured AWS role through OIDC",
         confidence="high",
         patterns=(
@@ -211,6 +219,7 @@ _RULES = (
         documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
     ),
     Rule(
+        id="github.oidc.audience-mismatch",
         title="GitHub OIDC token audience does not match AWS STS",
         confidence="high",
         patterns=(r"Incorrect token audience", r"audience.*sts\.amazonaws\.com"),
@@ -225,6 +234,7 @@ _RULES = (
         documentation_url="https://github.com/aws-actions/configure-aws-credentials#oidc-configuration",
     ),
     Rule(
+        id="github.oidc.provider-missing",
         title="The target AWS account is missing the GitHub Actions OIDC provider",
         confidence="high",
         patterns=(
@@ -244,6 +254,7 @@ _RULES = (
         documentation_url="https://docs.github.com/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws",
     ),
     Rule(
+        id="lambda.ecr-image.access-denied",
         title="Lambda cannot access the configured ECR image",
         confidence="high",
         patterns=(
@@ -263,6 +274,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/images-create.html",
     ),
     Rule(
+        id="ecr.auth.login-failed",
         title="The CI runner could not authenticate to ECR to push the image",
         confidence="high",
         patterns=(
@@ -285,6 +297,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html",
     ),
     Rule(
+        id="iam.deny.explicit",
         title="An explicit deny blocked a deployment action",
         confidence="high",
         patterns=(r"(?:with|due to) an explicit deny",),
@@ -313,6 +326,7 @@ _RULES = (
         parse_denial_context=True,
     ),
     Rule(
+        id="iam.deny.implicit",
         title="A deployment action was denied because no policy allows it",
         confidence="high",
         patterns=(r"because no [a-z -]*polic(?:y|ies) allows",),
@@ -339,6 +353,7 @@ _RULES = (
         parse_denial_context=True,
     ),
     Rule(
+        id="iam.access-denied.generic",
         title="AWS denied an API action required by the deployment",
         confidence="medium",
         patterns=(r"AccessDenied(?:Exception)?", r"is not authorized to perform:"),
@@ -383,6 +398,7 @@ _RULES = (
         parse_denial_context=True,
     ),
     Rule(
+        id="s3.artifact-bucket.access-denied",
         title="The deployment bucket denied access to the packaged artifacts",
         confidence="high",
         patterns=(
@@ -429,6 +445,7 @@ _RULES = (
         excluded_line_patterns=(r"is not authorized to perform:",),
     ),
     Rule(
+        id="aws.credentials.expired",
         title="The AWS credentials used by the deployment have expired",
         confidence="high",
         patterns=(
@@ -452,6 +469,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html",
     ),
     Rule(
+        id="cloudformation.api.throttled",
         title="CloudFormation throttled the deployment's API calls",
         confidence="medium",
         patterns=(
@@ -472,6 +490,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
     ),
     Rule(
+        id="sam.template.invalid-property",
         title="A SAM template property is not valid for its resource type",
         confidence="high",
         patterns=(
@@ -490,6 +509,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html",
     ),
     Rule(
+        id="iam.trust-policy.resource-field-invalid",
         title="An IAM role trust policy contains a permissions-only Resource field",
         confidence="high",
         patterns=(r"Has prohibited field Resource",),
@@ -506,6 +526,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-reference-policy-checks.html",
     ),
     Rule(
+        id="lambda.code-signing.image-incompatible",
         title="Lambda code signing is incompatible with a container-image function",
         confidence="high",
         patterns=(
@@ -524,6 +545,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-codesigning-create.html",
     ),
     Rule(
+        id="s3.bucket-name.invalid",
         title="An S3 bucket name failed AWS validation",
         confidence="high",
         patterns=(
@@ -543,6 +565,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
     ),
     Rule(
+        id="s3.bucket-name.already-taken",
         title="An S3 bucket name in the template is already taken",
         confidence="high",
         patterns=(
@@ -572,6 +595,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
     ),
     Rule(
+        id="cloudformation.lambda-layer.artifact-unreadable",
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
         patterns=(
@@ -591,6 +615,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-lambda-layerversion-content.html",
     ),
     Rule(
+        id="sam.build.docker-required",
         title="SAM build requires Docker for containerized builds",
         confidence="high",
         patterns=(
@@ -617,6 +642,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html#sam-cli-command-reference-sam-build-use-container",
     ),
     Rule(
+        id="lambda.package.size-limit-exceeded",
         title="The Lambda deployment package exceeds a per-function size limit",
         confidence="high",
         patterns=(
@@ -648,6 +674,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="apigateway.deployment.no-methods",
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
         patterns=(r"The REST API does(?:n't| not) contain any methods",),
@@ -664,6 +691,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-apigateway-deployment.html",
     ),
     Rule(
+        id="cloudformation.resource.stabilization-timeout",
         title="A resource was accepted by its service but never reached a stable state",
         confidence="high",
         patterns=(
@@ -689,6 +717,7 @@ _RULES = (
         parse_stabilization_context=True,
     ),
     Rule(
+        id="cloudformation.resource.create-update-failed",
         title="CloudFormation resource creation or update failed",
         confidence="high",
         patterns=(r"\bCREATE_FAILED\b", r"\bUPDATE_FAILED\b"),
@@ -722,6 +751,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="lambda.code-storage.limit-exceeded",
         title="AWS Lambda code storage limit exceeded",
         confidence="high",
         patterns=(
@@ -740,6 +770,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
     ),
     Rule(
+        id="cloudformation.stack.operation-in-progress",
         title="Another CloudFormation operation is already in progress on the stack",
         confidence="high",
         patterns=(
@@ -760,6 +791,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
     ),
     Rule(
+        id="cloudformation.stack.failed-recreate-required",
         title="A failed initial stack must be recreated before it can be deployed again",
         confidence="high",
         patterns=(
@@ -779,6 +811,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html",
     ),
     Rule(
+        id="cloudformation.stack.rollback-complete",
         title="CloudFormation stack entered rollback after an earlier resource failure",
         confidence="medium",
         patterns=(
@@ -808,6 +841,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="cloudformation.rollback.iam-role-delete-failed",
         title="CloudFormation rollback could not delete an IAM role",
         confidence="medium",
         patterns=(
@@ -830,6 +864,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-deleting-stack.html",
     ),
     Rule(
+        id="cloudformation.stack.termination-protection",
         title="Stack deletion is blocked by termination protection",
         confidence="high",
         patterns=(r"cannot be deleted while TerminationProtection is enabled",),
@@ -846,6 +881,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-protect-stacks.html",
     ),
     Rule(
+        id="cloudformation.stack.delete-failed",
         title="CloudFormation could not delete one or more stack resources",
         confidence="medium",
         patterns=(r"\bDELETE_FAILED\b",),
@@ -872,6 +908,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="cloudformation.export.in-use",
         title="A stack export cannot change while another stack imports it",
         confidence="high",
         patterns=(
@@ -893,6 +930,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html",
     ),
     Rule(
+        id="cloudformation.capabilities.required",
         title="CloudFormation needs an explicit capability acknowledgement",
         confidence="high",
         patterns=(
@@ -912,6 +950,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
     ),
     Rule(
+        id="cloudformation.template.quota-exceeded",
         title="The template exceeds a CloudFormation size or count quota",
         confidence="medium",
         patterns=(
@@ -935,6 +974,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
     ),
     Rule(
+        id="sam.deploy.bucket-config-conflict",
         title="SAM deployment configured both a managed and explicit S3 bucket",
         confidence="high",
         patterns=(r"Cannot use both --resolve-s3 and --s3-bucket parameters",),
@@ -951,6 +991,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
     ),
     Rule(
+        id="sam.build.esbuild-missing",
         title="SAM build cannot find the configured esbuild dependency",
         confidence="high",
         patterns=(
@@ -970,6 +1011,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-typescript.html",
     ),
     Rule(
+        id="sam.build.python-dependency-resolution-failed",
         title="SAM Python dependency resolution failed",
         confidence="high",
         patterns=(
@@ -990,6 +1032,7 @@ _RULES = (
         suppressed_by=(r"Binary validation failed",),
     ),
     Rule(
+        id="sam.build.python-runtime-mismatch",
         title="SAM Python runtime binary is incompatible with the build runtime",
         confidence="high",
         patterns=(
@@ -1011,6 +1054,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
     ),
     Rule(
+        id="sam.build.python-dependency-validation-failed",
         title="SAM Python dependency build validation failed",
         confidence="high",
         patterns=(r"Binary validation failed",),
@@ -1032,6 +1076,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="cloudformation.deploy.no-changes",
         title="The deployment failed only because there were no changes to deploy",
         confidence="high",
         patterns=(
@@ -1055,6 +1100,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
     ),
     Rule(
+        id="sam.deploy.artifact-upload-failed",
         title="SAM could not upload a build artifact referenced by the template",
         confidence="high",
         patterns=(
@@ -1075,6 +1121,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
     ),
     Rule(
+        id="sam.deploy.configuration-resolution-failed",
         title="AWS SAM deployment configuration or parameter resolution failed",
         confidence="medium",
         patterns=(
@@ -1131,6 +1178,7 @@ _RULES = (
         ),
     ),
     Rule(
+        id="sam.deploy.interactive-confirmation-required",
         title="SAM deployment prompted for interactive changeset confirmation",
         confidence="medium",
         patterns=(r"Deploy this changeset\?\s*\[y/N\]:", r"Aborted!"),
@@ -1146,6 +1194,7 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-git.html",
     ),
     Rule(
+        id="apigateway.cors.preflight-conflict",
         title="API Gateway CORS preflight configuration conflicts with an existing OPTIONS method",
         confidence="medium",
         patterns=(
@@ -1271,6 +1320,7 @@ def diagnose(text: str) -> list[Finding]:
                 line_matches[0][0],
                 rule_index,
                 Finding(
+                    rule_id=rule.id,
                     title=rule.title,
                     confidence=rule.confidence,
                     explanation=explanation,
@@ -1380,6 +1430,7 @@ def json_report(findings: list[Finding], source_name: str) -> str:
         "findings": [
             {
                 "line_number": finding.line_number,
+                "rule_id": finding.rule_id,
                 "title": finding.title,
                 "confidence": finding.confidence,
                 "explanation": finding.explanation,
@@ -1403,6 +1454,7 @@ def rules_report(output_format: str) -> str:
             "rule_count": len(rules),
             "rules": [
                 {
+                    "id": rule.id,
                     "title": rule.title,
                     "confidence": rule.confidence,
                     "documentation_url": rule.documentation_url,

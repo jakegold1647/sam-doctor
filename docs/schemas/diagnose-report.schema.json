@@ -30,6 +30,7 @@
     "finding": {
       "type": "object",
       "required": [
+        "rule_id",
         "title",
         "confidence",
         "explanation",
@@ -39,6 +40,10 @@
         "line_number"
       ],
       "properties": {
+        "rule_id": {
+          "type": "string",
+          "description": "Stable identifier for the matched rule, e.g. `aws.iam.explicit-deny`. Safe to match on; titles and explanations are not."
+        },
         "title": {
           "type": "string"
         },
