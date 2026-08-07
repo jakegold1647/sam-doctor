@@ -1471,6 +1471,79 @@ def json_report(findings: list[Finding], source_name: str) -> str:
     return json.dumps(payload, indent=2) + "\n"
 
 
+# SARIF has three result levels; "low" exists in the confidence vocabulary
+# even though no shipped rule uses it yet.
+_SARIF_LEVELS = {"high": "error", "medium": "warning", "low": "note"}
+
+
+def _sarif_artifact_uri(source_name: str) -> str:
+    """A redacted source name as a forward-slash relative URI."""
+
+    return redact(source_name).replace("\\", "/")
+
+
+def sarif_report(results: list[tuple[str, list[Finding]]]) -> str:
+    """Render one SARIF 2.1.0 run for code-scanning uploads.
+
+    Takes (source, findings) pairs so a single diagnose and a batch both
+    produce one document: one run, one deduplicated rule table, results
+    pointing at their own log files. Rule metadata is emitted only for rules
+    that fired - the full catalog belongs to `sam-doctor rules`.
+    """
+
+    rule_indexes: dict[str, int] = {}
+    rules: list[dict[str, object]] = []
+    sarif_results: list[dict[str, object]] = []
+    for source_name, findings in results:
+        uri = _sarif_artifact_uri(source_name)
+        for finding in findings:
+            level = _SARIF_LEVELS.get(finding.confidence, "warning")
+            if finding.rule_id not in rule_indexes:
+                rule_indexes[finding.rule_id] = len(rules)
+                rules.append(
+                    {
+                        "id": finding.rule_id,
+                        "shortDescription": {"text": finding.title},
+                        "helpUri": finding.documentation_url,
+                        "defaultConfiguration": {"level": level},
+                    }
+                )
+            sarif_results.append(
+                {
+                    "ruleId": finding.rule_id,
+                    "ruleIndex": rule_indexes[finding.rule_id],
+                    "level": level,
+                    "message": {"text": f"{finding.title}. {finding.explanation}"},
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": uri},
+                                "region": {"startLine": finding.line_number},
+                            }
+                        }
+                    ],
+                }
+            )
+    payload = {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "sam-doctor",
+                        "informationUri": "https://github.com/jakegold1647/sam-doctor",
+                        "version": __version__,
+                        "rules": rules,
+                    }
+                },
+                "results": sarif_results,
+            }
+        ],
+    }
+    return json.dumps(payload, indent=2) + "\n"
+
+
 def rules_report(output_format: str) -> str:
     """Render the supported-rule catalog for prospective users and CI checks."""
 

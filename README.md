@@ -93,6 +93,7 @@ Pick the output format for where the report is going:
 | Handoff in a ticket or thread | `sam-doctor diagnose deployment.log --format markdown` |
 | Machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
 | GitHub workflow annotations | `sam-doctor diagnose deployment.log --format github` |
+| Code scanning / SARIF consumers | `sam-doctor diagnose deployment.log --format sarif --output sam-doctor.sarif` |
 | Pasted excerpt, no file | `printf '%s\n' "...error excerpt..." \| sam-doctor diagnose -` |
 | A workflow that saves a log | The [GitHub Action](#github-actions) below |
 

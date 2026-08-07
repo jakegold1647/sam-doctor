@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `--format sarif` to `diagnose`, `demo`, and `batch`: the same findings
+  rendered as one SARIF 2.1.0 run, ready for `github/codeql-action/upload-sarif`
+  or any other SARIF consumer. Results carry the stable rule id from #47 as
+  `ruleId`, high confidence maps to `error` and medium to `warning`, and batch
+  mode emits a single document whose results point at their own log files.
+  Evidence and source paths go through the usual redaction first. The rule
+  table lists only the rules that fired; the full catalog stays with
+  `sam-doctor rules`. From issue #43.
 - Added a rule for a template that fails SAM or CloudFormation schema
   validation (`InvalidSamDocumentException`, `InvalidResourceException`,
   `Encountered unsupported property`, and a `property ... not defined for
