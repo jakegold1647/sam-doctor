@@ -10,7 +10,7 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
   `docs/schemas/batch-report.schema.json`, and
   `docs/schemas/rules-report.schema.json`. Existing fields keep their names
   and types. New optional fields may be added; parse leniently.
-- **Rule IDs.** Every rule has a short id such as `aws.iam.explicit-deny`
+- **Rule IDs.** Every rule has a short id such as `iam.deny.explicit`
   (the `rule_id` field on findings, `id` in the rule catalog). Unlike titles
   and explanations, ids do not change when a rule's wording is tightened or
   reworded, and the catalog check rejects duplicates. Match on the id, not

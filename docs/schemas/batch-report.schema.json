@@ -58,7 +58,7 @@
       "properties": {
         "rule_id": {
           "type": "string",
-          "description": "Stable identifier for the matched rule, e.g. `aws.iam.explicit-deny`. Safe to match on; titles and explanations are not."
+          "description": "Stable identifier for the matched rule, e.g. `iam.deny.explicit`. Safe to match on; titles and explanations are not."
         },
         "title": {
           "type": "string"

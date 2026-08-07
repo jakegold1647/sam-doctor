@@ -119,6 +119,7 @@ def write_summary(payload_path: str, is_batch: bool) -> None:
         for item in raw_findings:
             findings.append(
                 Finding(
+                    rule_id=str(item.get("rule_id", "")),
                     title=item["title"],
                     confidence=item["confidence"],
                     explanation=item["explanation"],
