@@ -24,8 +24,12 @@
   "definitions": {
     "rule": {
       "type": "object",
-      "required": ["title", "confidence", "documentation_url"],
+      "required": ["id", "title", "confidence", "documentation_url"],
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier for the rule, e.g. `aws.iam.explicit-deny`. Safe to match on; titles are not."
+        },
         "title": {
           "type": "string"
         },

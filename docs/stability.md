@@ -10,6 +10,11 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
   `docs/schemas/batch-report.schema.json`, and
   `docs/schemas/rules-report.schema.json`. Existing fields keep their names
   and types. New optional fields may be added; parse leniently.
+- **Rule IDs.** Every rule has a short id such as `aws.iam.explicit-deny`
+  (the `rule_id` field on findings, `id` in the rule catalog). Unlike titles
+  and explanations, ids do not change when a rule's wording is tightened or
+  reworded, and the catalog check rejects duplicates. Match on the id, not
+  the title.
 - **CLI surface.** The subcommands (`diagnose`, `demo`, `rules`, `schemas`,
   `packet`, `batch`, `init`) and their documented flags. Flags may be added;
   documented flags will not be removed or change meaning within a major
@@ -24,7 +29,7 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
 
 - The rule catalog's contents. Rules are added, tightened, and re-titled as
   evidence improves. Do not match on finding titles or explanation text;
-  match on the JSON fields.
+  match on `rule_id`.
 - Human-readable output: terminal formatting, markdown reports, wording.
 - The website, docs, and launch material.
 
