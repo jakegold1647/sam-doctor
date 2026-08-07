@@ -36,3 +36,16 @@ This packet is intentionally small, reproducible, and safe to discuss in:
 
 For role-specific commands when setting this up on a team, see
 [team-rollout.md](team-rollout.md).
+
+## No matching rule?
+
+If `sam-doctor diagnose` reports no supported pattern, don't paste the whole
+log into a rule request. `sam-doctor request-packet deployment.log` writes a
+single redacted file with a short context window around the first likely
+error, the command you ran, and a link to the rule request template:
+
+```bash
+sam-doctor request-packet deployment.log
+```
+
+Same rule as everywhere else: review the excerpt yourself before sharing it.

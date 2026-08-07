@@ -305,6 +305,8 @@ log, not on template inspection or AWS account access. The current set:
 If a deployment error you hit is not covered, open a
 [rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 with a sanitized 5-15 line excerpt and the command you ran.
+`sam-doctor request-packet deployment.log` writes that excerpt for you: a
+redacted context window around the first likely error, never the full log.
 
 ## What a report includes
 
