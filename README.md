@@ -202,6 +202,16 @@ finding by default; set `annotations: "false"` to disable them.
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations
 ```
 
+By default the generated workflow only runs on `workflow_dispatch` (the
+"Run workflow" button in the Actions tab), so an `init` you ran to try
+things out can't quietly turn into a deployment on your next push. Add
+`--on-push` when you're ready for the workflow to deploy automatically on
+pushes to `main`:
+
+```bash
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --on-push --summary --annotations
+```
+
 A rollout pattern that works: run non-blocking for 3-5 stable runs, then add
 `--fail-on-findings --force` to regenerate with strict gating. If you would
 rather not regenerate per mode, the
