@@ -15,10 +15,12 @@ from pathlib import Path
 from . import __version__
 from .diagnostics import (
     Finding,
+    batch_sarif_report,
     diagnose,
     json_report,
     markdown_report,
     rules_report,
+    sarif_report,
     terminal_report,
 )
 from .redaction import redact
@@ -73,6 +75,7 @@ _SCHEMA_URLS = {
     "diagnose": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/diagnose-report.schema.json",
     "batch": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/batch-report.schema.json",
     "rules": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/rules-report.schema.json",
+    "sarif": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/sarif-report.schema.json",
 }
 
 
@@ -111,7 +114,7 @@ GitHub Action behavior:
     )
     diagnose_parser.add_argument(
         "--format",
-        choices=("terminal", "markdown", "json", "github"),
+        choices=("terminal", "markdown", "json", "github", "sarif"),
         default="terminal",
         help="Report format for stdout or --output.",
     )
@@ -131,7 +134,7 @@ GitHub Action behavior:
     )
     demo_parser.add_argument(
         "--format",
-        choices=("terminal", "markdown", "json", "github"),
+        choices=("terminal", "markdown", "json", "github", "sarif"),
         default="terminal",
     )
     demo_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
@@ -196,9 +199,9 @@ GitHub Action behavior:
     )
     batch_parser.add_argument(
         "--format",
-        choices=("terminal", "markdown", "json", "github"),
+        choices=("terminal", "markdown", "json", "github", "sarif"),
         default="terminal",
-        help="Report format for each file or the overall JSON output.",
+        help="Report format for each file or the overall JSON/SARIF output.",
     )
     batch_parser.add_argument(
         "--output",
@@ -287,6 +290,8 @@ def _render_findings(findings: list[Finding], source_name: str, output_format: s
         return _render_github(findings, source_name)
     if output_format == "json":
         return json_report(findings, source_name)
+    if output_format == "sarif":
+        return sarif_report(findings, source_name)
     return terminal_report(findings, source_name) + "\n"
 
 
@@ -401,6 +406,7 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
 
     text_reports: list[str] = []
     batch_payload: list[dict[str, object]] = []
+    sarif_sources: list[tuple[str, list[Finding]]] = []
     report_has_findings = False
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
@@ -420,6 +426,9 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
                         "findings": rendered_json["findings"],
                     }
                 )
+                continue
+            if output_format == "sarif":
+                sarif_sources.append((source, findings))
                 continue
             if output_format == "github":
                 if report:
@@ -444,6 +453,8 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
             + "\n",
             report_has_findings,
         )
+    if output_format == "sarif":
+        return (batch_sarif_report(sarif_sources), report_has_findings)
     if output_format == "github":
         return (
             "\n".join(text_reports) + ("\n" if text_reports else ""),
