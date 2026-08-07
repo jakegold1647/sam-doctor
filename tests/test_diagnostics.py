@@ -291,6 +291,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "package exceeds a per-function size limit",
         ),
         (
+            "An error occurred (CodeStorageExceededException) when calling the UpdateFunctionCode operation: Code storage limit exceeded.",
+            "code storage limit exceeded",
+        ),
+        (
             "Stack my-service-prod is in UPDATE_IN_PROGRESS state and can not be updated.",
             "operation is already in progress",
         ),
