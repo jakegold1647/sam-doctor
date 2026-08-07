@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Taught the S3 bucket-name collision rule the modern resource-handler wording
+  (`Resource handler returned message: "The requested bucket name is not
+  available..."`), which previously fell through to the generic `CREATE_FAILED`
+  finding. The accompanying `HandlerErrorCode: AlreadyExists` is shared by every
+  resource type, so it is deliberately not matched on its own - an
+  `AWS::IAM::Role` that already exists still gets the generic finding.
+  Suppression is unchanged, so a log carrying only the new wording keeps
+  reporting unrelated `CREATE_FAILED` resources alongside the collision.
 - Added a rule for a template that exceeds a CloudFormation size or count quota
   (the `templateBody` length constraint, `Template format error: Number of ...
   is greater than maximum allowed`, and the `may not exceed N bytes` wording).
