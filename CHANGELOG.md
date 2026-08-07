@@ -4,6 +4,19 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for a deployment bucket that denies access to the packaged
+  artifacts (`S3 error: Access Denied` from `CreateChangeSet`, and a denied
+  `PutObject`/`GetObject`/`HeadObject` while uploading to the artifact bucket).
+  The explanation separates the two directions - the CLI uploading versus
+  CloudFormation reading back, which fail for different identities - and the
+  verification steps cover a wrong-Region `s3_bucket`, an SSE-KMS bucket whose
+  key the identity cannot use, and cross-account bucket ownership. IAM-worded
+  denials (`is not authorized to perform: s3:PutObject ... explicit deny`) stay
+  with the explicit-deny and no-policy-allows rules, which name the policy
+  layer; only the tool-level S3 wording is claimed here. The generic
+  access-denied rule skips those lines per line, so an unrelated `AccessDenied`
+  elsewhere in the same log still reports. From roadmap entry 5, issue #28.
+  Catalog is now 43 rules.
 - Taught the S3 bucket-name collision rule the modern resource-handler wording
   (`Resource handler returned message: "The requested bucket name is not
   available..."`), which previously fell through to the generic `CREATE_FAILED`
