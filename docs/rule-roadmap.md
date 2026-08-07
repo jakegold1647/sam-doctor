@@ -186,8 +186,10 @@ the CloudFormation quotas page for the specific limit named in the error.
 
 ## 5. The deploy bucket denied access to the packaged artifacts
 
-**Status:** open for a contributor — tracked in
-[issue #28](https://github.com/jakegold1647/sam-doctor/issues/28).
+**Status:** landed — shipped as "The deployment bucket denied access to the
+packaged artifacts" (see the unreleased changelog entry), closing
+[issue #28](https://github.com/jakegold1647/sam-doctor/issues/28). Kept here so
+the numbering of the other candidates stays stable.
 
 **Failure family.** `sam deploy` fails talking to the artifact bucket: the
 upload is rejected, or CloudFormation cannot read the uploaded template or

@@ -373,8 +373,60 @@ _RULES = (
             # AccessDenied lines elsewhere in the same log.
             r"(?:with|due to) an explicit deny",
             r"because no [a-z -]*polic(?:y|ies) allows",
+            # The artifact-bucket rule below names the bucket, the direction,
+            # and the S3-specific checks, so those lines belong to it. Only the
+            # tool-level wording is excluded: an IAM-worded denial keeps its
+            # own findings.
+            r"S3 error: Access ?Denied",
+            r"(?:Error|Failed) uploading to \S+.{0,200}Access ?Denied",
         ),
         parse_denial_context=True,
+    ),
+    Rule(
+        title="The deployment bucket denied access to the packaged artifacts",
+        confidence="high",
+        patterns=(
+            r"S3 error: Access ?Denied",
+            r"AccessDenied.{0,160}when calling the (?:PutObject|GetObject|HeadObject|CreateMultipartUpload|UploadPart) operation",
+            r"(?:Error|Failed) uploading to \S+.{0,200}Access ?Denied",
+        ),
+        explanation=(
+            "S3 refused access to the deployment's artifact bucket. The two "
+            "directions fail for different reasons and need different fixes. "
+            "Upload (the SAM CLI writing the packaged template and code zips) "
+            "shows as a denied `PutObject`/`CreateMultipartUpload` while "
+            "uploading to the named bucket: the deploy identity lacks "
+            "`s3:PutObject`, a bucket policy or Block Public Access setting "
+            "denies it, or `s3_bucket` in `samconfig.toml` points at a bucket "
+            "in another Region or another account. Readback (CloudFormation "
+            "fetching what was uploaded) shows as `S3 error: Access Denied` "
+            "while the change set is created: the CloudFormation execution "
+            "identity - not the CLI's - lacks `s3:GetObject` on the key, or "
+            "the bucket is SSE-KMS encrypted and that identity has no "
+            "permission on the key. This is a bucket or key access problem, "
+            "not an invalid bucket name and not a name collision."
+        ),
+        verification=(
+            "Note which direction failed - a denied `PutObject` is the CLI uploading, `S3 error: Access Denied` during change-set creation is CloudFormation reading back - and confirm the caller with `aws sts get-caller-identity`.",
+            "Run `aws s3api head-object --bucket <deploy-bucket> --key <key>` (read-only): success means the upload landed and the readback identity is the one being denied.",
+            "Run `aws s3api get-bucket-location --bucket <deploy-bucket>` and compare it with the deployment Region; a wrong-Region `s3_bucket` in `samconfig.toml` surfaces as a denial.",
+            "Run `aws s3api get-bucket-encryption --bucket <deploy-bucket>`: if it uses SSE-KMS, the denied identity also needs `kms:Decrypt` (and `kms:GenerateDataKey` to upload) on that key.",
+            "Confirm who owns the bucket before changing any policy - for a cross-account bucket, pass `--expected-bucket-owner` when checking, and fix the bucket policy in the owning account rather than broadening the deploy role.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html",
+        # A Lambda layer artifact denial has its own finding with layer-specific
+        # guidance; the S3 object API wording overlaps, so let that rule win.
+        suppressed_by=(
+            r"(?s:access has been denied by S3.*permission.*GetObject)",
+            r"permission to GetObject for.*bucket",
+        ),
+        # An IAM-worded denial ("... is not authorized to perform: s3:PutObject
+        # ... because no identity-based policy allows ...") already gets a
+        # finding that names the policy layer and the exact action, which is
+        # more actionable than the bucket-level guidance here. Excluding those
+        # lines per line, not per log, keeps this rule available for tool-level
+        # S3 denials elsewhere in the same log.
+        excluded_line_patterns=(r"is not authorized to perform:",),
     ),
     Rule(
         title="The AWS credentials used by the deployment have expired",
@@ -1070,6 +1122,12 @@ _RULES = (
             r"Value at 'template(?:Body|URL)' failed to satisfy constraint: Member must have length less than or equal to",
             r"Template format error: Number of \S+ .{0,40}is greater than maximum allowed",
             r"Template (?:body )?may not exceed [\d,]+ bytes",
+            # `S3 error: Access Denied` is reported by the same CreateChangeSet
+            # call this rule reports generically, so the two cannot describe
+            # different failures. The upload-direction patterns are deliberately
+            # left out: an upload denial can precede an unrelated change-set
+            # problem later in the same log.
+            r"S3 error: Access ?Denied",
         ),
     ),
     Rule(

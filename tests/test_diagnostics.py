@@ -172,6 +172,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
         ),
         ("AccessDeniedException: action is not authorized", "AWS denied"),
         (
+            "Error: Failed to create changeset for the stack: my-app, An error occurred (ValidationError) when calling the CreateChangeSet operation: S3 error: Access Denied",
+            "deployment bucket denied access",
+        ),
+        (
+            "Error uploading to my-deploy-bucket: An error occurred (AccessDenied) when calling the PutObject operation: Access Denied (Service: S3, Status Code: 403)",
+            "deployment bucket denied access",
+        ),
+        (
             "property StageName: not defined for resource of type AWS::Serverless::Api",
             "SAM template property",
         ),
@@ -1450,6 +1458,88 @@ def test_mixed_denials_report_the_specific_and_generic_rules_side_by_side() -> N
     titles = [finding.title for finding in findings]
     assert "An explicit deny blocked a deployment action" in titles
     assert "AWS denied an API action required by the deployment" in titles
+
+
+def test_changeset_readback_denial_names_the_deployment_bucket() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app, An error "
+        "occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: S3 error: Access Denied"
+    )
+
+    findings = diagnose(log)
+
+    titles = [finding.title for finding in findings]
+    assert titles == ["The deployment bucket denied access to the packaged artifacts"]
+    explanation = findings[0].explanation
+    assert "Readback" in explanation
+    assert "Upload" in explanation
+
+
+def test_artifact_upload_denial_gets_the_deployment_bucket_finding() -> None:
+    log = (
+        "Error uploading to my-deploy-bucket: An error occurred (AccessDenied) "
+        "when calling the PutObject operation: Access Denied "
+        "(Service: S3, Status Code: 403)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert titles == ["The deployment bucket denied access to the packaged artifacts"]
+
+
+def test_a_non_s3_access_denial_keeps_the_iam_denial_findings() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the CreateChangeSet "
+        "operation: User: arn:aws:iam::123456789012:user/deploy is not "
+        "authorized to perform: cloudformation:CreateChangeSet on resource: "
+        "arn:aws:cloudformation:us-east-1:123456789012:stack/my-app/* with an "
+        "explicit deny in an identity-based policy"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The deployment bucket denied access to the packaged artifacts" not in titles
+    assert titles == ["An explicit deny blocked a deployment action"]
+
+
+def test_an_iam_worded_s3_denial_stays_with_the_policy_layer_finding() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the PutObject operation: "
+        "User: arn:aws:iam::123456789012:user/deploy is not authorized to "
+        "perform: s3:PutObject on resource: arn:aws:s3:::my-deploy-bucket/app.zip "
+        "with an explicit deny in a resource-based policy"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The deployment bucket denied access to the packaged artifacts" not in titles
+    assert "An explicit deny blocked a deployment action" in titles
+
+
+def test_artifact_bucket_denial_keeps_unrelated_resource_failures_visible() -> None:
+    log = (
+        "Error uploading to my-deploy-bucket: An error occurred (AccessDenied) "
+        "when calling the PutObject operation: Access Denied "
+        "(Service: S3, Status Code: 403)\n"
+        "CREATE_FAILED AWS::SQS::Queue WorkQueue Resource handler returned "
+        'message: "The specified queue does not exist."\n'
+        "CREATE_FAILED AWS::DynamoDB::Table Orders Resource handler returned "
+        'message: "Subscriber limit exceeded."'
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The deployment bucket denied access to the packaged artifacts" in titles
+    assert "CloudFormation resource creation or update failed" in titles
+
+
+def test_layer_artifact_denial_still_wins_over_the_deployment_bucket_rule() -> None:
+    log = (
+        "MyLayer CREATE_FAILED Your access has been denied by S3, please make "
+        "sure your request credentials have permission to GetObject for "
+        "my-deploy-bucket/layer.zip"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "CloudFormation cannot read a Lambda layer artifact from S3" in titles
+    assert "The deployment bucket denied access to the packaged artifacts" not in titles
 
 
 def test_denial_rules_never_recommend_administrator_access_as_a_fix() -> None:
