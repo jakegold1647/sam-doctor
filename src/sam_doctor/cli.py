@@ -14,9 +14,11 @@ from pathlib import Path
 
 from . import __version__
 from .diagnostics import (
+    RULE_REQUEST_URL,
     Finding,
     diagnose,
     json_report,
+    likely_error_excerpt,
     markdown_report,
     rules_report,
     terminal_report,
@@ -86,7 +88,7 @@ Exit codes:
 Command behavior:
   diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings.
   batch: default exit 0 (no enforced failure), 1 with --fail-on-findings.
-  demo, rules, schemas, packet, init: 0 on successful execution.
+  demo, rules, schemas, packet, request-packet, init: 0 on successful execution.
 
 GitHub Action behavior:
   0  - action runs without enforced fail-on-findings failure.
@@ -183,6 +185,38 @@ GitHub Action behavior:
         "--scenario",
         default="Deployment failure triage",
         help="Short scenario label to include in the notes file.",
+    )
+
+    request_packet_parser = subcommands.add_parser(
+        "request-packet",
+        help="Generate a small, sanitized excerpt for a rule request when diagnose finds no match.",
+    )
+    request_packet_parser.add_argument(
+        "input",
+        type=str,
+        help="Path to a UTF-8 text log, or - to read the log from stdin.",
+    )
+    request_packet_parser.add_argument(
+        "--output-dir",
+        default="artifacts",
+        help="Directory for the generated excerpt file.",
+    )
+    request_packet_parser.add_argument(
+        "--name",
+        default="rule-request.md",
+        help="Excerpt file name.",
+    )
+    request_packet_parser.add_argument(
+        "--context",
+        type=int,
+        default=2,
+        help="Lines of context to keep on each side of the first likely error.",
+    )
+    request_packet_parser.add_argument(
+        "--max-lines",
+        type=int,
+        default=15,
+        help="Upper bound on the number of lines included in the excerpt.",
     )
 
     batch_parser = subcommands.add_parser("batch", help="Analyze multiple logs in one run.")
@@ -583,6 +617,61 @@ def _packet_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _request_packet_command(args: argparse.Namespace) -> int:
+    output_dir = Path(args.output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.input == "-":
+        stdin_text = sys.stdin.read()
+        if not stdin_text:
+            raise ValueError("stdin input was empty; provide an error excerpt.")
+        source_name = "<stdin>"
+        text = stdin_text
+    else:
+        source_path = Path(args.input)
+        source_name = str(source_path)
+        text = _read_text(source_path)
+
+    excerpt = likely_error_excerpt(text, context=args.context, max_lines=args.max_lines)
+    command = f"sam-doctor request-packet {source_name}"
+
+    lines = [
+        "# SAM Doctor rule request excerpt",
+        "",
+        f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+        f"- SAM Doctor version: {__version__}",
+        f"- Source: {redact(source_name)}",
+        f"- Command: {redact(command)}",
+        "",
+        "This is a starting excerpt for a rule request, not a diagnosis. Review "
+        + "it yourself before pasting it anywhere - redaction covers common "
+        + "identifiers, not every possible secret.",
+        "",
+    ]
+    if excerpt:
+        lines.extend(
+            [
+                "### Likely error excerpt",
+                "",
+                "```",
+                *[f"{line_number}: {line}" for line_number, line in excerpt],
+                "```",
+            ]
+        )
+    else:
+        lines.append(
+            "No line looked like an error, so no excerpt was captured. Paste a "
+            "short, sanitized excerpt (5-15 lines) around the actual failure "
+            "yourself."
+        )
+    lines.extend(["", f"Open a rule request: {RULE_REQUEST_URL}"])
+
+    notes_path = output_dir / args.name
+    _write_report(notes_path, "\n".join(lines) + "\n")
+    print(f"Rule request excerpt written to {notes_path}")
+    return 0
+
+
 def _schemas_command(args: argparse.Namespace) -> int:
     schemas = dict(_SCHEMA_URLS)
     if args.format == "json":
@@ -672,6 +761,13 @@ def main(argv: list[object] | None = None) -> int:
     if args.command == "packet":
         try:
             return _packet_command(args)
+        except ValueError as error:
+            _print_error(parser, str(error))
+            return 2
+
+    if args.command == "request-packet":
+        try:
+            return _request_packet_command(args)
         except ValueError as error:
             _print_error(parser, str(error))
             return 2

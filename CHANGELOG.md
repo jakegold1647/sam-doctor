@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added `sam-doctor request-packet` for the unmatched-log case: when
+  `diagnose` finds no supported pattern, it writes a single redacted excerpt
+  (a few lines of context around the first likely error, capped at
+  `--max-lines`) instead of asking a contributor to copy a whole log into a
+  rule request by hand. Runs the same redaction as reports, stays local and
+  offline, and says so plainly when nothing in the log looks like an error.
+  From issue #41.
 - Added a rule for a template that fails SAM or CloudFormation schema
   validation (`InvalidSamDocumentException`, `InvalidResourceException`,
   `Encountered unsupported property`, and a `property ... not defined for
