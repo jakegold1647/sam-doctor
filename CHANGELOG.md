@@ -4,7 +4,7 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
-- Gave every diagnostic rule a stable id (`aws.iam.explicit-deny`, and so on),
+- Gave every diagnostic rule a stable id (`iam.deny.explicit`, and so on),
   distinct from the title. The id now travels with each finding as `rule_id`
   in the diagnose/batch JSON, and with each entry in the rules JSON catalog
   as `id`. Titles and explanations are still free to be reworded as evidence

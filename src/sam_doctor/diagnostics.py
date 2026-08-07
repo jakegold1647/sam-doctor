@@ -31,7 +31,7 @@ class Finding:
 
 @dataclass(frozen=True)
 class Rule:
-    # Short, stable identifier such as `aws.iam.explicit-deny`. Titles and
+    # Short, stable identifier such as `iam.deny.explicit`. Titles and
     # explanations may be reworded as evidence improves; the id is the safe
     # integration key downstream tools should match on instead. See
     # docs/stability.md.

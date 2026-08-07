@@ -13,7 +13,6 @@ Checks are deliberately objective — anything that needs taste stays out:
 - no primary pattern matches a corpus of ordinary, successful deploy output,
   so over-broad patterns fail here instead of in a user's clean CI log
 - ids are unique, non-empty, and match the `lower.dotted-with-hyphens` shape
-- ids are unique, non-empty, and match the `lower.dotted-with-hyphens` shape
 - titles are unique and non-empty; confidence is high/medium/low
 - explanation, verification steps, and an https documentation link exist
 
@@ -34,7 +33,6 @@ from sam_doctor.diagnostics import Rule, supported_rules
 
 _CONFIDENCE_LEVELS = ("high", "medium", "low")
 _MAX_VERIFICATION_STEPS = 6
-_RULE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
 _RULE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
 
 # Ordinary, successful deployment output. A primary pattern that matches any
@@ -92,7 +90,7 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
         elif not _RULE_ID_PATTERN.match(rule_id):
             problems.append(
                 f"{title!r}: id {rule_id!r} does not match the "
-                "lower.dotted-with-hyphens shape, e.g. `aws.iam.explicit-deny`."
+                "lower.dotted-with-hyphens shape, e.g. `iam.deny.explicit`."
             )
         seen_ids.add(rule_id)
 
