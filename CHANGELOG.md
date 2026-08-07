@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for an S3 bucket name that is already taken
+  (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`). Bucket names are globally
+  unique, so an explicit `BucketName` can collide with another account or with
+  a bucket this account left behind; the guidance splits those two cases and
+  stops short of deleting a bucket nobody has inspected. It stays distinct from
+  the existing `InvalidBucketName` validation rule and suppresses the generic
+  `CREATE_FAILED` and change-set findings so one finding fires per log. From
+  roadmap entry 3, issue #20. Catalog is now 41 rules.
 - Added a rule for a concurrent CloudFormation operation blocking the deploy
   (`is in CREATE/UPDATE/DELETE_IN_PROGRESS state and can not be updated`,
   `OperationInProgressException`). Normal `*_IN_PROGRESS` progress events and
