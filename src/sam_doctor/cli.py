@@ -38,9 +38,7 @@ _DEMO_FILES = {
 _WORKFLOW_TEMPLATE = """name: diagnose deployment failures
 
 on:
-  push:
-    branches: [main]
-
+{trigger}
 jobs:
   diagnose:
     runs-on: ubuntu-latest
@@ -69,6 +67,14 @@ jobs:
       #   if: steps.sam-doctor.outputs.has-findings == 'true'
       #   run: echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
 """
+
+_TRIGGER_MANUAL = (
+    "  # Manual only: run from the Actions tab. Nothing here deploys on push.\n"
+    "  # Regenerate with `sam-doctor init --on-push` to also deploy on pushes\n"
+    "  # to main.\n"
+    "  workflow_dispatch: {}\n"
+)
+_TRIGGER_ON_PUSH = "  push:\n    branches: [main]\n  workflow_dispatch: {}\n"
 
 _SCHEMA_URLS = {
     "diagnose": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/diagnose-report.schema.json",
@@ -291,6 +297,16 @@ GitHub Action behavior:
         "--fail-on-findings",
         action="store_true",
         help="Fail the action step when one or more findings are found.",
+    )
+    init_parser.add_argument(
+        "--on-push",
+        action="store_true",
+        help=(
+            "Also trigger the generated workflow on pushes to main, running the "
+            "deploy command automatically. Off by default so `init` can never "
+            "wire up an AWS deployment without an explicit opt-in; the generated "
+            "workflow stays manual (workflow_dispatch) until you pass this flag."
+        ),
     )
     return parser
 
@@ -521,6 +537,7 @@ def _init_workflow_command(
     annotations: bool,
     batch: bool,
     fail_on_findings: bool,
+    on_push: bool,
 ) -> None:
     target = Path(workflow_file).expanduser().resolve()
     if target.exists() and not force:
@@ -529,6 +546,7 @@ def _init_workflow_command(
     target.write_text(
         textwrap.dedent(
             _WORKFLOW_TEMPLATE.format(
+                trigger=_TRIGGER_ON_PUSH if on_push else _TRIGGER_MANUAL,
                 deploy_command=command,
                 summary=str(summary).lower(),
                 annotations=str(annotations).lower(),
@@ -719,6 +737,7 @@ def main(argv: list[object] | None = None) -> int:
                 annotations=args.annotations,
                 batch=args.batch,
                 fail_on_findings=args.fail_on_findings,
+                on_push=args.on_push,
             )
         except ValueError as error:
             _print_error(parser, str(error))
