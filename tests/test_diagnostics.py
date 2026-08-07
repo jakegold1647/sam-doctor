@@ -306,6 +306,14 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "Parameter CodeUri of resource HelloWorldFunction refers to a file or folder that does not exist",
             "could not upload a build artifact",
         ),
+        (
+            "MyBucket CREATE_FAILED my-app-logs already exists (Service: S3, Status Code: 409, Error Code: BucketAlreadyExists)",
+            "already taken",
+        ),
+        (
+            "MyBucket CREATE_FAILED my-app-logs already exists (Service: S3, Status Code: 409, Error Code: BucketAlreadyOwnedByYou)",
+            "already taken",
+        ),
     ),
 )
 def test_supported_failure_categories_are_detected(
@@ -388,6 +396,47 @@ def test_missing_artifact_finding_suppresses_the_generic_changeset_rule() -> Non
 
     titles = [finding.title for finding in diagnose(log)]
     assert "SAM could not upload a build artifact referenced by the template" in titles
+    assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
+
+
+def test_bucket_progress_output_does_not_report_a_name_collision() -> None:
+    log = "Creating the required S3 bucket if one does not exist"
+
+    assert diagnose(log) == []
+
+
+def test_an_invalid_bucket_name_keeps_the_validation_finding() -> None:
+    log = (
+        "MyBucket CREATE_FAILED The specified bucket is not valid. "
+        "(Service: S3, Status Code: 400, Error Code: InvalidBucketName)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name failed AWS validation" in titles
+    assert "An S3 bucket name in the template is already taken" not in titles
+
+
+def test_bucket_name_collision_suppresses_the_generic_resource_failure() -> None:
+    log = (
+        "MyBucket CREATE_FAILED my-app-logs already exists "
+        "(Service: S3, Status Code: 409, Error Code: BucketAlreadyExists)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name in the template is already taken" in titles
+    assert "CloudFormation resource creation or update failed" not in titles
+    assert "An S3 bucket name failed AWS validation" not in titles
+
+
+def test_bucket_already_owned_by_you_suppresses_the_generic_changeset_rule() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "MyBucket CREATE_FAILED my-app-logs already exists "
+        "(Service: S3, Status Code: 409, Error Code: BucketAlreadyOwnedByYou)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name in the template is already taken" in titles
     assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
 
 

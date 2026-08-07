@@ -491,6 +491,28 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
     ),
     Rule(
+        title="An S3 bucket name in the template is already taken",
+        confidence="high",
+        patterns=(
+            r"BucketAlreadyExists",
+            r"BucketAlreadyOwnedByYou",
+        ),
+        explanation=(
+            "S3 bucket names are globally unique across every AWS account, so the "
+            "explicit `BucketName` the stack asked for could not be created. "
+            "`BucketAlreadyExists` means some other account already holds the name; "
+            "`BucketAlreadyOwnedByYou` means this account already has the bucket, "
+            "usually left behind by a deleted or renamed stack. This is a name "
+            "collision, not an invalid name and not a missing permission."
+        ),
+        verification=(
+            "Read the failed `AWS::S3::Bucket` event and record the exact bucket name the stack requested.",
+            "For `BucketAlreadyExists`, pick a name that is unique globally - add an account or environment suffix - or omit `BucketName` entirely and let CloudFormation generate one.",
+            "For `BucketAlreadyOwnedByYou`, confirm the leftover bucket with `aws s3api head-bucket --bucket <name>` (read-only) and check its contents before reusing the name; import the existing bucket into the stack or rename, and do not delete a bucket you have not inspected.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
+    ),
+    Rule(
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
         patterns=(
@@ -628,6 +650,8 @@ _RULES = (
             r"Lambda does not have permission to access the ECR image",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",
+            r"BucketAlreadyExists",
+            r"BucketAlreadyOwnedByYou",
             r"(?s:access has been denied by S3.*permission.*GetObject)",
             r"The REST API does(?:n't| not) contain any methods",
             r"did not stabilize",
@@ -999,6 +1023,8 @@ _RULES = (
             r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",
+            r"BucketAlreadyExists",
+            r"BucketAlreadyOwnedByYou",
             r"ExpiredToken(?:Exception)?",
             r"security token included in the request is expired",
             r"Signature expired:.*is now earlier than",
