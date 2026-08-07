@@ -119,3 +119,18 @@ def test_cli_batch_emits_one_sarif_document(tmp_path: Path, capsys) -> None:
     }
     assert any(uri.endswith("one.log") for uri in uris)
     assert not any(uri.endswith("two.log") for uri in uris), "clean file adds no results"
+
+
+def test_sarif_output_matches_the_published_schema(tmp_path: Path) -> None:
+    import jsonschema
+
+    schema = json.loads(
+        (Path(__file__).resolve().parent.parent / "docs" / "schemas" / "sarif-report.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    validator = jsonschema.Draft202012Validator(schema)
+
+    findings = diagnose(_OIDC_LINE + "\n" + _EXPIRED_LINE)
+    validator.validate(json.loads(sarif_report([("deploy.log", findings)])))
+    validator.validate(json.loads(sarif_report([("clean.log", [])])))
