@@ -16,6 +16,7 @@ fi
 : "${SAM_DOCTOR_ANNOTATIONS:=true}"
 : "${SAM_DOCTOR_BATCH:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
+: "${SAM_DOCTOR_FAIL_ON_CONFIDENCE:=}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
 
 if [ -z "${GITHUB_ACTION_PATH:-}" ]; then
@@ -46,6 +47,11 @@ fi
 
 if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "true" && "$SAM_DOCTOR_FAIL_ON_FINDINGS" != "false" ]]; then
   echo "SAM_DOCTOR_FAIL_ON_FINDINGS must be 'true' or 'false'." >&2
+  exit 2
+fi
+
+if [[ -n "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" && "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" != "medium" && "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" != "high" ]]; then
+  echo "SAM_DOCTOR_FAIL_ON_CONFIDENCE must be 'medium', 'high', or empty." >&2
   exit 2
 fi
 
@@ -90,6 +96,37 @@ if [[ ! "$finding_count" =~ ^[0-9]+$ ]]; then
 fi
 if [[ -z "$report_version" ]]; then
   echo "Could not parse sam_doctor_version from JSON output." >&2
+  exit 2
+fi
+
+if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+  gating_count="$("$PYTHON_BIN" -c '
+import json, sys
+from sam_doctor.diagnostics import meets_confidence
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+threshold = sys.argv[2]
+count = 0
+for result in payload.get("results", []):
+    for finding in result.get("findings", []):
+        if not threshold or meets_confidence(finding["confidence"], threshold):
+            count += 1
+print(count)
+' "$report_path" "$SAM_DOCTOR_FAIL_ON_CONFIDENCE")"
+else
+  gating_count="$("$PYTHON_BIN" -c '
+import json, sys
+from sam_doctor.diagnostics import meets_confidence
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+threshold = sys.argv[2]
+findings = payload.get("findings", [])
+print(sum(1 for f in findings if not threshold or meets_confidence(f["confidence"], threshold)))
+' "$report_path" "$SAM_DOCTOR_FAIL_ON_CONFIDENCE")"
+fi
+
+if [[ ! "$gating_count" =~ ^[0-9]+$ ]]; then
+  echo "Could not parse the confidence-filtered finding count from JSON output: $gating_count" >&2
   exit 2
 fi
 
@@ -165,7 +202,11 @@ if notices:
 PY
 fi
 
-if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$finding_count" -gt 0 ]]; then
-  echo "SAM Doctor found ${finding_count} supported issue(s)." >&2
+if [[ "$SAM_DOCTOR_FAIL_ON_FINDINGS" == "true" && "$gating_count" -gt 0 ]]; then
+  if [[ -n "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" ]]; then
+    echo "SAM Doctor found ${gating_count} supported issue(s) at or above ${SAM_DOCTOR_FAIL_ON_CONFIDENCE} confidence." >&2
+  else
+    echo "SAM Doctor found ${gating_count} supported issue(s)." >&2
+  fi
   exit 1
 fi

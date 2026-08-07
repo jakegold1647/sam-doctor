@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added an opt-in `--fail-on-confidence {medium,high}` flag to `diagnose` and
+  `batch` (and a matching `fail-on-confidence` input on the composite Action
+  and `sam-doctor init`) so teams can gate CI on high-confidence findings only
+  while still reporting every finding. It only takes effect alongside
+  `--fail-on-findings`/`fail-on-findings: true`; without it, the existing
+  behavior of failing on any finding is unchanged. From issue #38.
 - Added a rule for a template that fails SAM or CloudFormation schema
   validation (`InvalidSamDocumentException`, `InvalidResourceException`,
   `Encountered unsupported property`, and a `property ... not defined for

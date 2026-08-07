@@ -14,10 +14,12 @@ from pathlib import Path
 
 from . import __version__
 from .diagnostics import (
+    CONFIDENCE_LEVELS,
     Finding,
     diagnose,
     json_report,
     markdown_report,
+    meets_confidence,
     rules_report,
     terminal_report,
 )
@@ -63,6 +65,7 @@ jobs:
           annotations: {annotations}
           batch: {batch}
           fail-on-findings: {fail_on_findings}
+          fail-on-confidence: "{fail_on_confidence}"
       # Optional: route high-signal failures to a follow-up job/thread.
       # - name: Open a follow-up note when issues are found
       #   if: steps.sam-doctor.outputs.has-findings == 'true'
@@ -87,6 +90,8 @@ Command behavior:
   diagnose: default exit 0 (no enforced failure), 1 with --fail-on-findings.
   batch: default exit 0 (no enforced failure), 1 with --fail-on-findings.
   demo, rules, schemas, packet, init: 0 on successful execution.
+  --fail-on-confidence {medium,high} narrows --fail-on-findings to only
+  count findings at or above that confidence; reports still list everything.
 
 GitHub Action behavior:
   0  - action runs without enforced fail-on-findings failure.
@@ -120,6 +125,15 @@ GitHub Action behavior:
         "--fail-on-findings",
         action="store_true",
         help="Exit with status 1 when one or more supported findings are detected.",
+    )
+    diagnose_parser.add_argument(
+        "--fail-on-confidence",
+        choices=CONFIDENCE_LEVELS,
+        default=None,
+        help=(
+            "Only let --fail-on-findings trip on findings at or above this "
+            "confidence. The report still lists every finding."
+        ),
     )
 
     demo_parser = subcommands.add_parser("demo", help="Run a bundled deployment failure example.")
@@ -213,6 +227,15 @@ GitHub Action behavior:
             "findings."
         ),
     )
+    batch_parser.add_argument(
+        "--fail-on-confidence",
+        choices=CONFIDENCE_LEVELS,
+        default=None,
+        help=(
+            "Only let --fail-on-findings trip on findings at or above this "
+            "confidence. The report still lists every finding."
+        ),
+    )
     init_parser = subcommands.add_parser(
         "init", help="Create a starter GitHub Actions workflow for SAM Doctor."
     )
@@ -267,6 +290,15 @@ GitHub Action behavior:
         "--fail-on-findings",
         action="store_true",
         help="Fail the action step when one or more findings are found.",
+    )
+    init_parser.add_argument(
+        "--fail-on-confidence",
+        choices=CONFIDENCE_LEVELS,
+        default=None,
+        help=(
+            "Only let fail-on-findings trip on findings at or above this "
+            "confidence in the generated workflow."
+        ),
     )
     return parser
 
@@ -364,6 +396,18 @@ def _render(text: str, source_name: str, output_format: str) -> str:
     return _render_findings(diagnose(text), source_name, output_format)
 
 
+def _gating_findings(findings: list[Finding], confidence_threshold: str | None) -> list[Finding]:
+    """Findings that should count toward --fail-on-findings.
+
+    Reports keep every finding; this only narrows what trips the exit code
+    when --fail-on-confidence is set.
+    """
+
+    if confidence_threshold is None:
+        return findings
+    return [f for f in findings if meets_confidence(f.confidence, confidence_threshold)]
+
+
 def _expand_input_paths(input_value: str) -> list[Path]:
     globbed = sorted(glob.glob(input_value))
     paths = [Path(candidate) for candidate in globbed]
@@ -395,7 +439,11 @@ def _expand_input_paths(input_value: str) -> list[Path]:
     return sorted(set(expanded))
 
 
-def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
+def _batch_render(
+    inputs: list[str],
+    output_format: str,
+    confidence_threshold: str | None = None,
+) -> tuple[str, bool]:
     if not inputs:
         raise ValueError("No inputs provided for batch mode.")
 
@@ -407,7 +455,7 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, bool]:
             text = _read_text(file_path)
             source = str(file_path)
             findings = diagnose(text)
-            if findings:
+            if _gating_findings(findings, confidence_threshold):
                 report_has_findings = True
             report = _render_findings(findings, source, output_format)
 
@@ -464,6 +512,7 @@ def _init_workflow_command(
     annotations: bool,
     batch: bool,
     fail_on_findings: bool,
+    fail_on_confidence: str | None = None,
 ) -> None:
     target = Path(workflow_file).expanduser().resolve()
     if target.exists() and not force:
@@ -477,6 +526,7 @@ def _init_workflow_command(
                 annotations=str(annotations).lower(),
                 batch=str(batch).lower(),
                 fail_on_findings=str(fail_on_findings).lower(),
+                fail_on_confidence=fail_on_confidence or "",
             )
         ),
         encoding="utf-8",
@@ -635,8 +685,13 @@ def main(argv: list[object] | None = None) -> int:
         return 0
 
     if args.command == "batch":
+        if args.fail_on_confidence and not args.fail_on_findings:
+            _print_error(parser, "--fail-on-confidence requires --fail-on-findings.")
+            return 2
         try:
-            report, report_has_findings = _batch_render(args.inputs, args.format)
+            report, report_has_findings = _batch_render(
+                args.inputs, args.format, args.fail_on_confidence
+            )
         except ValueError as error:
             _print_error(parser, str(error))
             return 2
@@ -653,6 +708,9 @@ def main(argv: list[object] | None = None) -> int:
         return 1 if args.fail_on_findings and report_has_findings else 0
 
     if args.command == "init":
+        if args.fail_on_confidence and not args.fail_on_findings:
+            _print_error(parser, "--fail-on-confidence requires --fail-on-findings.")
+            return 2
         try:
             _init_workflow_command(
                 args.deploy_command,
@@ -662,6 +720,7 @@ def main(argv: list[object] | None = None) -> int:
                 annotations=args.annotations,
                 batch=args.batch,
                 fail_on_findings=args.fail_on_findings,
+                fail_on_confidence=args.fail_on_confidence,
             )
         except ValueError as error:
             _print_error(parser, str(error))
@@ -678,6 +737,10 @@ def main(argv: list[object] | None = None) -> int:
 
     if args.command == "schemas":
         return _schemas_command(args)
+
+    if args.fail_on_confidence and not args.fail_on_findings:
+        _print_error(parser, "--fail-on-confidence requires --fail-on-findings.")
+        return 2
 
     try:
         text = _read_text(args.input)
@@ -697,7 +760,8 @@ def main(argv: list[object] | None = None) -> int:
         print(f"Wrote {args.format} report to {args.output}")
     else:
         sys.stdout.write(report)
-    return 1 if args.fail_on_findings and findings else 0
+    gating_findings = _gating_findings(findings, args.fail_on_confidence)
+    return 1 if args.fail_on_findings and gating_findings else 0
 
 
 if __name__ == "__main__":

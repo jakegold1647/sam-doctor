@@ -146,12 +146,17 @@ Add `--fail-on-findings` to exit `1` when any file has a supported finding;
 the full batch report is still written first. With `--format github`, batch
 mode emits one annotation per finding and skips successful inputs.
 
+Pair `--fail-on-findings` with `--fail-on-confidence {medium,high}` to only
+gate on findings at or above that confidence; the report still lists every
+finding, only the exit status is narrowed. This works the same way in
+`diagnose` and `batch`.
+
 ### Exit codes
 
 | Status | Meaning |
 | --- | --- |
 | `0` | Command completed with no enforced fail gate hit. |
-| `1` | `--fail-on-findings` found one or more supported findings (`diagnose` or `batch`). |
+| `1` | `--fail-on-findings` found one or more supported findings (`diagnose` or `batch`), filtered by `--fail-on-confidence` when set. |
 | `2` | CLI usage or error-path failure (missing inputs, invalid arguments). |
 
 Details and examples: [docs/cli-exit-and-action-exit-codes.md](docs/cli-exit-and-action-exit-codes.md).
@@ -189,6 +194,8 @@ Add a diagnostics step after any step that saves a deployment log:
     summary: true
     # Uncomment to fail this job when a supported finding is detected.
     # fail-on-findings: true
+    # Optionally narrow that gate to high-confidence findings only.
+    # fail-on-confidence: high
 ```
 
 Keep `if: always()`; otherwise GitHub Actions skips the step exactly when the
@@ -212,7 +219,7 @@ stays non-blocking by default and enforces only on a manual
 ### Action exit codes and outputs
 
 - `0`: no enforced failure (findings may still exist).
-- `1`: findings present and `fail-on-findings: true`.
+- `1`: findings present and `fail-on-findings: true`, filtered by `fail-on-confidence` when set.
 - `2`: runtime or precondition failure (invalid boolean inputs, missing Python).
 
 The action exposes `finding-count` and `has-findings` outputs for non-blocking

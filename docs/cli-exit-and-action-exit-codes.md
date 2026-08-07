@@ -16,11 +16,16 @@ CI and local automation without guessing.
 - `sam-doctor diagnose`
   - Default: exits `0` even when findings exist.
   - `--fail-on-findings`: exits `1` if one or more findings are detected.
+  - `--fail-on-confidence {medium,high}`: narrows `--fail-on-findings` to only
+    count findings at or above the given confidence. Requires
+    `--fail-on-findings`; the report still lists every finding regardless.
 
 - `sam-doctor batch`
   - Scans all provided inputs and reports all matches.
   - Default: exits `0` even when findings exist.
   - `--fail-on-findings`: exits `1` if any file has at least one finding.
+  - `--fail-on-confidence {medium,high}`: same threshold, applied across all
+    scanned files.
 
 - `sam-doctor packet`
   - Returns evidence packets and exits `0` when files are readable and report writes succeed.
@@ -32,6 +37,12 @@ Use these codes with shell CI gates, for example:
 
 ```bash
 sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings
+```
+
+To gate only on findings you trust the most, add `--fail-on-confidence`:
+
+```bash
+sam-doctor diagnose deployment.log --fail-on-findings --fail-on-confidence high
 ```
 
 ## GitHub Action behavior
@@ -47,7 +58,7 @@ Action exit behavior:
 | Exit code | Meaning |
 | --- | --- |
 | `0` | Action run succeeded and no enforced action-level failure occurred. |
-| `1` | `fail-on-findings: true` and findings were detected. |
+| `1` | `fail-on-findings: true` and findings were detected (filtered by `fail-on-confidence`, when set). |
 | `2` | Runtime/precondition failure (invalid inputs, missing Python, or internal CLI command failure). |
 
 Example non-blocking routing:
@@ -68,4 +79,6 @@ Example non-blocking routing:
 ```
 
 Use `fail-on-findings: true` only after you have observed stable behavior in a few
-non-blocking runs.
+non-blocking runs. If you want the gate to trip only on findings you trust most,
+add `fail-on-confidence: high` (or `medium`) alongside it; the job summary and
+annotations still show every finding, only the exit status is filtered.

@@ -69,6 +69,7 @@ a ready-to-edit deployment command.
 - `--annotations` / `--no-annotations`
 - `--batch`
 - `--fail-on-findings`
+- `--fail-on-confidence {medium,high}` (requires `--fail-on-findings`)
 
 The command above generates a non-blocking pilot workflow. Later, regenerate
 with stricter behavior:
@@ -137,12 +138,26 @@ In `batch` mode, `fail-on-findings: true` also fails the SAM Doctor step when an
 analyzed log reports findings; the step still writes output and keeps all findings in
 the report for review.
 
+If you are still building trust in the medium-confidence rules, gate on high
+confidence only:
+
+```yaml
+with:
+  log-file: deployment.log
+  summary: true
+  fail-on-findings: true
+  fail-on-confidence: high
+```
+
+The job summary and annotations are unaffected by `fail-on-confidence`; every
+finding is still reported. Only the pass/fail decision is narrowed.
+
 ## Action exit behavior
 
 The action step exit status is:
 
 - `0`: run completed and `fail-on-findings` did not request failure, even if findings were found.
-- `1`: `fail-on-findings: true` and one or more findings are present.
+- `1`: `fail-on-findings: true` and one or more findings are present (at or above `fail-on-confidence`, when set).
 - `2`: action precondition / runtime error (for example, missing `GITHUB_OUTPUT`,
   unsupported boolean input values, missing Python, or an invalid generated report).
 - `finding-count`: total supported findings (stringified integer output).

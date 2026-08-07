@@ -73,6 +73,20 @@ sam-doctor init \
   --force
 ```
 
+If teams are wary of blocking on medium-confidence rules, land strict mode
+gated on high confidence first, then drop the threshold once the medium-
+confidence rules have proven themselves in a few runs:
+
+```bash
+sam-doctor init \
+  --deploy-command "sam deploy --no-confirm-changeset" \
+  --annotations \
+  --summary \
+  --fail-on-findings \
+  --fail-on-confidence high \
+  --force
+```
+
 For multi-log workflows, generate batch mode with `--batch` and then point the
 generated `log-file` at `logs/` or a glob.
 
@@ -118,7 +132,9 @@ failure and compare output.
 - [ ] Run one real incident through it and produce a packet
 - [ ] Share only sanitized outputs in handoffs
 - [ ] File a rule request if a real non-covered failure appears
-- [ ] Enable `fail-on-findings: true` only after 2-3 stable runs
+- [ ] Enable `fail-on-findings: true` only after 2-3 stable runs, optionally
+      starting with `fail-on-confidence: high` before trusting medium-confidence
+      rules to gate the job too
 
 ## 4) Safe sharing reminder
 
