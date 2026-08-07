@@ -1231,6 +1231,30 @@ def test_init_command_writes_starter_workflow(tmp_path: Path, capsys) -> None:
     assert "annotations: true" in text
     assert "batch: false" in text
     assert "fail-on-findings: false" in text
+    assert "workflow_dispatch" in text
+    assert "push:" not in text
+    assert "branches: [main]" not in text
+
+
+def test_init_command_defaults_to_no_push_trigger(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert main(["init", "--workflow-file", str(workflow)]) == 0
+
+    text = workflow.read_text(encoding="utf-8")
+    assert "on:\n  # Manual only" in text
+    assert "workflow_dispatch: {}" in text
+    assert "push:" not in text
+
+
+def test_init_command_on_push_opts_into_push_trigger(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert main(["init", "--workflow-file", str(workflow), "--on-push"]) == 0
+
+    text = workflow.read_text(encoding="utf-8")
+    assert "push:\n    branches: [main]" in text
+    assert "workflow_dispatch: {}" in text
 
 
 def test_init_command_rejects_existing_file_without_force(

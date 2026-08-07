@@ -61,10 +61,13 @@ sam-doctor init --deploy-command "sam deploy --no-confirm-changeset"
 ```
 
 That writes `.github/workflows/sam-doctor.yml` with the same diagnosis step and
-a ready-to-edit deployment command.
+a ready-to-edit deployment command. The workflow only runs on
+`workflow_dispatch` until you pass `--on-push`, so trying `init` never wires up
+an automatic AWS deployment by itself.
 
 `sam-doctor init` supports rollout-oriented defaults:
 
+- `--on-push` (deploy automatically on pushes to `main`; off by default)
 - `--summary` / `--no-summary`
 - `--annotations` / `--no-annotations`
 - `--batch`
