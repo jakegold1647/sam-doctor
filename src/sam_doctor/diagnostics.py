@@ -496,13 +496,20 @@ _RULES = (
         patterns=(
             r"BucketAlreadyExists",
             r"BucketAlreadyOwnedByYou",
+            # Newer CloudFormation resource handlers wrap the same collision in
+            # prose and report the generic `HandlerErrorCode: AlreadyExists`.
+            # That code is shared by every resource type, so it is never matched
+            # on its own - only this S3-specific sentence is.
+            r"The requested bucket name is not available",
         ),
         explanation=(
             "S3 bucket names are globally unique across every AWS account, so the "
             "explicit `BucketName` the stack asked for could not be created. "
             "`BucketAlreadyExists` means some other account already holds the name; "
             "`BucketAlreadyOwnedByYou` means this account already has the bucket, "
-            "usually left behind by a deleted or renamed stack. This is a name "
+            "usually left behind by a deleted or renamed stack. Newer resource "
+            "handlers report the same collision as \"The requested bucket name is "
+            "not available\" with `HandlerErrorCode: AlreadyExists`. This is a name "
             "collision, not an invalid name and not a missing permission."
         ),
         verification=(

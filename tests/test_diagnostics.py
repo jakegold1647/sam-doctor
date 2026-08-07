@@ -319,6 +319,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "already taken",
         ),
         (
+            'CREATE_FAILED AWS::S3::Bucket AssetBucket Resource handler returned message: "The requested bucket name is not available. The bucket namespace is shared by all users of the system..." (RequestToken: t-1, HandlerErrorCode: AlreadyExists)',
+            "already taken",
+        ),
+        (
             "An error occurred (ValidationError) when calling the CreateChangeSet operation: 1 validation error detected: Value at 'templateBody' failed to satisfy constraint: Member must have length less than or equal to 51200",
             "size or count quota",
         ),
@@ -450,6 +454,48 @@ def test_bucket_already_owned_by_you_suppresses_the_generic_changeset_rule() -> 
     titles = [finding.title for finding in diagnose(log)]
     assert "An S3 bucket name in the template is already taken" in titles
     assert "AWS SAM deployment configuration or parameter resolution failed" not in titles
+
+
+def test_resource_handler_wording_is_read_as_a_bucket_name_collision() -> None:
+    log = (
+        "CREATE_FAILED AWS::S3::Bucket AssetBucket Resource handler returned "
+        'message: "The requested bucket name is not available. The bucket '
+        'namespace is shared by all users of the system..." '
+        "(RequestToken: t-1, HandlerErrorCode: AlreadyExists)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name in the template is already taken" in titles
+    assert "An S3 bucket name failed AWS validation" not in titles
+
+
+def test_a_non_bucket_already_exists_handler_error_is_not_a_bucket_collision() -> None:
+    log = (
+        "CREATE_FAILED AWS::IAM::Role AppRole Resource handler returned "
+        'message: "Role with name my-app-role already exists." '
+        "(RequestToken: t-2, HandlerErrorCode: AlreadyExists)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name in the template is already taken" not in titles
+    assert "CloudFormation resource creation or update failed" in titles
+
+
+def test_handler_wording_collision_keeps_unrelated_resource_failures_visible() -> None:
+    log = (
+        "CREATE_FAILED AWS::S3::Bucket AssetBucket Resource handler returned "
+        'message: "The requested bucket name is not available. The bucket '
+        'namespace is shared by all users of the system..." '
+        "(RequestToken: t-1, HandlerErrorCode: AlreadyExists)\n"
+        "CREATE_FAILED AWS::SQS::Queue WorkQueue Resource handler returned "
+        'message: "The specified queue does not exist."\n'
+        "CREATE_FAILED AWS::DynamoDB::Table Orders Resource handler returned "
+        'message: "Subscriber limit exceeded."'
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "An S3 bucket name in the template is already taken" in titles
+    assert "CloudFormation resource creation or update failed" in titles
 
 
 def test_a_missing_parameter_validation_error_is_not_a_template_quota_failure() -> None:
