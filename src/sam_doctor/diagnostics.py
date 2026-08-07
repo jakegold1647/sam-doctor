@@ -509,6 +509,33 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html",
     ),
     Rule(
+        id="sam.template.schema-validation-failed",
+        title="The template failed SAM or CloudFormation schema validation",
+        confidence="high",
+        patterns=(
+            r"InvalidSamDocumentException",
+            r"InvalidResourceException",
+            r"Encountered unsupported property",
+            r"property\s+\S+\s+not defined for resource of type",
+        ),
+        explanation=(
+            "SAM or CloudFormation rejected the template before creating any "
+            "resource: the document failed schema validation, or a resource "
+            "type does not recognize one of its properties. This is commonly "
+            "an indentation mistake, a property nested at the wrong level, or "
+            "a missing `Transform: AWS::Serverless-2016-10-31` line."
+        ),
+        verification=(
+            "Run `sam validate --lint` locally and in CI before deploying.",
+            "Compare the resource id and property path named in the error with the reference for that resource type.",
+            "Confirm the template still has its `Transform: AWS::Serverless-2016-10-31` line when it declares SAM resource types.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html",
+        suppressed_by=(
+            r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
+        ),
+    ),
+    Rule(
         id="iam.trust-policy.resource-field-invalid",
         title="An IAM role trust policy contains a permissions-only Resource field",
         confidence="high",

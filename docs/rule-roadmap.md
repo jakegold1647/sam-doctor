@@ -278,8 +278,10 @@ only for resources that genuinely cannot roll back.
 
 ## 7. The template failed SAM or CloudFormation schema validation
 
-**Status:** open for a contributor — tracked in
-[issue #30](https://github.com/jakegold1647/sam-doctor/issues/30).
+**Status:** landed — shipped as "The template failed SAM or CloudFormation
+schema validation" (see the unreleased changelog entry), closing
+[issue #30](https://github.com/jakegold1647/sam-doctor/issues/30). Kept here
+so the numbering of the other candidates stays stable.
 
 **Failure family.** The deploy dies before any resource is created:
 `InvalidSamDocumentException`, `InvalidResourceException`, or an unsupported /
