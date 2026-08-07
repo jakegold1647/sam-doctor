@@ -8,7 +8,7 @@ CI and local automation without guessing.
 | Exit code | Meaning |
 | --- | --- |
 | `0` | Command completed successfully and no enforced fail gate was hit. |
-| `1` | `--fail-on-findings` was used and one or more supported findings were found. |
+| `1` | `--fail-on-findings` was used and one or more supported findings were found, or a finding met the `--fail-on-confidence` threshold. |
 | `2` | CLI usage or runtime failure (missing input, invalid command path, invalid arguments, or other precondition failure). |
 
 ### Command-by-command behavior
@@ -16,11 +16,17 @@ CI and local automation without guessing.
 - `sam-doctor diagnose`
   - Default: exits `0` even when findings exist.
   - `--fail-on-findings`: exits `1` if one or more findings are detected.
+  - `--fail-on-confidence high` (or `medium`): exits `1` only when a finding at
+    that confidence or above is detected. Reports still show every finding;
+    when given, the threshold is the gate even if `--fail-on-findings` is also
+    set.
 
 - `sam-doctor batch`
   - Scans all provided inputs and reports all matches.
   - Default: exits `0` even when findings exist.
   - `--fail-on-findings`: exits `1` if any file has at least one finding.
+  - `--fail-on-confidence high` (or `medium`): exits `1` only when any file has
+    a finding at that confidence or above.
 
 - `sam-doctor packet`
   - Returns evidence packets and exits `0` when files are readable and report writes succeed.
@@ -47,7 +53,7 @@ Action exit behavior:
 | Exit code | Meaning |
 | --- | --- |
 | `0` | Action run succeeded and no enforced action-level failure occurred. |
-| `1` | `fail-on-findings: true` and findings were detected. |
+| `1` | `fail-on-findings: true` and findings were detected, or a finding met the `fail-on-confidence` threshold. |
 | `2` | Runtime/precondition failure (invalid inputs, missing Python, or internal CLI command failure). |
 
 Example non-blocking routing:
@@ -68,4 +74,17 @@ Example non-blocking routing:
 ```
 
 Use `fail-on-findings: true` only after you have observed stable behavior in a few
-non-blocking runs.
+non-blocking runs. For a gentler rollout, gate on high confidence first:
+
+```yaml
+- name: Diagnose deployment log
+  if: always()
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    fail-on-confidence: high
+```
+
+Medium-confidence findings still show up in the report and annotations; they
+just do not fail the job until you tighten the threshold to `medium` (or switch
+to `fail-on-findings: true`).
