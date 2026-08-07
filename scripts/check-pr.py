@@ -9,9 +9,10 @@ discovers failures locally instead of after pushing:
 3. lint                            (ruff check src tests scripts)
 4. rule catalog quality gate       (scripts/check-rule-catalog.py)
 5. rule fixture registry gate      (scripts/check-rule-fixtures.py)
-6. test suite                      (pytest -q)
-7. package build                   (python -m build)
-8. onboarding smoke check          (scripts/run-smoke.py)
+6. error page mapping gate         (scripts/check-error-pages.py)
+7. test suite                      (pytest -q)
+8. package build                   (python -m build)
+9. onboarding smoke check          (scripts/run-smoke.py)
 
 All steps run even when an early one fails, then a summary reports every
 failure at once. Exit code 0 only when everything passed.
@@ -39,6 +40,7 @@ def _steps(fast: bool) -> list[tuple[str, list[str]]]:
         ("ruff lint", [python, "-m", "ruff", "check", "src", "tests", "scripts"]),
         ("rule catalog quality", [python, "scripts/check-rule-catalog.py"]),
         ("rule fixture registry", [python, "scripts/check-rule-fixtures.py"]),
+        ("error page mapping", [python, "scripts/check-error-pages.py"]),
         ("test suite", [python, "-m", "pytest", "-q"]),
     ]
     if not fast:
