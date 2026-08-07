@@ -36,7 +36,9 @@ All notable changes to SAM Doctor are documented here.
   tighten later. Reports, outputs, and annotations still include every
   finding - only the exit status is gated - and `--fail-on-findings` keeps its
   exact old meaning; when both are given, the explicit threshold is the gate.
-  From issue #38.
+  `sam-doctor init --fail-on-confidence high` writes the threshold into the
+  generated workflow, from the parallel #52 implementation reconciled in that
+  merge. From issue #38.
 - Added `--format sarif` to `diagnose`, `demo`, and `batch`: the same findings
   rendered as one SARIF 2.1.0 run, ready for `github/codeql-action/upload-sarif`
   or any other SARIF consumer. Results carry the stable rule id from #47 as

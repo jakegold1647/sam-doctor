@@ -76,3 +76,21 @@ def test_batch_high_threshold_fails_when_any_file_has_a_high_finding(
 def test_rejects_an_unknown_threshold(tmp_path: Path, capsys) -> None:
     log = _log(tmp_path, "deploy.log", _HIGH_LINE)
     assert main(["diagnose", str(log), "--fail-on-confidence", "certain"]) == 2
+
+
+def test_init_writes_the_threshold_into_the_generated_workflow(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    exit_code = main(
+        ["init", "--workflow-file", str(workflow), "--fail-on-confidence", "high"]
+    )
+    assert exit_code == 0
+    text = workflow.read_text(encoding="utf-8")
+    assert 'fail-on-confidence: "high"' in text
+
+
+def test_init_defaults_to_an_empty_threshold(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "sam-doctor.yml"
+
+    assert main(["init", "--workflow-file", str(workflow)]) == 0
+    assert 'fail-on-confidence: ""' in workflow.read_text(encoding="utf-8")
