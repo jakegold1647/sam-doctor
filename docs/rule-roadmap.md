@@ -108,9 +108,10 @@ environment that runs the deploy.
 
 ## 3. S3 bucket name is already taken globally
 
-**Status:** open for a contributor — tracked in
-[issue #20](https://github.com/jakegold1647/sam-doctor/issues/20); comment
-there to claim it rather than opening a new issue.
+**Status:** landed — shipped as "An S3 bucket name in the template is already
+taken" (see the unreleased changelog entry), closing
+[issue #20](https://github.com/jakegold1647/sam-doctor/issues/20). Kept here so
+the numbering of the other candidates stays stable.
 
 **Failure family.** A stack creates an `AWS::S3::Bucket` with an explicit
 `BucketName` that another AWS account already owns; bucket names are globally
@@ -463,9 +464,12 @@ governance hooks or tag policies to make a deploy pass.
 
 ## Claimed / in progress
 
+Nothing is currently claimed. Every entry above marked "open for a contributor"
+is available.
+
 - Lambda code storage limit exceeded (`CodeStorageExceededException`) —
-  [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24), claimed by
-  a contributor.
+  landed in [#35](https://github.com/jakegold1647/sam-doctor/pull/35), closing
+  [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24).
 
 When an entry above is claimed, move it into this section with a link to its
 issue so the roadmap stays honest about what is actually open.
