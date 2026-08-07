@@ -24,6 +24,7 @@ def _load_checker():
 
 def _rule(**overrides) -> Rule:
     defaults = {
+        "id": "example.well-formed-rule",
         "title": "A well-formed example rule",
         "confidence": "high",
         "patterns": (r"ExampleFailureException",),
@@ -71,5 +72,22 @@ def test_flags_broken_regex_and_bad_metadata() -> None:
 
 def test_flags_duplicate_titles() -> None:
     checker = _load_checker()
-    problems = checker.check_rules((_rule(), _rule()))
+    problems = checker.check_rules((_rule(), _rule(id="example.other-rule")))
     assert any("Duplicate rule title" in problem for problem in problems)
+
+
+def test_flags_duplicate_ids() -> None:
+    checker = _load_checker()
+    problems = checker.check_rules(
+        (_rule(), _rule(title="A different title"))
+    )
+    assert any("Duplicate rule id" in problem for problem in problems)
+
+
+def test_flags_missing_and_malformed_ids() -> None:
+    checker = _load_checker()
+    problems = checker.check_rules((_rule(id=""),))
+    assert any("has no id" in problem for problem in problems)
+
+    problems = checker.check_rules((_rule(id="Not An Id"),))
+    assert any("does not match the" in problem for problem in problems)

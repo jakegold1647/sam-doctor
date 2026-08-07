@@ -12,6 +12,8 @@ Checks are deliberately objective — anything that needs taste stays out:
 - no primary pattern matches the empty string (an always-firing rule)
 - no primary pattern matches a corpus of ordinary, successful deploy output,
   so over-broad patterns fail here instead of in a user's clean CI log
+- ids are unique, non-empty, and match the `lower.dotted-with-hyphens` shape
+- ids are unique, non-empty, and match the `lower.dotted-with-hyphens` shape
 - titles are unique and non-empty; confidence is high/medium/low
 - explanation, verification steps, and an https documentation link exist
 
@@ -32,6 +34,8 @@ from sam_doctor.diagnostics import Rule, supported_rules
 
 _CONFIDENCE_LEVELS = ("high", "medium", "low")
 _MAX_VERIFICATION_STEPS = 6
+_RULE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
+_RULE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)+$")
 
 # Ordinary, successful deployment output. A primary pattern that matches any
 # of these lines would raise findings on clean logs, which is the single worst
@@ -70,6 +74,7 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
     rules = rules or supported_rules()
     problems: list[str] = []
     seen_titles: set[str] = set()
+    seen_ids: set[str] = set()
 
     for rule in rules:
         title = rule.title.strip()
@@ -78,6 +83,18 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
         elif title in seen_titles:
             problems.append(f"Duplicate rule title: {title!r}.")
         seen_titles.add(title)
+
+        rule_id = rule.id.strip()
+        if not rule_id:
+            problems.append(f"{title!r}: has no id.")
+        elif rule_id in seen_ids:
+            problems.append(f"Duplicate rule id: {rule_id!r}.")
+        elif not _RULE_ID_PATTERN.match(rule_id):
+            problems.append(
+                f"{title!r}: id {rule_id!r} does not match the "
+                "lower.dotted-with-hyphens shape, e.g. `aws.iam.explicit-deny`."
+            )
+        seen_ids.add(rule_id)
 
         if rule.confidence not in _CONFIDENCE_LEVELS:
             problems.append(

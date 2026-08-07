@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Gave every diagnostic rule a stable id (`aws.iam.explicit-deny`, and so on),
+  distinct from the title. The id now travels with each finding as `rule_id`
+  in the diagnose/batch JSON, and with each entry in the rules JSON catalog
+  as `id`. Titles and explanations are still free to be reworded as evidence
+  improves; the id is the safe integration key for CI dashboards and other
+  downstream tooling, and `docs/stability.md` now says so. The catalog check
+  rejects a missing, duplicate, or malformed id the same way it already
+  rejects a duplicate title. Both schemas add `rule_id`/`id` as required,
+  additive fields - existing consumers reading only the fields they already
+  knew about keep working. From issue #37.
 - Added a rule for a deployment bucket that denies access to the packaged
   artifacts (`S3 error: Access Denied` from `CreateChangeSet`, and a denied
   `PutObject`/`GetObject`/`HeadObject` while uploading to the artifact bucket).
