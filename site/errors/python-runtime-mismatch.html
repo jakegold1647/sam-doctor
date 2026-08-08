@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Binary validation failed for python (runtime constraints) | SAM Doctor</title>
+    <meta name="description" content="Fix 'Binary validation failed for python, searched for python in following locations ... did not satisfy constraints for runtime': aligning sam build with the function's Python runtime." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/python-runtime-mismatch.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Python runtime binary is incompatible with the build runtime</h1>
+        <p class="lede">
+          <code>sam build</code> looked for a Python interpreter matching the
+          function's declared runtime and the ones it found did not satisfy
+          the constraint. The machine has Python — just not the version the
+          template promises Lambda.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          <code>Binary validation failed for python, searched for python in
+          following locations ... which did not satisfy constraints for
+          runtime: python3.12</code> names both sides of the mismatch: the
+          interpreters on PATH, and the runtime the function declares. SAM
+          builds with a matching interpreter so compiled dependencies match
+          what Lambda runs; a close-but-different version is exactly what it
+          refuses.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Install the matching interpreter</strong> and make sure a
+            <code>python3.12</code> (or the version your template names) is on
+            PATH where the build runs — in CI, a
+            <code>setup-python</code> step with that exact version.
+          </li>
+          <li>
+            <strong>Or build in a container:</strong>
+            <pre><code>sam build --use-container</code></pre>
+            The build then runs inside an image that ships the right
+            interpreter, at the cost of needing Docker.
+          </li>
+          <li>
+            <strong>Or update the template's <code>Runtime:</code></strong>
+            when the function should genuinely move to the Python you have -
+            a deliberate runtime upgrade, not a workaround.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the constraint wording (high confidence) and
+          separates it from dependency-resolution and wheel-build failures.
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose build.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./pip-dependency-resolution.html">PythonPipBuilder:ResolveDependencies failed</a> — the packages, not the interpreter, failing the same build stage.</li>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — the first thing the --use-container escape hatch needs.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

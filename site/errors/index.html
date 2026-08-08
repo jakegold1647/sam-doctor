@@ -43,6 +43,7 @@
           <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — unauthenticated Docker push to Amazon ECR.</li>
           <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
           <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
+          <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the repository policy gating the Lambda service's own pull.</li>
         </ul>
       </section>
 
@@ -77,6 +78,10 @@
           <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded (CodeStorageExceededException)</a> — the regional quota that months of retained versions quietly fill.</li>
           <li><a href="./confirm-changeset-prompt.html">Deploy this changeset? [y/N] hangs CI</a> — the interactive confirmation step in a pipeline with no keyboard.</li>
           <li><a href="./unable-to-upload-artifact.html">Unable to upload artifact referenced by CodeUri</a> — deploy-before-build and wrong-directory failures.</li>
+          <li><a href="./cors-options-conflict.html">CORS preflight conflicts with an existing OPTIONS method</a> — preflight defined twice on the same path.</li>
+          <li><a href="./pip-dependency-resolution.html">PythonPipBuilder:ResolveDependencies failed</a> — pins, runtimes, and private indexes pip cannot satisfy.</li>
+          <li><a href="./python-runtime-mismatch.html">Binary validation failed for python</a> — the build machine missing the interpreter the template names.</li>
+          <li><a href="./resolve-s3-conflict.html">Cannot use both --resolve-s3 and --s3-bucket</a> — samconfig.toml and the pipeline each supplying a bucket source.</li>
         </ul>
       </section>
 

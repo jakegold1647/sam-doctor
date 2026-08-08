@@ -75,6 +75,11 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.deploy.interactive-confirmation-required": "confirm-changeset-prompt.html",
     "cloudformation.stack.termination-protection": "termination-protection.html",
     "sam.deploy.artifact-upload-failed": "unable-to-upload-artifact.html",
+    "lambda.ecr-image.access-denied": "lambda-ecr-image-access.html",
+    "apigateway.cors.preflight-conflict": "cors-options-conflict.html",
+    "sam.build.python-dependency-resolution-failed": "pip-dependency-resolution.html",
+    "sam.build.python-runtime-mismatch": "python-runtime-mismatch.html",
+    "sam.deploy.bucket-config-conflict": "resolve-s3-conflict.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')
