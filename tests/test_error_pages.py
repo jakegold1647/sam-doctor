@@ -66,3 +66,18 @@ def test_flags_a_mapped_page_not_linked_from_the_index() -> None:
     mapping["nobody.registered.this-id"] = "not-linked-anywhere.html"
     problems = checker.check_error_pages(mapping)
     assert any("not linked from site/errors/index.html" in problem for problem in problems)
+
+
+def test_flags_a_page_whose_confidence_claim_drifted(tmp_path) -> None:
+    checker = _load_checker()
+    page = checker.SITE_ERRORS_DIR / "operation-in-progress.html"
+    html = page.read_text(encoding="utf-8")
+    assert "(high confidence)" in html, "fixture assumption: the page states high"
+    drifted = html.replace("(high confidence)", "(medium confidence)")
+    backup = html
+    try:
+        page.write_text(drifted, encoding="utf-8")
+        problems = checker.check_error_pages()
+    finally:
+        page.write_text(backup, encoding="utf-8")
+    assert any("confidence" in problem and "operation-in-progress" in problem for problem in problems)

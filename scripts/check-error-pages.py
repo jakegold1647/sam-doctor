@@ -131,6 +131,17 @@ def check_error_pages(mapping: dict[str, str] | None = None) -> list[str]:
 
         if not (SITE_ERRORS_DIR / page).is_file():
             problems.append(f"{rule_id!r}: mapped page {page!r} does not exist.")
+        elif rule_id in rules_by_id:
+            # A page that states the rule's confidence must state the current
+            # one - retuning a rule's confidence must not strand the prose.
+            html = (SITE_ERRORS_DIR / page).read_text(encoding="utf-8")
+            claims = set(re.findall(r"\((high|medium|low)\s+confidence\)", html))
+            actual = rules_by_id[rule_id].confidence
+            if claims and actual not in claims:
+                problems.append(
+                    f"{page!r}: states {'/'.join(sorted(claims))} confidence but "
+                    f"rule {rule_id!r} is {actual}."
+                )
 
     mapped_pages = set(mapping.values())
     if SITE_ERRORS_DIR.is_dir():
