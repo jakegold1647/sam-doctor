@@ -27,6 +27,9 @@ SECRETS = (
     "build-owner@example.com",
     'password="fuzz-hunter2"',
     "aws_secret_access_key = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'",
+    '"SecretAccessKey": "je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY"',
+    "xoxb-" + "1234567890-fuzzslackbot",
+    "X-Amz-Signature=" + "deadbeef" * 8,
 )
 
 LEAK_MARKERS = (
@@ -39,6 +42,9 @@ LEAK_MARKERS = (
     "build-owner@example.com",
     "fuzz-hunter2",
     "wJalrXUtnFEMI",
+    "je7MtGbClwBF",
+    "fuzzslackbot",
+    "deadbeef" * 8,
 )
 
 

@@ -17,8 +17,19 @@ _BEARER_TOKEN = re.compile(
 )
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(aws_secret_access_key|aws_session_token|github_token|access_token|api_key|password|secret|token)"
+    r"(?i)\b(aws_secret_access_key|aws_session_token|github_token|access_token|api_key|password|secret|token"
+    # CamelCase JSON keys as printed by `aws sts assume-role` / `get-session-token`
+    # output pasted into logs, plus common config spellings and the presigned-URL
+    # signature parameter.
+    r"|secretaccesskey|sessiontoken|client[_-]?secret|private[_-]?key|x-amz-signature)"
     r"[\"'`]?\s*[:=]\s*[\"'`]?[^\s'\"`]+[\"'`]?"
+)
+# Slack tokens show up in CI logs through notification steps.
+_SLACK_TOKEN = re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")
+# PEM private-key material: redact from the BEGIN marker through the END
+# marker, or to the end of the text when the block is truncated.
+_PRIVATE_KEY_BLOCK = re.compile(
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?s:.*?)(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)"
 )
 
 
@@ -35,6 +46,8 @@ def redact(text: str) -> str:
     text = _AWS_ACCESS_KEY_ID.sub("[REDACTED_AWS_ACCESS_KEY]", text)
     text = _AWS_SESSION_TOKEN.sub("[REDACTED_AWS_SESSION_TOKEN]", text)
     text = _GITHUB_TOKEN.sub("[REDACTED_GITHUB_TOKEN]", text)
+    text = _SLACK_TOKEN.sub("[REDACTED_SLACK_TOKEN]", text)
+    text = _PRIVATE_KEY_BLOCK.sub("[REDACTED_PRIVATE_KEY]", text)
     text = _BEARER_TOKEN.sub(lambda match: f"{match.group(1)} [REDACTED_BEARER_TOKEN]", text)
     text = _SECRET_ASSIGNMENT.sub(lambda match: f"{match.group(1)}=[REDACTED_SECRET]", text)
     text = _JWT.sub("[REDACTED_JWT]", text)
