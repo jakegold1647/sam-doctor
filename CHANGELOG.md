@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for nested (embedded) stack failures. When a `AWS::Serverless::Application`
+  or nested `AWS::CloudFormation::Stack` fails, the parent's own event only
+  says an embedded stack was not successfully created or updated - the actual
+  root cause lives in the child stack's own events, and rollback can delete
+  the child stack before anyone reads them. The new rule takes priority over
+  the generic CREATE_FAILED/UPDATE_FAILED and rollback findings on these
+  lines and points at the child stack's ARN instead. Closes #23.
+
 - The executable-bit check now also looks at untracked scripts, so a missing
   bit fails locally instead of one commit later. The existing check reads the
   git index, which cannot see a script that has never been added: the suite
