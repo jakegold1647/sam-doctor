@@ -14,6 +14,17 @@ RULE_REQUEST_URL = (
     "https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml"
 )
 
+# An empty log is not an unrecognized failure. Reporting "no supported pattern
+# found" for one implies the tool read a failure it did not understand, when it
+# read nothing at all. This wording deliberately omits the rule-request prompt:
+# there is no excerpt to send.
+EMPTY_INPUT_NOTE = (
+    "{source} is empty, so there was nothing to diagnose.\n"
+    "This usually means the step that writes the log failed before producing "
+    "output, or the log was captured from the wrong command.\n"
+    "Check the step that produces the log, then re-run the diagnosis."
+)
+
 
 @dataclass(frozen=True)
 class Finding:
@@ -1454,7 +1465,9 @@ def diagnose(text: str) -> list[Finding]:
     return [finding for _, _, finding in sorted(matched_findings)]
 
 
-def markdown_report(findings: list[Finding], source_name: str) -> str:
+def markdown_report(
+    findings: list[Finding], source_name: str, *, input_is_empty: bool = False
+) -> str:
     """Render a shareable report without including the full raw input."""
 
     lines = [
@@ -1466,6 +1479,22 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
         + "commands before applying any change.",
         "",
     ]
+    if input_is_empty:
+        lines.extend(
+            [
+                "## Nothing to diagnose",
+                "",
+                "The input is empty. This usually means the step that writes the log "
+                + "failed before producing output, or the log was captured from the "
+                + "wrong command.",
+                "",
+                "### What to do next",
+                "",
+                "Check the step that produces the log, then re-run the diagnosis.",
+            ]
+        )
+        return "\n".join(lines) + "\n"
+
     if not findings:
         lines.extend(
             [
@@ -1509,8 +1538,13 @@ def markdown_report(findings: list[Finding], source_name: str) -> str:
     return "\n".join(lines)
 
 
-def terminal_report(findings: list[Finding], source_name: str) -> str:
+def terminal_report(
+    findings: list[Finding], source_name: str, *, input_is_empty: bool = False
+) -> str:
     """Render a concise report for direct terminal use."""
+
+    if input_is_empty:
+        return EMPTY_INPUT_NOTE.format(source=redact(source_name))
 
     if not findings:
         return (

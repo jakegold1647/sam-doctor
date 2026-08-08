@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- An empty log now says so instead of reporting "no supported pattern found".
+  A deploy step that fails before writing output leaves an empty log, and the
+  old wording told the user the tool had read their failure and not recognized
+  it - so the honest next step (check the step that writes the log) was
+  replaced by an invitation to file a rule request for an excerpt that does
+  not exist. Terminal and Markdown output distinguish the two cases; the JSON
+  and SARIF payloads are unchanged, since a zero finding count already says it
+  accurately and their shapes are covered by the stability promise.
+
 - Large logs now say what they are doing. Diagnosis is roughly a second per
   megabyte, so a 100 MB log took a silent minute and looked like a hang; past
   25 MB the CLI notes the expected wait on stderr, leaving stdout clean for
