@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AccessDenied / is not authorized to perform (triage) | SAM Doctor</title>
+    <meta name="description" content="Triage AccessDenied and 'is not authorized to perform' deployment failures: extract the action, principal, and policy layer from the error before touching any policy." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/access-denied.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">AccessDenied (read the error before touching a policy)</h1>
+        <p class="lede">
+          A modern IAM denial names almost everything you need: the denied
+          action, the principal, often the resource, and — in newer error
+          text — <em>which policy layer</em> said no. The triage skill is
+          extracting those four facts before changing anything, because each
+          layer has a different fix.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What the wording tells you</h2>
+        <ul>
+          <li><code>... is not authorized to perform: iam:CreateRole on resource ...</code> — the action and target, always the starting point.</li>
+          <li><code>... with an explicit deny in a service control policy</code> — an organization-level block; no Allow anywhere can override it. See <a href="./access-denied-explicit-deny.html">the explicit-deny page</a>.</li>
+          <li><code>... because no identity-based policy allows the action</code> — the implicit deny; grant the action in the named layer. See <a href="./access-denied-no-policy-allows.html">the no-policy-allows page</a>.</li>
+          <li>No layer named at all — older error text; assume the implicit deny first, it is far more common.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">TRIAGE</p>
+        <h2 id="fix-title">How to triage it</h2>
+        <ol>
+          <li>
+            <strong>Confirm who was actually calling</strong> (read-only):
+            <pre><code>aws sts get-caller-identity</code></pre>
+            CI denials are often the wrong role being assumed, not the right
+            role missing a permission.
+          </li>
+          <li>
+            <strong>Grant the exact denied action</strong> to the deploy
+            principal in the layer the error names - and only that action;
+            resist wildcard escalation, which trades one denial for an audit
+            finding.
+          </li>
+          <li>
+            <strong>If an SCP is named, escalate instead of editing.</strong>
+            The block lives at the AWS Organizations level, above this
+            account, and is usually intentional.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor parses the denied action, principal presence, resource
+          scope, and policy layer out of the redacted evidence, and routes
+          explicit-deny and no-policy-allows wording to their own rules. Runs
+          locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — the SCP/Deny-statement case.</li>
+          <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the missing-grant case.</li>
+          <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — the artifact-bucket special case with its own fix.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
