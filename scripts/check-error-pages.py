@@ -80,6 +80,15 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.build.python-dependency-resolution-failed": "pip-dependency-resolution.html",
     "sam.build.python-runtime-mismatch": "python-runtime-mismatch.html",
     "sam.deploy.bucket-config-conflict": "resolve-s3-conflict.html",
+    "github.oidc.token-request-denied": "unable-to-get-id-token.html",
+    "github.oidc.audience-mismatch": "incorrect-token-audience.html",
+    "github.oidc.provider-missing": "no-oidc-provider.html",
+    "iam.trust-policy.resource-field-invalid": "prohibited-field-resource.html",
+    "lambda.code-signing.image-incompatible": "code-signing-container-image.html",
+    "s3.bucket-name.invalid": "invalid-bucket-name.html",
+    "cloudformation.lambda-layer.artifact-unreadable": "layer-artifact-access-denied.html",
+    "sam.build.python-dependency-validation-failed": "binary-validation-failed.html",
+    "cloudformation.rollback.iam-role-delete-failed": "rollback-role-delete-failed.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')

@@ -10,7 +10,12 @@ All notable changes to SAM Doctor are documented here.
   `CodeUri` artifact path, the Lambda service's own ECR pull being refused,
   the duplicate CORS `OPTIONS` preflight, pip dependency resolution, the
   Python runtime/interpreter mismatch, and the `--resolve-s3`/`--s3-bucket`
-  conflict. 30 of 44 rules now have a dedicated page.
+  conflict, plus nine more covering the full OIDC trio, the trust-policy
+  prohibited field, code signing on container images, InvalidBucketName,
+  the unreadable layer artifact, the failed wheel build, and the rollback
+  that cannot delete an IAM role. 39 of 44 rules now have a dedicated page;
+  the remaining five are the deliberately generic rules whose fallback is
+  the index itself.
 - The rollout doc now walks teams up the confidence gate (observe, then
   `fail-on-confidence: high`, then `fail-on-findings`) and shows the SARIF
   code-scanning upload.

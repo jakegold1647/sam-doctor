@@ -44,6 +44,10 @@
           <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
           <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
           <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the repository policy gating the Lambda service's own pull.</li>
+          <li><a href="./unable-to-get-id-token.html">Unable to get ID Token</a> — the id-token: write permission the OIDC credentials step needs.</li>
+          <li><a href="./incorrect-token-audience.html">Incorrect token audience (InvalidIdentityToken)</a> — a token minted for a different consumer than STS expects.</li>
+          <li><a href="./no-oidc-provider.html">No OpenIDConnect provider found in your account</a> — the per-account IAM registration OIDC deploys need first.</li>
+          <li><a href="./prohibited-field-resource.html">Has prohibited field Resource</a> — a permissions-policy statement pasted into a trust policy.</li>
         </ul>
       </section>
 
@@ -62,6 +66,9 @@
           <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — the artifact bucket rejecting the upload or the readback.</li>
           <li><a href="./bucket-already-exists.html">BucketAlreadyExists / BucketAlreadyOwnedByYou</a> — a globally taken S3 bucket name in the template.</li>
           <li><a href="./termination-protection.html">Cannot be deleted while TerminationProtection is enabled</a> — the deliberate guard on production stacks, and the two-step disarm.</li>
+          <li><a href="./rollback-role-delete-failed.html">Rollback could not delete an IAM role</a> — out-of-band policy attachments stalling the rollback in ROLLBACK_FAILED.</li>
+          <li><a href="./layer-artifact-access-denied.html">Access denied by S3 for a Lambda layer artifact</a> — the layer ContentUri CloudFormation cannot read back.</li>
+          <li><a href="./invalid-bucket-name.html">InvalidBucketName</a> — an illegal bucket name, often produced by a !Sub at deploy time.</li>
         </ul>
       </section>
 
@@ -82,6 +89,8 @@
           <li><a href="./pip-dependency-resolution.html">PythonPipBuilder:ResolveDependencies failed</a> — pins, runtimes, and private indexes pip cannot satisfy.</li>
           <li><a href="./python-runtime-mismatch.html">Binary validation failed for python</a> — the build machine missing the interpreter the template names.</li>
           <li><a href="./resolve-s3-conflict.html">Cannot use both --resolve-s3 and --s3-bucket</a> — samconfig.toml and the pipeline each supplying a bucket source.</li>
+          <li><a href="./binary-validation-failed.html">Binary validation failed: failed to build wheel</a> — compiled dependencies without a matching wheel or toolchain.</li>
+          <li><a href="./code-signing-container-image.html">Code signing is not supported for container images</a> — a zip-era CodeSigningConfig riding along on an image function.</li>
         </ul>
       </section>
 

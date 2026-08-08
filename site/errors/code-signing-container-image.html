@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code signing is not supported for functions created with container images | SAM Doctor</title>
+    <meta name="description" content="Fix 'Code signing is not supported for functions created with container images': why CodeSigningConfig only applies to zip packages, and the image-signing alternative." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/code-signing-container-image.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Code signing is not supported for container-image functions</h1>
+        <p class="lede">
+          The function has a <code>CodeSigningConfigArn</code> and a
+          <code>PackageType: Image</code> at the same time. Lambda code
+          signing verifies zip packages; container images have their own
+          integrity story, so the combination is rejected.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          This usually appears when a function migrates from zip to image
+          packaging and the signing config comes along for the ride — often
+          from a shared <code>Globals</code> section or an
+          organization-standard template that assumes zip functions.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Remove the signing config from the image function</strong>
+            — check the function's own properties <em>and</em>
+            <code>Globals.Function</code>, where a shared
+            <code>CodeSigningConfigArn</code> silently applies to every
+            function in the template.
+          </li>
+          <li>
+            <strong>Keep signing for the zip functions</strong> by moving the
+            config from Globals onto the functions that still use zip
+            packaging.
+          </li>
+          <li>
+            <strong>If artifact integrity drove the signing requirement,</strong>
+            sign the container image instead - ECR image signing with
+            AWS Signer covers the image path; the compliance goal survives the
+            packaging change.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the incompatibility wording (high confidence).
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the next hurdle on the container-image path.</li>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException</a> — other property combinations the template layer rejects.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
