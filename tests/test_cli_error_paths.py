@@ -89,3 +89,55 @@ def test_ordinary_input_stays_quiet(tmp_path: Path, capsys) -> None:
     _note_slow_input(Path("small.log"), "x" * 1024)
     captured = capsys.readouterr()
     assert captured.err == ""
+
+
+def test_empty_log_says_nothing_to_diagnose_not_no_pattern_found(
+    tmp_path: Path, capsys
+) -> None:
+    """An empty log is not an unrecognized failure.
+
+    Reporting "no supported pattern found" for one would tell a user the tool
+    read their failure and did not recognize it, when the deploy step simply
+    never wrote anything - a routine CI outcome with a different fix.
+    """
+    log = tmp_path / "deployment.log"
+    log.write_text("", encoding="utf-8")
+
+    assert main(["diagnose", str(log)]) == 0
+    out = capsys.readouterr().out
+    assert "nothing to diagnose" in out
+    assert "No supported diagnostic pattern" not in out
+    assert "rule_request" not in out, "an empty log has no excerpt to request a rule for"
+
+
+def test_whitespace_only_log_counts_as_empty(tmp_path: Path, capsys) -> None:
+    log = tmp_path / "deployment.log"
+    log.write_text("   \n\n\t\n", encoding="utf-8")
+
+    assert main(["diagnose", str(log)]) == 0
+    assert "nothing to diagnose" in capsys.readouterr().out
+
+
+def test_unmatched_but_non_empty_log_keeps_the_rule_request_prompt(
+    tmp_path: Path, capsys
+) -> None:
+    log = tmp_path / "deployment.log"
+    log.write_text("Deployment finished with an error nobody has a rule for\n", encoding="utf-8")
+
+    assert main(["diagnose", str(log)]) == 0
+    out = capsys.readouterr().out
+    assert "No supported diagnostic pattern" in out
+    assert "rule_request" in out
+
+
+def test_empty_log_leaves_the_json_contract_alone(tmp_path: Path, capsys) -> None:
+    import json as _json
+
+    log = tmp_path / "deployment.log"
+    log.write_text("", encoding="utf-8")
+
+    assert main(["diagnose", str(log), "--format", "json"]) == 0
+    payload = _json.loads(capsys.readouterr().out)
+    assert payload["finding_count"] == 0
+    assert payload["findings"] == []
+    assert sorted(payload) == ["finding_count", "findings", "sam_doctor_version", "source"]

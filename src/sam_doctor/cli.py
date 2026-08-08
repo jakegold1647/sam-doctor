@@ -409,16 +409,27 @@ def _should_fail(
     return fail_on_findings and bool(confidences)
 
 
-def _render_findings(findings: list[Finding], source_name: str, output_format: str) -> str:
+def _render_findings(
+    findings: list[Finding],
+    source_name: str,
+    output_format: str,
+    *,
+    input_is_empty: bool = False,
+) -> str:
+    # Only the human-readable formats distinguish an empty input. The JSON and
+    # SARIF payloads already say it accurately with a zero finding count, and
+    # their shapes are covered by the stability promise.
     if output_format == "markdown":
-        return markdown_report(findings, source_name)
+        return markdown_report(findings, source_name, input_is_empty=input_is_empty)
     if output_format == "github":
         return _render_github(findings, source_name)
     if output_format == "json":
         return json_report(findings, source_name)
     if output_format == "sarif":
         return sarif_report([(source_name, findings)])
-    return terminal_report(findings, source_name) + "\n"
+    return (
+        terminal_report(findings, source_name, input_is_empty=input_is_empty) + "\n"
+    )
 
 
 def _escape_github_command_value(value: str) -> str:
@@ -492,7 +503,9 @@ def github_notices_from_payload(payload: dict[str, object], is_batch: bool) -> s
 
 
 def _render(text: str, source_name: str, output_format: str) -> str:
-    return _render_findings(diagnose(text), source_name, output_format)
+    return _render_findings(
+        diagnose(text), source_name, output_format, input_is_empty=not text.strip()
+    )
 
 
 def _expand_input_paths(input_value: str) -> list[Path]:
@@ -545,7 +558,9 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
             if output_format == "sarif":
                 sarif_pairs.append((source, findings))
                 continue
-            report = _render_findings(findings, source, output_format)
+            report = _render_findings(
+                findings, source, output_format, input_is_empty=not text.strip()
+            )
 
             if output_format == "json":
                 rendered_json = json.loads(json_report(findings, source))
@@ -893,7 +908,9 @@ def main(argv: list[object] | None = None) -> int:
 
     source_name = "<stdin>" if args.input == Path("-") else args.input.name
     findings = diagnose(text)
-    report = _render_findings(findings, source_name, args.format)
+    report = _render_findings(
+        findings, source_name, args.format, input_is_empty=not text.strip()
+    )
     if args.output:
         try:
             _write_report(args.output, report)
