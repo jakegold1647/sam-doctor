@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a scheduled documentation-link check. Every finding points a user at
+  official documentation, and those links rot quietly as AWS reorganizes its
+  docs - nothing in an offline test suite can notice. All 31 unique links
+  currently resolve. The check runs weekly rather than in the pull-request
+  gate on purpose: sam-doctor's premise is offline determinism, and a network
+  call in that gate would make a contributor's build depend on someone else's
+  website being up.
+
 - Closed two coverage gaps found by measuring rather than guessing.
   `python -m sam_doctor` - the fallback the README recommends when the console
   script is not on PATH - had no test at all, so breaking it would have left a
