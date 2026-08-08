@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- The executable-bit check now also looks at untracked scripts, so a missing
+  bit fails locally instead of one commit later. The existing check reads the
+  git index, which cannot see a script that has never been added: the suite
+  passes, the commit lands, and CI fails on the next push. That happened twice
+  while adding gate scripts.
+
 - Added a scheduled documentation-link check. Every finding points a user at
   official documentation, and those links rot quietly as AWS reorganizes its
   docs - nothing in an offline test suite can notice. All 31 unique links

@@ -47,3 +47,35 @@ def test_shebanged_files_are_executable_in_git() -> None:
     assert not missing_shebang, (
         f"Executable files must start with a shebang: {missing_shebang}"
     )
+
+
+def test_new_scripts_are_flagged_before_they_are_committed() -> None:
+    """Catch a missing executable bit locally instead of one commit later.
+
+    The check above reads the git index, so a script that exists but has never
+    been added is invisible to it: the suite passes, the commit lands, and CI
+    fails on the very next push. Looking at untracked files under scripts/ too
+    moves that failure to where the author can fix it before pushing.
+    """
+
+    untracked = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-files", "--others", "--exclude-standard", "scripts"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+
+    unstaged_shebangs = []
+    for path in untracked:
+        try:
+            with open(REPO_ROOT / path, "rb") as handle:
+                if handle.read(2) == b"#!":
+                    unstaged_shebangs.append(path)
+        except OSError:
+            continue
+
+    assert not unstaged_shebangs, (
+        "These scripts have a shebang but are not tracked yet. Add them and set "
+        "the executable bit in the same step, or CI will fail on the next push: "
+        f"git add <file> && git update-index --chmod=+x <file>: {unstaged_shebangs}"
+    )
