@@ -22,10 +22,13 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 
 - GitHub Actions OIDC token, audience, subject, and `AssumeRoleWithWebIdentity` failures.
 - IAM `AccessDenied` errors and IAM trust-policy shape errors.
-- CloudFormation failed resources, rollback states, and capability acknowledgements.
-- AWS SAM configuration, change-set, packaging, S3 artifact, and esbuild failures.
+- CloudFormation failed resources, rollback states, concurrent stack operations, capability acknowledgements, and template size or count quotas.
+- SAM and CloudFormation template schema validation failures (`InvalidSamDocumentException`, unsupported properties).
+- AWS SAM configuration, change-set, packaging, S3 artifact, and esbuild failures, including a deployment bucket that denies access and artifact paths that were never built.
+- S3 bucket naming failures: invalid names and globally taken names.
+- Lambda packaging limits (per-function size and regional code storage), code-signing conflicts, and container-image failures caused by missing ECR image access.
 - API Gateway deployment and CORS preflight conflicts.
-- Lambda container-image failures caused by missing ECR image access.
+- Every finding carries a stable rule id (for example `iam.deny.explicit`) in JSON and SARIF output.
 
 ## Safe usage
 
