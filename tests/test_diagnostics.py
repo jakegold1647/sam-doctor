@@ -2050,3 +2050,41 @@ def test_nested_stack_failure_alone_reports_one_finding() -> None:
     assert [f.rule_id for f in diagnose(log)] == [
         "cloudformation.nested-stack.propagation-failed"
     ]
+
+
+# Every status reason that overlaps the generic resource-failure rule, paired
+# with a nearby unrelated failure. A stack rarely fails exactly one resource,
+# so hiding the rest of them is the opposite of useful.
+_OVERLAPPING_STATUS_REASONS = (
+    "MyBucket CREATE_FAILED my-app-logs already exists (Service: S3, Status Code: 409, Error Code: BucketAlreadyExists)",
+    "MyBucket CREATE_FAILED The specified bucket is not valid. Error Code: InvalidBucketName",
+    "MyFn CREATE_FAILED An error occurred (CodeStorageExceededException): Code storage limit exceeded.",
+    "MyCert CREATE_FAILED Resource did not stabilize",
+    "MyExport UPDATE_FAILED Export my-api-url cannot be updated as it is in use by consumer-stack",
+    "MyFn CREATE_FAILED Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
+    "MyDeployment CREATE_FAILED The REST API doesn't contain any methods",
+    "MyRole CREATE_FAILED Has prohibited field Resource",
+)
+
+_UNRELATED_RESOURCE_FAILURE = (
+    'MyQueue CREATE_FAILED Resource handler returned message: '
+    '"Invalid request provided: queue attribute name is invalid"'
+)
+
+
+@pytest.mark.parametrize("specific_failure", _OVERLAPPING_STATUS_REASONS)
+def test_a_specific_reason_alone_reports_exactly_one_finding(specific_failure: str) -> None:
+    assert len(diagnose(specific_failure)) == 1
+
+
+@pytest.mark.parametrize("specific_failure", _OVERLAPPING_STATUS_REASONS)
+def test_a_specific_reason_does_not_hide_other_failed_resources(
+    specific_failure: str,
+) -> None:
+    findings = {f.rule_id: f for f in diagnose(specific_failure + "\n" + _UNRELATED_RESOURCE_FAILURE)}
+    generic = findings.get("cloudformation.resource.create-update-failed")
+    assert generic is not None, (
+        "the unrelated MyQueue failure must still be reported alongside "
+        f"{specific_failure[:60]!r}"
+    )
+    assert "MyQueue" in " ".join(generic.evidence)
