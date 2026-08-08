@@ -108,8 +108,9 @@ else
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
-  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" "$SAM_DOCTOR_LOG_FILE" <<'PY' >> "$GITHUB_STEP_SUMMARY"
 import json
+import os
 import sys
 
 from html import escape
@@ -117,7 +118,26 @@ from sam_doctor.diagnostics import Finding
 from sam_doctor.cli import markdown_report
 
 
-def write_summary(payload_path: str, is_batch: bool) -> None:
+def _source_is_empty(source: str) -> bool:
+    """Whether the diagnosed log had no content to read.
+
+    The summary is rebuilt from the JSON payload, which reports zero findings
+    for an empty log and for an unrecognized one alike. The wrapper runs on the
+    same machine as the log, so it can tell the two apart by looking. Anything
+    past a few kilobytes is content by definition, which keeps a large log from
+    being read a second time.
+    """
+
+    try:
+        if os.path.getsize(source) > 4096:
+            return False
+        with open(source, encoding="utf-8", errors="replace") as handle:
+            return not handle.read().strip()
+    except OSError:
+        return False
+
+
+def write_summary(payload_path: str, is_batch: bool, log_file: str) -> None:
     payload = json.load(open(payload_path, encoding="utf-8"))
 
     def _as_findings(raw_findings: list[dict[str, object]]) -> list[Finding]:
@@ -140,19 +160,21 @@ def write_summary(payload_path: str, is_batch: bool) -> None:
     if not is_batch:
         source = payload.get("source", "")
         findings = _as_findings(payload.get("findings", []))
-        print(markdown_report(findings, source))
+        empty = not findings and _source_is_empty(log_file)
+        print(markdown_report(findings, source, input_is_empty=empty))
         return
 
     for result in payload.get("results", []):
         source = str(result.get("source", ""))
         findings = _as_findings(result.get("findings", []))
+        empty = not findings and _source_is_empty(source)
         print(f"## Source: <code>{escape(source)}</code>")
         print("")
-        print(markdown_report(findings, source).rstrip())
+        print(markdown_report(findings, source, input_is_empty=empty).rstrip())
         print("")
 
 
-write_summary(sys.argv[1], sys.argv[2].lower() == "true")
+write_summary(sys.argv[1], sys.argv[2].lower() == "true", sys.argv[3])
 PY
 fi
 
