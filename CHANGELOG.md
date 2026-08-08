@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for `ReservedConcurrentExecutions` dropping the account below
+  its `UnreservedConcurrentExecution` minimum. Fresh accounts, whose
+  concurrency limit can still be at the 1,000 default (or lower), hit this
+  reserving concurrency for even one function; the log previously fell
+  through to the generic `CREATE_FAILED` finding.
+
 - The executable-bit check now also looks at untracked scripts, so a missing
   bit fails locally instead of one commit later. The existing check reads the
   git index, which cannot see a script that has never been added: the suite
