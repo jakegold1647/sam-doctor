@@ -29,6 +29,12 @@ than attempting to take it over.
 4. Approve the `pypi` environment deployment when GitHub requests it.
 5. Verify the resulting PyPI project page, install the published wheel in a
    fresh environment, and check the release files and version.
+6. Republish the GitHub Marketplace listing. Marketplace does not track new
+   tags automatically: open the new release in the GitHub UI, edit it, tick
+   "Publish this Action to the GitHub Marketplace", and update. Skipping this
+   step leaves Action users pinned to the previous listing version while PyPI
+   users get the new one - the drift `docs/v1-milestone.md` item 1 warns
+   about.
 
 The release workflow explicitly dispatches `pypi-publish.yml` for stable tags
 because releases created with the repository `GITHUB_TOKEN` do not fan out a
