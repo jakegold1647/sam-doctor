@@ -14,6 +14,13 @@ sam-doctor diagnose deployment.log --format markdown
 3. Share one finding plus one verification command.
 4. Re-run deploy only after verification passes.
 
+If nothing matches, do not guess - write the excerpt for a rule request in
+one step and move on to manual triage:
+
+```bash
+sam-doctor request-packet deployment.log
+```
+
 ## Copy/paste for Slack/Teams
 
 ```text
