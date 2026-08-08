@@ -123,7 +123,10 @@
         <pre><code># Non-blocking pilot workflow
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations
 
-# Strict mode after a few stable runs
+# Gate on high-confidence findings after a few stable runs
+sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations --fail-on-confidence high --force
+
+# Strict mode once medium-confidence findings have proven out too
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations --fail-on-findings --force</code></pre>
         <p class="muted">
           If you want one workflow file for both modes, copy
