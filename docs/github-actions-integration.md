@@ -72,6 +72,7 @@ an automatic AWS deployment by itself.
 - `--annotations` / `--no-annotations`
 - `--batch`
 - `--fail-on-findings`
+- `--fail-on-confidence high` (gate on high-confidence findings only)
 
 The command above generates a non-blocking pilot workflow. Later, regenerate
 with stricter behavior:
