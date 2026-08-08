@@ -28,7 +28,7 @@ first so nothing gets duplicated.
 ## 1. Another CloudFormation operation is already in progress on the stack
 
 **Status:** landed — shipped as "Another CloudFormation operation is already
-in progress on the stack" (see the unreleased changelog entry). Kept here so
+in progress on the stack" (see the v0.9.0 changelog entry). Kept here so
 the numbering of the other candidates stays stable.
 
 **Failure family.** Two deployments race on the same stack — a teammate,
@@ -70,7 +70,7 @@ group keyed by stack name.
 ## 2. SAM could not upload a build artifact referenced by the template
 
 **Status:** landed — shipped as "SAM could not upload a build artifact
-referenced by the template" (see the unreleased changelog entry). Kept here so
+referenced by the template" (see the v0.9.0 changelog entry). Kept here so
 the numbering of the other candidates stays stable.
 
 **Failure family.** `sam deploy`/`sam package` fails because a `CodeUri`,
@@ -109,7 +109,7 @@ environment that runs the deploy.
 ## 3. S3 bucket name is already taken globally
 
 **Status:** landed — shipped as "An S3 bucket name in the template is already
-taken" (see the unreleased changelog entry), closing
+taken" (see the v0.9.0 changelog entry), closing
 [issue #20](https://github.com/jakegold1647/sam-doctor/issues/20). Kept here so
 the numbering of the other candidates stays stable.
 
@@ -149,7 +149,7 @@ behind before reusing the name.
 ## 4. CloudFormation template exceeds a size or count quota
 
 **Status:** landed — shipped as "The template exceeds a CloudFormation size or
-count quota" in commit `63ba18e` (see the unreleased changelog entry), tracked
+count quota" in commit `63ba18e` (see the v0.9.0 changelog entry), tracked
 in [issue #46](https://github.com/jakegold1647/sam-doctor/issues/46). Kept here so
 the numbering of the other candidates stays stable.
 
@@ -187,7 +187,7 @@ the CloudFormation quotas page for the specific limit named in the error.
 ## 5. The deploy bucket denied access to the packaged artifacts
 
 **Status:** landed — shipped as "The deployment bucket denied access to the
-packaged artifacts" (see the unreleased changelog entry), closing
+packaged artifacts" (see the v0.9.0 changelog entry), closing
 [issue #28](https://github.com/jakegold1647/sam-doctor/issues/28). Kept here so
 the numbering of the other candidates stays stable.
 
@@ -237,7 +237,7 @@ policy.
 ## 6. The stack is stuck in a terminal rollback state
 
 **Status:** landed — shipped as "Stack rollback itself failed and must be
-continued or skipped" (see the unreleased changelog entry). The existing
+continued or skipped" in v0.10.0. The existing
 `ROLLBACK_COMPLETE` rule already covered the other half of this failure
 family. Kept here so the numbering of the other candidates stays stable.
 
@@ -281,7 +281,7 @@ only for resources that genuinely cannot roll back.
 ## 7. The template failed SAM or CloudFormation schema validation
 
 **Status:** landed — shipped as "The template failed SAM or CloudFormation
-schema validation" (see the unreleased changelog entry), closing
+schema validation" (see the v0.9.0 changelog entry), closing
 [issue #30](https://github.com/jakegold1647/sam-doctor/issues/30). Kept here
 so the numbering of the other candidates stays stable.
 
@@ -326,8 +326,11 @@ line when SAM resource types are used.
 
 ## 8. The deployment ran with invalid or wrong-account AWS credentials
 
-**Status:** open for a contributor — tracked in
-[issue #31](https://github.com/jakegold1647/sam-doctor/issues/31).
+**Status:** landed — shipped as "The deployment ran with invalid or
+wrong-account AWS credentials" in v0.10.0, contributed in
+[#55](https://github.com/jakegold1647/sam-doctor/pull/55) and closing
+[issue #31](https://github.com/jakegold1647/sam-doctor/issues/31). Kept here
+so the numbering of the other candidates stays stable.
 
 **Failure family.** The request never passed authentication: the security
 token is invalid (not merely expired), or the access key belongs to no known
@@ -471,10 +474,16 @@ governance hooks or tag policies to make a deploy pass.
 
 ---
 
-## Claimed / in progress
+## What is still open
 
-Nothing is currently claimed. Every entry above marked "open for a contributor"
-is available.
+Only entry 11 (tag-on-create denied or tag validation failure,
+[issue #33](https://github.com/jakegold1647/sam-doctor/issues/33)) remains
+open from this roadmap; entries 1-10 have landed or were already covered.
+Beyond it, the open [rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
+(#21-#27) are the next source of well-scoped work, and a fresh rule request
+from a real failure is always welcome.
+
+Nothing is currently claimed.
 
 - Lambda code storage limit exceeded (`CodeStorageExceededException`) —
   landed in [#35](https://github.com/jakegold1647/sam-doctor/pull/35), closing
