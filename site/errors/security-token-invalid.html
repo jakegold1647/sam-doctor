@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The security token included in the request is invalid (UnrecognizedClientException) | SAM Doctor</title>
+    <meta name="description" content="Fix 'The security token included in the request is invalid' and UnrecognizedClientException: stale AWS_* environment variables, wrong-account keys, and invalid (not expired) tokens." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/security-token-invalid.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">The security token included in the request is invalid</h1>
+        <p class="lede">
+          AWS rejected the credentials outright — not expired, <em>invalid</em>.
+          The access key belongs to no known account
+          (<code>UnrecognizedClientException</code>), or the token was never
+          valid in this partition. Different failure from an expired session,
+          and waiting or refreshing will not fix it.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>The usual causes, in rough order of frequency:</p>
+        <ul>
+          <li>stale <code>AWS_ACCESS_KEY_ID</code>/<code>AWS_SECRET_ACCESS_KEY</code>/<code>AWS_SESSION_TOKEN</code> environment variables silently overriding the profile you meant to use;</li>
+          <li>credentials for a different account than the one this deploy targets;</li>
+          <li>a session token paired with the wrong access key (copy-paste from two different credential sets);</li>
+          <li>a region or partition mismatch - GovCloud and China-region credentials do not work against commercial endpoints.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>See which source supplied each credential value</strong>
+            (read-only):
+            <pre><code>aws configure list</code></pre>
+            The <code>Type</code> column exposes the environment-variable
+            override immediately.
+          </li>
+          <li>
+            <strong>Clear the stale environment variables</strong> (or set the
+            correct ones) and re-run - in CI, check what an earlier auth step
+            exported into the job environment.
+          </li>
+          <li>
+            <strong>Confirm the account once it works:</strong>
+            <pre><code>aws sts get-caller-identity</code></pre>
+            The account in the output should be the one the stack deploys
+            into.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the invalid-token wording (high confidence)
+          and keeps it distinct from expired credentials, which have their own
+          rule and fix. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./expired-token.html">The security token is expired</a> — the once-valid variant with a different fix.</li>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — when OIDC-minted credentials are the ones being rejected.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

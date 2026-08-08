@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for invalid or wrong-account AWS credentials
+  (`UnrecognizedClientException`, `security token included in the request is
+  invalid`), distinct from expired credentials - the invalid rule defers when
+  the expired wording is present so the more precise finding wins. From
+  roadmap entry 8, issue #31, contributed in #55. Catalog is now 46 rules.
+
 - Added a dedicated rule for a stack stuck in `UPDATE_ROLLBACK_FAILED`
   (the rollback of a failed update itself failed and needs
   `continue-update-rollback`), distinct from the existing `ROLLBACK_COMPLETE`
