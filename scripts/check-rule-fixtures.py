@@ -205,6 +205,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="MyFunction CREATE_FAILED Resource handler returned message: denied",
         negative="MyFunction CREATE_COMPLETE AWS::Lambda::Function",
     ),
+    "cloudformation.nested-stack.propagation-failed": RuleFixture(
+        positive=(
+            "CREATE_FAILED AWS::CloudFormation::Stack DatabaseStack Embedded "
+            "stack was not successfully created: The following resource(s) "
+            "failed to create: [DBSubnetGroup]."
+        ),
+        negative="DatabaseStack CREATE_FAILED Resource handler returned message: denied",
+    ),
     "lambda.code-storage.limit-exceeded": RuleFixture(
         positive=(
             "An error occurred (CodeStorageExceededException) when calling "

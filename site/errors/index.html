@@ -58,6 +58,7 @@
         <h2 id="stack-title">Stack lifecycle errors</h2>
         <ul>
           <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> — finding the first real failure under the rollback noise.</li>
+          <li><a href="./nested-stack-failed.html">Embedded stack was not successfully created/updated</a> — why the real cause lives in the child stack's own events, not the parent's.</li>
           <li><a href="./rollback-in-progress.html">ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED</a> — what each rollback state means and where it lands.</li>
           <li><a href="./rollback-complete-cannot-be-updated.html">Stack is in ROLLBACK_COMPLETE state and can not be updated</a> — the failed-first-deploy dead end.</li>
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
