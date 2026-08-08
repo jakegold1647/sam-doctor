@@ -356,13 +356,33 @@ GitHub Action behavior:
     return parser
 
 
+# Diagnosis time is proportional to log size: every line is tested against the
+# whole rule catalog, which is roughly a second per megabyte. Past this size a
+# run takes long enough to look like a hang, so say so. The note goes to
+# stderr, leaving stdout clean for the machine-readable formats.
+_SLOW_INPUT_BYTES = 25 * 1024 * 1024
+
+
+def _note_slow_input(path: Path, text: str) -> None:
+    if len(text) < _SLOW_INPUT_BYTES:
+        return
+    print(
+        f"Note: {path} is {len(text) / 1_048_576:.0f} MB; diagnosing it takes "
+        "roughly a second per megabyte. Trimming the log to the failing "
+        "section is faster and produces the same finding.",
+        file=sys.stderr,
+    )
+
+
 def _read_text(path: Path) -> str:
     if path == Path("-"):
         return sys.stdin.read()
     try:
-        return path.read_text(encoding="utf-8", errors="replace")
+        text = path.read_text(encoding="utf-8", errors="replace")
     except OSError as error:
         raise ValueError(f"Could not read {path}: {error}") from error
+    _note_slow_input(path, text)
+    return text
 
 
 # Ordered so a threshold means "this confidence or above". "low" is in the

@@ -98,7 +98,10 @@ Pick the output format for where the report is going:
 | A workflow that saves a log | The [GitHub Action](#github-actions) below |
 
 All formats include the first matching line number and the matched evidence,
-not the full input log. Standard input works anywhere a file path does, so you
+not the full input log. Diagnosis time scales with log size - every line is
+checked against the whole rule catalog, roughly a second per megabyte - so
+very large logs take a while, and the CLI says so on stderr past about 25 MB.
+Trimming a log to the failing section is faster and finds the same thing. Standard input works anywhere a file path does, so you
 can pipe from other tools:
 
 ```bash

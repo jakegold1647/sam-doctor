@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Large logs now say what they are doing. Diagnosis is roughly a second per
+  megabyte, so a 100 MB log took a silent minute and looked like a hang; past
+  25 MB the CLI notes the expected wait on stderr, leaving stdout clean for
+  the machine-readable formats. Measured first: the per-line prefilter was
+  profiled against a single-pass alternative (slower) and every pattern was
+  timed individually (no outlier), so this is a reporting fix rather than a
+  speculative rewrite of the matching hot path.
+
 - The rule catalog gate now times every pattern against adversarial input and
   fails any that backtracks catastrophically. sam-doctor reads log text it
   does not control, so a nested-quantifier pattern in a future rule could hang
