@@ -47,6 +47,12 @@ change scope to one signal and one fixture pair.
 ## Development setup
 
 SAM Doctor supports Python 3.10 through 3.13 on Linux, macOS, and Windows.
+CI enforces this: the test suite and quality gates run on Ubuntu (all four
+Python versions) and on Windows, and the composite Action is exercised on
+both. One caveat for Windows contributors: the action-wrapper tests run the
+bash wrapper script through a WSL-style bash and skip themselves when only
+Git Bash is available - the Windows CI job covers the Action itself directly,
+so a skip there is expected, not a failure to fix.
 
 ### Fork, clone, and branch
 
