@@ -50,8 +50,21 @@ Add this in CI immediately after deploy writes logs:
     summary: true
 ```
 
-Keep non-blocking initially (`fail-on-findings: false`), then switch to strict
-gating after 2-3 stable runs.
+Keep non-blocking initially (`fail-on-findings: false`), then tighten in two
+steps rather than one: gate on high-confidence findings first, and only move
+to failing on any finding once the team trusts the medium-confidence rules
+too.
+
+```yaml
+    # step 1: observe            (no gate keys at all)
+    # step 2: gate the sure things
+    fail-on-confidence: high
+    # step 3: strict
+    fail-on-findings: true
+```
+
+Reports, annotations, and outputs show every finding at every step - the gate
+only decides the exit status.
 
 To generate the exact workflow in one step:
 
@@ -62,7 +75,18 @@ sam-doctor init \
   --summary
 ```
 
-When ready for strict mode:
+When ready for the middle step:
+
+```bash
+sam-doctor init \
+  --deploy-command "sam deploy --no-confirm-changeset" \
+  --annotations \
+  --summary \
+  --fail-on-confidence high \
+  --force
+```
+
+And for strict mode:
 
 ```bash
 sam-doctor init \
@@ -71,6 +95,21 @@ sam-doctor init \
   --summary \
   --fail-on-findings \
   --force
+```
+
+Teams using GitHub code scanning can also upload the same findings as SARIF -
+alerts stay tied to stable rule ids across releases, so a reworded title never
+resets an alert:
+
+```yaml
+- name: Diagnose as SARIF
+  if: always()
+  run: python -m sam_doctor.cli diagnose deployment.log --format sarif --output sam-doctor.sarif
+- uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  with:
+    sarif_path: sam-doctor.sarif
+    category: sam-doctor
 ```
 
 For multi-log workflows, generate batch mode with `--batch` and then point the
@@ -118,7 +157,9 @@ failure and compare output.
 - [ ] Run one real incident through it and produce a packet
 - [ ] Share only sanitized outputs in handoffs
 - [ ] File a rule request if a real non-covered failure appears
-- [ ] Enable `fail-on-findings: true` only after 2-3 stable runs
+- [ ] Enable `fail-on-confidence: high` after 2-3 stable runs
+- [ ] Enable `fail-on-findings: true` only once medium-confidence findings
+      have also proven trustworthy on your logs
 
 ## 4) Safe sharing reminder
 
