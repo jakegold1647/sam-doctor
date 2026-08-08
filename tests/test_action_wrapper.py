@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from sam_doctor import __version__
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -105,7 +107,7 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     output = output_path.read_text(encoding="utf-8")
     assert "finding-count=1\n" in output
     assert "has-findings=true\n" in output
-    assert "sam-doctor-version=0.8.1\n" in output
+    assert f"sam-doctor-version={__version__}\n" in output
 
 
 @requires_wsl_bash
@@ -151,7 +153,7 @@ def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
     output = output_path.read_text(encoding="utf-8")
     assert "finding-count=1\n" in output
     assert "has-findings=true\n" in output
-    assert "sam-doctor-version=0.8.1\n" in output
+    assert f"sam-doctor-version={__version__}\n" in output
 
 
 @requires_wsl_bash
@@ -187,7 +189,7 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     assert "SAM_DOCTOR_BATCH" not in result.stderr
     assert "finding-count=1" in output_path.read_text(encoding="utf-8")
     assert "has-findings=true" in output_path.read_text(encoding="utf-8")
-    assert "sam-doctor-version=0.8.1" in output_path.read_text(encoding="utf-8")
+    assert f"sam-doctor-version={__version__}" in output_path.read_text(encoding="utf-8")
     assert "::notice file=" in result.stdout
     assert "GitHub Actions cannot assume" in result.stdout
 
