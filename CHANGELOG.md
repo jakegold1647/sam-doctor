@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added five error-reference pages to the website for the highest-traffic
+  rules that had none: template schema validation
+  (`InvalidSamDocumentException`), a concurrent stack operation
+  (`OperationInProgressException`), a taken bucket name
+  (`BucketAlreadyExists`), the deployment bucket denying its own artifacts
+  (`S3 error: Access Denied`), and template size/count quotas. The error
+  index links all five, and `ERROR_PAGE_MAP` in the drift gate now keys by
+  stable rule id - 20 of 44 rules have a dedicated page.
 - Completed the fixture registry started in #49: every one of the 44 catalog
   rules now has a sanitized positive fixture and a nearby non-match in
   `scripts/check-rule-fixtures.py`, and the registry is keyed by stable rule

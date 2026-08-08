@@ -57,6 +57,9 @@
           <li><a href="./no-changes-to-deploy.html">No changes to deploy / No updates are to be performed</a> — the empty change set that fails CI on purpose.</li>
           <li><a href="./resource-did-not-stabilize.html">Resource did not stabilize (NotStabilized)</a> — the wait-window wrapper around a slower or nested failure.</li>
           <li><a href="./export-in-use.html">Export cannot be updated/deleted as it is in use</a> — cross-stack import pins and the staged migration out of them.</li>
+          <li><a href="./operation-in-progress.html">Stack is in UPDATE_IN_PROGRESS state and can not be updated (OperationInProgressException)</a> — two deployments racing on one stack.</li>
+          <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — the artifact bucket rejecting the upload or the readback.</li>
+          <li><a href="./bucket-already-exists.html">BucketAlreadyExists / BucketAlreadyOwnedByYou</a> — a globally taken S3 bucket name in the template.</li>
         </ul>
       </section>
 
@@ -67,6 +70,8 @@
           <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — container builds without a reachable Docker daemon.</li>
           <li><a href="./esbuild-not-found.html">Esbuild Failed: Cannot find esbuild</a> — the bundler missing from the function project or runner.</li>
           <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — API Gateway deployment/method ordering races.</li>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException / property not defined for resource type</a> — template schema validation before any resource exists.</li>
+          <li><a href="./template-limit-exceeded.html">Template exceeds a size or count quota</a> — the 51,200-byte inline body limit and the 500-resource cap.</li>
         </ul>
       </section>
 

@@ -30,9 +30,9 @@ def test_current_mapping_passes_every_check() -> None:
 
 def test_flags_a_title_with_no_matching_rule() -> None:
     checker = _load_checker()
-    mapping = {"A rule title nobody registered": "expired-token.html"}
+    mapping = {"nobody.registered.this-id": "expired-token.html"}
     problems = checker.check_error_pages(mapping)
-    assert any("no rule in the catalog has this title" in problem for problem in problems)
+    assert any("no rule in the catalog carries this id" in problem for problem in problems)
 
 
 def test_flags_a_mapped_page_that_does_not_exist() -> None:
@@ -63,6 +63,6 @@ def test_flags_a_page_missing_from_the_mapping() -> None:
 def test_flags_a_mapped_page_not_linked_from_the_index() -> None:
     checker = _load_checker()
     mapping = dict(checker.ERROR_PAGE_MAP)
-    mapping["A rule title nobody registered"] = "not-linked-anywhere.html"
+    mapping["nobody.registered.this-id"] = "not-linked-anywhere.html"
     problems = checker.check_error_pages(mapping)
     assert any("not linked from site/errors/index.html" in problem for problem in problems)

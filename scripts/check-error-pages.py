@@ -11,10 +11,10 @@ page instead of a one-off write-up - `site/errors/index.html` already closes
 with a prompt to request a page for anything unmatched, so that fallback
 needs no extra plumbing.
 
-Stable rule ids have not landed yet, so entries are keyed by rule title, the
-same convention `check-rule-fixtures.py` uses for its registry. The map does
-not need every rule on day one; it only needs to stay honest about the pages
-that already exist.
+Entries are keyed by stable rule id, the same convention
+`check-rule-fixtures.py` uses for its registry, so a reworded title cannot
+orphan a page. The map does not need every rule on day one; it only needs to
+stay honest about the pages that already exist.
 
 Checks:
 
@@ -48,37 +48,28 @@ INDEX_PAGE = SITE_ERRORS_DIR / "index.html"
 # renames a page; a rule without an entry falls back to the shared index -
 # see the module docstring.
 ERROR_PAGE_MAP: dict[str, str] = {
-    "GitHub Actions cannot assume the configured AWS role through OIDC": (
-        "assume-role-with-web-identity.html"
-    ),
-    "The AWS credentials used by the deployment have expired": "expired-token.html",
-    "The CI runner could not authenticate to ECR to push the image": (
-        "no-basic-auth-credentials.html"
-    ),
-    "An explicit deny blocked a deployment action": "access-denied-explicit-deny.html",
-    "A deployment action was denied because no policy allows it": (
-        "access-denied-no-policy-allows.html"
-    ),
-    "A failed initial stack must be recreated before it can be deployed again": (
+    "github.oidc.assume-role-rejected": "assume-role-with-web-identity.html",
+    "aws.credentials.expired": "expired-token.html",
+    "ecr.auth.login-failed": "no-basic-auth-credentials.html",
+    "iam.deny.explicit": "access-denied-explicit-deny.html",
+    "iam.deny.implicit": "access-denied-no-policy-allows.html",
+    "cloudformation.stack.failed-recreate-required": (
         "rollback-complete-cannot-be-updated.html"
     ),
-    "CloudFormation could not delete one or more stack resources": "delete-failed.html",
-    "CloudFormation needs an explicit capability acknowledgement": (
-        "insufficient-capabilities.html"
-    ),
-    "CloudFormation throttled the deployment's API calls": "rate-exceeded.html",
-    "The deployment failed only because there were no changes to deploy": (
-        "no-changes-to-deploy.html"
-    ),
-    "A resource was accepted by its service but never reached a stable state": (
-        "resource-did-not-stabilize.html"
-    ),
-    "A stack export cannot change while another stack imports it": "export-in-use.html",
-    "SAM build requires Docker for containerized builds": "docker-unavailable.html",
-    "SAM build cannot find the configured esbuild dependency": "esbuild-not-found.html",
-    "API Gateway deployment started before the API had any methods": (
-        "rest-api-no-methods.html"
-    ),
+    "cloudformation.stack.delete-failed": "delete-failed.html",
+    "cloudformation.capabilities.required": "insufficient-capabilities.html",
+    "cloudformation.api.throttled": "rate-exceeded.html",
+    "cloudformation.deploy.no-changes": "no-changes-to-deploy.html",
+    "cloudformation.resource.stabilization-timeout": "resource-did-not-stabilize.html",
+    "cloudformation.export.in-use": "export-in-use.html",
+    "cloudformation.stack.operation-in-progress": "operation-in-progress.html",
+    "cloudformation.template.quota-exceeded": "template-limit-exceeded.html",
+    "sam.build.docker-required": "docker-unavailable.html",
+    "sam.build.esbuild-missing": "esbuild-not-found.html",
+    "sam.template.schema-validation-failed": "invalid-sam-document.html",
+    "s3.bucket-name.already-taken": "bucket-already-exists.html",
+    "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
+    "apigateway.deployment.no-methods": "rest-api-no-methods.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')
@@ -92,24 +83,24 @@ def check_error_pages(mapping: dict[str, str] | None = None) -> list[str]:
     """Return every error-page mapping problem as a human-readable string."""
 
     mapping = ERROR_PAGE_MAP if mapping is None else mapping
-    rules_by_title = {rule.title: rule for rule in supported_rules()}
+    rules_by_id = {rule.id: rule for rule in supported_rules()}
     problems: list[str] = []
 
     pages_seen: dict[str, str] = {}
-    for title, page in mapping.items():
-        if title not in rules_by_title:
-            problems.append(f"{title!r}: no rule in the catalog has this title.")
+    for rule_id, page in mapping.items():
+        if rule_id not in rules_by_id:
+            problems.append(f"{rule_id!r}: no rule in the catalog carries this id.")
 
-        earlier_title = pages_seen.get(page)
-        if earlier_title is not None:
+        earlier_id = pages_seen.get(page)
+        if earlier_id is not None:
             problems.append(
-                f"{page!r} is mapped from both {earlier_title!r} and {title!r}."
+                f"{page!r} is mapped from both {earlier_id!r} and {rule_id!r}."
             )
         else:
-            pages_seen[page] = title
+            pages_seen[page] = rule_id
 
         if not (SITE_ERRORS_DIR / page).is_file():
-            problems.append(f"{title!r}: mapped page {page!r} does not exist.")
+            problems.append(f"{rule_id!r}: mapped page {page!r} does not exist.")
 
     mapped_pages = set(mapping.values())
     if SITE_ERRORS_DIR.is_dir():

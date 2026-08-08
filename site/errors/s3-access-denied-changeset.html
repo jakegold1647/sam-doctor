@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>S3 error: Access Denied (CreateChangeSet / deployment bucket) | SAM Doctor</title>
+    <meta name="description" content="Fix 'S3 error: Access Denied' from CreateChangeSet and denied PutObject/GetObject on the SAM deployment bucket: wrong-Region s3_bucket, SSE-KMS keys, and cross-account ownership." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/s3-access-denied-changeset.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">S3 error: Access Denied (deployment bucket)</h1>
+        <p class="lede">
+          <code>sam deploy</code> failed talking to its artifact bucket: either
+          the upload was rejected, or CloudFormation could not read the
+          uploaded template and zip back out of S3. The two directions fail for
+          different identities, and the fix depends on which one you have.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <ul>
+          <li><code>An error occurred (ValidationError) when calling the CreateChangeSet operation: S3 error: Access Denied</code> — the <em>readback</em> direction: CloudFormation, not your CLI, could not fetch the artifacts.</li>
+          <li><code>An error occurred (AccessDenied) when calling the PutObject operation</code> while uploading — the <em>upload</em> direction: your deploy credentials cannot write to the bucket.</li>
+        </ul>
+        <p>Common causes, roughly in order of frequency:</p>
+        <ul>
+          <li>a <code>samconfig.toml</code> <code>s3_bucket</code> pointing at a bucket in the wrong Region;</li>
+          <li>a bucket owned by another account (shared or copied config);</li>
+          <li>SSE-KMS on the bucket without matching key permissions for the deploy identity;</li>
+          <li>a bucket policy or Block Public Access change that tightened access after the bucket was configured.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Separate the directions</strong> (read-only):
+            <pre><code>aws s3api head-object --bucket my-deploy-bucket --key path/from/the/error</code></pre>
+            If your credentials can read the object, the upload worked and the
+            failure is CloudFormation's readback — look at bucket policy and
+            KMS. If head-object is denied too, the problem is your deploy
+            identity's access.
+          </li>
+          <li>
+            <strong>Catch the wrong-Region bucket:</strong>
+            <pre><code>aws s3api get-bucket-location --bucket my-deploy-bucket</code></pre>
+            The bucket's Region must match the Region you deploy to; SAM's
+            managed bucket (<code>--resolve-s3</code>) avoids this class
+            entirely.
+          </li>
+          <li>
+            <strong>Check encryption:</strong>
+            <pre><code>aws s3api get-bucket-encryption --bucket my-deploy-bucket</code></pre>
+            SSE-KMS buckets need the deploy identity to hold key permissions
+            alongside the S3 permissions.
+          </li>
+          <li>
+            <strong>Confirm ownership before touching policy.</strong> If the
+            bucket belongs to another account, coordinate rather than widening
+            a policy you do not own.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes both directions (high confidence) and keeps
+          IAM-worded denials with the IAM rules, which name the policy layer
+          instead. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — when the denial names a policy layer instead of S3.</li>
+          <li><a href="./bucket-already-exists.html">BucketAlreadyExists</a> — the other way an S3 bucket stops a deploy cold.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
