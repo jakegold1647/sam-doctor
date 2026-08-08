@@ -3,7 +3,42 @@ import shlex
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _wsl_bash_available() -> bool:
+    """Whether `bash` can see Windows drives under /mnt, i.e. is WSL.
+
+    On a POSIX host the wrapper runs natively and this is trivially true. On
+    Windows the harness translates repo paths to /mnt/<drive>/..., which only
+    WSL mounts - the Git Bash on CI runners cannot, so the wrapper-run tests
+    skip there. The composite action itself is still exercised on Windows by
+    the verify-windows CI job, which runs `uses: ./` directly.
+    """
+
+    if not ROOT.drive:
+        return True
+    try:
+        result = subprocess.run(
+            ["bash", "-lc", "test -d /mnt/c"],
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
+requires_wsl_bash = pytest.mark.skipif(
+    not _wsl_bash_available(),
+    reason=(
+        "needs a bash that mounts Windows drives under /mnt (WSL); the "
+        "composite action is covered on Windows by the verify-windows CI job"
+    ),
+)
 
 
 def _bash_path(path: Path) -> str:
@@ -46,6 +81,7 @@ def test_action_wrapper_script_has_posix_newlines():
     assert content.startswith(b"#!/usr/bin/env bash")
 
 
+@requires_wsl_bash
 def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     root = ROOT
     output_path = tmp_path / "github-output.txt"
@@ -72,6 +108,7 @@ def test_action_wrapper_emits_redacted_notice(tmp_path: Path):
     assert "sam-doctor-version=0.8.1\n" in output
 
 
+@requires_wsl_bash
 def test_action_wrapper_can_disable_notices(tmp_path: Path):
     root = ROOT
     result = _run_action(
@@ -91,6 +128,7 @@ def test_action_wrapper_can_disable_notices(tmp_path: Path):
     assert "::notice" not in result.stdout
 
 
+@requires_wsl_bash
 def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
     root = ROOT
     output_path = tmp_path / "github-output.txt"
@@ -116,6 +154,7 @@ def test_action_wrapper_fails_when_fail_on_findings_is_true(tmp_path: Path):
     assert "sam-doctor-version=0.8.1\n" in output
 
 
+@requires_wsl_bash
 def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     root = ROOT
     logs_dir = tmp_path / "logs"
@@ -153,6 +192,7 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
     assert "GitHub Actions cannot assume" in result.stdout
 
 
+@requires_wsl_bash
 def test_action_wrapper_gates_on_confidence_threshold(tmp_path: Path):
     root = ROOT
     data = root / "src" / "sam_doctor" / "data"

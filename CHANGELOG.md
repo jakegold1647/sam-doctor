@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added Windows CI coverage for the documented support path: a
+  `verify-windows` job runs the quality gates, the full test suite, demo,
+  batch, packet, and `init` on `windows-latest`, and exercises the composite
+  Action itself on a Windows runner. The action-wrapper tests now skip
+  cleanly when bash is not WSL (Git Bash cannot see `/mnt` drive mounts) -
+  the Action is covered directly by the CI job instead - and
+  `CONTRIBUTING.md` documents that skip as expected. From issue #42.
 - Added `sam-doctor request-packet` for the unmatched-log case: when
   `diagnose` finds no supported pattern, it writes a single redacted excerpt
   (a few lines of context around the first likely error, capped at
