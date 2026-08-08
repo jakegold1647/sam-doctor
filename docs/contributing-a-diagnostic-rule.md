@@ -14,12 +14,16 @@ inspect an AWS account or claim an authoritative root cause.
 5. Add safe verification steps that help a developer confirm the diagnosis.
 6. Link the relevant official AWS, GitHub, or service documentation.
 7. Add redaction coverage if the evidence can contain identifiers.
-8. Add the rule to the supported-category documentation when appropriate. If
-   you rename a rule that already has an entry in
-   `scripts/check-error-pages.py`'s `ERROR_PAGE_MAP`, update the key there too
-   - the check fails on a mapping whose title no longer matches a rule.
-9. Add a short changelog entry and include this PR in the next release if the
-   rule is accepted.
+8. If the rule overlaps an existing one, choose `suppressed_by` or
+   `excluded_line_patterns` deliberately - see
+   [the note below](#choosing-between-suppressed_by-and-excluded_line_patterns)
+   - and check that an unrelated failure in the same log still reports.
+9. Give the rule a stable `id`, a `RULE_FIXTURES` entry in
+   `scripts/check-rule-fixtures.py`, and an error page under `site/errors/`
+   with its `ERROR_PAGE_MAP` entry and index link. All three are enforced: the
+   gates fail on a rule that is missing any of them.
+10. Add a short changelog entry and include this PR in the next release if the
+    rule is accepted.
 
 ## Local workflow
 
@@ -74,6 +78,30 @@ Rule(
 
 Use one stable title, one confidence value, two to four verification steps, and
 one official link.
+
+#### Choosing between `suppressed_by` and `excluded_line_patterns`
+
+Both keep two rules from reporting the same failure twice, and picking the
+wrong one is the most common thing that comes back in review. The question to
+ask is whether the other rule is describing **the same event** or **a different
+event that happens to appear in the same log**.
+
+- **`suppressed_by`** turns your rule off for the *entire log* when the pattern
+  appears anywhere in it. Use it when the other rule explains the same event
+  more precisely: a `CREATE_FAILED` whose status reason is a taken bucket name
+  is one failure, and only the bucket rule should speak.
+- **`excluded_line_patterns`** skips just the *matching lines* and lets your
+  rule keep reporting everything else. Use it when both failures can genuinely
+  co-occur and each deserves its own finding.
+
+Getting this backwards hides real failures. A nested-stack rule that suppressed
+the generic resource rule for the whole log meant a parent stack failing a child
+*and* an unrelated queue reported only the nested finding - the queue failure
+disappeared. Per-line exclusion fixed it, because those are two different
+events. The denial rules use the same approach for the same reason.
+
+A quick way to check: write a fixture that puts your failure and an unrelated
+one in the same log, and confirm both still report.
 
 ### 2) Add focused positive/negative tests in `tests/test_diagnostics.py`
 
