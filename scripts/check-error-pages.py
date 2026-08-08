@@ -88,6 +88,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.build.python-dependency-validation-failed": "binary-validation-failed.html",
     "cloudformation.rollback.iam-role-delete-failed": "rollback-role-delete-failed.html",
     "cloudformation.resource.create-update-failed": "create-failed.html",
+    "cloudformation.nested-stack.propagation-failed": "nested-stack-failed.html",
     "cloudformation.stack.rollback-complete": "rollback-in-progress.html",
     "iam.access-denied.generic": "access-denied.html",
     "sam.deploy.configuration-resolution-failed": "failed-to-create-changeset.html",
