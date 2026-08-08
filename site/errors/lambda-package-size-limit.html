@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unzipped size must be smaller than 262144000 bytes | SAM Doctor</title>
+    <meta name="description" content="Fix 'Unzipped size must be smaller than 262144000 bytes' and RequestEntityTooLargeException: Lambda per-function package size limits, layers, and container images." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/lambda-package-size-limit.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Lambda package exceeds a per-function size limit</h1>
+        <p class="lede">
+          The function's code artifact is over a hard Lambda limit — the zipped
+          upload, or the unzipped contents. The deploy fails at
+          <code>CreateFunction</code>/<code>UpdateFunctionCode</code>, after the
+          build already succeeded, which is what makes it feel sudden.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <ul>
+          <li><code>Unzipped size must be smaller than 262144000 bytes</code> — the 250 MB unzipped ceiling, including layers.</li>
+          <li><code>Request must be smaller than ... bytes</code> (<code>RequestEntityTooLargeException</code>) — the direct-upload zip ceiling.</li>
+        </ul>
+        <p>
+          This is a per-function limit, not the account-wide storage quota —
+          that one says <code>Code storage limit exceeded</code> and has a
+          different fix.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Measure the artifact before blaming AWS:</strong>
+            <pre><code>ls -lh .aws-sam/build/*/
+unzip -l .aws-sam/build/MyFunction/../artifact.zip | sort -k1 -n | tail -20</code></pre>
+            The largest entries are almost always dependencies, not your code.
+          </li>
+          <li>
+            <strong>Trim what ships.</strong> Move dev/test dependencies out of
+            the runtime requirements, exclude data files the handler never
+            reads, and check for accidentally vendored toolchains.
+          </li>
+          <li>
+            <strong>Share heavy dependencies through a layer</strong> when
+            several functions carry the same libraries — remembering layers
+            still count toward the unzipped total.
+          </li>
+          <li>
+            <strong>Switch the function to a container image</strong> when it
+            is genuinely large: image-based functions get a 10 GB limit.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes both size phrasings (high confidence) and keeps
+          the regional storage quota separate. Runs locally; no AWS access, no
+          log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded</a> — the account-wide quota this limit is often confused with.</li>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — the first hurdle if you take the container-image route.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

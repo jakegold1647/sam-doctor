@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added five more error-reference pages: the Lambda per-function package
+  size limits, the regional code storage quota, the interactive changeset
+  prompt hanging CI, termination protection blocking a delete, and the
+  unbuilt `CodeUri` artifact path. 25 of 44 rules now have a dedicated page.
+- The rollout doc now walks teams up the confidence gate (observe, then
+  `fail-on-confidence: high`, then `fail-on-findings`) and shows the SARIF
+  code-scanning upload.
+- Added the missing `launch/RELEASE-v0.9.0.md` launch note the release gate
+  requires; the v0.9.0 release workflow failed on exactly that check.
+
 ## v0.9.0 - 2026-08-07
 
 - Added five error-reference pages to the website for the highest-traffic

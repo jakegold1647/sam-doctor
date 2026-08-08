@@ -70,6 +70,11 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "s3.bucket-name.already-taken": "bucket-already-exists.html",
     "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",
+    "lambda.package.size-limit-exceeded": "lambda-package-size-limit.html",
+    "lambda.code-storage.limit-exceeded": "code-storage-limit-exceeded.html",
+    "sam.deploy.interactive-confirmation-required": "confirm-changeset-prompt.html",
+    "cloudformation.stack.termination-protection": "termination-protection.html",
+    "sam.deploy.artifact-upload-failed": "unable-to-upload-artifact.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')

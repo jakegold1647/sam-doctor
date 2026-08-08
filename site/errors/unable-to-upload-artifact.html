@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unable to upload artifact referenced by CodeUri | SAM Doctor</title>
+    <meta name="description" content="Fix 'Unable to upload artifact ... referenced by CodeUri' and 'refers to a file or folder that does not exist': deploy-before-build, wrong directories, and built templates." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/unable-to-upload-artifact.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Unable to upload artifact referenced by CodeUri</h1>
+        <p class="lede">
+          A <code>CodeUri</code>, <code>ContentUri</code>, or
+          <code>DefinitionUri</code> in the template points at a path that does
+          not exist where the deploy ran. The classic cause: deploying before
+          <code>sam build</code>, or deploying the source template instead of
+          the built one.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <ul>
+          <li><code>Unable to upload artifact ... referenced by CodeUri parameter of ... resource</code></li>
+          <li><code>Parameter CodeUri of resource ... refers to a file or folder that does not exist</code></li>
+        </ul>
+        <p>
+          The template is fine and AWS was never the problem - the referenced
+          path simply is not there. In CI this usually means the build step
+          did not run, ran in a different working directory, or its output was
+          not carried into the job that deploys.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Build, then deploy the built template:</strong>
+            <pre><code>sam build
+sam deploy   # uses .aws-sam/build/template.yaml automatically</code></pre>
+            Passing <code>-t template.yaml</code> to deploy after building
+            reintroduces the source paths and this error with it.
+          </li>
+          <li>
+            <strong>In CI, keep build and deploy in one job and one
+            directory</strong> — or explicitly hand the
+            <code>.aws-sam/build/</code> output between jobs as an artifact.
+          </li>
+          <li>
+            <strong>Verify the path exists where the deploy runs:</strong>
+            <pre><code>ls .aws-sam/build/ && ls .aws-sam/build/template.yaml</code></pre>
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes both phrasings (high confidence) and separates
+          this local-path failure from the S3 access failures it superficially
+          resembles. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — when the artifact exists but the bucket says no.</li>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — a build step that silently never produced artifacts.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
