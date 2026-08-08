@@ -4,12 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.10.0 - 2026-08-08
+
 - Added a rule for invalid or wrong-account AWS credentials
   (`UnrecognizedClientException`, `security token included in the request is
   invalid`), distinct from expired credentials - the invalid rule defers when
   the expired wording is present so the more precise finding wins. From
   roadmap entry 8, issue #31, contributed in #55. Catalog is now 46 rules.
-
 - Added a dedicated rule for a stack stuck in `UPDATE_ROLLBACK_FAILED`
   (the rollback of a failed update itself failed and needs
   `continue-update-rollback`), distinct from the existing `ROLLBACK_COMPLETE`
@@ -24,7 +25,6 @@ All notable changes to SAM Doctor are documented here.
   private-key blocks including truncated ones. The fuzz corpus now carries
   all four shapes, and the clock-skew evidence the expired-credentials rule
   depends on is verified to survive untouched.
-
 - Added ten more error-reference pages: the Lambda per-function package
   size limits, the regional code storage quota, the interactive changeset
   prompt hanging CI, termination protection blocking a delete, the unbuilt
@@ -34,9 +34,11 @@ All notable changes to SAM Doctor are documented here.
   conflict, plus nine more covering the full OIDC trio, the trust-policy
   prohibited field, code signing on container images, InvalidBucketName,
   the unreadable layer artifact, the failed wheel build, and the rollback
-  that cannot delete an IAM role. 39 of 44 rules now have a dedicated page;
-  the remaining five are the deliberately generic rules whose fallback is
-  the index itself.
+  that cannot delete an IAM role, and finally the five triage-method pages
+  for the generic families (CREATE_FAILED, rollback states, AccessDenied,
+  failed changesets, and the single-property mismatch). Every rule now has a
+  dedicated page, and the drift gate requires an entry for each - a new rule
+  cannot land without its page. v1-milestone item 4 is done.
 - The rollout doc now walks teams up the confidence gate (observe, then
   `fail-on-confidence: high`, then `fail-on-findings`) and shows the SARIF
   code-scanning upload.
