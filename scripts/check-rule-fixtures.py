@@ -226,6 +226,23 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "70167211 bytes for the UpdateFunctionCode operation"
         ),
     ),
+    "lambda.concurrency.reserved-below-minimum": RuleFixture(
+        positive=(
+            "CREATE_FAILED AWS::Lambda::Function ApiFunction Specified "
+            "ReservedConcurrentExecutions for function decreases account's "
+            "UnreservedConcurrentExecution below its minimum value of [100]. "
+            "(Service: Lambda, Status Code: 400; Error Code: "
+            "InvalidParameterValueException)"
+        ),
+        # A same-exception, unrelated InvalidParameterValueException must not
+        # trip this rule - it must anchor on the concurrency wording, not the
+        # exception name.
+        negative=(
+            "An error occurred (InvalidParameterValueException) when calling "
+            "the CreateFunction operation: Environment variable "
+            "AWS_REGION is a reserved key"
+        ),
+    ),
     "cloudformation.stack.operation-in-progress": RuleFixture(
         positive="Stack my-service-prod is in UPDATE_IN_PROGRESS state and can not be updated.",
         negative="MyStack UPDATE_IN_PROGRESS followed by UPDATE_COMPLETE",

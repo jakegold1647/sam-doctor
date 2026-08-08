@@ -70,6 +70,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",
     "lambda.package.size-limit-exceeded": "lambda-package-size-limit.html",
     "lambda.code-storage.limit-exceeded": "code-storage-limit-exceeded.html",
+    "lambda.concurrency.reserved-below-minimum": "reserved-concurrency-below-minimum.html",
     "sam.deploy.interactive-confirmation-required": "confirm-changeset-prompt.html",
     "cloudformation.stack.termination-protection": "termination-protection.html",
     "sam.deploy.artifact-upload-failed": "unable-to-upload-artifact.html",
