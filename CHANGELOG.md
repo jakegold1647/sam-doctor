@@ -14,7 +14,9 @@ All notable changes to SAM Doctor are documented here.
   accurately and their shapes are covered by the stability promise. The
   Action's job summary - the surface most CI users actually read - is rebuilt
   from that payload and so could not tell the two cases apart; the wrapper now
-  checks the log itself, per file in batch mode.
+  checks the log itself, per file in batch mode. `sam-doctor packet` renders
+  the same Markdown into the artifact people attach to a ticket, so it makes
+  the distinction too.
 
 - Large logs now say what they are doing. Diagnosis is roughly a second per
   megabyte, so a 100 MB log took a silent minute and looked like a hang; past

@@ -700,6 +700,7 @@ def _packet_command(args: argparse.Namespace) -> int:
         if not stdin_text:
             raise ValueError("stdin input was empty; provide an error excerpt.")
         source_name = "<stdin>"
+        text = stdin_text
         findings = diagnose(stdin_text)
     else:
         source_path = Path(args.input)
@@ -707,11 +708,18 @@ def _packet_command(args: argparse.Namespace) -> int:
         text = _read_text(source_path)
         findings = diagnose(text)
 
+    input_is_empty = not text.strip()
+
     markdown_path = output_dir / args.markdown_name
     json_path = output_dir / args.json_name
     notes_path = output_dir / args.notes_name
 
-    _write_report(markdown_path, _render_findings(findings, source_name, "markdown"))
+    _write_report(
+        markdown_path,
+        _render_findings(
+            findings, source_name, "markdown", input_is_empty=input_is_empty
+        ),
+    )
     json_report = _render_findings(findings, source_name, "json")
     _write_report(json_path, json_report)
 

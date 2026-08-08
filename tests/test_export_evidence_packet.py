@@ -147,3 +147,32 @@ def test_cli_packet_supports_stdin(tmp_path: Path) -> None:
 
     report = json.loads((output_dir / "diagnosis.json").read_text(encoding="utf-8"))
     assert report["finding_count"] == 1
+
+
+def test_packet_calls_an_empty_log_empty(tmp_path: Path) -> None:
+    """The packet is the artifact people hand to a colleague or a ticket.
+
+    Labelling an empty log 'no supported pattern found' there sends the reader
+    looking for a missing rule instead of the step that never wrote the log.
+    """
+    log = tmp_path / "deployment.log"
+    log.write_text("", encoding="utf-8")
+    out_dir = tmp_path / "artifacts"
+
+    assert main(["packet", str(log), "--output-dir", str(out_dir)]) == 0
+    rendered = (out_dir / "diagnosis.md").read_text(encoding="utf-8")
+    assert "Nothing to diagnose" in rendered
+    assert "No supported pattern found" not in rendered
+
+
+def test_packet_keeps_unmatched_wording_for_a_real_log(tmp_path: Path) -> None:
+    from sam_doctor.cli import main
+
+    log = tmp_path / "deployment.log"
+    log.write_text("A failure no rule covers\n", encoding="utf-8")
+    out_dir = tmp_path / "artifacts"
+
+    assert main(["packet", str(log), "--output-dir", str(out_dir)]) == 0
+    rendered = (out_dir / "diagnosis.md").read_text(encoding="utf-8")
+    assert "No supported pattern found" in rendered
+    assert "Nothing to diagnose" not in rendered
