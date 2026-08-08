@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Closed two coverage gaps found by measuring rather than guessing.
+  `python -m sam_doctor` - the fallback the README recommends when the console
+  script is not on PATH - had no test at all, so breaking it would have left a
+  documented instruction failing with nothing in CI to notice; it is now
+  exercised end to end for version, diagnosis, the fail gate, and the exit-2
+  usage path. The Action's single-log annotation path, which is the mode most
+  workflows use, also had no direct test, though the batch branch did.
+
 - An empty log now says so instead of reporting "no supported pattern found".
   A deploy step that fails before writing output leaves an empty log, and the
   old wording told the user the tool had read their failure and not recognized
