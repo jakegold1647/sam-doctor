@@ -93,7 +93,16 @@ SAM Doctor identifies the earliest actionable event and ranks the next check.
 - `finding-count`
 - `has-findings`
 
-3. Once the signal has proven reliable on your own logs, switch to strict mode:
+3. Once the high-confidence rules have proven reliable on your own logs, gate
+   on them alone - medium-confidence findings still report but do not fail
+   the job:
+
+```yaml
+fail-on-confidence: high
+```
+
+4. When the medium-confidence findings have also earned trust, switch to
+   strict mode:
 
 ```yaml
 fail-on-findings: true
@@ -102,7 +111,7 @@ fail-on-findings: true
 **Result**
 
 The change is incremental and reversible: diagnostics run on every deploy from
-day one, and the enforced gate is enabled only after the output has been
+day one, and each tightening step is enabled only after the output has been
 reviewed against real failures.
 
 ---
