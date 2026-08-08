@@ -4,6 +4,18 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- A specific failure no longer hides the stack's other failed resources. Nine
+  status reasons - a taken or invalid bucket name, the code storage quota, a
+  stabilization timeout, an in-use export, reserved concurrency, a nested
+  stack, an API with no methods, a prohibited trust-policy field - suppressed
+  the generic resource-failure rule for the whole log, so a stack that failed
+  one of those *and* an unrelated resource reported only the first. Stacks
+  rarely fail exactly one resource, so the rest of the report simply vanished.
+  Those now exclude their own line instead. Three reasons still suppress the
+  whole rule because CloudFormation prints them on a separate line from the
+  event they explain, where excluding the reason line would report the same
+  failure twice; that trade-off is now written down next to the code.
+
 - Added a rule for `ReservedConcurrentExecutions` dropping the account below
   its `UnreservedConcurrentExecution` minimum. Fresh accounts, whose
   concurrency limit can still be at the 1,000 default (or lower), hit this

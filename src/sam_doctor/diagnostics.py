@@ -831,16 +831,27 @@ _RULES = (
             "Fix the resource-level cause before retrying the stack operation.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
-        # These service errors have more actionable, resource-specific findings.
+        # These reasons arrive on their own line, below the CREATE_FAILED event
+        # they explain, so excluding the reason line would leave the event line
+        # still matching and report one failure twice. They have to suppress
+        # the whole rule, which does mean an unrelated failure in the same log
+        # goes unreported - the lesser of the two evils here.
         suppressed_by=(
-            r"Has prohibited field Resource",
+            r"(?s:access has been denied by S3.*permission.*GetObject)",
             r"Code signing is not supported for functions created with container images",
             r"Lambda does not have permission to access the ECR image",
+        ),
+        # Every other overlap puts the reason on the CREATE_FAILED line itself,
+        # so excluding that line lets the specific rule explain its resource
+        # while this rule keeps reporting the stack's other failures. Stacks
+        # rarely fail exactly one resource, and dropping the rest of them from
+        # the report is the opposite of useful.
+        excluded_line_patterns=(
+            r"Has prohibited field Resource",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",
             r"BucketAlreadyExists",
             r"BucketAlreadyOwnedByYou",
-            r"(?s:access has been denied by S3.*permission.*GetObject)",
             r"The REST API does(?:n't| not) contain any methods",
             r"did not stabilize",
             r"HandlerErrorCode:\s*NotStabilized",
@@ -849,12 +860,6 @@ _RULES = (
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
-        ),
-        # The nested-stack rule explains the embedded-stack event itself, but a
-        # parent stack that fails a child usually fails other resources too.
-        # Excluding the line rather than suppressing the whole rule keeps those
-        # other failures reported, the same way the denial rules do it.
-        excluded_line_patterns=(
             r"Embedded stack .* was not successfully (?:created|updated)",
         ),
     ),
