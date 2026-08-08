@@ -869,6 +869,27 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html",
     ),
     Rule(
+        id="cloudformation.stack.update-rollback-failed",
+        title="Stack rollback itself failed and must be continued or skipped",
+        confidence="high",
+        patterns=(
+            r"UPDATE_ROLLBACK_FAILED.*(?:can not|cannot) be updated",
+            r"is in UPDATE_ROLLBACK_FAILED state.*(?:can not|cannot) be updated",
+        ),
+        explanation=(
+            "CloudFormation tried to roll back a failed update, but the rollback itself "
+            "failed and the stack is stuck in UPDATE_ROLLBACK_FAILED. No new operation can "
+            "start until the rollback is continued past, or explicitly skips, the resource "
+            "that would not roll back."
+        ),
+        verification=(
+            "Find the resource event that caused the rollback to fail in `aws cloudformation describe-stack-events`.",
+            "Run `aws cloudformation continue-update-rollback --stack-name <stack>`, adding `--resources-to-skip <resource>` only for resources confirmed unable to roll back.",
+            "Confirm the stack reaches UPDATE_ROLLBACK_COMPLETE before retrying the deploy.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html#troubleshooting-errors-update-rollback-failed",
+    ),
+    Rule(
         id="cloudformation.stack.rollback-complete",
         title="CloudFormation stack entered rollback after an earlier resource failure",
         confidence="medium",
@@ -889,10 +910,12 @@ _RULES = (
             "Use a change set or isolated stack when testing a fix, where practical.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/determine-root-cause-for-stack-failures.html",
-        # An immutable initial-create rollback state and a role-deletion
-        # blocker each have a more precise dedicated finding.
+        # An immutable initial-create rollback state, a failed rollback that
+        # needs continuing/skipping, and a role-deletion blocker each have a
+        # more precise dedicated finding.
         suppressed_by=(
             r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated",
+            r"UPDATE_ROLLBACK_FAILED.*(?:can not|cannot) be updated",
             r"following resource\(s\) failed to delete",
             r"failed to delete.*AWS::IAM::Role",
             r"Unable to delete.*AWS::IAM::Role",

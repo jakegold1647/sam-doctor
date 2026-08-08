@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a dedicated rule for a stack stuck in `UPDATE_ROLLBACK_FAILED`
+  (the rollback of a failed update itself failed and needs
+  `continue-update-rollback`), distinct from the existing `ROLLBACK_COMPLETE`
+  rule for an unrecoverable initial create. The generic rollback rule is now
+  suppressed by either terminal state so exactly one finding fires. Closes
+  #29 (roadmap entry 6).
 - Hardened redaction against four leak shapes found in an audit: the
   CamelCase `"SecretAccessKey"`/`"SessionToken"` JSON keys that `aws sts`
   output prints (previously only the underscore spellings were caught, so a
