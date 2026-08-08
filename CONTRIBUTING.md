@@ -123,6 +123,14 @@ Keep rules deterministic, explain the evidence they match, and add regression
 coverage for both the intended failure and a nearby non-failure case. Do not add
 commands that change AWS resources or require credentials.
 
+### Pattern safety
+
+`scripts/check-rule-catalog.py` also times every pattern against adversarial
+input. sam-doctor reads log text it does not control, so a pattern that
+backtracks catastrophically (nested quantifiers like `(a+)+b`, or `.*` where
+`.{0,80}` would do) could hang a real CI job. The check fails such a pattern
+with the bounded form to use instead.
+
 ### Rule fixture registry
 
 `scripts/check-rule-fixtures.py` tracks a positive and nearby-negative fixture

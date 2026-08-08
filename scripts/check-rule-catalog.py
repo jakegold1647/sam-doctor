@@ -12,6 +12,8 @@ Checks are deliberately objective — anything that needs taste stays out:
 - no primary pattern matches the empty string (an always-firing rule)
 - no primary pattern matches a corpus of ordinary, successful deploy output,
   so over-broad patterns fail here instead of in a user's clean CI log
+- no pattern backtracks catastrophically on adversarial input, so a rule
+  cannot hang the CI job of anyone who runs sam-doctor on a hostile log
 - ids are unique, non-empty, and match the `lower.dotted-with-hyphens` shape
 - titles are unique and non-empty; confidence is high/medium/low
 - explanation, verification steps, and an https documentation link exist
@@ -24,6 +26,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +73,45 @@ BENIGN_LOG_LINES = (
     "Post job cleanup.",
     "Cache restored successfully",
 )
+
+
+# Strings built to force backtracking: a long run the pattern can partially
+# match, ended by a character that makes the whole match fail. 26 characters
+# is deliberate - a catastrophic pattern like `(a+)+b` needs about three
+# seconds at that length while a well-formed one needs microseconds, so the
+# check reports a clear failure instead of hanging the run.
+_BACKTRACK_BAIT = tuple(
+    seed * (26 // len(seed) + 1) + "!"
+    for seed in ("a", "0", " ", "aA0", "_-.", "AWS::", "arn:aws:", "_FAILED ", "not authorized ")
+)
+
+# Generous next to the microseconds a sane pattern needs, and far below the
+# seconds a catastrophic one burns, so a slow CI runner cannot false-alarm.
+_BACKTRACK_BUDGET_SECONDS = 1.0
+
+
+def _backtracking_problems(rule: Rule, field: str, patterns: tuple[str, ...]) -> list[str]:
+    """Flag patterns that spend too long failing to match hostile input."""
+
+    problems = []
+    for pattern in patterns:
+        try:
+            compiled = re.compile(pattern, re.IGNORECASE)
+        except re.error:
+            continue  # already reported by the compile check
+        elapsed = 0.0
+        for bait in _BACKTRACK_BAIT:
+            started = time.perf_counter()
+            compiled.search(bait)
+            elapsed += time.perf_counter() - started
+        if elapsed > _BACKTRACK_BUDGET_SECONDS:
+            problems.append(
+                f"{rule.title!r}: {field} pattern {pattern!r} took {elapsed:.1f}s on "
+                "adversarial input; it backtracks catastrophically and would hang a "
+                "real run. Bound the repetition (for example `.{0,80}` instead of "
+                "`.*`) or anchor the alternation."
+            )
+    return problems
 
 
 def _compile_problems(rule: Rule, field: str, patterns: tuple[str, ...]) -> list[str]:
@@ -124,6 +166,15 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
         problems.extend(_compile_problems(rule, "suppressed_by", rule.suppressed_by))
         problems.extend(
             _compile_problems(rule, "excluded_line_patterns", rule.excluded_line_patterns)
+        )
+        problems.extend(_backtracking_problems(rule, "primary", rule.patterns))
+        problems.extend(
+            _backtracking_problems(rule, "suppressed_by", rule.suppressed_by)
+        )
+        problems.extend(
+            _backtracking_problems(
+                rule, "excluded_line_patterns", rule.excluded_line_patterns
+            )
         )
 
         for pattern in rule.patterns:
