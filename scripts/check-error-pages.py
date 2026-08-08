@@ -92,6 +92,8 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "iam.access-denied.generic": "access-denied.html",
     "sam.deploy.configuration-resolution-failed": "failed-to-create-changeset.html",
     "sam.template.invalid-property": "property-not-defined.html",
+    "aws.credentials.invalid": "security-token-invalid.html",
+    "cloudformation.stack.update-rollback-failed": "update-rollback-failed.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')

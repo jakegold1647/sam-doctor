@@ -40,6 +40,7 @@
         <ul>
           <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — GitHub Actions OIDC trust-policy rejection.</li>
           <li><a href="./expired-token.html">The security token included in the request is expired (ExpiredToken)</a> — stale sessions, short OIDC durations, and clock skew.</li>
+          <li><a href="./security-token-invalid.html">The security token included in the request is invalid (UnrecognizedClientException)</a> — stale AWS_* variables and wrong-account keys, distinct from expiry.</li>
           <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — unauthenticated Docker push to Amazon ECR.</li>
           <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
           <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
@@ -70,6 +71,7 @@
           <li><a href="./bucket-already-exists.html">BucketAlreadyExists / BucketAlreadyOwnedByYou</a> — a globally taken S3 bucket name in the template.</li>
           <li><a href="./termination-protection.html">Cannot be deleted while TerminationProtection is enabled</a> — the deliberate guard on production stacks, and the two-step disarm.</li>
           <li><a href="./rollback-role-delete-failed.html">Rollback could not delete an IAM role</a> — out-of-band policy attachments stalling the rollback in ROLLBACK_FAILED.</li>
+          <li><a href="./update-rollback-failed.html">UPDATE_ROLLBACK_FAILED</a> — the rollback itself stuck, and the continue-or-skip recovery.</li>
           <li><a href="./layer-artifact-access-denied.html">Access denied by S3 for a Lambda layer artifact</a> — the layer ContentUri CloudFormation cannot read back.</li>
           <li><a href="./invalid-bucket-name.html">InvalidBucketName</a> — an illegal bucket name, often produced by a !Sub at deploy time.</li>
         </ul>
