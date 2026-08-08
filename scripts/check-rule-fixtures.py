@@ -218,6 +218,10 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Stack: example is in ROLLBACK_COMPLETE state and can not be updated.",
         negative="Stack reached UPDATE_COMPLETE after the change set executed",
     ),
+    "cloudformation.stack.update-rollback-failed": RuleFixture(
+        positive="Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated.",
+        negative="Stack my-app is in UPDATE_ROLLBACK_IN_PROGRESS state and can not be updated.",
+    ),
     "cloudformation.stack.rollback-complete": RuleFixture(
         positive="Stack entered ROLLBACK_FAILED after a resource failure",
         negative="The deploy completed with every resource in service",

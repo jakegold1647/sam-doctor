@@ -223,6 +223,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "failed initial stack",
         ),
         (
+            "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated.",
+            "rollback itself failed",
+        ),
+        (
             "Cannot use both --resolve-s3 and --s3-bucket parameters. Please use only one.",
             "managed and explicit S3 bucket",
         ),
@@ -396,6 +400,36 @@ def test_rollback_in_progress_states_stay_with_the_rollback_rules() -> None:
         not in titles
     )
     assert any("rollback" in title.lower() for title in titles)
+
+
+def test_update_rollback_in_progress_does_not_report_the_failed_rollback_finding() -> None:
+    log = "Stack my-app is in UPDATE_ROLLBACK_IN_PROGRESS state and can not be updated."
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "Stack rollback itself failed and must be continued or skipped" not in titles
+
+
+def test_rollback_complete_as_a_bare_status_event_does_not_trigger_the_recreate_finding() -> (
+    None
+):
+    log = "sam-app ROLLBACK_COMPLETE -"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "A failed initial stack must be recreated before it can be deployed again"
+        not in titles
+    )
+
+
+def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
+    log = "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated."
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "Stack rollback itself failed and must be continued or skipped" in titles
+    assert (
+        "CloudFormation stack entered rollback after an earlier resource failure"
+        not in titles
+    )
 
 
 def test_successful_artifact_upload_does_not_report_a_missing_artifact() -> None:

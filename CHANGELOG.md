@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a dedicated rule for a stack stuck in `UPDATE_ROLLBACK_FAILED`
+  (the rollback of a failed update itself failed and needs
+  `continue-update-rollback`), distinct from the existing `ROLLBACK_COMPLETE`
+  rule for an unrecoverable initial create. The generic rollback rule is now
+  suppressed by either terminal state so exactly one finding fires. Closes
+  #29 (roadmap entry 6).
 - Added ten more error-reference pages: the Lambda per-function package
   size limits, the regional code storage quota, the interactive changeset
   prompt hanging CI, termination protection blocking a delete, the unbuilt

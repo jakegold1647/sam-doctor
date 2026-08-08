@@ -236,8 +236,10 @@ policy.
 
 ## 6. The stack is stuck in a terminal rollback state
 
-**Status:** open for a contributor — tracked in
-[issue #29](https://github.com/jakegold1647/sam-doctor/issues/29).
+**Status:** landed — shipped as "Stack rollback itself failed and must be
+continued or skipped" (see the unreleased changelog entry). The existing
+`ROLLBACK_COMPLETE` rule already covered the other half of this failure
+family. Kept here so the numbering of the other candidates stays stable.
 
 **Failure family.** Every deploy fails immediately because the stack sits in
 `ROLLBACK_COMPLETE` (first creation failed; the stack can only be deleted) or
