@@ -4,6 +4,14 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- The rule catalog gate now times every pattern against adversarial input and
+  fails any that backtracks catastrophically. sam-doctor reads log text it
+  does not control, so a nested-quantifier pattern in a future rule could hang
+  the CI job of anyone running it; the bait strings are sized so a bad pattern
+  reports a clear failure in seconds instead of hanging the check itself. All
+  46 current rules pass, and the whole gate still runs in under a tenth of a
+  second.
+
 ## v0.10.0 - 2026-08-08
 
 - Added a rule for invalid or wrong-account AWS credentials

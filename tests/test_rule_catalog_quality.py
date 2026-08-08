@@ -91,3 +91,20 @@ def test_flags_missing_and_malformed_ids() -> None:
 
     problems = checker.check_rules((_rule(id="Not An Id"),))
     assert any("does not match the" in problem for problem in problems)
+
+
+def test_flags_a_catastrophically_backtracking_pattern() -> None:
+    checker = _load_checker()
+    # The classic exponential blowup: nested quantifiers over the same class,
+    # with a literal the bait string never supplies.
+    problems = checker.check_rules((_rule(patterns=(r"(a+)+b",)),))
+    assert any("backtracks catastrophically" in problem for problem in problems)
+
+
+def test_accepts_a_bounded_repetition_pattern() -> None:
+    checker = _load_checker()
+    # The bounded form the failure message recommends must pass cleanly.
+    problems = checker.check_rules(
+        (_rule(patterns=(r"denied.{0,80}AssumeRoleWithWebIdentity",)),)
+    )
+    assert not any("backtracks catastrophically" in problem for problem in problems)
