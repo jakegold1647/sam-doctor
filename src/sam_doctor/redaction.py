@@ -22,7 +22,9 @@ _SECRET_ASSIGNMENT = re.compile(
     # output pasted into logs, plus common config spellings and the presigned-URL
     # signature parameter.
     r"|secretaccesskey|sessiontoken|client[_-]?secret|private[_-]?key|x-amz-signature)"
-    r"[\"'`]?\s*[:=]\s*[\"'`]?[^\s'\"`]+[\"'`]?"
+    # Never consume a value another pattern already redacted - the session-token
+    # marker must survive this later, broader pass.
+    r"[\"'`]?\s*[:=]\s*[\"'`]?(?!\[REDACTED)[^\s'\"`]+[\"'`]?"
 )
 # Slack tokens show up in CI logs through notification steps.
 _SLACK_TOKEN = re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")
