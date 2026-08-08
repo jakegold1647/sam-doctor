@@ -786,6 +786,37 @@ _RULES = (
         parse_stabilization_context=True,
     ),
     Rule(
+        id="cloudformation.nested-stack.propagation-failed",
+        title="A nested (embedded) stack failed - the root cause is in the child stack's events",
+        confidence="high",
+        patterns=(
+            r"Embedded stack .* was not successfully (?:created|updated)",
+            r"Embedded stack .*The following resource\(s\) failed to (?:create|update):",
+        ),
+        explanation=(
+            "The parent stack's message only says an embedded stack failed - that is "
+            "a symptom, not the cause. The real root cause lives in the child stack's "
+            "own event stream, and CloudFormation can delete the child stack (and its "
+            "events) as part of rollback before anyone reads them."
+        ),
+        verification=(
+            (
+                "Capture the child stack's events before rollback deletes them, or "
+                "redeploy with `--disable-rollback` to keep the stack around while debugging."
+            ),
+            (
+                "Run `aws cloudformation describe-stack-events --stack-name "
+                "<child-stack-arn>` with the full nested stack ARN from this "
+                "message - it still works once deletion has started."
+            ),
+            (
+                "Find the child stack's first `CREATE_FAILED` or `UPDATE_FAILED` "
+                "resource event and fix that; only edit the parent template after that."
+            ),
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html",
+    ),
+    Rule(
         id="cloudformation.resource.create-update-failed",
         title="CloudFormation resource creation or update failed",
         confidence="high",
@@ -817,6 +848,7 @@ _RULES = (
             r"cannot be (?:updated|deleted) as it is in use by",
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
+            r"Embedded stack .* was not successfully (?:created|updated)",
         ),
     ),
     Rule(
@@ -930,6 +962,7 @@ _RULES = (
             r"following resource\(s\) failed to delete",
             r"failed to delete.*AWS::IAM::Role",
             r"Unable to delete.*AWS::IAM::Role",
+            r"Embedded stack .* was not successfully (?:created|updated)",
         ),
     ),
     Rule(

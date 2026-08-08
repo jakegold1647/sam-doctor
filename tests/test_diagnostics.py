@@ -436,6 +436,76 @@ def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> Non
     )
 
 
+def test_nested_stack_create_failure_is_detected() -> None:
+    log = (
+        "CREATE_FAILED  AWS::CloudFormation::Stack  DatabaseStack  "
+        "Embedded stack arn:aws:cloudformation:us-east-1:123456789012:"
+        "stack/my-app-DatabaseStack-ABC123/... was not successfully created: "
+        "The following resource(s) failed to create: [DBSubnetGroup]."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "A nested (embedded) stack failed - the root cause is in the child stack's events"
+        in titles
+    )
+
+
+def test_nested_stack_update_failure_is_detected() -> None:
+    log = (
+        "UPDATE_FAILED  AWS::CloudFormation::Stack  ApiStack  "
+        "Embedded stack ... was not successfully updated. Currently in "
+        "UPDATE_ROLLBACK_IN_PROGRESS with reason: The following resource(s) "
+        "failed to update: [UsagePlan]."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "A nested (embedded) stack failed - the root cause is in the child stack's events"
+        in titles
+    )
+
+
+def test_nested_stack_failure_suppresses_the_generic_create_update_finding() -> None:
+    log = (
+        "CREATE_FAILED  AWS::CloudFormation::Stack  DatabaseStack  "
+        "Embedded stack arn:aws:cloudformation:us-east-1:123456789012:"
+        "stack/my-app-DatabaseStack-ABC123/... was not successfully created: "
+        "The following resource(s) failed to create: [DBSubnetGroup]."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "CloudFormation resource creation or update failed" not in titles
+
+
+def test_nested_stack_update_failure_suppresses_the_generic_rollback_finding() -> None:
+    log = (
+        "UPDATE_FAILED  AWS::CloudFormation::Stack  ApiStack  "
+        "Embedded stack ... was not successfully updated. Currently in "
+        "UPDATE_ROLLBACK_IN_PROGRESS with reason: The following resource(s) "
+        "failed to update: [UsagePlan]."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert (
+        "CloudFormation stack entered rollback after an earlier resource failure"
+        not in titles
+    )
+
+
+def test_plain_create_failed_without_an_embedded_stack_still_reports_the_generic_finding() -> (
+    None
+):
+    log = "MyFunction CREATE_FAILED Resource handler returned message: denied"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "CloudFormation resource creation or update failed" in titles
+    assert (
+        "A nested (embedded) stack failed - the root cause is in the child stack's events"
+        not in titles
+    )
+
+
 def test_successful_artifact_upload_does_not_report_a_missing_artifact() -> None:
     log = "Uploading to my-deploy-bucket/artifact.zip (100%)"
 
