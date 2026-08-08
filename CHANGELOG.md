@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.9.0 - 2026-08-07
+
 - Added five error-reference pages to the website for the highest-traffic
   rules that had none: template schema validation
   (`InvalidSamDocumentException`), a concurrent stack operation
