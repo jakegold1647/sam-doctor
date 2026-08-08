@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stack cannot be deleted while TerminationProtection is enabled | SAM Doctor</title>
+    <meta name="description" content="Fix 'cannot be deleted while TerminationProtection is enabled': what CloudFormation termination protection guards, and how to disable it deliberately before a delete." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/termination-protection.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Stack deletion blocked by termination protection</h1>
+        <p class="lede">
+          The delete was refused because someone deliberately armed
+          termination protection on this stack. That refusal is the feature
+          working — the only question is whether the protection is still
+          supposed to be there.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          <code>ValidationError ... cannot be deleted while
+          TerminationProtection is enabled</code> is a stack-level setting, not
+          a permissions problem — broader IAM policies will not change the
+          answer. Protection is usually enabled on production stacks precisely
+          so a scripted cleanup or a mistaken <code>delete-stack</code> stops
+          here instead of succeeding.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>First decide whether the delete is right.</strong> Someone
+            armed the protection; find out why before disarming it. If the
+            stack is shared or production, that conversation is the fix.
+          </li>
+          <li>
+            <strong>If the delete is genuinely intended,</strong> disable
+            protection and delete in two deliberate steps:
+            <pre><code>aws cloudformation update-termination-protection \
+  --stack-name my-app --no-enable-termination-protection
+aws cloudformation delete-stack --stack-name my-app</code></pre>
+          </li>
+          <li>
+            <strong>Check what the stack holds before deleting</strong> -
+            stateful resources (databases, buckets with data) deserve a
+            snapshot or retain policy first.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the refusal wording (high confidence) and its
+          guidance keeps the disarm-then-delete order explicit. Runs locally;
+          no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./delete-failed.html">DELETE_FAILED</a> — what a delete hits after protection is out of the way.</li>
+          <li><a href="./export-in-use.html">Export in use</a> — the other guard that stops deletes of load-bearing stacks.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
