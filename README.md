@@ -143,16 +143,18 @@ Diagnose many logs in one run:
 sam-doctor batch logs/*.log logs/*.txt --format json --output batch-results.json
 ```
 
-Add `--fail-on-findings` to exit `1` when any file has a supported finding;
-the full batch report is still written first. With `--format github`, batch
-mode emits one annotation per finding and skips successful inputs.
+Add `--fail-on-findings` to exit `1` when any file has a supported finding,
+or `--fail-on-confidence high` to gate only on findings the rules are sure
+about; the full batch report is still written first either way. With
+`--format github`, batch mode emits one annotation per finding and skips
+successful inputs.
 
 ### Exit codes
 
 | Status | Meaning |
 | --- | --- |
 | `0` | Command completed with no enforced fail gate hit. |
-| `1` | `--fail-on-findings` found one or more supported findings (`diagnose` or `batch`). |
+| `1` | `--fail-on-findings` found a supported finding, or a finding met the `--fail-on-confidence` threshold (`diagnose` or `batch`). |
 | `2` | CLI usage or error-path failure (missing inputs, invalid arguments). |
 
 Details and examples: [docs/cli-exit-and-action-exit-codes.md](docs/cli-exit-and-action-exit-codes.md).
@@ -164,6 +166,7 @@ The JSON payload shapes are documented in checked-in schemas:
 - `docs/schemas/diagnose-report.schema.json`
 - `docs/schemas/batch-report.schema.json`
 - `docs/schemas/rules-report.schema.json`
+- `docs/schemas/sarif-report.schema.json` (the narrowed contract for `--format sarif`)
 
 `sam-doctor schemas` prints the schema URLs. The contracts are
 additive-compatible: new top-level fields may appear, but removing or renaming
