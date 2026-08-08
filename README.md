@@ -338,8 +338,10 @@ redacted context window around the first likely error, never the full log.
 4. A link to the relevant official documentation.
 
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key
-IDs, bare STS session tokens, secret assignments, bearer tokens, JWT-style
-tokens, and common GitHub token formats before matched evidence is shown. This
+IDs, bare STS session tokens, secret assignments (including the CamelCase
+JSON keys STS output prints), presigned-URL signatures, bearer tokens,
+JWT-style tokens, PEM private-key blocks, and common GitHub and Slack token
+formats before matched evidence is shown. This
 is a guardrail, not a secret scanner: review a report before sharing it.
 
 To package a diagnosis for handoff, `sam-doctor packet deployment.log` writes

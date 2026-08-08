@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Hardened redaction against four leak shapes found in an audit: the
+  CamelCase `"SecretAccessKey"`/`"SessionToken"` JSON keys that `aws sts`
+  output prints (previously only the underscore spellings were caught, so a
+  pasted assume-role response leaked the real secret key), presigned-URL
+  `X-Amz-Signature` values, Slack tokens from CI notification steps, and PEM
+  private-key blocks including truncated ones. The fuzz corpus now carries
+  all four shapes, and the clock-skew evidence the expired-credentials rule
+  depends on is verified to survive untouched.
+
 - Added ten more error-reference pages: the Lambda per-function package
   size limits, the regional code storage quota, the interactive changeset
   prompt hanging CI, termination protection blocking a delete, the unbuilt
