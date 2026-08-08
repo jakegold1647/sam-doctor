@@ -7,10 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       rollout-mode:
-        description: "pilot = non-blocking, strict = fail on findings"
+        description: "pilot = non-blocking, high-confidence = gate on sure findings, strict = fail on any finding"
         type: choice
         options:
           - pilot
+          - high-confidence
           - strict
         default: pilot
 
@@ -38,10 +39,13 @@ jobs:
           log-file: deployment.log
           summary: true
           annotations: true
-          # Use this workflow in two phases:
-          # - default is safe pilot mode (`fail-on-findings: false`).
-          # - on workflow_dispatch + rollout-mode=strict, gate the run.
+          # Use this workflow in three phases:
+          # - default is safe pilot mode (nothing gates the run).
+          # - rollout-mode=high-confidence fails only on findings the rules
+          #   are sure about; medium-confidence findings still report.
+          # - rollout-mode=strict fails on any supported finding.
           fail-on-findings: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.rollout-mode == 'strict' }}
+          fail-on-confidence: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.rollout-mode == 'high-confidence' && 'high' || '' }}
 
       - name: Route findings to triage
         if: always() && steps.sam-doctor.outputs.has-findings == 'true'

@@ -31,3 +31,4 @@ jobs:
           summary: true
           # Optional strict gate: require no recognized supported failures.
           # fail-on-findings: true
+          # fail-on-confidence: high
