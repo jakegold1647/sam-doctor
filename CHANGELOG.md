@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.11.0 - 2026-08-08
+
 - Added a rule-interaction guard. Every rule's fixture is paired with every
   other rule's and the suite checks which findings disappear, against a list
   of the suppressions that are intended. The nine-rule hiding bug fixed above
