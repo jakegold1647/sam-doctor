@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>InvalidSamDocumentException / property not defined for resource type | SAM Doctor</title>
+    <meta name="description" content="Fix 'Invalid Serverless Application Specification document', 'Encountered unsupported property', and 'property not defined for resource of type' in sam deploy and CloudFormation." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/invalid-sam-document.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">InvalidSamDocumentException (template schema validation)</h1>
+        <p class="lede">
+          SAM or CloudFormation rejected the template before creating any
+          resource: the document failed schema validation, or a resource type
+          does not recognize one of its properties. The template never reached
+          AWS as a change — the shape of the file itself is the failure.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>The same family shows up in several phrasings:</p>
+        <ul>
+          <li><code>InvalidSamDocumentException</code> / <code>Invalid Serverless Application Specification document</code> — the SAM transform rejected the document.</li>
+          <li><code>Encountered unsupported property ...</code> — a property the resource type does not accept.</li>
+          <li><code>property ... not defined for resource of type ...</code> — usually indentation putting a property at the wrong nesting level.</li>
+          <li><code>InvalidResourceException</code> — a resource-level rejection with the resource id named.</li>
+        </ul>
+        <p>
+          The most common causes are ordinary editing accidents: a property
+          indented into the wrong block, a copy-paste from a different resource
+          type, or a template that declares SAM resource types
+          (<code>AWS::Serverless::*</code>) after losing its
+          <code>Transform: AWS::Serverless-2016-10-31</code> line.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Validate locally before deploying:</strong>
+            <pre><code>sam validate --lint</code></pre>
+            The lint pass runs cfn-lint rules and reports the resource id and
+            property path, which is faster than a deploy round-trip.
+          </li>
+          <li>
+            <strong>Read the resource id and property in the error.</strong>
+            Compare that property against the reference page for the exact
+            resource type — an unsupported property is often a valid property
+            of a <em>different</em> type (a function property on a state
+            machine, an API property on a function).
+          </li>
+          <li>
+            <strong>Check the nesting level.</strong> YAML indentation moves
+            properties between blocks silently; a property one level too deep
+            or too shallow becomes "not defined for resource of type".
+          </li>
+          <li>
+            <strong>Confirm the Transform line survives.</strong> Templates
+            using <code>AWS::Serverless::*</code> types need
+            <code>Transform: AWS::Serverless-2016-10-31</code> at the top
+            level.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the schema-validation phrasings (high
+          confidence) and keeps them distinct from single-property mismatches,
+          which have their own rule. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./template-limit-exceeded.html">Template exceeds a CloudFormation size or count quota</a> — the other way a template fails before any resource exists.</li>
+          <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM]</a> — a valid template stopped by the IAM acknowledgement gate instead.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
