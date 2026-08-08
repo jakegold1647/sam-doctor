@@ -4,10 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
-- Added five more error-reference pages: the Lambda per-function package
+- Added ten more error-reference pages: the Lambda per-function package
   size limits, the regional code storage quota, the interactive changeset
-  prompt hanging CI, termination protection blocking a delete, and the
-  unbuilt `CodeUri` artifact path. 25 of 44 rules now have a dedicated page.
+  prompt hanging CI, termination protection blocking a delete, the unbuilt
+  `CodeUri` artifact path, the Lambda service's own ECR pull being refused,
+  the duplicate CORS `OPTIONS` preflight, pip dependency resolution, the
+  Python runtime/interpreter mismatch, and the `--resolve-s3`/`--s3-bucket`
+  conflict. 30 of 44 rules now have a dedicated page.
 - The rollout doc now walks teams up the confidence gate (observe, then
   `fail-on-confidence: high`, then `fail-on-findings`) and shows the SARIF
   code-scanning upload.

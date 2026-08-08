@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PythonPipBuilder:ResolveDependencies failed | SAM Doctor</title>
+    <meta name="description" content="Fix 'PythonPipBuilder:ResolveDependencies - Could not find a version that satisfies the requirement': pinned versions, runtime mismatches, and private indexes in sam build." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/pip-dependency-resolution.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">PythonPipBuilder:ResolveDependencies failed</h1>
+        <p class="lede">
+          <code>sam build</code> asked pip to resolve the function's
+          requirements and pip could not — a pinned version that does not
+          exist for the target runtime, a package needing a newer Python, or
+          an index the build environment cannot reach.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          <code>ERROR: Could not find a version that satisfies the requirement
+          ... (from versions: none)</code> is pip speaking through SAM's
+          builder. "From versions: none" usually means no release of that
+          package matches the constraint <em>for the Python version SAM is
+          building against</em> — which may be older than the one on your
+          laptop. Private-index packages produce the same wording when the
+          index is not configured in the build environment.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Reproduce with plain pip against the function runtime:</strong>
+            <pre><code>python3.12 -m pip install -r hello_world/requirements.txt --dry-run</code></pre>
+            Use the same minor version as the function's <code>Runtime:</code>
+            property; that mismatch is the most common cause.
+          </li>
+          <li>
+            <strong>Check the pinned version exists</strong> on PyPI for that
+            Python version — yanked releases and typos in version pins both
+            end here.
+          </li>
+          <li>
+            <strong>For private indexes,</strong> make the index available to
+            the build: a <code>pip.conf</code>/<code>PIP_INDEX_URL</code> the
+            builder can see, and for <code>--use-container</code> builds, one
+            that is reachable from inside the container.
+          </li>
+          <li>
+            <strong>Align local and CI Python versions</strong> so the failure
+            reproduces where you can debug it.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the resolver failure (high confidence) and
+          keeps it distinct from binary-validation and runtime-mismatch
+          failures in the same build family. Runs locally; no AWS access, no
+          log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose build.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./python-runtime-mismatch.html">Binary validation failed for python ... constraints for runtime</a> — the interpreter, not the packages, failing the build.</li>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — when the containerized build path is the blocker instead.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

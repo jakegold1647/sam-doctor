@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CORS preflight conflicts with an existing OPTIONS method | SAM Doctor</title>
+    <meta name="description" content="Fix API Gateway deploy failures where CORS configuration collides with an explicitly defined OPTIONS method: duplicate preflight handlers in SAM templates." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/cors-options-conflict.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">CORS preflight conflicts with an existing OPTIONS method</h1>
+        <p class="lede">
+          The template defines CORS twice: once through a <code>Cors</code>
+          configuration that auto-creates preflight handlers, and once through
+          an explicit <code>OPTIONS</code> method on the same path. API
+          Gateway refuses the duplicate, and the deploy fails.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          SAM's <code>Cors</code> property on <code>AWS::Serverless::Api</code>
+          (or <code>HttpApi</code>) generates an <code>OPTIONS</code> preflight
+          method for each configured path. If an event source or an OpenAPI
+          definition also declares <code>OPTIONS</code> on that path — a common
+          leftover from handling CORS manually before adopting the shorthand —
+          the two definitions collide. The template says the same thing twice
+          in incompatible ways; neither one is wrong alone.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Pick one owner for preflight.</strong> Either keep the
+            <code>Cors</code> configuration and delete the explicit
+            <code>OPTIONS</code> event/method, or keep your handwritten
+            <code>OPTIONS</code> handler and drop the <code>Cors</code> block.
+            The shorthand is right for most APIs; the explicit method wins
+            only when preflight needs custom logic.
+          </li>
+          <li>
+            <strong>Check the OpenAPI definition too</strong> — an inline or
+            referenced <code>DefinitionBody</code> can carry the duplicate
+            <code>options:</code> entry even when no event source declares it.
+          </li>
+          <li>
+            <strong>Redeploy and verify preflight</strong> with a browser or
+            <code>curl -X OPTIONS</code> against the affected path — a 204
+            with the expected <code>Access-Control-Allow-*</code> headers.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the duplicate-OPTIONS wording (medium
+          confidence) in deploy logs. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — the other API Gateway definition-ordering failure.</li>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException</a> — when the template's shape, not its semantics, is the problem.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
