@@ -2,25 +2,23 @@
 """Objective quality gate for the diagnostic-rule fixture registry.
 
 `docs/contributing-a-diagnostic-rule.md` asks every rule for a sanitized
-positive fixture and a nearby non-match. Until now that convention lived only
-in `tests/test_diagnostics.py`, discoverable by reading the file rather than
-by running one command. `RULE_FIXTURES` below is the inventory: one entry per
-rule title, each entry a positive log line that must trigger the rule and a
-negative log line that must not.
-
-The registry does not need every rule on day one - `check_fixtures()` only
-checks the rules that are actually registered, so a PR can migrate one rule
-family at a time. `supported_rules()` minus `RULE_FIXTURES` is the remaining
-backlog.
+positive fixture and a nearby non-match. `RULE_FIXTURES` below is the
+inventory: one entry per stable rule id, each entry a positive log line that
+must trigger the rule and a negative log line that must not. Keys are the
+rule ids from `docs/stability.md` - unlike titles, ids never change, so a
+reworded rule cannot silently orphan its fixtures.
 
 Checks:
 
-- the fixture's rule title still exists in the catalog
+- the fixture's rule id still exists in the catalog
 - both a positive and a negative example are present
 - the positive example triggers its rule; the negative example does not
 - neither example contains an account id, ARN, access key, or email address
 
-Exit code 0 when every registered fixture is clean, 1 when any check fails.
+The registry covers the whole catalog; `check_fixtures()` also fails when a
+catalog rule has no fixture entry, so a new rule cannot land without one.
+
+Exit code 0 when every fixture is clean, 1 when any check fails.
 """
 
 from __future__ import annotations
@@ -45,31 +43,283 @@ class RuleFixture:
     negative: str
 
 
-# One rule family per PR, per `docs/contributing-a-diagnostic-rule.md`. This
-# PR establishes the registry and migrates the GitHub Actions OIDC family;
-# later PRs can add the remaining rules the same way.
+# One entry per rule, keyed by stable rule id. A negative only has to avoid
+# its own rule - a nearby-negative legitimately may trigger a sibling (the
+# code-storage line is exactly the line the package-size rule must ignore).
 RULE_FIXTURES: dict[str, RuleFixture] = {
-    "The GitHub Actions job cannot request an OIDC token": RuleFixture(
+    "github.oidc.token-request-denied": RuleFixture(
         positive="Unable to get ID Token: missing id-token: write permission",
         negative=(
             "The job requested id-token: write and received a token without "
             "incident."
         ),
     ),
-    "GitHub Actions cannot assume the configured AWS role through OIDC": RuleFixture(
+    "github.oidc.assume-role-rejected": RuleFixture(
         positive="Not authorized to perform: sts:AssumeRoleWithWebIdentity",
         negative="AssumeRoleWithWebIdentity request succeeded after a brief retry",
     ),
-    "GitHub OIDC token audience does not match AWS STS": RuleFixture(
+    "github.oidc.audience-mismatch": RuleFixture(
         positive="InvalidIdentityToken: Incorrect token audience",
         negative="OIDC token audience was accepted after a handled retry",
     ),
-    "The target AWS account is missing the GitHub Actions OIDC provider": RuleFixture(
+    "github.oidc.provider-missing": RuleFixture(
         positive="No OpenIDConnect provider found in your account",
         negative=(
             "The GitHub Actions OpenIDConnect provider was already registered "
             "in the account"
         ),
+    ),
+    "lambda.ecr-image.access-denied": RuleFixture(
+        positive=(
+            "Lambda does not have permission to access the ECR image. Check "
+            "the ECR permissions."
+        ),
+        negative="Lambda pulled the ECR image and started the container runtime.",
+    ),
+    "ecr.auth.login-failed": RuleFixture(
+        positive=(
+            'Error response from daemon: Head "https://registry.example.test/'
+            'v2/sam-app/manifests/latest": no basic auth credentials'
+        ),
+        negative="Login Succeeded",
+    ),
+    "iam.deny.explicit": RuleFixture(
+        positive=(
+            "User is not authorized to perform: iam:CreateRole with an "
+            "explicit deny in an identity-based policy"
+        ),
+        negative="The role was created after the explicit allow statement took effect",
+    ),
+    "iam.deny.implicit": RuleFixture(
+        positive=(
+            "User is not authorized to perform: iam:PassRole because no "
+            "identity-based policy allows the iam:PassRole action"
+        ),
+        negative="The identity-based policy allows iam:PassRole, and the call proceeded",
+    ),
+    "iam.access-denied.generic": RuleFixture(
+        positive="AccessDeniedException: action is not authorized",
+        negative="The API call completed without an access denial",
+    ),
+    "s3.artifact-bucket.access-denied": RuleFixture(
+        positive=(
+            "Error: Failed to create changeset for the stack: my-app, An "
+            "error occurred (ValidationError) when calling the "
+            "CreateChangeSet operation: S3 error: Access Denied"
+        ),
+        negative="Uploading to my-bucket/artifact.zip (100%)",
+    ),
+    "aws.credentials.expired": RuleFixture(
+        positive=(
+            "An error occurred (ExpiredTokenException) when calling the "
+            "AssumeRole operation: The security token included in the "
+            "request is expired"
+        ),
+        negative="The security token included in the request is valid for another hour",
+    ),
+    "cloudformation.api.throttled": RuleFixture(
+        positive=(
+            "ResourceStatusReason: Rate exceeded (Service: CloudFormation, "
+            "Status Code: 400)"
+        ),
+        negative="The deployment completed under the API rate limits",
+    ),
+    "sam.template.invalid-property": RuleFixture(
+        positive=(
+            "property StageName: not defined for resource of type "
+            "AWS::Serverless::Api"
+        ),
+        negative="SAM template property StageName is valid for AWS::Serverless::Api",
+    ),
+    "sam.template.schema-validation-failed": RuleFixture(
+        positive="InvalidSamDocumentException: Encountered unsupported property MemorySize",
+        negative="sam validate --lint completed with no errors",
+    ),
+    "iam.trust-policy.resource-field-invalid": RuleFixture(
+        positive="Has prohibited field Resource",
+        negative="The trust policy passed validation with no prohibited fields",
+    ),
+    "lambda.code-signing.image-incompatible": RuleFixture(
+        positive=(
+            "Code signing is not supported for functions created with "
+            "container images."
+        ),
+        negative="Code signing configuration attached to the zip-packaged function",
+    ),
+    "s3.bucket-name.invalid": RuleFixture(
+        positive="The specified bucket is not valid. Error Code: InvalidBucketName",
+        negative="Creating the required S3 bucket if one does not exist",
+    ),
+    "s3.bucket-name.already-taken": RuleFixture(
+        positive=(
+            "MyBucket CREATE_FAILED my-app-logs already exists (Service: S3, "
+            "Status Code: 409, Error Code: BucketAlreadyExists)"
+        ),
+        negative="Creating the required S3 bucket if one does not exist",
+    ),
+    "cloudformation.lambda-layer.artifact-unreadable": RuleFixture(
+        positive=(
+            "Your access has been denied by S3, please make sure your "
+            "request credentials have permission to GetObject for bucket "
+            "layer-artifacts."
+        ),
+        negative="The layer artifact downloaded from S3 without error",
+    ),
+    "sam.build.docker-required": RuleFixture(
+        positive=(
+            "Error: Building image for HelloWorldFunction requires Docker. "
+            "is Docker running?"
+        ),
+        negative="Docker daemon responded and the container build started",
+    ),
+    "lambda.package.size-limit-exceeded": RuleFixture(
+        positive=(
+            "An error occurred (InvalidParameterValueException) when calling "
+            "the UpdateFunctionCode operation: Unzipped size must be smaller "
+            "than 262144000 bytes"
+        ),
+        # The regional code-storage quota is the failure this rule must NOT
+        # claim - it belongs to lambda.code-storage.limit-exceeded.
+        negative=(
+            "An error occurred (CodeStorageExceededException) when calling "
+            "the UpdateFunctionCode operation: Code storage limit exceeded."
+        ),
+    ),
+    "apigateway.deployment.no-methods": RuleFixture(
+        positive="The REST API doesn't contain any methods",
+        negative="The REST API contains three methods and deployed cleanly",
+    ),
+    "cloudformation.resource.stabilization-timeout": RuleFixture(
+        positive="Resource handler returned message: Exceeded attempts to wait",
+        negative="The resource reached CREATE_COMPLETE within the expected window",
+    ),
+    "cloudformation.resource.create-update-failed": RuleFixture(
+        positive="MyFunction CREATE_FAILED Resource handler returned message: denied",
+        negative="MyFunction CREATE_COMPLETE AWS::Lambda::Function",
+    ),
+    "lambda.code-storage.limit-exceeded": RuleFixture(
+        positive=(
+            "An error occurred (CodeStorageExceededException) when calling "
+            "the UpdateFunctionCode operation: Code storage limit exceeded."
+        ),
+        # The per-function size limit is the nearby failure this rule must
+        # leave to lambda.package.size-limit-exceeded.
+        negative=(
+            "An error occurred (RequestEntityTooLargeException) when calling "
+            "the UpdateFunctionCode operation: Request must be smaller than "
+            "70167211 bytes for the UpdateFunctionCode operation"
+        ),
+    ),
+    "cloudformation.stack.operation-in-progress": RuleFixture(
+        positive="Stack my-service-prod is in UPDATE_IN_PROGRESS state and can not be updated.",
+        negative="MyStack UPDATE_IN_PROGRESS followed by UPDATE_COMPLETE",
+    ),
+    "cloudformation.stack.failed-recreate-required": RuleFixture(
+        positive="Stack: example is in ROLLBACK_COMPLETE state and can not be updated.",
+        negative="Stack reached UPDATE_COMPLETE after the change set executed",
+    ),
+    "cloudformation.stack.rollback-complete": RuleFixture(
+        positive="Stack entered ROLLBACK_FAILED after a resource failure",
+        negative="The deploy completed with every resource in service",
+    ),
+    "cloudformation.rollback.iam-role-delete-failed": RuleFixture(
+        positive=(
+            "AWS::CloudFormation::Stack ROLLBACK_FAILED ... The following "
+            "resource(s) failed to delete: [IAMRoleDeployment]"
+        ),
+        negative="Rollback removed every provisional resource without error",
+    ),
+    "cloudformation.stack.termination-protection": RuleFixture(
+        positive=(
+            "An error occurred (ValidationError) when calling the "
+            "DeleteStack operation: Stack my-app cannot be deleted while "
+            "TerminationProtection is enabled"
+        ),
+        negative="Termination protection was disabled before the delete request",
+    ),
+    "cloudformation.stack.delete-failed": RuleFixture(
+        positive=(
+            "ArtifactBucket AWS::S3::Bucket DELETE_FAILED The bucket you "
+            "tried to delete is not empty (Service: S3, Status Code: 409)"
+        ),
+        negative="DELETE_COMPLETE The stack and all resources were removed",
+    ),
+    "cloudformation.export.in-use": RuleFixture(
+        positive="Export my-app-api-url cannot be updated as it is in use by consumer-stack",
+        negative="The export value changed once no stack imported it",
+    ),
+    "cloudformation.capabilities.required": RuleFixture(
+        positive="InsufficientCapabilitiesException: Requires capabilities : [CAPABILITY_NAMED_IAM]",
+        negative="Change set executed with the acknowledged capabilities",
+    ),
+    "cloudformation.template.quota-exceeded": RuleFixture(
+        positive=(
+            "Template format error: Number of resources, 501, is greater "
+            "than maximum allowed, 500"
+        ),
+        # An ordinary missing-parameter ValidationError belongs to the
+        # generic change-set rule, not the quota rule.
+        negative=(
+            "An error occurred (ValidationError) when calling the "
+            "CreateChangeSet operation: Parameters: [DbPassword] must have "
+            "values"
+        ),
+    ),
+    "sam.deploy.bucket-config-conflict": RuleFixture(
+        positive="Cannot use both --resolve-s3 and --s3-bucket parameters. Please use only one.",
+        negative="Resolved the managed S3 bucket for deployment artifacts",
+    ),
+    "sam.build.esbuild-missing": RuleFixture(
+        positive="NodejsNpmEsbuildBuilder:EsbuildBundle - Esbuild Failed: Cannot find esbuild.",
+        negative="esbuild bundled the handler in 240ms",
+    ),
+    "sam.build.python-dependency-resolution-failed": RuleFixture(
+        positive=(
+            "Error: PythonPipBuilder:ResolveDependencies - "
+            "{pip_failure_reason: ERROR: Could not find a version that "
+            "satisfies the requirement pydantic-core==2.18.4 (from versions: "
+            "none)}"
+        ),
+        negative="pip resolved every requirement without conflicts",
+    ),
+    "sam.build.python-runtime-mismatch": RuleFixture(
+        positive=(
+            "Error: PythonPipBuilder:Validation - Binary validation failed "
+            "for python, searched for python in following locations: "
+            "['/usr/local/bin/python3'] which did not satisfy constraints "
+            "for runtime: python3.12 on your PATH?"
+        ),
+        negative="Binary validation confirmed python3.12 on PATH",
+    ),
+    "sam.build.python-dependency-validation-failed": RuleFixture(
+        positive=(
+            "PythonPipBuilder:ResolveDependencies - Binary validation "
+            "failed: failed to build wheel for cryptography"
+        ),
+        negative="Built wheels for every dependency in the requirements file",
+    ),
+    "cloudformation.deploy.no-changes": RuleFixture(
+        positive="Error: No changes to deploy. Stack my-app is up to date",
+        negative="Changeset created successfully with three resource changes",
+    ),
+    "sam.deploy.artifact-upload-failed": RuleFixture(
+        positive=(
+            "Parameter CodeUri of resource HelloWorldFunction refers to a "
+            "file or folder that does not exist"
+        ),
+        negative="Uploading to my-bucket/artifact.zip (100%)",
+    ),
+    "sam.deploy.configuration-resolution-failed": RuleFixture(
+        positive="Error: Failed to create changeset",
+        negative="Changeset created successfully",
+    ),
+    "sam.deploy.interactive-confirmation-required": RuleFixture(
+        positive="Deploy this changeset? [y/N]:",
+        negative="Automatically applied the changeset with --no-confirm-changeset",
+    ),
+    "apigateway.cors.preflight-conflict": RuleFixture(
+        positive="CORS conflict: duplicate OPTIONS method",
+        negative="The preflight request returned 204",
     ),
 }
 
@@ -89,19 +339,29 @@ def check_fixtures(
 ) -> list[str]:
     """Return every fixture registry problem as a human-readable string."""
 
+    checking_full_registry = fixtures is None
     fixtures = RULE_FIXTURES if fixtures is None else fixtures
-    rules_by_title = {rule.title: rule for rule in supported_rules()}
+    rules_by_id = {rule.id: rule for rule in supported_rules()}
     problems: list[str] = []
 
-    for title, fixture in fixtures.items():
-        if title not in rules_by_title:
-            problems.append(f"{title!r}: no rule in the catalog has this title.")
+    if checking_full_registry:
+        for rule_id in rules_by_id:
+            if rule_id not in fixtures:
+                problems.append(
+                    f"{rule_id!r}: catalog rule has no fixture registry entry."
+                )
+
+    for rule_id, fixture in fixtures.items():
+        if rule_id not in rules_by_id:
+            problems.append(
+                f"{rule_id!r}: no rule in the catalog carries this id."
+            )
             continue
 
         if not fixture.positive.strip():
-            problems.append(f"{title!r}: fixture has no positive example.")
+            problems.append(f"{rule_id!r}: fixture has no positive example.")
         if not fixture.negative.strip():
-            problems.append(f"{title!r}: fixture has no nearby-negative example.")
+            problems.append(f"{rule_id!r}: fixture has no nearby-negative example.")
         if not fixture.positive.strip() or not fixture.negative.strip():
             continue
 
@@ -109,16 +369,16 @@ def check_fixtures(
             for kind, pattern in _DISALLOWED_PATTERNS.items():
                 if pattern.search(text):
                     problems.append(
-                        f"{title!r}: {label} fixture looks like it contains a {kind}."
+                        f"{rule_id!r}: {label} fixture looks like it contains a {kind}."
                     )
 
-        positive_titles = {finding.title for finding in diagnose(fixture.positive)}
-        if title not in positive_titles:
-            problems.append(f"{title!r}: positive fixture does not trigger this rule.")
+        positive_ids = {finding.rule_id for finding in diagnose(fixture.positive)}
+        if rule_id not in positive_ids:
+            problems.append(f"{rule_id!r}: positive fixture does not trigger this rule.")
 
-        negative_titles = {finding.title for finding in diagnose(fixture.negative)}
-        if title in negative_titles:
-            problems.append(f"{title!r}: negative fixture still triggers this rule.")
+        negative_ids = {finding.rule_id for finding in diagnose(fixture.negative)}
+        if rule_id in negative_ids:
+            problems.append(f"{rule_id!r}: negative fixture still triggers this rule.")
 
     return problems
 
@@ -127,7 +387,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--rule",
-        help="only check fixtures whose rule title contains this text (case-insensitive)",
+        help="only check fixtures whose rule id contains this text (case-insensitive)",
     )
     parser.add_argument(
         "--format",
@@ -137,21 +397,24 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    fixtures = RULE_FIXTURES
+    fixtures = None
     if args.rule:
         needle = args.rule.lower()
         fixtures = {
-            title: fixture for title, fixture in fixtures.items() if needle in title.lower()
+            rule_id: fixture
+            for rule_id, fixture in RULE_FIXTURES.items()
+            if needle in rule_id.lower()
         }
         if not fixtures:
             print(f"No fixture registry entry matches --rule {args.rule!r}.")
             return 1
 
     problems = check_fixtures(fixtures)
+    checked = len(fixtures) if fixtures is not None else len(RULE_FIXTURES)
     total_rules = len(supported_rules())
     if not problems:
         print(
-            f"Rule fixture registry OK: {len(fixtures)} checked, "
+            f"Rule fixture registry OK: {checked} checked, "
             f"{len(RULE_FIXTURES)} of {total_rules} catalog rules registered."
         )
         return 0
@@ -161,7 +424,7 @@ def main() -> int:
             print(f"::error title=Rule fixture check::{problem}")
         else:
             print(f"ERROR: {problem}")
-    print(f"{len(problems)} problem(s) across {len(fixtures)} checked fixture(s).")
+    print(f"{len(problems)} problem(s) across {checked} checked fixture(s).")
     return 1
 
 

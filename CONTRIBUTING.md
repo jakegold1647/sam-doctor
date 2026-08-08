@@ -126,19 +126,15 @@ commands that change AWS resources or require credentials.
 ### Rule fixture registry
 
 `scripts/check-rule-fixtures.py` tracks a positive and nearby-negative fixture
-per rule title, separately from the regression tests above, so the fixture set
-a rule needs is visible without reading `tests/test_diagnostics.py`. It does
-not require every rule to be registered yet - it only checks the rules already
-listed in `RULE_FIXTURES`.
+per stable rule id, separately from the regression tests above, so the fixture
+set a rule needs is visible without reading `tests/test_diagnostics.py`. The
+registry covers the whole catalog, and the check fails when a catalog rule has
+no entry - so a new rule needs its `RULE_FIXTURES` entry in the same PR.
 
 ```bash
-python scripts/check-rule-fixtures.py                        # whole registry
-python scripts/check-rule-fixtures.py --rule "OIDC token"    # one rule
+python scripts/check-rule-fixtures.py                     # whole registry
+python scripts/check-rule-fixtures.py --rule oidc         # one rule family
 ```
-
-When you add a rule, add its entry to `RULE_FIXTURES` in the same PR if the
-rule belongs to a family that already has fixtures registered; otherwise a
-fixture is optional until someone migrates that family.
 
 ### Website error-page mapping
 

@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Completed the fixture registry started in #49: every one of the 44 catalog
+  rules now has a sanitized positive fixture and a nearby non-match in
+  `scripts/check-rule-fixtures.py`, and the registry is keyed by stable rule
+  id instead of title, so rewording a rule cannot orphan its fixtures. The
+  check now also fails when a catalog rule has no entry, which makes the
+  fixture pair a requirement for landing a new rule rather than a
+  convention. Closes the follow-up promised on issue #40.
 - Added Windows CI coverage for the documented support path: a
   `verify-windows` job runs the quality gates, the full test suite, demo,
   batch, packet, and `init` on `windows-latest`, and exercises the composite
