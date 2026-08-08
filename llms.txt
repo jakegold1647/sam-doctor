@@ -17,7 +17,7 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 - [AssumeRoleWithWebIdentity / GitHub Actions OIDC](https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md): check `id-token: write`, the STS audience, and the trust-policy subject.
 - [CloudFormation ROLLBACK_COMPLETE](https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md): find the first failed resource event instead of treating rollback as the root cause.
 - [InsufficientCapabilitiesException](https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md): review IAM resources and acknowledge `CAPABILITY_IAM` or `CAPABILITY_NAMED_IAM` deliberately.
-- [Deployment error index](https://jakegold1647.github.io/sam-doctor/errors/): one reference page per exact error string - 39 of the 44 diagnostic rules have a dedicated page covering the meaning, the fix, and the read-only verification commands.
+- [Deployment error index](https://jakegold1647.github.io/sam-doctor/errors/): one reference page per exact error string - every diagnostic rule has a dedicated page covering the meaning, the fix, and the read-only verification commands.
 
 ## Supported signals
 

@@ -18,8 +18,8 @@ means a user can rely on what is already here.
    The promise is drafted in [stability.md](stability.md); at 1.0 the README
    links to it and it stops being a draft. Until then, 1.0 is a version
    number, not a commitment.
-4. Keep the site in step. Done and enforced: all 44 rules have a dedicated
-   error-reference page, and `scripts/check-error-pages.py` now fails when a
+4. Keep the site in step. Done and enforced: every rule has a dedicated
+   error-reference page, and `scripts/check-error-pages.py` fails when a
    catalog rule has no mapping entry - so a new rule cannot land without its
    page. The gate also still catches renamed rules, missing pages, and
    orphaned or unlinked pages.
