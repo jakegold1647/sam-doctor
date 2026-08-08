@@ -117,6 +117,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="The security token included in the request is valid for another hour",
     ),
+    "aws.credentials.invalid": RuleFixture(
+        positive=(
+            "An error occurred (UnrecognizedClientException) when calling "
+            "the CreateChangeSet operation: The security token included in "
+            "the request is invalid."
+        ),
+        negative="An error occurred (ExpiredTokenException) when calling the AssumeRole operation: The security token included in the request is expired",
+    ),
     "cloudformation.api.throttled": RuleFixture(
         positive=(
             "ResourceStatusReason: Rate exceeded (Service: CloudFormation, "

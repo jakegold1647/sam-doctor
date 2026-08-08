@@ -469,6 +469,37 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html",
     ),
     Rule(
+        id="aws.credentials.invalid",
+        title="The deployment ran with invalid or wrong-account AWS credentials",
+        confidence="high",
+        patterns=(
+            r"security token included in the request is invalid",
+            r"UnrecognizedClientException",
+        ),
+        explanation=(
+            "The request never passed authentication: the security token is "
+            "invalid, or the access key belongs to no known account. This is "
+            "not the same failure as expired credentials - AWS rejected the "
+            "token itself rather than a token that was once valid. Common "
+            "causes are stale `AWS_*` environment variables overriding the "
+            "intended profile, credentials for the wrong account, or a "
+            "region configured under only one `samconfig.toml` section."
+        ),
+        verification=(
+            "Run `aws configure list` in the failing environment to see which source (environment variable, profile, or IAM role) supplied each credential value.",
+            "Check for `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, or `AWS_SESSION_TOKEN` environment variables overriding the intended profile.",
+            "Once credentials are corrected, confirm the account with `aws sts get-caller-identity`.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html",
+        # The expired-credentials rule owns `is expired`/`ExpiredToken`; defer
+        # to it when a log carries both symptoms so the more precise finding
+        # wins instead of both firing for the same underlying credential.
+        suppressed_by=(
+            r"ExpiredToken(?:Exception)?",
+            r"security token included in the request is expired",
+        ),
+    ),
+    Rule(
         id="cloudformation.api.throttled",
         title="CloudFormation throttled the deployment's API calls",
         confidence="medium",

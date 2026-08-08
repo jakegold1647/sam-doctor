@@ -206,6 +206,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "S3 bucket name",
         ),
         (
+            "An error occurred (UnrecognizedClientException) when calling the CreateChangeSet operation: The security token included in the request is invalid.",
+            "invalid or wrong-account",
+        ),
+        (
             "Your access has been denied by S3, please make sure your request credentials have permission to GetObject for bucket layer-artifacts.",
             "cannot read a Lambda layer artifact",
         ),
@@ -740,6 +744,47 @@ def test_expired_wording_alone_is_not_a_credential_finding() -> None:
     assert (
         diagnose(
             "Waiting for the changeset to be created; the rate of progress is slow."
+        )
+        == []
+    )
+
+
+def test_invalid_credentials_are_distinguished_from_expired_credentials() -> None:
+    invalid_findings = diagnose(
+        "Error: The security token included in the request is invalid"
+    )
+    assert len(invalid_findings) == 1
+    assert "invalid or wrong-account" in invalid_findings[0].title.lower()
+
+    expired_findings = diagnose(
+        "An error occurred (ExpiredTokenException) when calling the AssumeRole "
+        "operation: The security token included in the request is expired"
+    )
+    assert len(expired_findings) == 1
+    assert "have expired" in expired_findings[0].title.lower()
+
+
+def test_invalid_credentials_finding_defers_to_expired_credentials_when_both_appear() -> (
+    None
+):
+    findings = diagnose(
+        "Error: The security token included in the request is invalid\n"
+        "An error occurred (ExpiredTokenException) when calling the AssumeRole "
+        "operation: The security token included in the request is expired"
+    )
+
+    assert len(findings) == 1
+    assert "have expired" in findings[0].title.lower()
+
+
+def test_successful_identity_check_is_not_a_credential_finding() -> None:
+    assert (
+        diagnose(
+            "aws sts get-caller-identity: {\n"
+            '  "UserId": "AIDAEXAMPLE",\n'
+            '  "Account": "REDACTED",\n'
+            '  "Arn": "arn:aws:iam::123456789012:user/deploy"\n'
+            "}"
         )
         == []
     )
