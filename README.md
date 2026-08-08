@@ -276,7 +276,9 @@ to templates, and [`examples/README.md`](examples/README.md) indexes everything.
 
 Run `sam-doctor rules` (or `rules --format json`) for the current
 machine-readable catalog. Each rule triggers on an explicit error signal in the
-log, not on template inspection or AWS account access. The current set:
+log, not on template inspection or AWS account access, and carries a stable id
+(`iam.deny.explicit`, and so on) that CI tooling can match on across releases -
+see [docs/stability.md](docs/stability.md). The current set:
 
 - GitHub Actions OIDC errors: missing `id-token: write`, audience mismatch,
   trust-policy/subject mismatch, and `AssumeRoleWithWebIdentity` failures
@@ -285,10 +287,13 @@ log, not on template inspection or AWS account access. The current set:
 - Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
 - CloudFormation API throttling (`Rate exceeded`)
 - CloudFormation failed-resource events and rollback states
+- Another operation already in progress on the stack
+  (`OperationInProgressException`, `*_IN_PROGRESS state and can not be updated`)
 - Empty change sets (`No changes to deploy` in CI)
 - Resources that fail to stabilize, with the nested handler message surfaced first
 - Exports that cannot change because another stack imports them
-- Lambda deployment packages over a size limit
+- Lambda deployment packages over a per-function size limit, and the regional
+  code storage quota (`CodeStorageExceededException`)
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
 - ECR push authentication failures from the CI runner (missing login, expired
   token, denied `ecr:GetAuthorizationToken`)
@@ -300,7 +305,16 @@ log, not on template inspection or AWS account access. The current set:
   settings and missing `esbuild` dependencies
 - SAM build errors where Docker is unavailable for `sam build --use-container`
 - Python dependency resolution or validation errors in SAM/Python builds
-- Template shape, IAM trust-policy, Lambda packaging, and S3 artifact failures
+- Interactive changeset prompts that stall non-interactive CI
+- Template failures: SAM/CloudFormation schema validation
+  (`InvalidSamDocumentException`, unsupported properties), invalid properties
+  for a resource type, and templates over a CloudFormation size or count quota
+- S3 naming failures: invalid bucket names and globally taken names
+  (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`)
+- Artifact-path failures: a `CodeUri` that was never built, a deployment
+  bucket that denies access to the packaged artifacts, and Lambda layer
+  artifacts CloudFormation cannot read back
+- IAM trust-policy shape errors and Lambda code-signing conflicts
 
 If a deployment error you hit is not covered, open a
 [rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
