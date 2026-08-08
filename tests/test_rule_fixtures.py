@@ -31,15 +31,28 @@ def test_current_registry_passes_every_check() -> None:
     assert checker.check_fixtures() == []
 
 
-def test_flags_a_title_with_no_matching_rule() -> None:
+def test_flags_an_id_with_no_matching_rule() -> None:
     checker = _load_checker()
     fixtures = {
-        "A rule title nobody registered": checker.RuleFixture(
+        "nobody.registered.this-id": checker.RuleFixture(
             positive="anything", negative="anything else"
         )
     }
     problems = checker.check_fixtures(fixtures)
     assert any("no rule in the catalog" in problem for problem in problems)
+
+
+def test_flags_a_catalog_rule_missing_from_the_registry() -> None:
+    checker = _load_checker()
+    complete = checker.RULE_FIXTURES
+    dropped = dict(complete)
+    dropped.pop("iam.deny.explicit")
+    checker.RULE_FIXTURES = dropped
+    try:
+        problems = checker.check_fixtures()
+    finally:
+        checker.RULE_FIXTURES = complete
+    assert any("has no fixture registry entry" in problem for problem in problems)
 
 
 def test_flags_a_missing_positive_or_negative_example() -> None:
@@ -65,7 +78,7 @@ def test_flags_a_positive_fixture_that_does_not_trigger_its_rule() -> None:
 
 def test_flags_a_negative_fixture_that_still_triggers_its_rule() -> None:
     checker = _load_checker()
-    title = "GitHub OIDC token audience does not match AWS STS"
+    title = "github.oidc.audience-mismatch"
     fixture = checker.RULE_FIXTURES[title]
     fixtures = {title: checker.RuleFixture(positive=fixture.positive, negative=fixture.positive)}
     problems = checker.check_fixtures(fixtures)
@@ -88,7 +101,7 @@ def test_flags_a_fixture_containing_an_account_id() -> None:
 def test_rule_filter_narrows_which_fixtures_run() -> None:
     checker = _load_checker()
     argv = sys.argv
-    sys.argv = ["check-rule-fixtures.py", "--rule", "token audience"]
+    sys.argv = ["check-rule-fixtures.py", "--rule", "audience"]
     try:
         assert checker.main() == 0
     finally:
