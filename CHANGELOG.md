@@ -11,7 +11,10 @@ All notable changes to SAM Doctor are documented here.
   replaced by an invitation to file a rule request for an excerpt that does
   not exist. Terminal and Markdown output distinguish the two cases; the JSON
   and SARIF payloads are unchanged, since a zero finding count already says it
-  accurately and their shapes are covered by the stability promise.
+  accurately and their shapes are covered by the stability promise. The
+  Action's job summary - the surface most CI users actually read - is rebuilt
+  from that payload and so could not tell the two cases apart; the wrapper now
+  checks the log itself, per file in batch mode.
 
 - Large logs now say what they are doing. Diagnosis is roughly a second per
   megabyte, so a 100 MB log took a silent minute and looked like a hang; past

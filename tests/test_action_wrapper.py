@@ -220,3 +220,60 @@ def test_action_wrapper_gates_on_confidence_threshold(tmp_path: Path):
     assert "::notice file=" in medium_only.stdout, (
         "the medium finding must still be reported even though it does not gate"
     )
+
+
+@requires_wsl_bash
+def test_action_summary_calls_an_empty_log_empty(tmp_path: Path):
+    """The job summary is the surface most CI users actually read.
+
+    It is rebuilt from the JSON payload, which reports zero findings for an
+    empty log and an unrecognized one alike, so the wrapper has to tell them
+    apart itself or the summary claims the tool read a failure it did not
+    recognize.
+    """
+    root = ROOT
+    empty_log = tmp_path / "deployment.log"
+    empty_log.write_text("", encoding="utf-8")
+    summary = tmp_path / "github-summary.md"
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(tmp_path / "github-output.txt"),
+            "GITHUB_STEP_SUMMARY": _bash_path(summary),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(empty_log),
+            "SAM_DOCTOR_SUMMARY": "true",
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    rendered = summary.read_text(encoding="utf-8")
+    assert "Nothing to diagnose" in rendered
+    assert "No supported pattern found" not in rendered
+
+
+@requires_wsl_bash
+def test_action_summary_keeps_the_unmatched_wording_for_real_logs(tmp_path: Path):
+    root = ROOT
+    log = tmp_path / "deployment.log"
+    log.write_text("Something failed that no rule covers\n", encoding="utf-8")
+    summary = tmp_path / "github-summary.md"
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(tmp_path / "github-output.txt"),
+            "GITHUB_STEP_SUMMARY": _bash_path(summary),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(log),
+            "SAM_DOCTOR_SUMMARY": "true",
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    rendered = summary.read_text(encoding="utf-8")
+    assert "No supported pattern found" in rendered
+    assert "Nothing to diagnose" not in rendered
