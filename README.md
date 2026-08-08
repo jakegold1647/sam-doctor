@@ -316,6 +316,11 @@ see [docs/stability.md](docs/stability.md). The current set:
   artifacts CloudFormation cannot read back
 - IAM trust-policy shape errors and Lambda code-signing conflicts
 
+Every rule also has a human-written reference page on the
+[deployment error index](https://jakegold1647.github.io/sam-doctor/errors/) -
+what the exact error string means, the fix, and read-only verification
+commands.
+
 If a deployment error you hit is not covered, open a
 [rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 with a sanitized 5-15 line excerpt and the command you ran.

@@ -21,7 +21,9 @@ Researchers and technical reviewers can use it to evaluate whether failure-to-fi
 - return a ranked finding list with confidence labels,
 - provide one or more safe verification commands,
 - redact common sensitive identifiers in the report output,
-- emit machine-readable output (`json`) for reproducibility.
+- emit machine-readable output (`json`, SARIF 2.1.0) for reproducibility,
+  with a stable rule id on every finding so results can be compared across
+  tool versions even when rule wording changes.
 
 ### It does not do
 
