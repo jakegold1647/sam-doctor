@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- The nested-stack rule excludes the embedded-stack line from the generic
+  resource-failure rule per line rather than suppressing that rule for the
+  whole log. A parent stack that fails a child usually fails other resources
+  too, and whole-log suppression dropped those other failures from the report
+  entirely - the opposite of what someone debugging a nested deployment needs.
+
 - Added a rule for nested (embedded) stack failures. When a `AWS::Serverless::Application`
   or nested `AWS::CloudFormation::Stack` fails, the parent's own event only
   says an embedded stack was not successfully created or updated - the actual

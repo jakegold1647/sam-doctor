@@ -848,6 +848,12 @@ _RULES = (
             r"cannot be (?:updated|deleted) as it is in use by",
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
+        ),
+        # The nested-stack rule explains the embedded-stack event itself, but a
+        # parent stack that fails a child usually fails other resources too.
+        # Excluding the line rather than suppressing the whole rule keeps those
+        # other failures reported, the same way the denial rules do it.
+        excluded_line_patterns=(
             r"Embedded stack .* was not successfully (?:created|updated)",
         ),
     ),

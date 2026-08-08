@@ -1943,3 +1943,40 @@ def test_github_notices_from_single_log_payload_without_findings() -> None:
     }
 
     assert github_notices_from_payload(payload, False) == ""
+
+
+def test_nested_stack_failure_does_not_hide_other_failed_resources() -> None:
+    """A parent stack that fails a child usually fails other resources too.
+
+    Suppressing the generic resource rule for the whole log would drop those
+    other failures entirely, which is the opposite of what someone debugging a
+    nested deployment needs. The embedded-stack line is excluded per line
+    instead, so its own rule explains it and everything else still reports.
+    """
+    log = (
+        "ChildStack CREATE_FAILED Embedded stack "
+        "arn:aws:cloudformation:us-east-1:123456789012:stack/child/abc "
+        "was not successfully created: The following resource(s) failed to create: [MyFn].\n"
+        'MyQueue CREATE_FAILED Resource handler returned message: '
+        '"Invalid request provided: queue attribute name is invalid"'
+    )
+
+    findings = {finding.rule_id: finding for finding in diagnose(log)}
+    assert "cloudformation.nested-stack.propagation-failed" in findings
+    assert "cloudformation.resource.create-update-failed" in findings
+
+    generic_evidence = " ".join(findings["cloudformation.resource.create-update-failed"].evidence)
+    assert "MyQueue" in generic_evidence
+    assert "Embedded stack" not in generic_evidence
+
+
+def test_nested_stack_failure_alone_reports_one_finding() -> None:
+    log = (
+        "ChildStack CREATE_FAILED Embedded stack "
+        "arn:aws:cloudformation:us-east-1:123456789012:stack/child/abc "
+        "was not successfully created: The following resource(s) failed to create: [MyFn]."
+    )
+
+    assert [f.rule_id for f in diagnose(log)] == [
+        "cloudformation.nested-stack.propagation-failed"
+    ]
