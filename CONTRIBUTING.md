@@ -150,17 +150,18 @@ python scripts/check-rule-fixtures.py --rule oidc         # one rule family
 `scripts/check-error-pages.py` keeps them from drifting apart: `ERROR_PAGE_MAP`
 lists every rule with a dedicated page, and the check fails on a mapping that
 points at a renamed or removed rule, a page that no longer exists, two rules
-sharing a page, or a page that exists (or is linked from `site/errors/index.html`)
-without an entry.
+sharing a page, a page that exists (or is linked from `site/errors/index.html`)
+without an entry, or a page whose stated confidence no longer matches its rule.
 
 ```bash
 python scripts/check-error-pages.py
 ```
 
-Not every rule needs a page - the index page's "Request a diagnostic rule"
-prompt is the fallback for anything unmapped. If you add, rename, or remove a
-page under `site/errors/`, update `ERROR_PAGE_MAP` and the link in
-`site/errors/index.html` in the same PR.
+Coverage is complete, and the check keeps it that way: **a new rule needs a
+page** under `site/errors/`, an `ERROR_PAGE_MAP` entry, and a link from
+`site/errors/index.html`, all in the same PR. Copy the closest existing page
+for the structure - what the error means, the fix in the order people actually
+try things, and read-only verification commands.
 
 ## Pull requests
 
