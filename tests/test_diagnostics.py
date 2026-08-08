@@ -1901,6 +1901,76 @@ def test_code_storage_wording_alone_is_not_a_quota_finding() -> None:
     assert diagnose("Code storage cleanup finished; usage is well below the limit.") == []
 
 
+def test_reserved_concurrency_below_minimum_positive() -> None:
+    log = (
+        "CREATE_FAILED  AWS::Lambda::Function  ApiFunction  Specified "
+        "ReservedConcurrentExecutions for function decreases account's "
+        "UnreservedConcurrentExecution below its minimum value of [100]. "
+        "(Service: Lambda, Status Code: 400; Error Code: "
+        "InvalidParameterValueException)"
+    )
+
+    rule_titles = [f.title for f in diagnose(log)]
+
+    assert (
+        "Reserved concurrency would drop the account below its minimum unreserved value"
+        in rule_titles
+    )
+
+
+def test_reserved_concurrency_below_minimum_matches_the_resource_handler_wrapper() -> None:
+    log = (
+        'Resource handler returned message: "Specified '
+        "ReservedConcurrentExecutions for function decreases account's "
+        'UnreservedConcurrentExecution below its minimum value of [100]." '
+        "(HandlerErrorCode: InvalidRequest)"
+    )
+
+    rule_titles = [f.title for f in diagnose(log)]
+
+    assert (
+        "Reserved concurrency would drop the account below its minimum unreserved value"
+        in rule_titles
+    )
+
+
+def test_reserved_concurrency_rule_does_not_match_unrelated_invalid_parameter_errors() -> (
+    None
+):
+    log = (
+        "An error occurred (InvalidParameterValueException) when calling "
+        "the CreateFunction operation: Environment variable AWS_REGION is a "
+        "reserved key"
+    )
+
+    rule_titles = [f.title for f in diagnose(log)]
+
+    assert (
+        "Reserved concurrency would drop the account below its minimum unreserved value"
+        not in rule_titles
+    )
+
+
+def test_reserved_concurrency_below_minimum_suppresses_the_generic_create_failed_finding() -> (
+    None
+):
+    log = (
+        "CREATE_FAILED  AWS::Lambda::Function  ApiFunction  Specified "
+        "ReservedConcurrentExecutions for function decreases account's "
+        "UnreservedConcurrentExecution below its minimum value of [100]. "
+        "(Service: Lambda, Status Code: 400; Error Code: "
+        "InvalidParameterValueException)"
+    )
+
+    rule_titles = [f.title for f in diagnose(log)]
+
+    assert (
+        "Reserved concurrency would drop the account below its minimum unreserved value"
+        in rule_titles
+    )
+    assert "CloudFormation resource creation or update failed" not in rule_titles
+
+
 def test_github_notices_from_single_log_payload() -> None:
     """The Action's default mode is a single log, not a batch.
 

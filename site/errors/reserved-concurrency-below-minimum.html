@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReservedConcurrentExecutions below the account's UnreservedConcurrentExecution minimum | SAM Doctor</title>
+    <meta name="description" content="Fix 'Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value': an account-wide concurrency floor, not a template or permissions bug." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/reserved-concurrency-below-minimum.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">ReservedConcurrentExecutions below the account minimum</h1>
+        <p class="lede">
+          Setting <code>ReservedConcurrentExecutions</code> on a function
+          would leave the account with less than its minimum unreserved
+          concurrency (usually 100). This is an account-wide ceiling, not a
+          problem with this function's template or permissions - and it is
+          especially common on a fresh account, where the concurrency limit
+          can still be at the 1,000 default, or lower in a new or
+          burst-limited account, sometimes as low as 10-50, where no
+          reservation is possible at all.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          AWS Lambda always keeps a minimum amount of unreserved concurrency
+          available in an account, so that functions with no reservation of
+          their own are never starved out by functions that reserved
+          everything. The account's total concurrency limit minus every
+          function's <code>ReservedConcurrentExecutions</code> must stay at or
+          above that minimum. Reserving concurrency for one function can push
+          the account below the floor even when that function's own
+          reservation looks reasonable in isolation.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Read the account's concurrency limit</strong> (read-only):
+            <pre><code>aws lambda get-account-settings \
+  --query 'AccountLimit.[ConcurrentExecutions,UnreservedConcurrentExecutions]'</code></pre>
+          </li>
+          <li>
+            <strong>Sum existing reservations across the account</strong> -
+            not just this template:
+            <pre><code>aws lambda list-functions \
+  --query 'Functions[?ReservedConcurrentExecutions!=`null`].[FunctionName,ReservedConcurrentExecutions]'</code></pre>
+          </li>
+          <li>
+            <strong>Lower or remove the reservation</strong> in the template
+            so the account keeps at least the minimum unreserved, or:
+          </li>
+          <li>
+            <strong>Request a concurrency quota increase</strong> for the
+            account through Service Quotas when the reservation is genuinely
+            needed and the account limit is the real constraint.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the reserved-concurrency wording (high
+          confidence) and keeps it distinct from other
+          <code>InvalidParameterValueException</code> messages that share the
+          same exception name for an unrelated reason. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded (CodeStorageExceededException)</a> — another account-wide Lambda quota, not a per-function one.</li>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> — the generic resource-failure finding this error is more specific than.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

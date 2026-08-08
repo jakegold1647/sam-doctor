@@ -848,6 +848,7 @@ _RULES = (
             r"cannot be (?:updated|deleted) as it is in use by",
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
+            r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
         ),
         # The nested-stack rule explains the embedded-stack event itself, but a
         # parent stack that fails a child usually fails other resources too.
@@ -875,6 +876,30 @@ _RULES = (
             "Delete unnecessary versions with `aws lambda delete-function --qualifier <version>` or set up automated lifecycle cleanup.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+    ),
+    Rule(
+        id="lambda.concurrency.reserved-below-minimum",
+        title="Reserved concurrency would drop the account below its minimum unreserved value",
+        confidence="high",
+        patterns=(
+            r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
+        ),
+        explanation=(
+            "The account's total concurrency limit minus every function's "
+            "`ReservedConcurrentExecutions` must leave at least the account "
+            "minimum (usually 100) unreserved for functions that reserve "
+            "nothing. This is an account-level ceiling, not a template-syntax "
+            "or permissions problem - it is especially common on a fresh "
+            "account, where the concurrency limit can still be at the 1,000 "
+            "default, or lower in a new or burst-limited account, sometimes "
+            "as low as 10-50, where no reservation is possible at all."
+        ),
+        verification=(
+            "Run `aws lambda get-account-settings` (read-only) to see the account's concurrency limit and its current unreserved value.",
+            "Sum `ReservedConcurrentExecutions` across every function in the account, not just the one in this template, to see how much is already committed.",
+            "Either lower or remove the reservation in the template, or request a concurrency quota increase for the account and retry.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html",
     ),
     Rule(
         id="cloudformation.stack.operation-in-progress",

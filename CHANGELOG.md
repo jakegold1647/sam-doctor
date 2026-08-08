@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule for `ReservedConcurrentExecutions` dropping the account below
+  its `UnreservedConcurrentExecution` minimum. Fresh accounts, whose
+  concurrency limit can still be at the 1,000 default (or lower), hit this
+  reserving concurrency for even one function; the log previously fell
+  through to the generic `CREATE_FAILED` finding.
 - The nested-stack rule excludes the embedded-stack line from the generic
   resource-failure rule per line rather than suppressing that rule for the
   whole log. A parent stack that fails a child usually fails other resources
