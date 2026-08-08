@@ -1829,3 +1829,47 @@ def test_lambda_code_storage_limit_exceeded_suppression() -> None:
 
 def test_code_storage_wording_alone_is_not_a_quota_finding() -> None:
     assert diagnose("Code storage cleanup finished; usage is well below the limit.") == []
+
+
+def test_github_notices_from_single_log_payload() -> None:
+    """The Action's default mode is a single log, not a batch.
+
+    The batch branch had a test; this one did not, despite being the path most
+    workflows take when the Action renders its annotations.
+    """
+    from sam_doctor.cli import github_notices_from_payload
+
+    payload = {
+        "sam_doctor_version": __version__,
+        "source": "deployment.log",
+        "finding_count": 1,
+        "findings": [
+            {
+                "rule_id": "github.oidc.assume-role-rejected",
+                "title": "GitHub Actions cannot assume the configured AWS role through OIDC",
+                "confidence": "high",
+                "explanation": "The trust policy rejected the token.",
+                "verification": ["Check the trust policy subject."],
+                "documentation_url": "https://docs.github.com/actions",
+                "evidence": ["Not authorized to perform: sts:AssumeRoleWithWebIdentity"],
+                "line_number": 2,
+            }
+        ],
+    }
+
+    output = github_notices_from_payload(payload, False)
+    assert output.startswith("::notice file=deployment.log,line=2,title=SAM Doctor::")
+    assert "cannot assume the configured AWS role" in output
+
+
+def test_github_notices_from_single_log_payload_without_findings() -> None:
+    from sam_doctor.cli import github_notices_from_payload
+
+    payload = {
+        "sam_doctor_version": __version__,
+        "source": "clean.log",
+        "finding_count": 0,
+        "findings": [],
+    }
+
+    assert github_notices_from_payload(payload, False) == ""
