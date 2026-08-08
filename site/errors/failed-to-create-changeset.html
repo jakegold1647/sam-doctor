@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Failed to create changeset / Unable to locate credentials | SAM Doctor</title>
+    <meta name="description" content="Triage 'Error: Failed to create changeset', 'Unable to locate credentials', and 'Parameters must have values' in sam deploy: configuration and resolution failures before any resource exists." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/failed-to-create-changeset.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Failed to create changeset (configuration, not infrastructure)</h1>
+        <p class="lede">
+          The deploy died before CloudFormation evaluated a single resource:
+          credentials were missing, a parameter had no value, or change-set
+          validation refused the request. The infrastructure is untouched —
+          something about <em>this invocation's configuration</em> is
+          incomplete.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The common shapes</h2>
+        <ul>
+          <li><code>Unable to locate credentials</code> — no credential source in this environment: the CI job never ran its auth step, or the profile is not set.</li>
+          <li><code>Parameters: [Name] must have values</code> — a template parameter with no default and no supplied value, often after adding a parameter without updating <code>samconfig.toml</code> or the pipeline.</li>
+          <li><code>Error: Failed to create changeset</code> with a specific reason attached — read the reason; when it matches a sharper failure (quota, schema, S3 access), that failure is the real page to follow.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">TRIAGE</p>
+        <h2 id="fix-title">How to triage it</h2>
+        <ol>
+          <li>
+            <strong>Check what credentials this environment resolves</strong>
+            (read-only):
+            <pre><code>aws configure list
+aws sts get-caller-identity</code></pre>
+          </li>
+          <li>
+            <strong>Compare declared parameters against supplied ones</strong>
+            — the template's <code>Parameters:</code> block versus
+            <code>parameter_overrides</code> in <code>samconfig.toml</code>
+            and any <code>--parameter-overrides</code> flags.
+          </li>
+          <li>
+            <strong>Re-read the full reason line</strong> - this family is a
+            wrapper, and the text after the colon usually names which specific
+            page on this index actually applies.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor reports this family at medium confidence and
+          deliberately steps aside whenever a sharper rule matches the same
+          log - the quota, schema, artifact, and S3 rules all outrank it.
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./expired-token.html">The security token is expired</a> — when credentials exist but have aged out.</li>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException</a> — the schema-validation reason this wrapper often carries.</li>
+          <li><a href="./template-limit-exceeded.html">Template exceeds a quota</a> — another specific reason hiding behind the generic wrapper.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

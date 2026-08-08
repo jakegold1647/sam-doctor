@@ -48,6 +48,7 @@
           <li><a href="./incorrect-token-audience.html">Incorrect token audience (InvalidIdentityToken)</a> — a token minted for a different consumer than STS expects.</li>
           <li><a href="./no-oidc-provider.html">No OpenIDConnect provider found in your account</a> — the per-account IAM registration OIDC deploys need first.</li>
           <li><a href="./prohibited-field-resource.html">Has prohibited field Resource</a> — a permissions-policy statement pasted into a trust policy.</li>
+          <li><a href="./access-denied.html">AccessDenied / is not authorized to perform</a> — extracting the action, principal, and policy layer before touching any policy.</li>
         </ul>
       </section>
 
@@ -55,6 +56,8 @@
         <p class="eyebrow">CLOUDFORMATION STACK STATES</p>
         <h2 id="stack-title">Stack lifecycle errors</h2>
         <ul>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> — finding the first real failure under the rollback noise.</li>
+          <li><a href="./rollback-in-progress.html">ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED</a> — what each rollback state means and where it lands.</li>
           <li><a href="./rollback-complete-cannot-be-updated.html">Stack is in ROLLBACK_COMPLETE state and can not be updated</a> — the failed-first-deploy dead end.</li>
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
           <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
@@ -91,6 +94,8 @@
           <li><a href="./resolve-s3-conflict.html">Cannot use both --resolve-s3 and --s3-bucket</a> — samconfig.toml and the pipeline each supplying a bucket source.</li>
           <li><a href="./binary-validation-failed.html">Binary validation failed: failed to build wheel</a> — compiled dependencies without a matching wheel or toolchain.</li>
           <li><a href="./code-signing-container-image.html">Code signing is not supported for container images</a> — a zip-era CodeSigningConfig riding along on an image function.</li>
+          <li><a href="./property-not-defined.html">property not defined for resource of type</a> — one named property on the wrong resource type.</li>
+          <li><a href="./failed-to-create-changeset.html">Failed to create changeset / Unable to locate credentials</a> — configuration failures before any resource exists.</li>
         </ul>
       </section>
 

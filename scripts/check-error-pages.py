@@ -5,16 +5,14 @@
 under `site/errors/` and the rule catalog in `diagnostics.py` are maintained
 separately, so a rule can be reworded or removed and its page never catches
 up, or a page can keep describing an error the catalog no longer recognizes.
-`ERROR_PAGE_MAP` below is the inventory: one entry per rule that has a
-dedicated page. A rule without an entry is represented by the shared index
-page instead of a one-off write-up - `site/errors/index.html` already closes
-with a prompt to request a page for anything unmatched, so that fallback
-needs no extra plumbing.
+`ERROR_PAGE_MAP` below is the inventory: one entry per rule. Coverage is
+complete and the check keeps it that way - a catalog rule without a mapping
+entry fails the gate, so a new rule needs its page (or a deliberate mapping
+to an existing one) in the same PR.
 
 Entries are keyed by stable rule id, the same convention
 `check-rule-fixtures.py` uses for its registry, so a reworded title cannot
-orphan a page. The map does not need every rule on day one; it only needs to
-stay honest about the pages that already exist.
+orphan a page.
 
 Checks:
 
@@ -89,6 +87,11 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.lambda-layer.artifact-unreadable": "layer-artifact-access-denied.html",
     "sam.build.python-dependency-validation-failed": "binary-validation-failed.html",
     "cloudformation.rollback.iam-role-delete-failed": "rollback-role-delete-failed.html",
+    "cloudformation.resource.create-update-failed": "create-failed.html",
+    "cloudformation.stack.rollback-complete": "rollback-in-progress.html",
+    "iam.access-denied.generic": "access-denied.html",
+    "sam.deploy.configuration-resolution-failed": "failed-to-create-changeset.html",
+    "sam.template.invalid-property": "property-not-defined.html",
 }
 
 _LOCAL_HTML_LINK = re.compile(r'href="\./([a-z0-9-]+\.html)"')
@@ -101,9 +104,17 @@ def _linked_pages(index_html: str) -> set[str]:
 def check_error_pages(mapping: dict[str, str] | None = None) -> list[str]:
     """Return every error-page mapping problem as a human-readable string."""
 
+    checking_full_map = mapping is None
     mapping = ERROR_PAGE_MAP if mapping is None else mapping
     rules_by_id = {rule.id: rule for rule in supported_rules()}
     problems: list[str] = []
+
+    if checking_full_map:
+        for rule_id in rules_by_id:
+            if rule_id not in mapping:
+                problems.append(
+                    f"{rule_id!r}: catalog rule has no error-page mapping entry."
+                )
 
     pages_seen: dict[str, str] = {}
     for rule_id, page in mapping.items():
