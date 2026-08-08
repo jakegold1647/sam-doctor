@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- Added a rule-interaction guard. Every rule's fixture is paired with every
+  other rule's and the suite checks which findings disappear, against a list
+  of the suppressions that are intended. The nine-rule hiding bug fixed above
+  passed every individual rule's tests, so nothing caught it; this does, with
+  a message that names the two mechanisms and when each is right.
+
 - A specific failure no longer hides the stack's other failed resources. Nine
   status reasons - a taken or invalid bucket name, the code storage quota, a
   stabilization timeout, an in-use export, reserved concurrency, a nested
