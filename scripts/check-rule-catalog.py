@@ -51,6 +51,24 @@ BENIGN_LOG_LINES = (
     "Deploying with following values",
     "Initiating deployment",
     "Previewing changes before deployment",
+    # cdk deploy success output
+    "my-stack: deploying... [1/1]",
+    "my-stack: creating CloudFormation changeset...",
+    "Deployment time: 62.91s",
+    "Total time: 75.03s",
+    # sam build stage banners
+    "Building codeuri: /workspace/src runtime: python3.12 architecture: x86_64",
+    "Running PythonPipBuilder:CopySource",
+    "Commands you can use next",
+    # docker pull / push success
+    "Status: Downloaded newer image for public.ecr.aws/sam/build-python3.12:latest",
+    "latest: digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 size: 3456",
+    # aws cli success shapes
+    "StackStatus: CREATE_COMPLETE",
+    "Successfully packaged artifacts and wrote output template to file packaged.yaml",
+    # GitHub Actions runner noise
+    "Post job cleanup.",
+    "Cache restored successfully",
 )
 
 
