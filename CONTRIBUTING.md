@@ -131,6 +131,21 @@ backtracks catastrophically (nested quantifiers like `(a+)+b`, or `.*` where
 `.{0,80}` would do) could hang a real CI job. The check fails such a pattern
 with the bounded form to use instead.
 
+### Documentation links
+
+Every rule points a user at official documentation, and those URLs rot as AWS
+reorganizes its docs. `scripts/check-doc-links.py` verifies them, and a
+scheduled workflow runs it weekly.
+
+It is deliberately not part of `check-pr.py`: sam-doctor runs offline, and a
+network call in the PR gate would make your build depend on someone else's
+website being reachable. If the scheduled run fails, update the link on the
+rule and on its error page in the same PR.
+
+```bash
+python scripts/check-doc-links.py
+```
+
 ### Rule fixture registry
 
 `scripts/check-rule-fixtures.py` tracks a positive and nearby-negative fixture

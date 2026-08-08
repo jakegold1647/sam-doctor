@@ -1,0 +1,24 @@
+name: Documentation link check
+
+# Deliberately not part of the pull-request gate. sam-doctor runs offline and
+# deterministically, and a network call in that gate would make a
+# contributor's build depend on someone else's website being up. Link rot is a
+# maintenance signal, so it belongs on a schedule.
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check every rule's documentation link
+        run: python scripts/check-doc-links.py --format github
