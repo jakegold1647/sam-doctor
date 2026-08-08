@@ -69,3 +69,23 @@ def test_rules_report_terminal_lists_every_rule() -> None:
     assert f"supports {len(supported_rules())} diagnostic rule(s)" in report
     for rule in supported_rules():
         assert rule.title in report
+
+
+def test_large_input_notes_the_expected_wait_on_stderr(tmp_path: Path, capsys) -> None:
+    from sam_doctor.cli import _note_slow_input
+
+    # Exercised directly: diagnosing a real 25 MB log would add half a minute
+    # to the suite to assert one line of text.
+    _note_slow_input(Path("huge.log"), "x" * (26 * 1024 * 1024))
+    captured = capsys.readouterr()
+    assert "26 MB" in captured.err
+    assert "second per megabyte" in captured.err
+    assert captured.out == "", "the note must not pollute machine-readable stdout"
+
+
+def test_ordinary_input_stays_quiet(tmp_path: Path, capsys) -> None:
+    from sam_doctor.cli import _note_slow_input
+
+    _note_slow_input(Path("small.log"), "x" * 1024)
+    captured = capsys.readouterr()
+    assert captured.err == ""
