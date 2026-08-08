@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>No OpenIDConnect provider found in your account | SAM Doctor</title>
+    <meta name="description" content="Fix 'No OpenIDConnect provider found in your account': registering the GitHub Actions OIDC provider in IAM, per account, before AssumeRoleWithWebIdentity can work." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/no-oidc-provider.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">No OpenIDConnect provider found in your account</h1>
+        <p class="lede">
+          The target AWS account has no IAM OIDC identity provider registered
+          for GitHub Actions, so there is nothing for
+          <code>AssumeRoleWithWebIdentity</code> to trust. Common on first
+          setup and on the first deploy into a <em>new</em> account after the
+          workflow worked elsewhere.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          The OIDC provider is an account-level IAM resource. It existing in
+          your dev account does nothing for prod — every account that
+          workflows deploy into needs its own registration of
+          <code>token.actions.githubusercontent.com</code>. The role's trust
+          policy then references that provider's ARN.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Check what the account has</strong> (read-only):
+            <pre><code>aws iam list-open-id-connect-providers</code></pre>
+          </li>
+          <li>
+            <strong>Register the provider</strong> - console (IAM → Identity
+            providers → Add provider) or infrastructure-as-code. Provider URL
+            <code>https://token.actions.githubusercontent.com</code>, audience
+            <code>sts.amazonaws.com</code>.
+          </li>
+          <li>
+            <strong>Point the role's trust policy at the provider ARN</strong>
+            in the same account, with the repo-scoped <code>sub</code>
+            condition the standard setup uses.
+          </li>
+          <li>
+            <strong>Prefer registering it in the account's IaC baseline</strong>
+            so new accounts get it automatically instead of rediscovering this
+            error.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the missing-provider wording (high confidence)
+          alongside the rest of the OIDC failure family. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — the trust-policy stage, once the provider exists.</li>
+          <li><a href="./unable-to-get-id-token.html">Unable to get ID Token</a> — the GitHub-side failure before AWS is involved at all.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

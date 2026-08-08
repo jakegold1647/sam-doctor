@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unable to get ID Token (id-token: write permission) | SAM Doctor</title>
+    <meta name="description" content="Fix 'Unable to get ID Token' in GitHub Actions: the id-token: write permission the OIDC credentials step needs, and where reusable workflows lose it." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/unable-to-get-id-token.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Unable to get ID Token (missing id-token: write)</h1>
+        <p class="lede">
+          The job tried to request a GitHub OIDC token and the runner refused
+          before AWS was ever involved. The workflow (or the job) lacks the
+          <code>id-token: write</code> permission the credentials step needs.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          OIDC-based AWS auth starts with the job minting a short-lived
+          identity token from GitHub. That minting is gated by the
+          <code>permissions:</code> block — and setting <em>any</em>
+          permission explicitly drops all the unlisted ones, which is how
+          adding an innocent <code>contents: read</code> silently removes
+          <code>id-token: write</code> from a previously working job.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Grant it where the credentials step runs:</strong>
+            <pre><code>permissions:
+  id-token: write
+  contents: read</code></pre>
+            At the workflow level or on the specific job - the job-level block
+            overrides the workflow's.
+          </li>
+          <li>
+            <strong>For reusable workflows,</strong> the <em>caller</em> must
+            pass the permission too; a called workflow cannot grant itself
+            more than the caller gave it.
+          </li>
+          <li>
+            <strong>Check the fork case.</strong> Pull requests from forks run
+            with restricted permissions by design; OIDC deploys belong on
+            <code>push</code>/<code>workflow_dispatch</code> events, not fork
+            PRs.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the token-request refusal (high confidence)
+          and keeps it distinct from AWS-side OIDC rejections, which have
+          their own rules and pages. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — the AWS-side rejection once the token minting works.</li>
+          <li><a href="./incorrect-token-audience.html">Incorrect token audience</a> — the token minted for the wrong consumer.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
