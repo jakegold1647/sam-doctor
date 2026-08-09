@@ -1,4 +1,4 @@
-﻿name: SAM Doctor examples
+name: SAM Doctor examples
 
 Use these templates to onboard quickly.
 
