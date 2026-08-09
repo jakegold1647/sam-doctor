@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import child_env
+
 from sam_doctor.cli import _build_parser
 from sam_doctor.diagnostics import supported_rules
 
@@ -142,6 +144,7 @@ def test_documented_subcommands_all_run() -> None:
             [sys.executable, "-m", "sam_doctor.cli", command, "--help"],
             capture_output=True,
             text=True,
+            env=child_env(),
             check=False,
         )
         assert result.returncode == 0, f"{command} --help exited {result.returncode}"
