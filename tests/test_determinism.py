@@ -7,6 +7,7 @@ move or change because a runner wrote \r\n.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +15,7 @@ from pathlib import Path
 import pytest
 from conftest import child_env
 
-from sam_doctor.cli import _render_findings
+from sam_doctor.cli import _batch_render, _render_findings, _write_report
 from sam_doctor.diagnostics import diagnose
 
 SAMPLES_DIR = Path(__file__).resolve().parents[1] / "src" / "sam_doctor" / "data"
@@ -40,6 +41,48 @@ def test_every_format_is_byte_identical_across_runs() -> None:
         for fmt in FORMATS
     }
     assert first == second
+
+
+def test_report_files_are_utf8_with_lf_newlines(tmp_path: Path) -> None:
+    report = "first line\nUnicode evidence: café\n"
+    output = tmp_path / "report.txt"
+
+    _write_report(output, report)
+
+    assert output.read_bytes() == report.encode("utf-8")
+
+
+def test_redirected_cli_output_uses_utf8_with_lf_newlines(tmp_path: Path) -> None:
+    log = tmp_path / "unicode.log"
+    log.write_text(
+        "AccessDeniedException: action is not authorized for 雪\n", encoding="utf-8"
+    )
+    result = subprocess.run(
+        [sys.executable, "-m", "sam_doctor.cli", "diagnose", str(log)],
+        capture_output=True,
+        env=child_env(),
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr.decode(errors="replace")
+    assert b"\r" not in result.stdout
+    assert result.stdout.endswith(b"\n")
+    assert "雪" in result.stdout.decode("utf-8")
+
+
+def test_batch_paths_have_platform_independent_order_and_separators(
+    tmp_path: Path,
+) -> None:
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    for name in ("a.log", "B.log"):
+        (logs / name).write_text("Deployment completed successfully.\n", encoding="utf-8")
+
+    report, _ = _batch_render([str(logs)], "json")
+    sources = [result["source"] for result in json.loads(report)["results"]]
+
+    assert sources == [(logs / "B.log").as_posix(), (logs / "a.log").as_posix()]
+    assert all("\\" not in source for source in sources)
 
 
 def test_crlf_input_produces_the_same_findings_as_lf() -> None:

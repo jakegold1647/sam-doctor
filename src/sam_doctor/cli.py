@@ -592,7 +592,11 @@ def _expand_input_paths(input_value: str) -> list[Path]:
 
     if not expanded:
         raise ValueError(f"No log files found for: {input_value}")
-    return sorted(set(expanded))
+    # `Path` ordering follows the host path flavour: Windows compares paths
+    # case-insensitively while POSIX compares their exact spelling.  Use the
+    # serialized form as the key so a portable set of input names keeps the
+    # same order on every runner.
+    return sorted(set(expanded), key=lambda path: path.as_posix())
 
 
 def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]]:
@@ -608,7 +612,10 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
             text = _read_text(file_path)
-            source = str(file_path)
+            # Batch sources are part of terminal, JSON, GitHub, and SARIF
+            # output.  Native separators made the same relative input appear as
+            # `logs\\deploy.log` on Windows and `logs/deploy.log` elsewhere.
+            source = file_path.as_posix()
             findings = diagnose(text)
             confidences.extend(finding.confidence for finding in findings)
             if output_format == "sarif":
@@ -633,7 +640,7 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
                     text_reports.append(report.rstrip())
                 continue
             text_reports.append(
-                f"## Source: <code>{escape(str(file_path))}</code>\n\n{report.rstrip()}"
+                f"## Source: <code>{escape(source)}</code>\n\n{report.rstrip()}"
                 if output_format == "markdown"
                 else f"{source}\n{report.rstrip()}"
             )
@@ -705,7 +712,7 @@ def _read_demo(scenario: str = "oidc") -> str:
 
 def _write_report(path: Path, report: str) -> None:
     try:
-        path.write_text(report, encoding="utf-8")
+        path.write_text(report, encoding="utf-8", newline="\n")
     except OSError as error:
         raise ValueError(f"Could not write {path}: {error}") from error
 
@@ -900,7 +907,19 @@ def _print_error(parser: argparse.ArgumentParser, message: str) -> None:
     print(f"{parser.prog}: error: {message}", file=sys.stderr)
 
 
+def _use_portable_redirected_output() -> None:
+    """Keep redirected stdout/stderr byte-stable across operating systems."""
+
+    for stream in (sys.stdout, sys.stderr):
+        if stream.isatty():
+            continue
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", newline="\n")
+
+
 def main(argv: list[object] | None = None) -> int:
+    _use_portable_redirected_output()
     parser = _build_parser()
     try:
         args = parser.parse_args([str(arg) for arg in argv] if argv is not None else None)

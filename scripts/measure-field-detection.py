@@ -133,17 +133,19 @@ def signature(text: str) -> str:
 
 
 def collect(items: list[dict]) -> list[tuple[str, str]]:
-    seen: set[str] = set()
-    samples: list[tuple[str, str]] = []
+    representatives: dict[str, tuple[str, str]] = {}
     for item in items:
-        url = item.get("html_url", "")
+        url = item.get("html_url") or ""
         for excerpt in failure_excerpts(item.get("body") or ""):
             key = excerpt[:400]
-            if key in seen:
-                continue
-            seen.add(key)
-            samples.append((url, excerpt))
-    return samples
+            candidate = (url, excerpt)
+            current = representatives.get(key)
+            # Search result order is not an API guarantee. Keep one sample per
+            # existing key, but define which one survives: exact excerpt first,
+            # then URL as the tie-breaker for identical text.
+            if current is None or (excerpt, url) < (current[1], current[0]):
+                representatives[key] = candidate
+    return [representatives[key] for key in sorted(representatives)]
 
 
 def measure(samples: list[tuple[str, str]]) -> tuple[int, dict[str, int]]:
@@ -199,7 +201,9 @@ def main() -> int:
     print(f"  missed    {len(samples) - diagnosed}")
 
     print(f"\nmissed signatures, most frequent first (top {args.top}):")
-    for sig, count in sorted(missed.items(), key=lambda kv: -kv[1])[: args.top]:
+    for sig, count in sorted(missed.items(), key=lambda kv: (-kv[1], kv[0]))[
+        : args.top
+    ]:
         print(f"  [{count}x] {sig}")
 
     if rate < args.floor:

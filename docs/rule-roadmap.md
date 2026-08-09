@@ -1,10 +1,11 @@
 # Rule roadmap: well-scoped diagnostics looking for a contributor
 
-Each entry below is a real, recurring AWS deployment failure that SAM Doctor
-does not diagnose yet. Every entry is intentionally specified to the level of
-[issue #24](https://github.com/jakegold1647/sam-doctor/issues/24) so that one
-contributor can pick it up and land it in a single focused PR: one rule, one
-positive/negative test pair, one changelog line.
+Each entry below records a real, recurring AWS deployment failure. Entries
+marked **open** are not diagnosed yet; landed entries stay here so the evidence
+and numbering remain useful. Every open entry is intentionally specified to the
+level of [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24) so one
+contributor can land it in a focused PR with the rule, tests, fixture-registry
+entry, error page, and changelog entry a complete contribution requires.
 
 > **Two issues are reserved.**
 > [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
@@ -12,8 +13,8 @@ positive/negative test pair, one changelog line.
 > [#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
 > `TooManyRequestsException`) are held for first-time contributors. Please leave
 > those two even if you could finish them in an afternoon - a project asking for
-> contributors has to keep something worth contributing. Everything else here is
-> open.
+> contributors has to keep something worth contributing. Roadmap entries
+> explicitly marked **open** are otherwise available.
 
 Before starting:
 
@@ -29,8 +30,9 @@ If an entry links to an existing issue, comment there and ask to be assigned.
 Otherwise, open a [rule request issue](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 titled `Rule request: <title below>`, mention that it comes from this roadmap,
 and say you would like to be assigned. Check the
-[open rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-first so nothing gets duplicated.
+   [open rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
+   first so nothing gets duplicated. Do not claim #26, #27, or #33: their rules
+   shipped already, although the tracker still shows the requests as open.
 
 ---
 
@@ -486,17 +488,18 @@ governance hooks or tag policies to make a deploy pass.
 
 ---
 
-## 12. `Fn::GetAtt` called with the wrong number of parameters
+## 12. `Fn::GetAtt` has malformed parameters
 
-**Status:** open, from the field measurement. Seen once in the sampled corpus,
-but it is a mistake anyone hand-editing a template makes, so the single sighting
-understates it.
+**Status:** landed — shipped as "Fn::GetAtt parameters are malformed" (see
+the Unreleased changelog). The signal came from the field
+measurement; its single sighting likely understates a mistake anyone
+hand-editing a template can make.
 
 **Failure family.** CloudFormation rejects the change set before touching a
 resource because an `Fn::GetAtt` was written with one parameter or three instead
-of exactly two (logical id and attribute). The short form `!GetAtt Thing.Attr`
-expands to the two-element list; writing `!GetAtt Thing` or nesting a `Sub`
-inside the attribute name produces this.
+of exactly two (logical id and attribute), or because either item is empty. The
+short form `!GetAtt Thing.Attr` expands to the two-element list; writing
+`!GetAtt Thing` or leaving either long-form list item blank produces this.
 
 **Sanitized signal lines.**
 
@@ -642,8 +645,7 @@ the message.
 
 ## What is still open
 
-**Entries 12 to 15 are open**, and they are a different kind of candidate from the
-eleven above them: each one came out of
+**Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
 `scripts/measure-field-detection.py`, which measures this catalog against
 deployment logs real people pasted into public GitHub issues. They are failures
 sam-doctor was handed and did not diagnose, rather than failures somebody expected
@@ -652,13 +654,15 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. Detection currently sits at 88%; the misses
-that remain after entries 12 to 15 are mostly other tools' failures (CDK, Terraform,
+that remain after entries 13 to 15 are mostly other tools' failures (CDK, Terraform,
 CodeBuild) that this project does not claim to cover.
 
-Entries 1 to 11 have all landed. The open
-[rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-are the other source of well-scoped work, and a fresh rule request from a real
-failure is always welcome. Two of them —
+Entries 1 to 12 have all landed. A fresh rule request from a real failure is
+always welcome, but the current
+[open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
+needs one cleanup before it can be treated as an available-work list: #26, #27,
+and #33 already shipped and should not be claimed. The two genuinely open
+requests —
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
 and attachment quotas) and
 [#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway

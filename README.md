@@ -314,7 +314,8 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Interactive changeset prompts that stall non-interactive CI
 - Template failures: SAM/CloudFormation schema validation
   (`InvalidSamDocumentException`, unsupported properties), invalid properties
-  for a resource type, and templates over a CloudFormation size or count quota
+  for a resource type, malformed `Fn::GetAtt` resource/attribute pairs, and
+  templates over a CloudFormation size or count quota
 - S3 naming failures: invalid bucket names and globally taken names
   (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`)
 - Artifact-path failures: a `CodeUri` that was never built, a deployment

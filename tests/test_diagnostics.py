@@ -663,6 +663,65 @@ def test_property_mismatch_without_a_colon_reports_schema_validation() -> None:
     assert "A SAM template property is not valid for its resource type" not in titles
 
 
+def test_detects_fn_getatt_with_the_wrong_parameter_count() -> None:
+    log = (
+        "An error occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: Template error: every Fn::GetAtt object requires two "
+        "non-empty parameters, the resource name and the resource attribute"
+    )
+
+    findings = diagnose(log)
+
+    assert len(findings) == 1
+    assert findings[0].rule_id == "cloudformation.template.getatt-parameters-invalid"
+    assert findings[0].confidence == "high"
+    assert findings[0].line_number == 1
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        "Template validation accepted Fn::GetAtt: [WorkerFunction, Arn]",
+        "Template error: instance of Fn::Select requires two non-empty parameters",
+    ),
+)
+def test_fn_getatt_parameter_count_rule_ignores_nearby_non_matches(log: str) -> None:
+    rule_ids = {finding.rule_id for finding in diagnose(log)}
+
+    assert "cloudformation.template.getatt-parameters-invalid" not in rule_ids
+
+
+def test_fn_getatt_reason_outranks_a_same_line_generic_changeset_wrapper() -> None:
+    log = (
+        "Error: Failed to create changeset for the stack: my-app, An error "
+        "occurred (ValidationError) when calling the CreateChangeSet operation: "
+        "Template error: every Fn::GetAtt object requires two non-empty "
+        "parameters, the resource name and the resource attribute"
+    )
+
+    rule_ids = [finding.rule_id for finding in diagnose(log)]
+
+    assert rule_ids == ["cloudformation.template.getatt-parameters-invalid"]
+
+
+def test_fn_getatt_reason_does_not_hide_a_different_changeset_failure() -> None:
+    log = (
+        "Deploy alpha: Error: Failed to create changeset because a required "
+        "parameter is missing\n"
+        "Deploy beta: An error occurred (ValidationError) when calling the "
+        "CreateChangeSet operation: Template error: every Fn::GetAtt object "
+        "requires two non-empty parameters, the resource name and the resource "
+        "attribute"
+    )
+
+    rule_ids = {finding.rule_id for finding in diagnose(log)}
+
+    assert rule_ids == {
+        "cloudformation.template.getatt-parameters-invalid",
+        "sam.deploy.configuration-resolution-failed",
+    }
+
+
 def test_a_missing_parameter_validation_error_is_not_a_template_quota_failure() -> None:
     log = (
         "Error: Failed to create changeset for the stack: my-app\n"
@@ -1740,8 +1799,8 @@ def test_batch_command_preserves_path_for_duplicate_filenames(
     assert main(["batch", str(first_dir), str(second_dir), "--format", "terminal"]) == 0
 
     output = capsys.readouterr().out
-    assert str(first_file) in output
-    assert str(second_file) in output
+    assert first_file.as_posix() in output
+    assert second_file.as_posix() in output
 
 
 def test_batch_markdown_output_includes_file_sections(
@@ -1762,8 +1821,8 @@ def test_batch_markdown_output_includes_file_sections(
 
     output = capsys.readouterr().out
     assert "## Source:" in output
-    assert str(first_file) in output
-    assert str(second_file) in output
+    assert first_file.as_posix() in output
+    assert second_file.as_posix() in output
 
 
 def test_diagnose_can_fail_on_findings_after_writing_report(

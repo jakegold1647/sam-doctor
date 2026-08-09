@@ -3,15 +3,18 @@
 A short punch list, kept honest. 1.0 does not mean "every rule exists"; it
 means a user can rely on what is already here.
 
-1. Keep the release channels in step. 0.8.x ships to PyPI and to a GitHub tag
-   automatically, but the GitHub Marketplace listing has to be republished by
-   hand after each release. The republish step is now step 6 of the checklist
-   in [pypi-publishing.md](pypi-publishing.md); what remains is following it
-   on the next release and confirming the listing updates.
-2. Settle the open rule requests. #24, #28, and #30 landed; #29, #31, and
-   #33 stay open for contributors, alongside the older requests #21-#27.
-   Each should land or be explicitly deferred before 1.0 so the issue
-   tracker reflects reality, not ambition.
+1. Keep the release channels in step. Stable releases ship to PyPI and to a
+   GitHub tag automatically, but the GitHub Marketplace listing has to be
+   republished by hand after each release. The republish step is step 6 of the
+   checklist in [pypi-publishing.md](pypi-publishing.md); what remains is
+   following it on the next release and confirming the listing updates.
+2. Make the rule-request tracker tell the truth. #21 and #25 are the two
+   genuinely unimplemented requests and are reserved for first-time
+   contributors. #26, #27, and #33 were implemented in `fadacc9`, but their
+   issues stayed open because that commit did not use an auto-close keyword;
+   close those three completed requests and remove their contributor-invitation
+   labels. Entries 13-15 in [rule-roadmap.md](rule-roadmap.md) remain open
+   candidates. Each should land or be explicitly deferred before 1.0.
 3. Promise stability. The JSON report shape, the stable rule ids (landed in
    #47 and now carried through JSON, SARIF, the fixture registry, and the
    error-page map), and the CLI flags are what CI integrations depend on.

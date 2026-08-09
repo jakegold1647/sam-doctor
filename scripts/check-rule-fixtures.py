@@ -194,6 +194,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="InvalidSamDocumentException: Encountered unsupported property MemorySize",
         negative="sam validate --lint completed with no errors",
     ),
+    "cloudformation.template.getatt-parameters-invalid": RuleFixture(
+        positive=(
+            "Template error: every Fn::GetAtt object requires two non-empty "
+            "parameters, the resource name and the resource attribute"
+        ),
+        negative="Template validation accepted Fn::GetAtt: [WorkerFunction, Arn]",
+    ),
     "iam.trust-policy.resource-field-invalid": RuleFixture(
         positive="Has prohibited field Resource",
         negative="The trust policy passed validation with no prohibited fields",

@@ -660,6 +660,26 @@ _RULES = (
         ),
     ),
     Rule(
+        id="cloudformation.template.getatt-parameters-invalid",
+        title="Fn::GetAtt parameters are malformed",
+        confidence="high",
+        patterns=(
+            r"every Fn::GetAtt object requires two non-empty parameters",
+        ),
+        explanation=(
+            "CloudFormation rejected the template before changing any resources "
+            "because one `Fn::GetAtt` expression does not contain exactly two "
+            "non-empty parts: a logical resource id and an attribute name. The "
+            "error does not identify which occurrence is malformed."
+        ),
+        verification=(
+            "Search the exact submitted or synthesized template for every `Fn::GetAtt` and `!GetAtt` occurrence.",
+            "Write the long form as `Fn::GetAtt: [LogicalResourceId, AttributeName]` or the short form as `!GetAtt LogicalResourceId.AttributeName`.",
+            "Validate the corrected template before creating the change set again; for SAM, run `sam validate --lint` against the template you deploy.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getatt.html",
+    ),
+    Rule(
         id="iam.trust-policy.resource-field-invalid",
         title="An IAM role trust policy contains a permissions-only Resource field",
         confidence="high",
@@ -1548,6 +1568,12 @@ _RULES = (
             # right here for the same reason it is right above.
             r"Parameters:\s*\[ssm(?:-secure)?:",
             r"SSM parameter\s+\S{1,200}\s+not found",
+        ),
+        # The intrinsic-function reason can share a line with the generic
+        # change-set wrapper. Exclude only that line: a different change-set
+        # failure elsewhere in the same log must keep reporting.
+        excluded_line_patterns=(
+            r"every Fn::GetAtt object requires two non-empty parameters",
         ),
     ),
     Rule(

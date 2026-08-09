@@ -4,6 +4,24 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Reports now serialize consistently across platforms.** Output files, packet
+  artifacts, and redirected CLI output use UTF-8 with LF newlines instead of
+  inheriting Windows newline translation. Batch input ordering now uses exact path
+  spelling, and reported batch sources use `/` separators, rather than changing
+  order and representation with the host path rules.
+
+- **New: a high-confidence diagnostic for malformed `Fn::GetAtt` parameter
+  lists.** CloudFormation's exact two-parameter rejection now points to the
+  resource-and-attribute pair instead of returning no supported pattern. A
+  same-line generic change-set wrapper yields to the specific finding without
+  hiding a separate change-set failure elsewhere in the log.
+
+- **The field-detection measurement no longer depends on GitHub search-result
+  order.** Duplicate-prefix groups now choose a defined representative, groups
+  have a stable order, and missed signatures with equal counts use the signature
+  as a tie-breaker. Reversing the same API results now produces the same samples,
+  detection count, and report.
+
 - **The workflow `sam-doctor init` writes now grants the permission its deploy step
   needs, and pins current actions.** Two problems in the scaffold, both invisible to
   the tooling that would normally catch them.

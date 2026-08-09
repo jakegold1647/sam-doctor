@@ -20,8 +20,8 @@ inspect an AWS account or claim an authoritative root cause.
    - and check that an unrelated failure in the same log still reports.
 9. Give the rule a stable `id`, a `RULE_FIXTURES` entry in
    `scripts/check-rule-fixtures.py`, and an error page under `site/errors/`
-   with its `ERROR_PAGE_MAP` entry and index link. All three are enforced: the
-   gates fail on a rule that is missing any of them.
+   with its `ERROR_PAGE_MAP` entry, index link, and sitemap entry. All are
+   enforced: the gates fail on a rule that is missing any of them.
 10. Add a short changelog entry and include this PR in the next release if the
     rule is accepted.
 
@@ -52,9 +52,11 @@ python -m pytest -q
 python -m build
 ```
 
-The core rule catalog lives in `src/sam_doctor/diagnostics.py`. The main
-regression cases are in `tests/test_diagnostics.py`. A focused contribution usually
-changes one rule, its positive and negative tests, and a short changelog entry.
+The core rule catalog lives in `src/sam_doctor/diagnostics.py`, and the main
+regression cases are in `tests/test_diagnostics.py`. A complete new rule also
+needs its `RULE_FIXTURES` entry, dedicated error page, `ERROR_PAGE_MAP` and index
+links, sitemap entry, and a short changelog entry. The local gate enforces that
+catalog inventory; the review checklist also requires the changelog entry.
 
 ## Safe fixture example
 
@@ -68,16 +70,19 @@ production logs. Review every excerpt manually before submitting it.
 
 ## Worked example (minimal end-to-end)
 
-When your branch adds one new pattern, touch only one rule block and one test pair:
+When your branch adds one new pattern, keep the source and regression-test change
+to one rule block and one focused test pair; the enforced catalog artifacts come
+in step 3 below.
 
 ### 1) Add the rule to `src/sam_doctor/diagnostics.py`
 
 ```python
 Rule(
+    id="s3.artifact-bucket.access-blocked",
     title="CloudFormation resource access to artifact bucket is blocked",
     confidence="medium",
     patterns=(
-        r"access denied\\s*.*GetObject.*artifact-bucket",
+        r"access denied\s*.*GetObject.*artifact-bucket",
         r"Could not read object from S3:.*AccessDenied",
     ),
     explanation=(
@@ -95,8 +100,8 @@ Rule(
 ),
 ```
 
-Use one stable title, one confidence value, two to four verification steps, and
-one official link.
+Use one stable id, one specific title, one confidence value, two to four
+verification steps, and one official link.
 
 #### Choosing between `suppressed_by` and `excluded_line_patterns`
 
@@ -138,13 +143,26 @@ def test_does_not_match_unrelated_s3_output() -> None:
 If the pattern is multi-line, include adjacent non-matches in the positive fixture
 to reduce false positives.
 
-### 3) Run and commit a focused PR
+### 3) Register the fixture and error page
+
+Add one short positive/near-negative pair under the rule's stable id in
+`scripts/check-rule-fixtures.py`. Then add its dedicated page under
+`site/errors/`, its `ERROR_PAGE_MAP` entry in `scripts/check-error-pages.py`,
+its link in `site/errors/index.html`, and its URL in `site/sitemap.xml`. Add the
+short Unreleased changelog entry in the same change.
+
+These are required for every rule, not optional documentation polish.
+
+### 4) Run and commit a focused PR
 
 ```bash
 python scripts/check-rule-catalog.py
+python scripts/check-rule-fixtures.py --rule artifact-bucket
+python scripts/check-error-pages.py
 python -m pytest -q \
   tests/test_diagnostics.py::test_detects_artifact_bucket_access_block \
   tests/test_diagnostics.py::test_does_not_match_unrelated_s3_output
+python scripts/check-pr.py --fast
 ```
 
 `check-rule-catalog.py` is the same objective gate CI runs: it verifies every
@@ -152,13 +170,7 @@ pattern compiles, that none can fire on ordinary successful deploy output, and
 that the rule's metadata (title, confidence, verification steps, documentation
 link) is complete. Run it first — it reports every structural problem at once.
 
-If the rule's family already has entries in `scripts/check-rule-fixtures.py`
-(`RULE_FIXTURES`), add this rule's title alongside them so the registry stays
-complete for that family:
-
-```bash
-python scripts/check-rule-fixtures.py --rule "part of the new rule's title"
-```
-
-If the rule is accepted, keep the fixture text short, add a short changelog entry,
-and update the matching docs page where practical.
+`check-rule-fixtures.py` verifies the mandatory positive and nearby-negative
+pair by stable rule id. `check-error-pages.py` verifies the mandatory page,
+mapping, and index link. The full fast gate also runs site QA, including the
+sitemap check, plus lint and the test suite.

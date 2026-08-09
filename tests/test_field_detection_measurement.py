@@ -129,6 +129,83 @@ def test_collect_deduplicates_the_same_excerpt_posted_twice(measurement) -> None
     assert len(measurement.collect(items)) == 1
 
 
+def test_collect_and_measure_are_independent_of_api_order(measurement) -> None:
+    shared_prefix = (
+        "An error occurred (SomethingNobodyHasARuleFor) when calling the "
+        "Frobnicate operation "
+    )
+    shared_prefix += "x" * (400 - len(shared_prefix))
+    preferred_excerpt = shared_prefix + " alpha"
+    later_excerpt = shared_prefix + " omega"
+    separate_excerpt = (
+        "zzz context\n"
+        "An error occurred (AnotherUnknownFailure) when calling the Quux operation "
+        + " ".join(["padding"] * 10)
+    )
+
+    def item(url: str, excerpt: str) -> dict[str, str]:
+        return {"html_url": url, "body": f"```\n{excerpt}\n```"}
+
+    items = [
+        item("https://example.test/z", later_excerpt),
+        item("https://example.test/b", preferred_excerpt),
+        item("https://example.test/a", preferred_excerpt),
+        item("https://example.test/separate", separate_excerpt),
+    ]
+
+    forward_samples = measurement.collect(items)
+    reverse_samples = measurement.collect(list(reversed(items)))
+
+    assert forward_samples == reverse_samples
+    assert forward_samples == [
+        ("https://example.test/a", preferred_excerpt),
+        ("https://example.test/separate", separate_excerpt),
+    ]
+    assert measurement.measure(forward_samples) == measurement.measure(reverse_samples)
+    diagnosed, missed = measurement.measure(forward_samples)
+    assert diagnosed == 0
+    assert sum(missed.values()) == 2
+
+
+def test_main_output_is_independent_of_api_order_for_tied_misses(
+    measurement, monkeypatch, capsys
+) -> None:
+    alpha_signature_excerpt = (
+        "zzz context\n"
+        "An error occurred (AlphaUnknownFailure) when calling the Quux operation "
+        + " ".join(["padding"] * 10)
+    )
+    zeta_signature_excerpt = (
+        "aaa context\n"
+        "An error occurred (ZetaUnknownFailure) when calling the Frobnicate operation "
+        + " ".join(["padding"] * 10)
+    )
+
+    def item(url: str, excerpt: str) -> dict[str, str]:
+        return {"html_url": url, "body": f"```\n{excerpt}\n```"}
+
+    items = [
+        item("https://example.test/zeta", zeta_signature_excerpt),
+        item("https://example.test/alpha", alpha_signature_excerpt),
+    ]
+    monkeypatch.setattr(measurement, "QUERIES", ("offline query",))
+    monkeypatch.setattr(sys, "argv", ["measure-field-detection.py", "--floor", "0"])
+
+    monkeypatch.setattr(measurement, "_search", lambda *_args: items)
+    forward_status = measurement.main()
+    forward_output = capsys.readouterr().out
+
+    monkeypatch.setattr(measurement, "_search", lambda *_args: list(reversed(items)))
+    reverse_status = measurement.main()
+    reverse_output = capsys.readouterr().out
+
+    assert forward_status == reverse_status == 0
+    assert forward_output == reverse_output
+    assert forward_output.index("AlphaUnknownFailure") < forward_output.index(
+        "ZetaUnknownFailure"
+    )
+
+
 def test_no_samples_is_inconclusive_rather_than_a_failure(measurement, monkeypatch) -> None:
     # A rate-limited or offline scheduled run must not be reported as the catalog
     # having regressed. That is how a maintenance signal loses its meaning.
