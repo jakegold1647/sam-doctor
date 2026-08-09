@@ -26,7 +26,8 @@ CI and local automation without guessing.
   - Default: exits `0` even when findings exist.
   - `--fail-on-findings`: exits `1` if any file has at least one finding.
   - `--fail-on-confidence high` (or `medium`): exits `1` only when any file has
-    a finding at that confidence or above.
+    a finding at that confidence or above. As with `diagnose`, the threshold is
+    the gate when given, even if `--fail-on-findings` is also set.
 
 - `sam-doctor packet`
   - Returns evidence packets and exits `0` when files are readable and report writes succeed.

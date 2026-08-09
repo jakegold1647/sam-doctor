@@ -78,6 +78,14 @@ EXPECTED_HIDING = {
     ("sam.deploy.configuration-resolution-failed", "sam.deploy.artifact-upload-failed"),
     ("sam.deploy.configuration-resolution-failed", "sam.deploy.bucket-config-conflict"),
     ("sam.deploy.configuration-resolution-failed", "sam.template.invalid-property"),
+    # An unresolvable SSM reference and the generic change-set failure are one
+    # event: CloudFormation prints `Error: Failed to create changeset` as the
+    # wrapper and the `Parameters: [ssm:...] cannot be found` reason on its own
+    # line. Excluding only the reason line would leave the generic rule matching
+    # the wrapper, reporting the same failure twice, so this one suppresses for
+    # the whole log - the same trade-off already made for the other change-set
+    # reasons above.
+    ("sam.deploy.configuration-resolution-failed", "ssm.parameter.resolution-failed"),
     ("sam.template.schema-validation-failed", "sam.template.invalid-property"),
 }
 

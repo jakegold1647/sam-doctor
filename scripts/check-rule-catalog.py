@@ -59,9 +59,15 @@ BENIGN_LOG_LINES = (
     "my-stack: creating CloudFormation changeset...",
     "Deployment time: 62.91s",
     "Total time: 75.03s",
-    # sam build stage banners
+    # sam build stage banners. Every builder stage prints a `Running <stage>`
+    # line on success, and those stage names are the same tokens the build
+    # failure rules key on - so each one belongs here, not just CopySource.
     "Building codeuri: /workspace/src runtime: python3.12 architecture: x86_64",
     "Running PythonPipBuilder:CopySource",
+    "Running PythonPipBuilder:ResolveDependencies",
+    "Running PythonPipBuilder:Validation",
+    "Running NodejsNpmBuilder:NpmPack",
+    "Running NodejsNpmEsbuildBuilder:EsbuildBundle",
     "Commands you can use next",
     # docker pull / push success
     "Status: Downloaded newer image for public.ecr.aws/sam/build-python3.12:latest",
@@ -191,6 +197,27 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
                     problems.append(
                         f"{title!r}: pattern {pattern!r} matches benign log line "
                         f"{line!r}."
+                    )
+
+        # A `suppressed_by` pattern that matches a benign line is worse than a
+        # primary pattern that does: it silently switches the rule off for the
+        # whole log, so a real failure goes unreported with nothing to show that
+        # it happened. This check exists because a build-stage progress line
+        # ("Running PythonPipBuilder:ResolveDependencies", printed by every
+        # successful Python build) was used verbatim as a suppression pattern,
+        # which disabled the change-set rule for any project that builds with
+        # pip.
+        for pattern in rule.suppressed_by:
+            try:
+                compiled = re.compile(pattern, re.IGNORECASE)
+            except re.error:
+                continue  # already reported above
+            for line in BENIGN_LOG_LINES:
+                if compiled.search(line):
+                    problems.append(
+                        f"{title!r}: suppressed_by pattern {pattern!r} matches "
+                        f"benign log line {line!r}, which would switch this rule "
+                        "off for any log containing that line."
                     )
 
         if not rule.explanation.strip():

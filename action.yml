@@ -31,7 +31,12 @@ inputs:
       Fail the action only when a finding at this confidence or above is
       detected ("high" or "medium"). Reports and outputs still include every
       finding; only the exit status is gated. Works with or without
-      fail-on-findings.
+      fail-on-findings, and it takes precedence: when set, it decides the exit
+      status on its own and fail-on-findings is not consulted. That is how a
+      team gates on high confidence first and tightens later - but it also
+      means adding fail-on-confidence: high to a job already running
+      fail-on-findings: true makes the gate more permissive, not less, because
+      medium findings stop failing the build.
     required: false
     type: string
     default: ""

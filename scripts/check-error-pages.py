@@ -51,6 +51,12 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "ecr.auth.login-failed": "no-basic-auth-credentials.html",
     "iam.deny.explicit": "access-denied-explicit-deny.html",
     "iam.deny.implicit": "access-denied-no-policy-allows.html",
+    "iam.tag.action-denied": "tag-action-denied.html",
+    "cloudformation.tag.key-validation-failed": "tag-key-validation-failed.html",
+    "lambda.env-vars.kms-key-inaccessible": "lambda-env-vars-kms-key.html",
+    "ssm.parameter.resolution-failed": "ssm-parameter-cannot-be-found.html",
+    "docker.registry.image-unavailable": "docker-image-pull-failed.html",
+    "build.host.disk-full": "build-host-disk-full.html",
     "cloudformation.stack.failed-recreate-required": (
         "rollback-complete-cannot-be-updated.html"
     ),

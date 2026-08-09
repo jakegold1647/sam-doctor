@@ -432,8 +432,11 @@ genuinely large.
 
 ## 11. Tag-on-create was denied or a tag failed validation
 
-**Status:** open for a contributor — tracked in
-[issue #33](https://github.com/jakegold1647/sam-doctor/issues/33).
+**Status:** landed — see the entry in
+[What is still open](#what-is-still-open). Kept here because the specification
+below is still the clearest description of the failure family, and because the
+two rules it produced are a worked example of splitting one roadmap entry into
+two rules when the fixes differ.
 
 **Failure family.** The resource itself is allowed but tagging it is not:
 the deploy principal lacks `iam:TagRole`/`TagResource`-style permissions, an
@@ -476,18 +479,31 @@ governance hooks or tag policies to make a deploy pass.
 
 ## What is still open
 
-Only entry 11 (tag-on-create denied or tag validation failure,
-[issue #33](https://github.com/jakegold1647/sam-doctor/issues/33)) remains
-open from this roadmap; entries 1-10 have landed or were already covered.
-Beyond it, the open [rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-(#21-#27) are the next source of well-scoped work, and a fresh rule request
-from a real failure is always welcome.
+Every entry in this roadmap has now landed. The open
+[rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
+are the next source of well-scoped work, and a fresh rule request from a real
+failure is always welcome. Two of them —
+[#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
+and attachment quotas) and
+[#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
+`TooManyRequestsException`) — are labelled `good first issue` and are held for
+first-time contributors, so please leave those two even if you are able to do
+them quickly.
 
 Nothing is currently claimed.
 
 - Lambda code storage limit exceeded (`CodeStorageExceededException`) —
   landed in [#35](https://github.com/jakegold1647/sam-doctor/pull/35), closing
   [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24).
+- Tag-on-create denied, and a tag key or value failing validation (entry 11,
+  [issue #33](https://github.com/jakegold1647/sam-doctor/issues/33)) — landed
+  as **two** rules rather than one: `iam.tag.action-denied` and
+  `cloudformation.tag.key-validation-failed`. The entry described a single
+  family, but the two halves need different fixes — grant a tagging permission
+  versus rename a tag key — and a finding that offers both next steps is
+  weaker than two that each offer one. The suppression wiring the entry called
+  for went only to the denial rule, per line rather than per log, so an
+  unrelated denial in the same deployment still reports.
 
 When an entry above is claimed, move it into this section with a link to its
 issue so the roadmap stays honest about what is actually open.

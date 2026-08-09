@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Parameters: [ssm:/path] cannot be found | SAM Doctor</title>
+    <meta name="description" content="Fix 'Parameters: [ssm:/my-app/prod/db-password] cannot be found' and 'SSM parameter not found': dynamic references resolve at changeset time in the target account and Region, with the deployment's own credentials." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/ssm-parameter-cannot-be-found.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">An SSM parameter referenced by the template could not be resolved</h1>
+        <p class="lede">
+          The parameter exists — just not where the deployment looked. Dynamic
+          references resolve at change-set time, in the target account and
+          Region, using the deployment's own credentials.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>Parameters: [ssm:/my-app/prod/db-password] cannot be found.</code></pre>
+        <p>
+          A <code>{{resolve:ssm:...}}</code> or
+          <code>{{resolve:ssm-secure:...}}</code> reference is not read when you
+          write the template or when <code>sam build</code> runs. It is read
+          when CloudFormation builds the change set — in the account and Region
+          being deployed to, as the deploying identity. That is the whole reason
+          this failure surprises people: <strong>a parameter you can read from
+          your own terminal proves nothing about the account being deployed
+          to.</strong>
+        </p>
+        <p>Four causes cover almost all of these:</p>
+        <ul>
+          <li><strong>An environment segment that does not match the target.</strong> A path reading <code>/my-app/prod/...</code> deployed to staging is the single most common version, usually because the stage is hardcoded where it should be a parameter.</li>
+          <li><strong>A new environment nobody seeded.</strong> The template resolves the parameter; it cannot create it. A fresh account has no parameters until something puts them there.</li>
+          <li><strong>The wrong Region.</strong> Parameter Store is regional. A correct path in another Region reports as simply missing.</li>
+          <li><strong>Readable but not decryptable.</strong> For <code>ssm-secure</code>, the principal may hold <code>ssm:GetParameters</code> and still lack <code>kms:Decrypt</code> on the key protecting the value.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Look the exact path up the way the deployment did</strong> —
+            same credentials, same Region:
+            <pre><code>aws ssm get-parameter --name /my-app/prod/db-password --region us-east-1</code></pre>
+            Running this with your personal profile instead of the deploy role
+            is the usual way this check gives a falsely reassuring answer.
+          </li>
+          <li>
+            <strong>Compare the path against the environment</strong> you are
+            deploying to. If the stage is baked into the string, parameterise it
+            so one template cannot point at another environment's values.
+          </li>
+          <li>
+            <strong>Seed the parameter</strong> in the target account and Region
+            if the environment is new. Resolution is read-only — the deployment
+            will not create it for you.
+          </li>
+          <li>
+            <strong>For <code>ssm-secure</code>, test decryption specifically:</strong>
+            <pre><code>aws ssm get-parameter --name /my-app/prod/db-password --with-decryption</code></pre>
+            and confirm the deploy principal has <code>ssm:GetParameters</code>
+            plus <code>kms:Decrypt</code> on the protecting key.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor separates an unresolvable SSM reference (high confidence)
+          from the generic "deployment configuration or parameter resolution
+          failed" finding, and gives the lookup with the Region and decryption
+          flags that actually reproduce it. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./failed-to-create-changeset.html">Failed to create changeset (configuration or parameter resolution)</a> — the generic finding this replaces for SSM paths.</li>
+          <li><a href="./invalid-sam-document.html">Template failed SAM or CloudFormation schema validation</a> — for a malformed reference rather than a missing value.</li>
+          <li><a href="./access-denied.html">AWS denied an API action required by the deployment</a> — when the parameter exists and the principal cannot read it at all.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
