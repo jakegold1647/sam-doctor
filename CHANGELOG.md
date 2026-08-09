@@ -4,6 +4,29 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Two rules matched words instead of failures.** `Aborted!` was a pattern in
+  its own right on the interactive-confirmation rule, so every interrupted tool
+  in a job - docker, pip, terraform, anything stopped with Ctrl-C - was reported
+  as a SAM interactive-changeset problem and told to set
+  `--no-confirm-changeset`, which would not have helped any of them. The prompt
+  itself is the signal, and SAM prints it directly above its own `Aborted!`, so
+  the real case is unaffected; the bundled sample still reports. Primary patterns
+  are matched per line, so the bare word could not be qualified by context and is
+  simply gone.
+
+  The CORS rule matched `(?:CORS|preflight).{0,80}(?:conflict|error|failed|
+  duplicate|overlap)`. Across an eighty-character window, `error` and `failed`
+  reach ordinary configuration output - "Configuring CORS ... - no errors"
+  reported a preflight conflict. They are dropped; a real conflict says
+  conflict, duplicate or overlap, or is caught by the two OPTIONS patterns.
+
+  Both were found by ranking every rule pattern by how little literal text it
+  requires and then testing the loosest against benign vocabulary. Most of what
+  that surfaced was not a bug - `UPDATE_ROLLBACK_COMPLETE` firing is correct,
+  because an update failed and rolled back - and there is now a test pinning
+  that on purpose, so it is not "tightened" away later by someone reading it as
+  a false positive.
+
 - **A stack in `ROLLBACK_COMPLETE` reported the right answer and a distracting
   one.** CloudFormation returns "is in ROLLBACK_COMPLETE state and can not be
   updated" inside the `CreateChangeSet` ValidationError, on the same line as the

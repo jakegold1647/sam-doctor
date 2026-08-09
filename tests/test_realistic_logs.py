@@ -138,3 +138,49 @@ def test_an_unrecognised_reason_still_names_the_failed_resource() -> None:
 
 def test_a_clean_deployment_reports_nothing_at_all() -> None:
     assert list(diagnose(CLEAN_DEPLOY)) == []
+
+
+_INTERACTIVE_ID = "sam.deploy.interactive-confirmation-required"
+_CORS_ID = "apigateway.cors.preflight-conflict"
+
+
+def test_the_interactive_prompt_is_the_signal_not_the_word_aborted() -> None:
+    # `Aborted!` was a pattern in its own right, so every interrupted tool in the
+    # job was reported as a SAM interactive-confirmation problem - and told to set
+    # --no-confirm-changeset, which would not have helped any of them.
+    real = "Deploy this changeset? [y/N]: N\nAborted!\n"
+    assert _INTERACTIVE_ID in _rule_ids(real)
+
+    for unrelated in (
+        "Sending build context to Docker daemon  2.5MB\nAborted!\n",
+        "Collecting boto3\nAborted!\n",
+        "terraform plan interrupted\nAborted!\n",
+        "Waiting for stack rollback to complete...\nAborted!\n",
+    ):
+        assert _INTERACTIVE_ID not in _rule_ids(unrelated), unrelated
+
+
+def test_cors_rule_needs_a_conflict_word_not_just_the_word_error() -> None:
+    # `error` and `failed` were in the alternation, and across an 80-character
+    # window from "CORS" they matched ordinary configuration output.
+    for benign in (
+        "Configuring CORS for ApiGateway: allowOrigins=[*] - no errors",
+        "The preflight request returned 204",
+    ):
+        assert _CORS_ID not in _rule_ids(benign), benign
+
+    for real in (
+        "CORS conflict: duplicate OPTIONS method",
+        "CREATE_FAILED AWS::ApiGateway::Method OPTIONS already exists",
+        "Error: preflight configuration overlap on /orders",
+    ):
+        assert _CORS_ID in _rule_ids(real), real
+
+
+def test_a_completed_rollback_is_still_worth_reporting() -> None:
+    # UPDATE_ROLLBACK_COMPLETE is not a success: an update failed and the stack
+    # rolled back. Reporting it is correct, and this pins that on purpose so the
+    # pattern is not "tightened" away as a false positive later.
+    assert "cloudformation.stack.rollback-complete" in _rule_ids(
+        "UPDATE_ROLLBACK_COMPLETE  AWS::CloudFormation::Stack  my-app"
+    )
