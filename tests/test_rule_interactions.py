@@ -67,6 +67,12 @@ EXPECTED_HIDING = {
     ("sam.deploy.configuration-resolution-failed", "cloudformation.api.throttled"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.capabilities.required"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.deploy.no-changes"),
+    # A stack in ROLLBACK_COMPLETE reports "can not be updated" inside the same
+    # CreateChangeSet ValidationError this rule matches generically, on one line -
+    # so they are one failure, and the recreate-required rule is the one that says
+    # to delete and redeploy. Matches the treatment of the *_IN_PROGRESS sibling
+    # immediately below.
+    ("sam.deploy.configuration-resolution-failed", "cloudformation.stack.failed-recreate-required"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.stack.operation-in-progress"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.template.quota-exceeded"),
     ("sam.deploy.configuration-resolution-failed", "s3.artifact-bucket.access-denied"),
