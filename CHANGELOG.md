@@ -4,6 +4,19 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Workflow annotations said ``write`..``** — the sentence period was appended
+  unconditionally, and all 54 rules already end their first verification step with
+  one. That is the surface most users see: for many people the annotation in the
+  GitHub UI is the only sam-doctor output they ever read. It is now added only when
+  the step does not already end a sentence, checked across every rule in the
+  catalog.
+
+  Found while confirming that hostile log content cannot break a workflow command —
+  percent signs, `%0A`, `::stop-commands::`, carriage returns. It cannot: the
+  annotation carries the rule's own explanation, first verification step and docs
+  URL, never raw log text. The doubled period was sitting in the output being
+  examined.
+
 - **`docker login -p <token>` left a live registry credential in the report.**
   This one matters more than it first looks: `ecr.auth.login-failed` is a rule in
   this catalog, so a log containing a failed registry login is a log sam-doctor is
