@@ -4,6 +4,20 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Determinism is now checked across processes, not just within one.** The
+  README promises identical output for identical input, and the existing tests
+  render twice in the same process - where dict and set iteration order is
+  stable by construction, so a hash-order dependence could never show up. The
+  same input now runs through separate processes under different
+  `PYTHONHASHSEED` values, for every output format, and under different locales
+  including `tr_TR.UTF-8`, whose dotless-i breaks naive case folding and every
+  rule matches case-insensitively. Working-directory independence is asserted
+  too. All of it already held; none of it was covered.
+
+  `packet` timestamps are also asserted to carry `+00:00` whatever the local
+  zone. A local-time timestamp in an artifact meant for sharing leaks the
+  reporter's timezone and makes two packets hard to order against each other.
+
 - **The stability promise now checks itself.** `docs/stability.md` names the
   subcommands covered by the CLI-surface guarantee, and the list had drifted:
   `request-packet` has shipped for a while and was not in it, so a reader could

@@ -7,7 +7,12 @@ move or change because a runner wrote \r\n.
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 from sam_doctor.cli import _render_findings
 from sam_doctor.diagnostics import diagnose
@@ -56,3 +61,87 @@ def test_finding_order_follows_first_matching_line() -> None:
     assert [f.line_number for f in findings] == sorted(
         f.line_number for f in findings
     )
+
+
+def _composite_log_file(tmp_path: Path) -> Path:
+    log = tmp_path / "composite.log"
+    log.write_text(_composite_log(), encoding="utf-8")
+    return log
+
+
+def _run_cli(
+    log: Path, output_format: str, *, env_extra: dict[str, str] | None = None, cwd: Path | None = None
+) -> str:
+    env = dict(os.environ)
+    if env_extra:
+        env.update(env_extra)
+    result = subprocess.run(
+        [sys.executable, "-m", "sam_doctor.cli", "diagnose", str(log), "--format", output_format],
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=str(cwd) if cwd else None,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stdout
+
+
+@pytest.mark.parametrize("output_format", FORMATS)
+def test_output_does_not_depend_on_the_hash_seed(
+    output_format: str, tmp_path: Path
+) -> None:
+    # The in-process check above cannot catch this: dict and set iteration order
+    # is stable within a run, so a hash-order dependence only shows up when the
+    # seed changes between processes.
+    log = _composite_log_file(tmp_path)
+    outputs = {
+        _run_cli(log, output_format, env_extra={"PYTHONHASHSEED": seed})
+        for seed in ("0", "1", "12345")
+    }
+
+    assert len(outputs) == 1, f"{output_format} output varies with PYTHONHASHSEED"
+
+
+def test_output_does_not_depend_on_the_locale(tmp_path: Path) -> None:
+    # tr_TR is the interesting one: dotless-i breaks naive case folding, and the
+    # rules all match case-insensitively.
+    log = _composite_log_file(tmp_path)
+    outputs = {
+        _run_cli(log, "json", env_extra={"LC_ALL": locale, "LANG": locale})
+        for locale in ("C", "en_US.UTF-8", "tr_TR.UTF-8")
+    }
+
+    assert len(outputs) == 1, "json output varies with the locale"
+
+
+def test_output_does_not_depend_on_the_working_directory(tmp_path: Path) -> None:
+    log = _composite_log_file(tmp_path)
+    here = Path(__file__).resolve().parents[1]
+
+    assert _run_cli(log, "json", cwd=here) == _run_cli(log, "json", cwd=tmp_path)
+
+
+def test_packet_timestamps_stay_utc_whatever_the_local_zone(tmp_path: Path) -> None:
+    # A local-time timestamp in a shared artifact leaks the reporter's zone and
+    # makes two packets hard to order. These must always carry +00:00.
+    log = _composite_log_file(tmp_path)
+    for index, zone in enumerate(("UTC", "Asia/Tokyo", "America/Los_Angeles")):
+        env = dict(os.environ, TZ=zone)
+        output_dir = tmp_path / f"packet{index}"
+        result = subprocess.run(
+            [
+                sys.executable, "-m", "sam_doctor.cli", "packet", str(log),
+                "--output-dir", str(output_dir),
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
+        generated = next(
+            line for line in notes.splitlines() if line.startswith("- Generated:")
+        )
+        assert generated.endswith("+00:00"), f"TZ={zone} produced {generated}"
