@@ -12,13 +12,14 @@ discovers failures locally instead of after pushing:
 6. error page mapping gate         (scripts/check-error-pages.py)
 7. test suite                      (pytest -q)
 8. package build                   (python -m build)
-9. onboarding smoke check          (scripts/run-smoke.py)
+9. built wheel in a clean env      (scripts/verify-wheel.py)
+10. onboarding smoke check         (scripts/run-smoke.py)
 
 All steps run even when an early one fails, then a summary reports every
 failure at once. Exit code 0 only when everything passed.
 
     python scripts/check-pr.py           # full gate, same as CI
-    python scripts/check-pr.py --fast    # skip the build and smoke steps
+    python scripts/check-pr.py --fast    # skip the build, wheel, and smoke steps
 """
 
 from __future__ import annotations
@@ -45,6 +46,8 @@ def _steps(fast: bool) -> list[tuple[str, list[str]]]:
     ]
     if not fast:
         steps.append(("package build", [python, "-m", "build"]))
+        # Must follow the build: it verifies the artifact that build just produced.
+        steps.append(("wheel in a clean env", [python, "scripts/verify-wheel.py"]))
         steps.append(("onboarding smoke check", [python, "scripts/run-smoke.py"]))
     return steps
 
@@ -54,7 +57,7 @@ def main() -> int:
     parser.add_argument(
         "--fast",
         action="store_true",
-        help="skip the package build and smoke check for quick iteration",
+        help="skip the package build, wheel check, and smoke check for quick iteration",
     )
     args = parser.parse_args()
 
@@ -72,7 +75,7 @@ def main() -> int:
         failures += 0 if passed else 1
         print(f"{status}  {name:<28} {elapsed:6.1f}s")
     if args.fast:
-        print("note: --fast skipped the package build and smoke check.")
+        print("note: --fast skipped the package build, wheel check, and smoke check.")
     if failures:
         print(f"\n{failures} step(s) failed. A pull request in this state will fail CI.")
         return 1
