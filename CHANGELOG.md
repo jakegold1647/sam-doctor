@@ -4,6 +4,31 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The two flagship OIDC rules were matching wordings that real logs do not
+  contain.** Measured against 231 real failure excerpts pasted into public GitHub
+  issues, the catalog diagnosed 83%. Three of the misses were ours, not exotic:
+
+  - `Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable` — what
+    `@actions/core` actually prints when a job lacks `permissions: id-token:
+    write`. Both existing patterns required the log to mention `id-token: write`,
+    which is the *fix*, not the error: without the permission the runner never
+    injects the variable, so the log cannot name it. Seen in four unrelated
+    repositories.
+  - `Not authorized to perform sts:AssumeRoleWithWebIdentity` — no colon after
+    `perform`, which is how `configure-aws-credentials` words it, with "Not
+    authorized" *before* the action name rather than after. All three patterns
+    missed it. Seen in three unrelated repositories.
+  - A bucket collision wrapped by a resource handler — `"my-app-logs already
+    exists (Service: S3, …)" (HandlerErrorCode: AlreadyExists)`. The rule's own
+    comment described this shape; the pattern was never added, so it produced no
+    finding at all. `Service: S3` keeps it specific, since the handler code is
+    shared by every resource type.
+
+  Detection went from 83% to 88% on those three changes. The verbatim strings are
+  now regression tests, alongside near-misses that must stay clean — another
+  service's "already exists", an OIDC success line, and prose mentioning the
+  permission.
+
 - **Workflow annotations said ``write`..``** — the sentence period was appended
   unconditionally, and all 54 rules already end their first verification step with
   one. That is the surface most users see: for many people the annotation in the

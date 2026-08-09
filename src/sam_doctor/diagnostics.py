@@ -195,6 +195,15 @@ _RULES = (
         patterns=(
             r"Unable to get ID Token.*id-token:\s*write",
             r"id-token:\s*write.*(?:permission|required|missing)",
+            # What the runtime actually prints. The two patterns above expect the
+            # log to mention `id-token: write` - which is the fix, not the error.
+            # @actions/core says "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env
+            # variable" and nothing else, because without the permission the
+            # runner never injects that variable. Found in four unrelated public
+            # repositories while measuring this catalog against real logs; the
+            # flagship OIDC rule was matching a string real logs do not contain.
+            r"Unable to get ACTIONS_ID_TOKEN_REQUEST_(?:URL|TOKEN)",
+            r"ACTIONS_ID_TOKEN_REQUEST_(?:URL|TOKEN) env variable",
         ),
         explanation=(
             "The workflow does not have the permission required to request a GitHub "
@@ -213,8 +222,15 @@ _RULES = (
         title="GitHub Actions cannot assume the configured AWS role through OIDC",
         confidence="high",
         patterns=(
-            r"Not authorized to perform: sts:AssumeRoleWithWebIdentity",
-            r"(?:failed|error|denied|unable).{0,80}AssumeRoleWithWebIdentity",
+            # The colon is optional because AWS does not always print it.
+            # `configure-aws-credentials` reports "Could not assume role with OIDC:
+            # Not authorized to perform sts:AssumeRoleWithWebIdentity" - no colon
+            # after `perform` - and that wording appeared in three unrelated public
+            # repositories, none of which this rule matched. `not authorized` also
+            # joins the leading alternation below, because in that sentence it
+            # precedes the action name rather than following it.
+            r"Not authorized to perform:?\s*sts:AssumeRoleWithWebIdentity",
+            r"(?:failed|error|denied|unable|not authorized).{0,80}AssumeRoleWithWebIdentity",
             r"AssumeRoleWithWebIdentity.{0,80}(?:failed|error|denied|not authorized)",
         ),
         explanation=(
@@ -710,6 +726,14 @@ _RULES = (
             # prose and report the generic `HandlerErrorCode: AlreadyExists`.
             # That code is shared by every resource type, so it is never matched
             # on its own - only this S3-specific sentence is.
+            #
+            # That sentence was described here and never actually added, so the
+            # wrapped form went undiagnosed: a real log reading `"my-app-logs
+            # already exists (Service: S3, Status Code: 409)" (HandlerErrorCode:
+            # AlreadyExists)` produced no finding at all. `Service: S3` is what
+            # keeps it specific - the handler code alone would claim a Lambda or a
+            # table that already exists as a bucket-name collision.
+            r"already exists\s*\(Service:\s*S3\b",
             r"The requested bucket name is not available",
         ),
         explanation=(
