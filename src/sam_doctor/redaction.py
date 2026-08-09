@@ -30,6 +30,12 @@ _WEBHOOK_URL = re.compile(
     r"|[a-z0-9-]+\.webhook\.office\.com/webhookb2/[A-Za-z0-9@/._-]{8,})"
 )
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
+
+# Values that are configuration whatever key they sit under. `permissions: id-token:
+# write` is a GitHub permission level, and it was being starred out of the evidence
+# for the OIDC rule - deleting the single word a reader needs in order to fix the
+# failure. No real secret is the literal string `write`.
+_BENIGN_VALUES = ("write", "read", "none", "true", "false", "admin", "null")
 _SECRET_ASSIGNMENT = re.compile(
     # Deliberately no leading \b. Environment variables are conventionally
     # UPPER_SNAKE_CASE with a prefix - DB_PASSWORD, APP_SECRET, MY_API_KEY - and
@@ -46,9 +52,15 @@ _SECRET_ASSIGNMENT = re.compile(
     # signature parameter.
     r"|secret[_-]?access[_-]?key|session[_-]?token|client[_-]?secret|private[_-]?key"
     r"|x-amz-signature)"
+    # The separator is captured rather than assumed, so a rewritten line keeps the
+    # shape it had. Forcing `=` turned the YAML `id-token: write` into
+    # `id-token=[REDACTED]`, which is not the syntax anybody wrote.
+    r"([\"'`]?\s*[:=]\s*[\"'`]?)"
     # Never consume a value another pattern already redacted - the session-token
-    # marker must survive this later, broader pass.
-    r"[\"'`]?\s*[:=]\s*[\"'`]?(?!\[REDACTED)[^\s'\"`]+[\"'`]?"
+    # marker must survive this later, broader pass - and never redact one of the
+    # configuration values listed above.
+    r"(?!\[REDACTED)(?!(?:" + "|".join(_BENIGN_VALUES) + r")\b)"
+    r"[^\s'\"`]+[\"'`]?"
 )
 # Credentials embedded in a URL: `https://user:token@host/path`, and the
 # token-as-username form `https://glpat-xxx@host/path`. Both are ordinary in CI
@@ -141,7 +153,9 @@ def redact(text: str) -> str:
     text = _PRIVATE_KEY_BLOCK.sub("[REDACTED_PRIVATE_KEY]", text)
     text = _BEARER_TOKEN.sub(lambda match: f"{match.group(1)} [REDACTED_BEARER_TOKEN]", text)
     text = _BASIC_AUTH.sub(lambda match: f"{match.group(1)} [REDACTED_BASIC_AUTH]", text)
-    text = _SECRET_ASSIGNMENT.sub(lambda match: f"{match.group(1)}=[REDACTED_SECRET]", text)
+    text = _SECRET_ASSIGNMENT.sub(
+        lambda match: f"{match.group(1)}{match.group(2)}[REDACTED_SECRET]", text
+    )
     text = _JWT.sub("[REDACTED_JWT]", text)
     # Must run before the email pass: `user:password@host.tld` also matches the
     # email pattern, and letting that win both mislabels the credential and

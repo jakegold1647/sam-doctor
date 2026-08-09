@@ -1,0 +1,55 @@
+name: Field detection measurement
+
+# Asks the question no internal test can: does the catalog match the wordings real
+# tools actually print? It measures the rules against deployment logs pasted by
+# people into public GitHub issues. The first run moved three rules, two of them the
+# flagship OIDC pair, which had been matching documentation phrasing that neither
+# the GitHub runner nor the AWS CLI ever emits.
+#
+# Monthly and on demand, never on a pull request: it needs the search API, and no
+# contributor's build should depend on that. A drop is a maintenance signal, so the
+# floor sits well below the current figure - search results drift between runs, and
+# a check that fires on drift is a check people learn to ignore.
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      floor:
+        description: Fail below this detection percentage
+        required: false
+        default: "70"
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Measure detection against real logs
+        id: measure
+        run: |
+          python scripts/measure-field-detection.py \
+            --token "${{ github.token }}" \
+            --floor "${{ github.event.inputs.floor || '70' }}" \
+            --top 25 | tee measurement.txt
+
+      # Written to the summary whether the step passed or failed: the missed
+      # signatures are the useful part either way, and they are the closest thing
+      # this project has to a rule roadmap grounded in reality.
+      - name: Publish the measurement
+        if: always()
+        run: |
+          {
+            echo "## Field detection measurement"
+            echo
+            echo '```'
+            cat measurement.txt || echo "(no output captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

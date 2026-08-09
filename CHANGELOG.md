@@ -4,6 +4,26 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Redaction was deleting the fix from the OIDC finding.** `token` sits in the
+  secret-keyword list, so `permissions: id-token: write` was rewritten to
+  `id-token=[REDACTED_SECRET]` - in the evidence line for the rule that fires most
+  often on real logs. The finding therefore hid the single word a reader needs in
+  order to fix the failure, and mangled the YAML separator into `=` while doing it.
+  Configuration values (`write`, `read`, `none`, `true`, `false`, `admin`, `null`)
+  are no longer treated as credentials, and the original separator is preserved, so
+  a redacted line keeps the syntax somebody actually wrote.
+
+  Found by reading the output of the new field measurement rather than by testing
+  redaction: the tool printed `id-token=[REDACTED_SECRET]` in its own report.
+
+- **New: `scripts/measure-field-detection.py`,** which measures the catalog against
+  deployment logs pasted into public GitHub issues, and a monthly workflow that
+  publishes the result. Detection sits at 88% of 249 real failure excerpts, and the
+  missed signatures it prints are the closest thing this project has to a rule
+  roadmap grounded in reality rather than in guesswork. Not part of the
+  pull-request gate: it needs the network, and no contributor's build should depend
+  on a search API.
+
 - **The two flagship OIDC rules were matching wordings that real logs do not
   contain.** Measured against 231 real failure excerpts pasted into public GitHub
   issues, the catalog diagnosed 83%. Three of the misses were ours, not exotic:

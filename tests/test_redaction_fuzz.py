@@ -119,6 +119,20 @@ def test_fuzzed_logs_never_leak_identifiers_in_any_format() -> None:
     assert rendered_redactions > 50
 
 
+def _pattern_names(module) -> list[str]:
+    """Compiled patterns in the module, by name.
+
+    Selecting on `isinstance(..., re.Pattern)` rather than on the shape of the name:
+    the first version of these checks matched any UPPER_CASE module constant, which
+    flagged a plain tuple of benign values as an unapplied pattern. A guard that
+    reports something it does not understand is a guard people learn to route
+    around.
+    """
+
+    import re as _re
+
+    return sorted(name for name, value in vars(module).items() if isinstance(value, _re.Pattern))
+
 def test_a_webhook_url_is_redacted_whole_not_in_pieces() -> None:
     # Ordering trap, hit while adding this: a Discord webhook path starts with a
     # numeric id, and the twelve-digit account-id pass rewrites that id first.
@@ -214,11 +228,7 @@ def test_the_readme_names_every_redaction_pattern_family() -> None:
 
     from sam_doctor import redaction
 
-    families = [
-        name
-        for name in vars(redaction)
-        if name.startswith("_") and not name.startswith("__") and name.isupper()
-    ]
+    families = _pattern_names(redaction)
     readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
     claim = readme[readme.index("Reports redact AWS account IDs") :][:1400]
 
@@ -255,11 +265,57 @@ def test_every_pattern_is_actually_applied() -> None:
     from sam_doctor import redaction
 
     body = inspect.getsource(redaction.redact)
-    families = sorted(
-        name
-        for name in vars(redaction)
-        if name.startswith("_") and not name.startswith("__") and name.isupper()
-    )
-    unused = [name for name in families if name not in body]
+    unused = [name for name in _pattern_names(redaction) if name not in body]
 
     assert unused == [], f"defined but never applied in redact(): {unused}"
+
+
+# `permissions: id-token: write` is a GitHub permission level, and `token` sits in
+# the secret-keyword list, so redaction was rewriting it to `id-token=[REDACTED]`.
+# That is the evidence line for github.oidc.token-request-denied - the rule that
+# fires most often on real logs - so the finding deleted the one word a reader needs
+# in order to fix the failure, and mangled the YAML separator while doing it.
+CONFIGURATION_NOT_CREDENTIALS = (
+    "id-token: write",
+    "permissions: id-token: write",
+    "the job is missing id-token: write",
+    "contents: read",
+    "id-token=write",
+    "secret: none",
+    "packages: read",
+)
+
+
+@pytest.mark.parametrize("line", CONFIGURATION_NOT_CREDENTIALS)
+def test_a_permission_level_is_not_treated_as_a_secret(line: str) -> None:
+    from sam_doctor.redaction import redact
+
+    assert redact(line) == line
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        # The separator is preserved, so a redacted line keeps the syntax it had.
+        ("password: hunter2-real", "password: [REDACTED_SECRET]"),
+        ("DB_PASSWORD=s3cr3t-value", "DB_PASSWORD=[REDACTED_SECRET]"),
+        ("api_key = abcdef123456", "api_key = [REDACTED_SECRET]"),
+    ],
+)
+def test_a_real_secret_is_still_redacted_in_place(line: str, expected: str) -> None:
+    from sam_doctor.redaction import redact
+
+    assert redact(line) == expected
+
+
+def test_the_oidc_finding_keeps_its_fix_visible() -> None:
+    # End to end: the rule fires, and the evidence still says `write`.
+    from sam_doctor.diagnostics import diagnose
+
+    findings = diagnose(
+        "Error: Unable to get ID Token. Ensure the workflow grants id-token: write\n"
+    )
+
+    assert findings, "the OIDC rule did not fire"
+    evidence = " ".join(findings[0].evidence)
+    assert "id-token: write" in evidence, evidence
