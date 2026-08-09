@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import codecs
 import glob
 import json
 import sys
@@ -374,11 +375,43 @@ def _note_slow_input(path: Path, text: str) -> None:
     )
 
 
+# Byte-order marks, longest first: a UTF-32 LE mark (ff fe 00 00) begins with a
+# UTF-16 LE mark, so testing UTF-16 first would decode UTF-32 as the wrong
+# encoding. The names without an endianness suffix let the codec consume the mark
+# itself rather than leaving U+FEFF at the start of the first line.
+_BOM_ENCODINGS: tuple[tuple[bytes, str], ...] = (
+    (codecs.BOM_UTF32_LE, "utf-32"),
+    (codecs.BOM_UTF32_BE, "utf-32"),
+    (codecs.BOM_UTF16_LE, "utf-16"),
+    (codecs.BOM_UTF16_BE, "utf-16"),
+    (codecs.BOM_UTF8, "utf-8-sig"),
+)
+
+
+def _decode_log_bytes(raw: bytes) -> str:
+    """Decode log bytes, honouring a byte-order mark when one is present.
+
+    Reading everything as UTF-8 loses whole logs on Windows. PowerShell writes
+    redirected output as BOM-marked Unicode - `sam deploy > deploy.log` under
+    PowerShell 5.1 produces UTF-16 LE - and decoding that as UTF-8 leaves a NUL
+    between every character, so no rule matches and the report says "no
+    supported pattern found" for a log that is full of failures.
+
+    Anything without a mark is still read as UTF-8 with replacement, which keeps
+    a latin-1 or otherwise mixed log readable instead of raising.
+    """
+
+    for bom, encoding in _BOM_ENCODINGS:
+        if raw.startswith(bom):
+            return raw.decode(encoding, errors="replace")
+    return raw.decode("utf-8", errors="replace")
+
+
 def _read_text(path: Path) -> str:
     if path == Path("-"):
         return sys.stdin.read()
     try:
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = _decode_log_bytes(path.read_bytes())
     except OSError as error:
         raise ValueError(f"Could not read {path}: {error}") from error
     _note_slow_input(path, text)
