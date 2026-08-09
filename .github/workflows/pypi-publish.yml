@@ -27,12 +27,12 @@ jobs:
       actions: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # A manual recovery is dispatched from main, but must build the
           # release tag supplied by the operator rather than current main.
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release-tag || github.event.release.tag_name }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: python -m pip install build
