@@ -84,3 +84,41 @@ def test_every_schema_url_is_https_and_unique() -> None:
     assert len(set(urls)) == len(urls), "two outputs share one schema URL"
     for url in urls:
         assert urlparse(url).scheme == "https"
+
+
+def test_the_diagnose_schema_accepts_a_report_containing_every_rule() -> None:
+    """The schema is validated against sample reports, which exercise a few rules.
+
+    A schema can be too narrow for one rule out of fifty-four - a longer
+    explanation, a different confidence, a rule whose verification list is a
+    different length - and a sample-based check will never notice. Validating a
+    single report that carries all of them costs nothing and closes that gap.
+    """
+
+    from jsonschema import Draft202012Validator
+
+    from sam_doctor.diagnostics import Finding, json_report, supported_rules
+
+    schema = json.loads(
+        (REPO_ROOT / "docs" / "schemas" / "diagnose-report.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    findings = [
+        Finding(
+            rule_id=rule.id,
+            title=rule.title,
+            confidence=rule.confidence,
+            explanation=rule.explanation,
+            verification=rule.verification,
+            documentation_url=rule.documentation_url,
+            evidence=("2026-08-02 CREATE_FAILED some log line",),
+            line_number=index + 1,
+        )
+        for index, rule in enumerate(supported_rules())
+    ]
+
+    payload = json.loads(json_report(findings, "deploy.log"))
+    errors = sorted(Draft202012Validator(schema).iter_errors(payload), key=lambda e: list(e.path))
+
+    assert errors == [], "\n".join(f"{list(e.path)}: {e.message}" for e in errors[:5])
