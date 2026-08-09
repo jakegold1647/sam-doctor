@@ -69,8 +69,13 @@ jobs:
       # Optional: route high-signal failures to a follow-up job/thread.
       # - name: Open a follow-up note when issues are found
       #   if: steps.sam-doctor.outputs.has-findings == 'true'
-      #   run: echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} findings."
+      #   run: echo "SAM Doctor found ${{{{ steps.sam-doctor.outputs.finding-count }}}} findings."
 """
+# The braces above are quadrupled on purpose. This template is rendered with
+# str.format(), which collapses `{{` to `{`, so writing the GitHub expression as
+# `${{ ... }}` emitted `${ ... }` - single braces, which GitHub does not
+# interpolate. The line is commented out in the generated workflow and meant to
+# be uncommented, so it has to be correct when it is.
 
 _TRIGGER_MANUAL = (
     "  # Manual only: run from the Actions tab. Nothing here deploys on push.\n"

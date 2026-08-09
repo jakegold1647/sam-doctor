@@ -1,5 +1,6 @@
 ﻿import io
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -1609,6 +1610,24 @@ def test_init_command_on_push_opts_into_push_trigger(tmp_path: Path) -> None:
     text = workflow.read_text(encoding="utf-8")
     assert "push:\n    branches: [main]" in text
     assert "workflow_dispatch: {}" in text
+
+
+@pytest.mark.parametrize("extra_args", [[], ["--on-push"]])
+def test_init_emits_a_usable_github_expression(
+    extra_args: list[str], tmp_path: Path
+) -> None:
+    # The template is rendered with str.format(), which collapses `{{` to `{`.
+    # Writing the expression as `${{ ... }}` therefore emitted `${ ... }`, which
+    # GitHub does not interpolate - and that line is commented out for the user
+    # to uncomment, so it has to be right when they do.
+    workflow = tmp_path / "sam-doctor.yml"
+
+    assert main(["init", "--workflow-file", str(workflow), *extra_args]) == 0
+
+    text = workflow.read_text(encoding="utf-8")
+    assert "${{ steps.sam-doctor.outputs.finding-count }}" in text
+    # No single-brace expression anywhere: that is the shape that silently fails.
+    assert not re.search(r"\$\{(?!\{)", text)
 
 
 def test_init_command_rejects_existing_file_without_force(
