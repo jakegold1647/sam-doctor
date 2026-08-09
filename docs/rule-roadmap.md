@@ -6,6 +6,15 @@ does not diagnose yet. Every entry is intentionally specified to the level of
 contributor can pick it up and land it in a single focused PR: one rule, one
 positive/negative test pair, one changelog line.
 
+> **Two issues are reserved.**
+> [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
+> and attachment quotas) and
+> [#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
+> `TooManyRequestsException`) are held for first-time contributors. Please leave
+> those two even if you could finish them in an afternoon - a project asking for
+> contributors has to keep something worth contributing. Everything else here is
+> open.
+
 Before starting:
 
 1. Read [Contributing a diagnostic rule](contributing-a-diagnostic-rule.md) for
