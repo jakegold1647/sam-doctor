@@ -486,11 +486,178 @@ governance hooks or tag policies to make a deploy pass.
 
 ---
 
+## 12. `Fn::GetAtt` called with the wrong number of parameters
+
+**Status:** open, from the field measurement. Seen once in the sampled corpus,
+but it is a mistake anyone hand-editing a template makes, so the single sighting
+understates it.
+
+**Failure family.** CloudFormation rejects the change set before touching a
+resource because an `Fn::GetAtt` was written with one parameter or three instead
+of exactly two (logical id and attribute). The short form `!GetAtt Thing.Attr`
+expands to the two-element list; writing `!GetAtt Thing` or nesting a `Sub`
+inside the attribute name produces this.
+
+**Sanitized signal lines.**
+
+```text
+An error occurred (ValidationError) when calling the CreateChangeSet operation: Template error: every Fn::GetAtt object requires two non-empty parameters, the resource name and the resource attribute
+```
+
+**Pattern hints.** Anchor on `every Fn::GetAtt object requires two non-empty
+parameters`. This is a template-authoring error, not a permissions or state
+problem, so it should not be suppressed by - or suppress - the generic changeset
+rule; check that the generic `sam.deploy.configuration-resolution-failed` finding
+does not also fire on the same line, since its advice (`sam validate --lint`,
+check `samconfig.toml`) is unrelated.
+
+**Nearby non-matches to test.** A working `Fn::GetAtt` in ordinary template
+output, and `Template error: instance of Fn::Select` (a different template error
+that should keep whatever finding it produces today).
+
+**Safe verification steps to include.** Search the template for `GetAtt`
+occurrences and check each has exactly a logical id and an attribute; remember the
+short form `!GetAtt Thing.Attr` and the long form
+`Fn::GetAtt: [Thing, Attr]` are the same thing, and mixing them is the usual
+cause.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getatt.html>
+
+**Suggested confidence.** high.
+
+---
+
+## 13. A resource property was rejected for non-ASCII characters
+
+**Status:** open, from the field measurement.
+
+**Failure family.** A resource handler refuses a property value because it
+contains characters outside ASCII - an em dash or an arrow pasted from a design
+document into a `Description`, or a smart quote from a word processor. The
+deployment fails on a value that looks completely ordinary on screen, which is
+what makes it worth a rule: the character is usually invisible to the person
+reading their own template.
+
+**Sanitized signal lines.**
+
+```text
+Resource handler returned message: "Value (Pre-deploy Lambda -> RDS + VPC endpoints) for parameter GroupDescription is invalid. Character sets beyond ASCII are not supported"
+```
+
+**Pattern hints.** Anchor on `Character sets beyond ASCII are not supported`. The
+parameter name in the message varies by resource type, so do not hard-code
+`GroupDescription`; capture nothing and let the evidence line carry it.
+
+**Nearby non-matches to test.** A different `is invalid` parameter rejection (for
+example a value that breaks a length limit), which must keep producing the
+generic resource-failure finding rather than this one.
+
+**Safe verification steps to include.** Name the offending property from the
+evidence line, and suggest finding the character rather than retyping the value
+blindly - `grep -n -P "[^[:ascii:]]" template.yaml` locates it. Worth saying that
+the fix is to replace the character, not to remove the description.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html>
+
+**Suggested confidence.** high.
+
+---
+
+## 14. CloudFormation early validation rejected a property
+
+**Status:** open, from the field measurement. This one is newer behaviour and the
+sampled log did not include the full message, so a contributor should collect a
+complete example before writing the pattern.
+
+**Failure family.** CloudFormation now validates some properties before the
+change set is created, and reports the failure as an `AWS::EarlyValidation::`
+pseudo-resource inside the usual waiter error. Because the waiter wrapper is what
+surfaces, the generic changeset rule fires and sends the reader to
+`samconfig.toml` - the wrong place entirely, since the template is what was
+rejected.
+
+**Sanitized signal lines.**
+
+```text
+Waiter ChangeSetCreateComplete failed: AWS::EarlyValidation::PropertyValidation
+```
+
+**Pattern hints.** Anchor on `AWS::EarlyValidation::`, which is stable across the
+specific validation that failed. The interesting design question is precedence:
+this should claim the line ahead of the generic changeset rule, which means
+`excluded_line_patterns` on that rule rather than a whole-log suppression - see
+the note on choosing between them in the contributing guide.
+
+**Nearby non-matches to test.** An ordinary `Waiter ChangeSetCreateComplete
+failed` with a `Status: FAILED` reason, which must keep its existing finding.
+
+**Safe verification steps to include.** Read the property named after the
+pseudo-resource; `aws cloudformation describe-change-set` on the failed change set
+returns the full reason when the CLI output was truncated.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html>
+
+**Suggested confidence.** medium - the sample is incomplete, so a narrow pattern
+with an honest confidence beats a broad one.
+
+---
+
+## 15. `sam validate --lint` failed the template
+
+**Status:** open, from the field measurement.
+
+**Failure family.** A deploy pipeline runs `sam validate --lint` and cfn-lint
+matches at least one rule. The SAM CLI reports only that linting failed; the
+individual `E....`/`W....` rule codes appear on their own lines above it, so the
+summary line alone tells the reader nothing actionable.
+
+**Sanitized signal lines.**
+
+```text
+Error: Linting failed. At least one linting rule was matched to the provided template.
+[E1031: ToJsonString validation of parameters] (Fn::ToJsonString is not supported without 'AWS::LanguageExtensions' transform)
+```
+
+**Pattern hints.** Match `Linting failed. At least one linting rule was matched`.
+The useful work is in the explanation rather than the pattern: point the reader at
+the `E`/`W` codes above the summary line, since those name the actual problem. A
+rule that only repeats "linting failed" is not worth adding.
+
+**Nearby non-matches to test.** A successful `sam validate` run, and a cfn-lint
+warning-only run that does not fail the command.
+
+**Safe verification steps to include.** Re-run `sam validate --lint` and read the
+rule codes; look a code up with `cfn-lint --docs E1031` rather than guessing from
+the message.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
-Every entry in this roadmap has now landed. The open
+**Entries 12 to 15 are open**, and they are a different kind of candidate from the
+eleven above them: each one came out of
+`scripts/measure-field-detection.py`, which measures this catalog against
+deployment logs real people pasted into public GitHub issues. They are failures
+sam-doctor was handed and did not diagnose, rather than failures somebody expected
+it to meet. Entry 14 in particular is worth reading before claiming — the sampled
+log was truncated, so the first job is collecting a complete example.
+
+The measurement prints every signature it missed, so a run of it is the fastest way
+to find work that is definitely real. Detection currently sits at 88%; the misses
+that remain after entries 12 to 15 are mostly other tools' failures (CDK, Terraform,
+CodeBuild) that this project does not claim to cover.
+
+Entries 1 to 11 have all landed. The open
 [rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-are the next source of well-scoped work, and a fresh rule request from a real
+are the other source of well-scoped work, and a fresh rule request from a real
 failure is always welcome. Two of them —
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
 and attachment quotas) and
