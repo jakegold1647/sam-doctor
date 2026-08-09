@@ -343,9 +343,17 @@ redacted context window around the first likely error, never the full log.
 Reports redact AWS account IDs, ARNs, email addresses, common AWS access key
 IDs, bare STS session tokens, secret assignments (including the CamelCase
 JSON keys STS output prints), presigned-URL signatures, bearer tokens,
-JWT-style tokens, PEM private-key blocks, and common GitHub and Slack token
-formats before matched evidence is shown. This
-is a guardrail, not a secret scanner: review a report before sharing it.
+`Authorization: Basic` values, JWT-style tokens, PEM private-key blocks,
+credentials embedded in URLs, incoming webhook URLs (Slack, Discord, Teams),
+passwords passed on a login command line or in `.netrc` form, and common
+GitHub, Slack and Docker Hub token formats before matched evidence is shown.
+This is a guardrail, not a secret scanner: review a report before sharing it.
+
+The list stays narrow on purpose. `--password-stdin` is left visible because it
+is the safe idiom and starring it out would obscure a log showing the right thing
+being done, and third-party API keys that never appear in AWS deployment logs are
+left out — every pattern added is another chance to redact something the reader
+needed.
 
 To package a diagnosis for handoff, `sam-doctor packet deployment.log` writes
 `diagnosis.md` and `diagnosis.json`; the
