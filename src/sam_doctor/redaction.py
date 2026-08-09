@@ -15,6 +15,20 @@ _GITHUB_TOKEN = re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z
 _BEARER_TOKEN = re.compile(
     r"(?i)\b(authorization\s*:\s*bearer|bearer)\s+[A-Za-z0-9._~+/=-]{16,}"
 )
+# `Basic` was missing while `Bearer` was handled, and it is the more decodable of
+# the two: the value is base64 of `user:password`, so it hands over a reusable
+# credential rather than a token that may expire. Docker, npm and pip registry
+# auth all print this shape, and so does any curl run with -v.
+_BASIC_AUTH = re.compile(r"(?i)\b(authorization\s*:\s*basic)\s+[A-Za-z0-9+/=]{8,}")
+# An incoming webhook URL is a credential in link form: whoever holds it can post
+# as the integration, and there is nothing else to authenticate. Deploy
+# notification steps print them when the post itself fails, which is exactly the
+# log someone attaches to a bug report.
+_WEBHOOK_URL = re.compile(
+    r"(?i)\bhttps://(?:hooks\.slack\.com/(?:services|workflows)/[A-Za-z0-9/_-]{8,}"
+    r"|discord(?:app)?\.com/api/webhooks/[0-9]{5,}/[A-Za-z0-9._-]{8,}"
+    r"|[a-z0-9-]+\.webhook\.office\.com/webhookb2/[A-Za-z0-9@/._-]{8,})"
+)
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _SECRET_ASSIGNMENT = re.compile(
     # Deliberately no leading \b. Environment variables are conventionally
@@ -79,6 +93,12 @@ def redact(text: str) -> str:
     sharing them outside their team.
     """
 
+    # First, because a webhook URL is only recognizable while it is still intact.
+    # A Discord webhook path starts with a numeric id, and the twelve-digit
+    # account-id pass rewrites that id to a placeholder - after which this pattern
+    # no longer matches and the token half of the URL, which is the actual secret,
+    # survives into the report. Later passes may safely narrow what is left.
+    text = _WEBHOOK_URL.sub("[REDACTED_WEBHOOK_URL]", text)
     text = _ARN.sub("[REDACTED_ARN]", text)
     text = _ACCOUNT_ID.sub("[REDACTED_ACCOUNT_ID]", text)
     text = _AWS_ACCESS_KEY_ID.sub("[REDACTED_AWS_ACCESS_KEY]", text)
@@ -87,6 +107,7 @@ def redact(text: str) -> str:
     text = _SLACK_TOKEN.sub("[REDACTED_SLACK_TOKEN]", text)
     text = _PRIVATE_KEY_BLOCK.sub("[REDACTED_PRIVATE_KEY]", text)
     text = _BEARER_TOKEN.sub(lambda match: f"{match.group(1)} [REDACTED_BEARER_TOKEN]", text)
+    text = _BASIC_AUTH.sub(lambda match: f"{match.group(1)} [REDACTED_BASIC_AUTH]", text)
     text = _SECRET_ASSIGNMENT.sub(lambda match: f"{match.group(1)}=[REDACTED_SECRET]", text)
     text = _JWT.sub("[REDACTED_JWT]", text)
     # Must run before the email pass: `user:password@host.tld` also matches the
