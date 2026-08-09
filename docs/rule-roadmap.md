@@ -533,7 +533,9 @@ cause.
 
 ## 13. A resource property was rejected for non-ASCII characters
 
-**Status:** open, from the field measurement.
+**Status:** open, from the field measurement. Tracked in
+[issue #62](https://github.com/jakegold1647/sam-doctor/issues/62) - claim it
+there.
 
 **Failure family.** A resource handler refuses a property value because it
 contains characters outside ASCII - an em dash or an arrow pasted from a design
@@ -572,7 +574,9 @@ the fix is to replace the character, not to remove the description.
 
 **Status:** open, from the field measurement. This one is newer behaviour and the
 sampled log did not include the full message, so a contributor should collect a
-complete example before writing the pattern.
+complete example before writing the pattern. Tracked in
+[issue #63](https://github.com/jakegold1647/sam-doctor/issues/63) - claim it
+there.
 
 **Failure family.** CloudFormation now validates some properties before the
 change set is created, and reports the failure as an `AWS::EarlyValidation::`
@@ -610,7 +614,9 @@ with an honest confidence beats a broad one.
 
 ## 15. `sam validate --lint` failed the template
 
-**Status:** open, from the field measurement.
+**Status:** open, from the field measurement. Tracked in
+[issue #64](https://github.com/jakegold1647/sam-doctor/issues/64) - claim it
+there.
 
 **Failure family.** A deploy pipeline runs `sam validate --lint` and cfn-lint
 matches at least one rule. The SAM CLI reports only that linting failed; the
@@ -667,6 +673,12 @@ and attachment quotas) and
 `TooManyRequestsException`) — are labelled `good first issue` and are held for
 first-time contributors, so please leave those two even if you are able to do
 them quickly.
+
+Entries 13 to 15 now have tracking issues of their own —
+[#62](https://github.com/jakegold1647/sam-doctor/issues/62),
+[#63](https://github.com/jakegold1647/sam-doctor/issues/63), and
+[#64](https://github.com/jakegold1647/sam-doctor/issues/64) — so claiming
+happens there rather than by opening a fresh rule request.
 
 Nothing is currently claimed.
 
