@@ -7,12 +7,12 @@ move or change because a runner wrote \r\n.
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+from conftest import child_env
 
 from sam_doctor.cli import _render_findings
 from sam_doctor.diagnostics import diagnose
@@ -72,7 +72,7 @@ def _composite_log_file(tmp_path: Path) -> Path:
 def _run_cli(
     log: Path, output_format: str, *, env_extra: dict[str, str] | None = None, cwd: Path | None = None
 ) -> str:
-    env = dict(os.environ)
+    env = child_env()
     if env_extra:
         env.update(env_extra)
     result = subprocess.run(
@@ -127,7 +127,7 @@ def test_packet_timestamps_stay_utc_whatever_the_local_zone(tmp_path: Path) -> N
     # makes two packets hard to order. These must always carry +00:00.
     log = _composite_log_file(tmp_path)
     for index, zone in enumerate(("UTC", "Asia/Tokyo", "America/Los_Angeles")):
-        env = dict(os.environ, TZ=zone)
+        env = child_env(TZ=zone)
         output_dir = tmp_path / f"packet{index}"
         result = subprocess.run(
             [

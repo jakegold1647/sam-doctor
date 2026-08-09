@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
+
+from conftest import child_env
 
 from sam_doctor.cli import main
 
@@ -123,8 +124,7 @@ def test_cli_packet_generates_default_artifacts(tmp_path: Path) -> None:
 
 def test_cli_packet_supports_stdin(tmp_path: Path) -> None:
     output_dir = tmp_path / "artifacts"
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+    env = child_env()
 
     result = subprocess.run(
         [

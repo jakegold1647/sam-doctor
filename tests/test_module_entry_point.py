@@ -13,6 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import child_env
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -22,7 +24,29 @@ def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
         cwd=ROOT,
         capture_output=True,
         text=True,
+        env=child_env(),
         check=False,
+    )
+
+
+def test_the_subprocess_runs_this_checkout() -> None:
+    # Guards the guard: every assertion in this file is about the repository, and
+    # is worthless if the child interpreter imported an installed copy instead.
+    result = _run_module("--version")
+    assert result.returncode == 0, result.stderr
+
+    located = subprocess.run(
+        [sys.executable, "-c", "import sam_doctor; print(sam_doctor.__file__)"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env=child_env(),
+        check=False,
+    )
+    assert located.returncode == 0, located.stderr
+    assert Path(located.stdout.strip()).is_relative_to(ROOT / "src"), (
+        f"subprocess imported sam_doctor from {located.stdout.strip()!r}, "
+        f"not from {ROOT / 'src'}"
     )
 
 
