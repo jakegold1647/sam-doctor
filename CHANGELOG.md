@@ -4,6 +4,19 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The packet wrapper reported "findings found" when the path was wrong.**
+  `scripts/export-evidence-packet.py` ran the CLI with `check=True`, so a missing
+  log file — which the CLI correctly answers with exit 2 and a clear "Could not
+  read" message — came out of the wrapper as a `CalledProcessError` traceback and
+  exit 1. In this project's contract 1 means a fail gate was hit, so a workflow
+  branching on the exit code read "your deployment has problems" from "your path
+  is wrong", and the reader saw a crash in the tool instead of the tool's own
+  message. The child's exit code now passes through unchanged. Empty stdin is
+  likewise a message and exit 2 rather than a raised `ValueError`.
+
+  A wrapper kept for compatibility has to preserve the contract it wraps, so both
+  cases are now pinned by tests that fail against the old behaviour.
+
 - **A `#` in a log filename sent the SARIF finding to the wrong place.**
   `artifactLocation.uri` is a URI reference rather than a path, and the log name
   was written into it unencoded. In a URI a `#` starts a fragment, so

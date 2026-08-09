@@ -46,7 +46,15 @@ def main() -> int:
     if args.log_file == "-":
         stdin_text = sys.stdin.read()
         if not stdin_text:
-            raise ValueError("stdin input was empty; provide an error excerpt.")
+            # A precondition failure is exit 2 per docs/cli-exit-and-action-exit-codes.md,
+            # and a message rather than a traceback. This used to raise, which a
+            # reader sees as a crash in the tool and CI sees as exit 1 - the code
+            # that means "findings were found".
+            print(
+                "error: stdin input was empty; provide an error excerpt.",
+                file=sys.stderr,
+            )
+            return 2
         input_text = stdin_text
 
     command = [
@@ -66,14 +74,20 @@ def main() -> int:
         "--scenario",
         args.scenario,
     ]
-    subprocess.run(
+    # The child's exit code is the answer, passed through unchanged. With
+    # check=True this raised CalledProcessError instead: the CLI's own clear
+    # message ("Could not read ...") ended up buried under a Python traceback,
+    # and its exit 2 for a missing file was reported as exit 1 - which in this
+    # project's contract means findings were found. A wrapper that exists for
+    # compatibility has to preserve the contract it is wrapping.
+    completed = subprocess.run(
         command,
         input=input_text,
         text=True,
         env=env,
-        check=True,
+        check=False,
     )
-    return 0
+    return completed.returncode
 
 
 if __name__ == "__main__":

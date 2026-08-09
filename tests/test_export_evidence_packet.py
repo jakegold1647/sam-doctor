@@ -197,3 +197,57 @@ def test_packet_notes_name_the_file_not_the_path(tmp_path: Path) -> None:
     notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
     assert "- Source: deployment.log" in notes
     assert "acme-private-client" not in notes
+
+
+_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "export-evidence-packet.py"
+
+
+def _run_wrapper(*args: str, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(_SCRIPT), *args],
+        input=stdin,
+        capture_output=True,
+        text=True,
+        env=child_env(),
+        check=False,
+    )
+
+
+def test_the_wrapper_passes_the_cli_exit_code_through(tmp_path: Path) -> None:
+    # docs/cli-exit-and-action-exit-codes.md: 2 is a precondition failure, 1 means
+    # findings were found. check=True collapsed the difference - a missing file
+    # became CalledProcessError and exit 1, so a workflow branching on the code
+    # read "your deployment has problems" from "your path is wrong".
+    result = _run_wrapper(
+        str(tmp_path / "does-not-exist.log"), "--output-dir", str(tmp_path / "out")
+    )
+
+    assert result.returncode == 2
+    assert "Traceback" not in result.stderr
+    # The CLI's own message has to survive rather than be buried in a traceback.
+    assert "Could not read" in result.stdout + result.stderr
+
+
+def test_empty_stdin_is_a_precondition_failure_not_a_crash(tmp_path: Path) -> None:
+    result = _run_wrapper("-", "--output-dir", str(tmp_path / "out"), stdin="")
+
+    assert result.returncode == 2
+    assert "Traceback" not in result.stderr
+    assert "stdin input was empty" in result.stderr
+
+
+def test_a_successful_wrapper_run_still_exits_zero_and_writes_the_packet(
+    tmp_path: Path,
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
+    output_dir = tmp_path / "artifacts"
+
+    result = _run_wrapper(str(log), "--output-dir", str(output_dir))
+
+    assert result.returncode == 0, result.stderr
+    assert (output_dir / "diagnosis.json").is_file()
+    assert (output_dir / "diagnosis.md").is_file()
+    assert (output_dir / "researcher-notes.md").is_file()
