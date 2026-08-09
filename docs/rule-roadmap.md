@@ -673,14 +673,17 @@ CodeBuild) that this project does not claim to cover.
 Entries 1 to 12 have all landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. Four requests are ready for first-time contributors:
+is the available-work list. Six requests are ready for first-time contributors:
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
 attachment quotas), [#25](https://github.com/jakegold1647/sam-doctor/issues/25)
 (API Gateway `TooManyRequestsException`),
 [#62](https://github.com/jakegold1647/sam-doctor/issues/62) (non-ASCII resource
 properties), and [#64](https://github.com/jakegold1647/sam-doctor/issues/64)
-(`sam validate --lint`). They are labelled `good first issue`, `status: ready`,
-and `mentor available`; please leave them for new contributors.
+(`sam validate --lint`),
+[#65](https://github.com/jakegold1647/sam-doctor/issues/65) (deprecated Lambda
+runtimes), and [#66](https://github.com/jakegold1647/sam-doctor/issues/66)
+(CloudFormation stack-name collisions). They are labelled `good first issue`,
+`status: ready`, and `mentor available`; please leave them for new contributors.
 
 [#63](https://github.com/jakegold1647/sam-doctor/issues/63) is intentionally
 `status: needs-repro`, so contribute a complete sanitized example there before

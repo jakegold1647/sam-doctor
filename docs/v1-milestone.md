@@ -8,10 +8,10 @@ means a user can rely on what is already here.
    republished by hand after each release. The republish step is step 6 of the
    checklist in [pypi-publishing.md](pypi-publishing.md); what remains is
    following it on the next release and confirming the listing updates.
-2. Keep the rule-request tracker honest. Five focused requests are open: #21,
-   #25, #62, and #64 are ready for first-time contributors, while #63 needs a
-   complete sanitized reproduction before implementation. #26, #27, and #33
-   were first implemented in `90cd680`; their acceptance boundaries and
+2. Keep the rule-request tracker honest. Seven focused requests are open: #21,
+   #25, #62, #64, #65, and #66 are ready for first-time contributors, while
+   #63 needs a complete sanitized reproduction before implementation. #26, #27,
+   and #33 were first implemented in `90cd680`; their acceptance boundaries and
    precedence cases are now covered by focused regressions. Entries 13-15 in
    [rule-roadmap.md](rule-roadmap.md) should land or be explicitly deferred
    before 1.0.
