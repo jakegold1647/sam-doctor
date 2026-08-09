@@ -35,6 +35,13 @@ _TIMEOUT_SECONDS = 30
 _DELAY_SECONDS = 0.4
 _USER_AGENT = "sam-doctor-doc-link-check (+https://github.com/jakegold1647/sam-doctor)"
 
+# Statuses meaning "ask again later" rather than "this link is gone". A 404 is a
+# real answer and is not retried. A timeout or a 503 is the host having a moment,
+# and reporting that as rot is how a weekly maintenance signal earns a reputation
+# for crying wolf - after which nobody reads it.
+_RETRYABLE_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
+_RETRY_DELAY_SECONDS = 3.0
+
 
 def _status(url: str) -> tuple[int | str, str]:
     request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
@@ -47,6 +54,24 @@ def _status(url: str) -> tuple[int | str, str]:
         return f"{type(error).__name__}", url
 
 
+def _status_with_retry(url: str) -> tuple[int | str, str]:
+    """Fetch a status, asking a second time when the first answer was not final.
+
+    One attempt makes a weekly check as reliable as the flakiest host it touches.
+    A definitive 404 is taken at its word; anything transient gets one more try
+    after a pause.
+    """
+
+    code, final = _status(url)
+    if code == 200:
+        return code, final
+    # A string code is an exception name: a timeout, DNS failure, reset connection.
+    if isinstance(code, str) or code in _RETRYABLE_STATUS:
+        time.sleep(_RETRY_DELAY_SECONDS)
+        code, final = _status(url)
+    return code, final
+
+
 def check_doc_links() -> list[str]:
     """Return one human-readable problem per unreachable documentation link."""
 
@@ -56,7 +81,7 @@ def check_doc_links() -> list[str]:
 
     problems: list[str] = []
     for url in sorted(urls):
-        code, _final = _status(url)
+        code, _final = _status_with_retry(url)
         if code != 200:
             problems.append(
                 f"{url} returned {code}; used by {', '.join(sorted(urls[url]))}."
