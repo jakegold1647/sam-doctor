@@ -135,3 +135,47 @@ def test_the_log_is_still_diagnosed_through_all_that_noise(log: Path, capsys) ->
     assert main(["diagnose", str(log), "--format", "markdown"]) == 0
 
     assert "sts:AssumeRoleWithWebIdentity" in capsys.readouterr().out
+
+
+def test_annotations_do_not_double_the_sentence_period(log: Path, capsys) -> None:
+    # The period was appended unconditionally while every rule already ends its
+    # first verification step with one, so every annotation ever written read
+    # `write`..` in the GitHub UI - the surface most people actually see.
+    from sam_doctor.cli import _render_findings
+    from sam_doctor.diagnostics import Finding, supported_rules
+
+    for rule in supported_rules():
+        finding = Finding(
+            rule_id=rule.id,
+            title=rule.title,
+            confidence=rule.confidence,
+            explanation=rule.explanation,
+            verification=rule.verification,
+            documentation_url=rule.documentation_url,
+            evidence=("some log line",),
+            line_number=1,
+        )
+        rendered = _render_findings([finding], "deploy.log", "github")
+        assert ".." not in rendered, f"{rule.id} renders a doubled period"
+
+
+def test_an_annotation_still_ends_its_verification_sentence(log: Path) -> None:
+    # Removing the doubling must not remove the punctuation altogether for a rule
+    # whose step happens not to end with any.
+    from sam_doctor.cli import _render_findings
+    from sam_doctor.diagnostics import Finding
+
+    finding = Finding(
+        rule_id="test.rule",
+        title="A title",
+        confidence="high",
+        explanation="An explanation",
+        verification=("Check the thing",),
+        documentation_url="https://example.test/docs",
+        evidence=("some log line",),
+        line_number=3,
+    )
+
+    rendered = _render_findings([finding], "deploy.log", "github")
+
+    assert "Check the thing. Docs:" in rendered

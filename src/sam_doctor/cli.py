@@ -488,9 +488,15 @@ def _render_github(findings: list[Finding], source_name: str) -> str:
     for finding in findings:
         verification = (
             finding.verification[0] if finding.verification else "Review the documentation link."
-        )
+        ).rstrip()
+        # The period was appended unconditionally, and every rule in the catalog
+        # already ends its first verification step with one - so every annotation
+        # this tool has ever written said `write`..` on the surface people actually
+        # read, the workflow annotation in the GitHub UI.
+        if not verification.endswith((".", "!", "?", ":")):
+            verification = f"{verification}."
         message = (
-            f"{finding.title}. Line {finding.line_number}: {verification}. "
+            f"{finding.title}. Line {finding.line_number}: {verification} "
             f"Docs: {finding.documentation_url}"
         )
         lines.append(
