@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Mobile brand links retain their accessible name at the narrow breakpoint.**
+  The compact header still hides the long wordmark visually, but keeps “SAM
+  Doctor” available to screen readers on all 58 pages; a shared CSS and markup
+  regression test protects the behavior.
+
 - **Repository workflows now pin every external GitHub Action to an immutable
   commit.** Readable version comments and Dependabot keep updates reviewable,
   while a static gate prevents a mutable tag or branch from returning to CI,
