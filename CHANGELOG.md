@@ -4,6 +4,21 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Froze what the shipped sample logs report.** `src/sam_doctor/data/*.txt` go
+  inside the wheel: `sam-doctor demo` runs one, the README quotes them, and the
+  Action's own CI asserts a finding count against
+  `examples/oidc-assume-role-failure.txt` in both the Linux and Windows jobs. So
+  their finding sets are published behaviour, not an implementation detail - but
+  nothing pinned them.
+
+  That matters because tightening a rule is meant to remove false positives
+  without removing real detections, and the difference is invisible unless
+  something checks. The baseline was captured by checking out v0.11.0 into a
+  worktree and running *its* code against the same eight files: every finding
+  set matched what the current build produces, so the several rules narrowed in
+  this release cost no real detection. The expectations recorded now are what
+  shipped, not what happened to be true afterwards.
+
 - **Two rollout guides walked the reader into a gate that silently does
   nothing.** Both describe tightening CI in stages: observe, then
   `fail-on-confidence: high`, then strict `fail-on-findings: true`. Neither said
