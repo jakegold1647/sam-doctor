@@ -140,3 +140,17 @@ def test_mobile_brand_links_keep_their_accessible_names() -> None:
         "border": "0",
     }
     assert declarations.items() >= expected.items()
+
+
+def test_mobile_header_does_not_cover_anchor_targets() -> None:
+    css = (ROOT / "site" / "styles.css").read_text(encoding="utf-8")
+    mobile = _css_block(css, "@media (max-width: 700px)")
+    topbar = _css_block(mobile, ".topbar")
+    declarations = {
+        name.strip(): value.strip()
+        for declaration in topbar.split(";")
+        if ":" in declaration
+        for name, value in [declaration.split(":", 1)]
+    }
+
+    assert declarations.get("position") == "relative"

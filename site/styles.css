@@ -1257,6 +1257,7 @@ body:not(.landing) footer p {
     align-items: flex-start;
     gap: .8rem;
     padding-block: .9rem;
+    position: relative;
   }
 
   .brand {
