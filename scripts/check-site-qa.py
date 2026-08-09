@@ -12,6 +12,7 @@ from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SITE_ROOT = ROOT / "site"
+SITE_BASE_URL = "https://jakegold1647.github.io/sam-doctor/"
 
 
 class LinkCollector(HTMLParser):
@@ -20,6 +21,7 @@ class LinkCollector(HTMLParser):
         self.source = source
         self.local_links: list[str] = []
         self.external_links: list[str] = []
+        self.script_links: list[str] = []
         self.meta_has_title = False
         self.has_canonical = False
         self.has_description = False
@@ -46,10 +48,19 @@ class LinkCollector(HTMLParser):
             value = attrs.get(key)
             if not value:
                 continue
-            if value.startswith(("#", "mailto:", "tel:", "javascript:", "data:")):
+            if value.startswith("#"):
                 continue
 
             parsed = urllib.parse.urlparse(value)
+            # urlparse lowercases the scheme, so `JavaScript:` is caught too. This
+            # used to be a startswith check that skipped javascript: links before
+            # anything could object, which made the block further down dead code.
+            if parsed.scheme == "javascript":
+                self.script_links.append(value)
+                continue
+            if parsed.scheme in {"mailto", "tel", "data"}:
+                continue
+
             if parsed.scheme in {"http", "https"}:
                 self.external_links.append(value)
                 continue
@@ -116,10 +127,19 @@ def check_html(site_root: Path, html_file: Path, issues: list[str]) -> None:
         if not candidate.exists():
             issues.append(f"{html_file}: broken local link '{link}' -> {candidate}")
 
-    if collector.external_links:
-        for bad in collector.external_links:
-            if bad.lower().startswith("javascript:"):
-                issues.append(f"{html_file}: javascript link blocked: {bad}")
+    for bad in collector.script_links:
+        issues.append(f"{html_file}: javascript link blocked: {bad}")
+
+
+def _sitemap_relative_path(loc: str) -> str:
+    """Map a sitemap URL to the site-relative file it stands for."""
+
+    rel = urllib.parse.urlparse(loc).path.lstrip("/")
+    rel = rel.removeprefix("sam-doctor/")
+    if not rel or rel.endswith("/"):
+        # `/errors/` and `/` are served by the directory's index.html.
+        rel = f"{rel}index.html"
+    return rel
 
 
 def check_sitemap(site_root: Path, issues: list[str]) -> None:
@@ -132,16 +152,40 @@ def check_sitemap(site_root: Path, issues: list[str]) -> None:
     root = tree.getroot()
     ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     locs = [elem.text for elem in root.findall(".//sm:loc", ns) if elem.text]
+
+    listed: set[str] = set()
     for loc in locs:
-        if not loc.startswith("https://jakegold1647.github.io/sam-doctor/"):
+        if not loc.startswith(SITE_BASE_URL):
             continue
-        rel = urllib.parse.urlparse(loc).path.lstrip("/")
-        rel = rel.removeprefix("sam-doctor/")
-        if not rel:
-            rel = "index.html"
-        candidate = site_root / rel
-        if not candidate.exists():
+        rel = _sitemap_relative_path(loc)
+        listed.add(rel)
+        if not (site_root / rel).exists():
             issues.append(f"sitemap.xml contains missing local path: {loc}")
+
+    # The other direction, which is the one that rots. Adding an error page is a
+    # per-rule chore and updating the sitemap is a separate edit, so the sitemap
+    # silently stopped keeping up: four commits added pages without touching it,
+    # leaving 38 pages that search engines had no path to. Nothing failed,
+    # because nothing was looking this way.
+    for html in sorted(site_root.rglob("*.html")):
+        rel = html.relative_to(site_root).as_posix()
+        if rel in listed:
+            continue
+        issues.append(
+            f"{rel} exists but is not listed in sitemap.xml; add "
+            f"<url><loc>{SITE_BASE_URL}{_sitemap_url_suffix(rel)}</loc></url> "
+            "or the page will not be indexed"
+        )
+
+
+def _sitemap_url_suffix(rel: str) -> str:
+    """The canonical URL suffix for a site-relative HTML path."""
+
+    if rel == "index.html":
+        return ""
+    if rel.endswith("/index.html"):
+        return rel.removesuffix("index.html")
+    return rel
 
 
 def check_robots(site_root: Path, issues: list[str]) -> None:

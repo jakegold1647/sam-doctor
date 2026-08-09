@@ -18,6 +18,45 @@
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/access-denied-no-policy-allows.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/resource-did-not-stabilize.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/export-in-use.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/access-denied.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/binary-validation-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/bucket-already-exists.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/build-host-disk-full.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/code-signing-container-image.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/code-storage-limit-exceeded.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/confirm-changeset-prompt.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/cors-options-conflict.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/create-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/docker-image-pull-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/failed-to-create-changeset.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/incorrect-token-audience.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/invalid-bucket-name.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/invalid-sam-document.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/lambda-ecr-image-access.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/lambda-env-vars-kms-key.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/lambda-package-size-limit.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/layer-artifact-access-denied.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/nested-stack-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/no-oidc-provider.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/operation-in-progress.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/pip-dependency-resolution.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/prohibited-field-resource.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/property-not-defined.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/python-runtime-mismatch.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/reserved-concurrency-below-minimum.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/resolve-s3-conflict.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rollback-in-progress.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/rollback-role-delete-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/s3-access-denied-changeset.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/security-token-invalid.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/ssm-parameter-cannot-be-found.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/tag-action-denied.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/tag-key-validation-failed.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/template-limit-exceeded.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/termination-protection.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/unable-to-get-id-token.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/unable-to-upload-artifact.html</loc></url>
+  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/update-rollback-failed.html</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md</loc></url>
