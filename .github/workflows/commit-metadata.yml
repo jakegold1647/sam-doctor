@@ -1,0 +1,94 @@
+name: Commit metadata
+
+# Every commit here should be attributable to the person who wrote it. This job
+# rejects two things: tool-generated attribution trailers, and commit identities
+# that cannot be traced back to a GitHub account.
+#
+# The checks are described by shape rather than by vendor, so they keep working
+# as tooling changes. A local commit-msg hook catches most of this on the
+# maintainer's machine; this catches everything else - other machines and commits
+# created through the GitHub API, which no local hook can see.
+#
+# On a pull request it inspects only that PR's commits, so a contributor is never
+# blamed for history that predates them.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  trailers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check commit trailers and author identity
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE" ]; then
+            RANGE="$BASE..$HEAD"
+            echo "Scanning pull request commits: $RANGE"
+          else
+            RANGE="${{ github.event.before }}..$HEAD"
+            # A new branch or force-push can leave 'before' unusable; fall back to the tip.
+            if ! git rev-parse --quiet --verify "${{ github.event.before }}^{commit}" >/dev/null 2>&1; then
+              RANGE="$HEAD~1..$HEAD"
+              echo "Previous SHA unavailable; scanning tip commit only"
+            else
+              echo "Scanning pushed commits: $RANGE"
+            fi
+          fi
+
+          # A trailer key ending in -Session, or a standalone "Generated with/by"
+          # signature line. Both are the shape tools use to sign their output; a
+          # person describing their own work does not write either.
+          TRAILERS='^[[:space:]]*[a-z][a-z-]*-session:|^[[:space:]]*generated (with|by) '
+          # A no-reply identity that is not GitHub's. Matched in two steps rather
+          # than with a negative lookahead, because that needs grep -P and PCRE
+          # support is not guaranteed on every runner.
+          NOREPLY='noreply@|@users\.noreply\.'
+          # GitHub's own forms both resolve to a real account: noreply@github.com
+          # for web edits and squash merges, and user@users.noreply.github.com
+          # for privacy-protected accounts. Anything else is unattributable.
+          ATTRIBUTABLE='noreply@github\.com|@users\.noreply\.github\.com'
+          FAILED=0
+
+          for sha in $(git rev-list "$RANGE" 2>/dev/null || echo "$HEAD"); do
+            SHORT=$(git rev-parse --short "$sha")
+            MSG=$(git log -1 --format='%B' "$sha")
+
+            if echo "$MSG" | grep -qiE "$TRAILERS"; then
+              echo "::error::Commit $SHORT carries a tool-generated attribution trailer"
+              echo "$MSG" | grep -iE "$TRAILERS" | sed 's/^/    /'
+              FAILED=1
+            fi
+
+            # Author, committer, and any co-author trailer all have to resolve to
+            # a real account - a trailer is just as public as the author field.
+            IDENTITIES=$(
+              git log -1 --format='%an <%ae>%n%cn <%ce>' "$sha"
+              echo "$MSG" | grep -iE '^[[:space:]]*co-authored-by:' || true
+            )
+            OFFENDING=$(echo "$IDENTITIES" | grep -iE "$NOREPLY" | grep -viE "$ATTRIBUTABLE" || true)
+            if [ -n "$OFFENDING" ]; then
+              echo "::error::Commit $SHORT has an unattributable identity"
+              echo "$OFFENDING" | sed 's/^/    /'
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "Reword the message or reset the author, then amend or rebase before merging."
+            echo "  git commit --amend --author='Your Name <you@example.com>'"
+            exit 1
+          fi
+          echo "Clean - commit metadata is attributable in the scanned commits."
