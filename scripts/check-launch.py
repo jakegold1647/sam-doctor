@@ -12,6 +12,24 @@ from pathlib import Path
 from typing import Any
 
 
+def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
+    """Fail before writing when two declared files are path or inode aliases."""
+
+    paths = [(name, Path(value)) for name, value in named_paths.items() if value]
+    for index, (first_name, first_path) in enumerate(paths):
+        for second_name, second_path in paths[index + 1 :]:
+            try:
+                aliases = first_path.resolve() == second_path.resolve()
+                if not aliases and first_path.exists() and second_path.exists():
+                    aliases = first_path.samefile(second_path)
+            except (OSError, RuntimeError) as error:
+                raise ValueError(f"Could not compare output paths: {error}") from error
+            if aliases:
+                raise ValueError(
+                    f"{first_name} and {second_name} must resolve to distinct files."
+                )
+
+
 def _load_script(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, str(path))
     if spec is None or spec.loader is None:
@@ -67,6 +85,18 @@ def run_distribution(
     strict: bool = False,
     loader: Callable[[Path], Any] = _load_distribution_module,
 ) -> bool:
+    try:
+        _ensure_distinct_paths(
+            {
+                "--output": output if output_format == "json" else "",
+                "--append-csv": append_csv,
+                "--summary": summary,
+            }
+        )
+    except ValueError as error:
+        print(f"distribution output error: {error}", file=sys.stderr)
+        return False
+
     module = loader(repo_root)
     try:
         snapshot = module._collect_snapshot(repo, token)
@@ -138,6 +168,14 @@ def run_outreach(
     min_feedback_ratio: float = 100.0,
     loader: Callable[[Path], Any] = _load_outreach_module,
 ) -> bool:
+    try:
+        _ensure_distinct_paths(
+            {"outreach log": outreach_log, "outreach summary": summary}
+        )
+    except ValueError as error:
+        print(f"outreach output error: {error}", file=sys.stderr)
+        return False
+
     module = loader(repo_root)
     path = Path(outreach_log)
     if not path.exists():
@@ -292,6 +330,28 @@ def main() -> int:
     args = _parse_args()
     repo_root = Path(args.repo_root)
     ok = True
+
+    active_paths: dict[str, str] = {}
+    if not args.skip_distribution:
+        active_paths.update(
+            {
+                "--output": args.output if args.output_format == "json" else "",
+                "--append-csv": args.append_csv,
+                "--summary": args.summary,
+            }
+        )
+    if not args.skip_outreach:
+        active_paths.update(
+            {
+                "--outreach-log": args.outreach_log,
+                "--outreach-summary": args.outreach_summary,
+            }
+        )
+    try:
+        _ensure_distinct_paths(active_paths)
+    except ValueError as error:
+        print(f"launch output error: {error}", file=sys.stderr)
+        return 2
 
     launch_token = args.check_launch_token or args.token or None
     launch_ok, launch_passed, launch_failed = run_launch_readiness(

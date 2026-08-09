@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 def _load_distribution_script():
     spec = importlib.util.spec_from_file_location(
@@ -14,6 +16,64 @@ def _load_distribution_script():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _alias_path(tmp_path: Path, source: Path, alias_kind: str) -> Path:
+    if alias_kind == "literal":
+        return source
+    if alias_kind == "normalized":
+        return tmp_path / "unused" / ".." / source.name
+
+    alias = tmp_path / f"{alias_kind}-{source.name}"
+    try:
+        if alias_kind == "hardlink":
+            alias.hardlink_to(source)
+        else:
+            alias.symlink_to(source.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"{alias_kind} aliases unavailable: {error}")
+    return alias
+
+
+@pytest.mark.parametrize(
+    ("first_option", "second_option"),
+    (
+        ("--output", "--append-csv"),
+        ("--output", "--summary"),
+        ("--summary", "--append-csv"),
+    ),
+)
+@pytest.mark.parametrize("alias_kind", ("literal", "normalized", "hardlink", "symlink"))
+def test_distribution_outputs_must_be_distinct_before_collection(
+    tmp_path: Path,
+    capsys,
+    first_option: str,
+    second_option: str,
+    alias_kind: str,
+) -> None:
+    mod = _load_distribution_script()
+    first = tmp_path / "tracking.csv"
+    sentinel = "existing tracking data\n"
+    first.write_text(sentinel, encoding="utf-8")
+    second = _alias_path(tmp_path, first, alias_kind)
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-distribution.py",
+            "--output-format",
+            "json",
+            first_option,
+            str(first),
+            second_option,
+            str(second),
+        ]
+        assert mod.main() == 2
+    finally:
+        sys.argv = argv_backup
+
+    assert "must resolve to distinct files" in capsys.readouterr().err
+    assert first.read_text(encoding="utf-8") == sentinel
 
 
 def test_to_int_handles_non_numeric_values():

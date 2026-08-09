@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 def _load_script(root: Path):
     script_path = root / "scripts" / "check-outreach.py"
@@ -12,6 +14,23 @@ def _load_script(root: Path):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _alias_path(tmp_path: Path, source: Path, alias_kind: str) -> Path:
+    if alias_kind == "literal":
+        return source
+    if alias_kind == "normalized":
+        return tmp_path / "unused" / ".." / source.name
+
+    alias = tmp_path / f"{alias_kind}-{source.name}"
+    try:
+        if alias_kind == "hardlink":
+            alias.hardlink_to(source)
+        else:
+            alias.symlink_to(source.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"{alias_kind} aliases unavailable: {error}")
+    return alias
 
 
 def test_outreach_script_is_missing_when_path_is_invalid(tmp_path: Path) -> None:
@@ -118,6 +137,35 @@ def test_outreach_main_writes_summary_file(tmp_path: Path) -> None:
     assert "recommendation" in rendered
     assert "next_growth_actions" in rendered
     assert "organic_growth_score" in rendered
+
+
+@pytest.mark.parametrize("alias_kind", ("literal", "normalized", "hardlink", "symlink"))
+def test_outreach_summary_cannot_alias_input_csv(
+    tmp_path: Path, capsys, alias_kind: str
+) -> None:
+    module = _load_script(Path(__file__).resolve().parent.parent)
+    sample = tmp_path / "outreach-log.csv"
+    sentinel = (
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n"
+    )
+    sample.write_text(sentinel, encoding="utf-8")
+    summary = _alias_path(tmp_path, sample, alias_kind)
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--summary",
+            str(summary),
+        ]
+        assert module.main() == 2
+    finally:
+        sys.argv = argv_backup
+
+    assert "must resolve to distinct files" in capsys.readouterr().err
+    assert sample.read_text(encoding="utf-8") == sentinel
 
 
 def test_growth_score_prefers_feedback_and_follow_through() -> None:

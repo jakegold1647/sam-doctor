@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Report outputs can no longer overwrite their source logs.** `diagnose` and
+  `batch` reject literal, normalized-path, symlink, and hard-link aliases before
+  writing, while packet commands also reject pre-existing hard-linked artifact
+  targets that could modify files outside their output directory. Launch,
+  distribution, and outreach maintenance commands preflight every active input
+  and output for the same collisions before collecting data or changing files.
+
 - **Release tags can no longer supply code to a write-capable workflow.** GitHub
   releases now start by manual dispatch from the current default-branch head,
   build reviewed tag history with read-only permissions, and transfer only

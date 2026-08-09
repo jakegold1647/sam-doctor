@@ -245,6 +245,34 @@ def test_request_packet_output_cannot_alias_file_input_through_hard_link(
     assert alias.read_text(encoding="utf-8") == sentinel
 
 
+def test_request_packet_rejects_hard_link_to_an_outside_file(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text("Error: a new deployment failure\n", encoding="utf-8")
+    victim = tmp_path / "outside.txt"
+    sentinel = "outside file must stay unchanged\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    output = output_dir / "rule-request.md"
+    try:
+        output.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    exit_code = main(
+        ["request-packet", str(log), "--output-dir", str(output_dir)]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "must not be hard links" in captured.err
+    assert victim.read_text(encoding="utf-8") == sentinel
+    assert output.read_text(encoding="utf-8") == sentinel
+
+
 def test_request_packet_missing_input_error_precedes_output_alias_check(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

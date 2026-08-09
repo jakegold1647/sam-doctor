@@ -93,6 +93,69 @@ def test_launch_check_distribution_isolation_no_network(tmp_path, monkeypatch) -
     assert calls["repo"] == "jakegold1647/custom-repo"
 
 
+def test_run_distribution_rejects_colliding_outputs_before_loading(tmp_path) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    tracker = tmp_path / "distribution.csv"
+    sentinel = "existing distribution data\n"
+    tracker.write_text(sentinel, encoding="utf-8")
+
+    assert not script.run_distribution(
+        tmp_path,
+        "jakegold1647/sam-doctor",
+        None,
+        output_format="json",
+        output=str(tracker),
+        append_csv=str(tracker),
+        loader=lambda _path: (_ for _ in ()).throw(AssertionError("loaded")),
+    )
+    assert tracker.read_text(encoding="utf-8") == sentinel
+
+
+def test_run_outreach_rejects_summary_alias_before_loading(tmp_path) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    outreach_log = tmp_path / "outreach.csv"
+    sentinel = "existing outreach data\n"
+    outreach_log.write_text(sentinel, encoding="utf-8")
+
+    assert not script.run_outreach(
+        tmp_path,
+        str(outreach_log),
+        summary=str(outreach_log),
+        loader=lambda _path: (_ for _ in ()).throw(AssertionError("loaded")),
+    )
+    assert outreach_log.read_text(encoding="utf-8") == sentinel
+
+
+def test_launch_main_rejects_distribution_output_aliasing_outreach_input(
+    tmp_path,
+) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    outreach_log = tmp_path / "outreach.csv"
+    sentinel = "existing outreach data\n"
+    outreach_log.write_text(sentinel, encoding="utf-8")
+
+    previous_argv = sys.argv
+    try:
+        sys.argv = [
+            "check-launch.py",
+            "--repo-root",
+            str(Path(__file__).resolve().parents[1]),
+            "--summary",
+            str(outreach_log),
+            "--outreach-log",
+            str(outreach_log),
+            "--append-csv",
+            str(tmp_path / "distribution.csv"),
+            "--outreach-summary",
+            str(tmp_path / "outreach-summary.md"),
+        ]
+        assert script.main() == 2
+    finally:
+        sys.argv = previous_argv
+
+    assert outreach_log.read_text(encoding="utf-8") == sentinel
+
+
 def test_run_outreach_writes_summary_when_log_missing(tmp_path, monkeypatch) -> None:
     script = _load_script(Path(__file__).resolve().parents[1])
 

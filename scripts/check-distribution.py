@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 GITHUB_REPO = "jakegold1647/sam-doctor"
@@ -35,6 +36,24 @@ EXPECTED_TOPICS = {
     "serverless",
 }
 EXPECTED_HOMEPAGE = SITE_URL
+
+
+def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
+    """Fail before writing when two declared files are path or inode aliases."""
+
+    paths = [(name, Path(value)) for name, value in named_paths.items() if value]
+    for index, (first_name, first_path) in enumerate(paths):
+        for second_name, second_path in paths[index + 1 :]:
+            try:
+                aliases = first_path.resolve() == second_path.resolve()
+                if not aliases and first_path.exists() and second_path.exists():
+                    aliases = first_path.samefile(second_path)
+            except (OSError, RuntimeError) as error:
+                raise ValueError(f"Could not compare output paths: {error}") from error
+            if aliases:
+                raise ValueError(
+                    f"{first_name} and {second_name} must resolve to distinct files."
+                )
 
 
 @dataclass
@@ -452,6 +471,17 @@ def main() -> int:
         help="Fail when launch-critical signals indicate pre-publish issues",
     )
     args = parser.parse_args()
+
+    active_outputs = {
+        "--output": args.output if args.output_format == "json" else "",
+        "--summary": args.summary if args.output_format == "json" else "",
+        "--append-csv": args.append_csv,
+    }
+    try:
+        _ensure_distinct_paths(active_outputs)
+    except ValueError as error:
+        print(f"check-distribution: error: {error}", file=sys.stderr)
+        return 2
 
     repo = args.repo
     token = args.token or None

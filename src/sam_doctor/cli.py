@@ -599,7 +599,9 @@ def _expand_input_paths(input_value: str) -> list[Path]:
     return sorted(set(expanded), key=lambda path: path.as_posix())
 
 
-def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]]:
+def _batch_render(
+    inputs: list[str], output_format: str, output_path: Path | None = None
+) -> tuple[str, list[str]]:
     if not inputs:
         raise ValueError("No inputs provided for batch mode.")
 
@@ -611,6 +613,8 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
     confidences: list[str] = []
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
+            if output_path is not None:
+                _ensure_input_is_not_output(file_path, (output_path,))
             text = _read_text(file_path)
             # Batch sources are part of terminal, JSON, GitHub, and SARIF
             # output.  Native separators made the same relative input appear as
@@ -742,9 +746,10 @@ def _ensure_input_is_not_output(
 
     try:
         resolved_input = input_path.resolve()
+        resolved_outputs = tuple(output_path.resolve() for output_path in output_paths)
     except (OSError, RuntimeError) as error:
-        raise ValueError(f"Could not resolve input path {input_path}: {error}") from error
-    aliases_output = resolved_input in output_paths
+        raise ValueError(f"Could not resolve input or output path: {error}") from error
+    aliases_output = resolved_input in resolved_outputs
     if not aliases_output:
         try:
             aliases_output = any(
@@ -758,6 +763,29 @@ def _ensure_input_is_not_output(
     if aliases_output:
         raise ValueError(
             f"Input file must not resolve to an output target: {input_path}"
+        )
+
+
+def _ensure_output_targets_are_not_hard_links(
+    output_paths: tuple[Path, ...],
+) -> None:
+    """Reject packet targets that can mutate files outside the packet directory."""
+
+    try:
+        hard_linked = next(
+            (
+                output_path
+                for output_path in output_paths
+                if output_path.exists() and output_path.stat().st_nlink > 1
+            ),
+            None,
+        )
+    except OSError as error:
+        raise ValueError(f"Could not inspect output targets: {error}") from error
+    if hard_linked is not None:
+        raise ValueError(
+            "Packet output targets must not be hard links: "
+            f"{hard_linked}"
         )
 
 
@@ -849,6 +877,9 @@ def _packet_command(args: argparse.Namespace) -> int:
         )
         findings = diagnose(text)
 
+    _ensure_output_targets_are_not_hard_links(
+        (markdown_path, json_path, notes_path)
+    )
     input_is_empty = not text.strip()
 
     _write_report(
@@ -904,6 +935,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
         text = _read_text(source_path)
         _ensure_input_is_not_output(source_path, (notes_path,))
 
+    _ensure_output_targets_are_not_hard_links((notes_path,))
     excerpt = likely_error_excerpt(text, context=args.context, max_lines=args.max_lines)
     command = f"sam-doctor request-packet {source_name}"
 
@@ -1008,7 +1040,7 @@ def main(argv: list[object] | None = None) -> int:
 
     if args.command == "batch":
         try:
-            report, confidences = _batch_render(args.inputs, args.format)
+            report, confidences = _batch_render(args.inputs, args.format, args.output)
         except ValueError as error:
             _print_error(parser, str(error))
             return 2
@@ -1062,6 +1094,8 @@ def main(argv: list[object] | None = None) -> int:
 
     try:
         text = _read_text(args.input)
+        if args.output and args.input != Path("-"):
+            _ensure_input_is_not_output(args.input, (args.output,))
     except ValueError as error:
         _print_error(parser, str(error))
         return 2

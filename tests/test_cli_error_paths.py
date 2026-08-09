@@ -30,6 +30,71 @@ def test_diagnose_unwritable_output_exits_2(tmp_path: Path, capsys) -> None:
     assert "Could not write" in capsys.readouterr().err
 
 
+def _output_alias(tmp_path: Path, source: Path, alias_kind: str) -> Path:
+    if alias_kind == "literal":
+        return source
+    if alias_kind == "normalized":
+        return tmp_path / "unused" / ".." / source.name
+
+    alias = tmp_path / f"{alias_kind}-{source.name}"
+    try:
+        if alias_kind == "hardlink":
+            alias.hardlink_to(source)
+        else:
+            alias.symlink_to(source.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"{alias_kind} aliases unavailable: {error}")
+    return alias
+
+
+@pytest.mark.parametrize("alias_kind", ("literal", "normalized", "hardlink", "symlink"))
+def test_diagnose_output_cannot_alias_input(
+    tmp_path: Path, capsys, alias_kind: str
+) -> None:
+    log = tmp_path / "failure.log"
+    sentinel = "AccessDeniedException: do not replace this log\n"
+    log.write_text(sentinel, encoding="utf-8")
+    output = _output_alias(tmp_path, log, alias_kind)
+
+    exit_code = main(
+        ["diagnose", str(log), "--format", "json", "--output", str(output)]
+    )
+
+    assert exit_code == 2
+    assert "must not resolve to an output target" in capsys.readouterr().err
+    assert log.read_text(encoding="utf-8") == sentinel
+
+
+@pytest.mark.parametrize("alias_kind", ("literal", "normalized", "hardlink", "symlink"))
+def test_batch_output_cannot_alias_any_input(
+    tmp_path: Path, capsys, alias_kind: str
+) -> None:
+    first = tmp_path / "first.log"
+    second = tmp_path / "second.log"
+    first_sentinel = "AccessDeniedException: keep first\n"
+    second_sentinel = "AccessDeniedException: keep second\n"
+    first.write_text(first_sentinel, encoding="utf-8")
+    second.write_text(second_sentinel, encoding="utf-8")
+    output = _output_alias(tmp_path, second, alias_kind)
+
+    exit_code = main(
+        [
+            "batch",
+            str(first),
+            str(second),
+            "--format",
+            "json",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 2
+    assert "must not resolve to an output target" in capsys.readouterr().err
+    assert first.read_text(encoding="utf-8") == first_sentinel
+    assert second.read_text(encoding="utf-8") == second_sentinel
+
+
 def test_batch_missing_input_exits_2(tmp_path: Path, capsys) -> None:
     exit_code = main(["batch", str(tmp_path / "nope-*.log")])
 

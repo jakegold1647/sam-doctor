@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
@@ -44,6 +45,24 @@ _FEEDBACK_MARKERS = (
     "used",
     "helpful",
 )
+
+
+def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
+    """Fail before writing when two declared files are path or inode aliases."""
+
+    paths = [(name, Path(value)) for name, value in named_paths.items() if value]
+    for index, (first_name, first_path) in enumerate(paths):
+        for second_name, second_path in paths[index + 1 :]:
+            try:
+                aliases = first_path.resolve() == second_path.resolve()
+                if not aliases and first_path.exists() and second_path.exists():
+                    aliases = first_path.samefile(second_path)
+            except (OSError, RuntimeError) as error:
+                raise ValueError(f"Could not compare output paths: {error}") from error
+            if aliases:
+                raise ValueError(
+                    f"{first_name} and {second_name} must resolve to distinct files."
+                )
 
 
 def _to_bool(value: str) -> bool:
@@ -360,6 +379,14 @@ def main() -> int:
     if not csv_path.exists():
         print(f"outreach log not found: {csv_path}")
         return 1
+
+    try:
+        _ensure_distinct_paths(
+            {"outreach log": args.path, "--summary": args.summary}
+        )
+    except ValueError as error:
+        print(f"check-outreach: error: {error}", file=sys.stderr)
+        return 2
 
     summary = summarize(csv_path)
     _print_summary(summary)

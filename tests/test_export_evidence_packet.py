@@ -394,6 +394,39 @@ def test_packet_output_cannot_alias_file_input_through_hard_link(
     assert not (output_dir / "researcher-notes.md").exists()
 
 
+def test_packet_rejects_hard_links_to_an_outside_file_before_writing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    victim = tmp_path / "outside.txt"
+    sentinel = "outside file must stay unchanged\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    markdown_path = output_dir / "diagnosis.md"
+    json_path = output_dir / "diagnosis.json"
+    try:
+        markdown_path.hardlink_to(victim)
+        json_path.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    exit_code = main(["packet", str(log), "--output-dir", str(output_dir)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "must not be hard links" in captured.err
+    assert victim.read_text(encoding="utf-8") == sentinel
+    assert markdown_path.read_text(encoding="utf-8") == sentinel
+    assert json_path.read_text(encoding="utf-8") == sentinel
+    assert not (output_dir / "researcher-notes.md").exists()
+
+
 def test_packet_missing_input_error_precedes_output_alias_check(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
