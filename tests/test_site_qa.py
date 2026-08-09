@@ -252,3 +252,55 @@ def test_the_real_sitemaps_repository_links_all_resolve(qa) -> None:
     problems = [p for p in _issues(qa, SITE_ROOT) if "repository file" in p]
 
     assert problems == []
+
+
+def test_a_page_linking_to_a_renamed_repository_file_is_reported(qa, tmp_path: Path) -> None:
+    # Links into our own repository were classed as external and never checked,
+    # yet they are as verifiable as a local link: the path after /blob/main/ is a
+    # file in this checkout. Eleven site pages rely on that.
+    site = tmp_path / "site"
+    site.mkdir()
+    base = "https://github.com/jakegold1647/sam-doctor/blob/main/"
+    _write_site(
+        site,
+        body=(
+            f'<a href="{base}docs/present.md">here</a>'
+            f'<a href="{base}docs/renamed-away.md">gone</a>'
+        ),
+    )
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "present.md").write_text("# present", encoding="utf-8")
+
+    problems = [p for p in _issues(qa, site) if "links to a repository file" in p]
+
+    assert len(problems) == 1
+    assert "docs/renamed-away.md" in problems[0]
+
+
+def test_a_repository_link_with_an_anchor_is_still_resolved(qa, tmp_path: Path) -> None:
+    # A fragment is part of the URL, not the filename.
+    site = tmp_path / "site"
+    site.mkdir()
+    base = "https://github.com/jakegold1647/sam-doctor/blob/main/"
+    _write_site(site, body=f'<a href="{base}docs/present.md#a-heading">here</a>')
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "present.md").write_text("# present", encoding="utf-8")
+
+    assert [p for p in _issues(qa, site) if "repository file" in p] == []
+
+
+def test_genuinely_external_links_are_left_unchecked(qa, tmp_path: Path) -> None:
+    # Verifying those needs the network, which is what the weekly link check is
+    # for; doing it here would make every contributor's gate depend on someone
+    # else's website being up.
+    site = tmp_path / "site"
+    site.mkdir()
+    _write_site(site, body='<a href="https://docs.aws.amazon.com/nope-not-real.html">docs</a>')
+
+    assert _issues(qa, site) == []
+
+
+def test_every_repository_link_on_the_real_site_resolves(qa) -> None:
+    problems = [p for p in _issues(qa, SITE_ROOT) if "repository file" in p]
+
+    assert problems == []
