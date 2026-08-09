@@ -2520,3 +2520,157 @@ def test_a_specific_reason_does_not_hide_other_failed_resources(
         f"{specific_failure[:60]!r}"
     )
     assert "MyQueue" in " ".join(generic.evidence)
+
+
+_APIGW_THROTTLE_TITLE = "API Gateway's control plane throttled the deployment"
+_IAM_QUOTA_TITLE = "An IAM policy size or attachment quota was exceeded"
+_GENERIC_RESOURCE_TITLE = "CloudFormation resource creation or update failed"
+_CFN_THROTTLE_TITLE = "CloudFormation throttled the deployment's API calls"
+
+
+@pytest.mark.parametrize(
+    "log",
+    [
+        (
+            "CREATE_FAILED  AWS::ApiGateway::RestApi  Api  Too Many Requests "
+            "(Service: ApiGateway, Status Code: 429, Request ID: abc-123)"
+        ),
+        (
+            "An error occurred (TooManyRequestsException) when calling the "
+            "CreateDeployment operation: Too Many Requests"
+        ),
+        (
+            "UPDATE_FAILED  AWS::ApiGateway::UsagePlan  UsagePlan  Too Many "
+            "Requests (Service: ApiGateway, Status Code: 429)"
+        ),
+    ],
+)
+def test_apigateway_control_plane_throttling_is_diagnosed(log: str) -> None:
+    assert _APIGW_THROTTLE_TITLE in [finding.title for finding in diagnose(log)]
+
+
+def test_apigateway_throttling_owns_its_resource_line() -> None:
+    # The finding arrives as CREATE_FAILED, which reads like a template error and
+    # sends people editing YAML that was never wrong. The specific cause has to
+    # win the line, or the report says nothing about retrying.
+    log = (
+        "CREATE_FAILED  AWS::ApiGateway::RestApi  Api  Too Many Requests "
+        "(Service: ApiGateway, Status Code: 429)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert titles == [_APIGW_THROTTLE_TITLE]
+
+
+def test_a_429_from_another_service_is_not_attributed_to_api_gateway() -> None:
+    # Lambda answers with the same exception name. A rule titled for API Gateway
+    # putting its name on another service's throttling would send the reader to
+    # the wrong quotas page.
+    log = (
+        "An error occurred (TooManyRequestsException): Rate exceeded for "
+        "ReservedConcurrentExecutions"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert _APIGW_THROTTLE_TITLE not in titles
+    assert _CFN_THROTTLE_TITLE in titles
+
+
+def test_a_runtime_429_in_application_logs_is_not_a_deployment_finding() -> None:
+    log = "2026-08-08 my-func INFO downstream responded 429 Too Many Requests\n"
+
+    assert diagnose(log) == []
+
+
+@pytest.mark.parametrize(
+    "log",
+    [
+        (
+            "CREATE_FAILED  AWS::IAM::Policy  FunctionPolicy  Maximum policy size "
+            "of 6144 bytes exceeded for role my-function-role (Service: Iam)"
+        ),
+        (
+            "An error occurred (LimitExceeded) when calling the AttachRolePolicy "
+            "operation: Cannot exceed quota for PoliciesPerRole: 10"
+        ),
+        (
+            'Resource handler returned message: "Cannot exceed quota for '
+            'PolicySize: 10240 (Service: Iam)" (HandlerErrorCode: ServiceLimitExceeded)'
+        ),
+        (
+            "An error occurred (LimitExceeded) when calling the CreatePolicyVersion "
+            "operation: Cannot exceed quota for PolicyVersionsInUse: 5"
+        ),
+    ],
+)
+def test_iam_policy_quota_failures_are_diagnosed(log: str) -> None:
+    assert _IAM_QUOTA_TITLE in [finding.title for finding in diagnose(log)]
+
+
+def test_the_iam_quota_finding_separates_the_adjustable_quota() -> None:
+    # The whole value of this rule is that one of the three quotas can be raised
+    # and the other two cannot. A reader who misses that either splits a policy
+    # unnecessarily or files a request that will be refused.
+    log = (
+        "An error occurred (LimitExceeded) when calling the AttachRolePolicy "
+        "operation: Cannot exceed quota for PoliciesPerRole: 10"
+    )
+
+    finding = next(f for f in diagnose(log) if f.title == _IAM_QUOTA_TITLE)
+
+    assert "adjustable" in finding.explanation
+    assert "hard limits" in finding.explanation
+    assert any("list-attached-role-policies" in step for step in finding.verification)
+
+
+def test_an_iam_quota_line_is_not_also_a_generic_resource_failure() -> None:
+    log = (
+        "CREATE_FAILED  AWS::IAM::Policy  FunctionPolicy  Maximum policy size of "
+        "6144 bytes exceeded for role my-function-role (Service: Iam, Status Code: 409)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert titles == [_IAM_QUOTA_TITLE]
+
+
+def test_an_unrelated_failure_alongside_a_quota_failure_still_reports() -> None:
+    # Why these are excluded_line_patterns rather than a whole-log suppression:
+    # the quota rule claims its own line and the S3 failure still gets reported.
+    log = (
+        "CREATE_FAILED  AWS::IAM::Policy  FunctionPolicy  Maximum policy size of "
+        "6144 bytes exceeded for role my-function-role (Service: Iam)\n"
+        'CREATE_FAILED  AWS::S3::Bucket  Assets  Resource handler returned '
+        'message: "something else went wrong"\n'
+    )
+
+    findings = diagnose(log)
+    titles = [finding.title for finding in findings]
+
+    assert _IAM_QUOTA_TITLE in titles
+    generic = next((f for f in findings if f.title == _GENERIC_RESOURCE_TITLE), None)
+    assert generic is not None, "the unrelated bucket failure must still be reported"
+    assert "Assets" in " ".join(generic.evidence)
+
+
+def test_rate_exceeded_is_not_read_as_an_iam_quota() -> None:
+    log = (
+        "An error occurred (Throttling) when calling the CreateChangeSet "
+        "operation: Rate exceeded"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+
+    assert _IAM_QUOTA_TITLE not in titles
+    assert _CFN_THROTTLE_TITLE in titles
+
+
+def test_an_access_denial_on_a_policy_call_is_not_a_quota() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the PutRolePolicy "
+        "operation: User is not authorized to perform: iam:PutRolePolicy"
+    )
+
+    assert _IAM_QUOTA_TITLE not in [finding.title for finding in diagnose(log)]

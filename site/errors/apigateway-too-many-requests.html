@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Too Many Requests (Service: ApiGateway, Status Code: 429) during a deploy | SAM Doctor</title>
+    <meta name="description" content="Fix TooManyRequestsException and 'Too Many Requests (Service: ApiGateway, Status Code: 429)' during a SAM or CloudFormation deploy: API Gateway control-plane throttling, why the template is not the problem, and why immediate retries make it worse." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/apigateway-too-many-requests.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">API Gateway's control plane throttled the deployment</h1>
+        <p class="lede">
+          The template is fine. API Gateway refused the calls that were creating
+          it, and the same deployment succeeds once the call rate drops.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>CREATE_FAILED  AWS::ApiGateway::RestApi  Api  Too Many Requests (Service: ApiGateway, Status Code: 429)
+An error occurred (TooManyRequestsException) when calling the CreateDeployment operation: Too Many Requests</code></pre>
+        <p>
+          API Gateway's control plane — the API that creates and modifies APIs, not
+          the one serving traffic — throttles far more aggressively than
+          CloudFormation's. Two situations reach the limit:
+        </p>
+        <ul>
+          <li><strong>One large template.</strong> A stack creating many resources, stages, or usage plans issues a burst of control-plane calls on its own, without any parallelism involved.</li>
+          <li><strong>Parallel deploys.</strong> Matrix jobs or monorepo fan-out deploying into the same account and Region share one throttle, so each deploy is fine in isolation and they fail together.</li>
+        </ul>
+        <p>
+          The trap is how it presents: it arrives as <code>CREATE_FAILED</code> on
+          a template resource, which reads like a template error. That sends people
+          editing YAML that was never wrong. Then unbounded CI retries hammer the
+          same throttle and extend the outage they were meant to ride out.
+        </p>
+        <p class="muted">
+          Other services return <code>TooManyRequestsException</code> as well —
+          Lambda among them. The <code>Service:</code> field in the error names
+          which one answered.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Retry once, after a pause, with backoff.</strong> Not an
+            immediate loop — retrying instantly keeps the throttle engaged and
+            turns a short delay into a long one.
+          </li>
+          <li>
+            <strong>Serialize deploys that create API Gateway resources</strong> in
+            the same account and Region. In GitHub Actions that means a concurrency
+            group rather than a matrix:
+            <pre><code>concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false</code></pre>
+          </li>
+          <li>
+            <strong>Count what one deployment creates.</strong> If a single stack
+            builds many APIs, stages, or usage plans at once, splitting it spreads
+            the calls out and removes the burst.
+          </li>
+          <li>
+            <strong>Only then look at quotas.</strong> If this happens at a steady
+            rate rather than in bursts, check the API Gateway control-plane limits
+            in Service Quotas — but bursty failures are a shape problem, not a
+            quota problem.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor names control-plane throttling (medium confidence) instead of
+          reporting a resource failure, so the log says "retry" rather than sending
+          you into the template. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./rate-exceeded.html">Rate exceeded / Throttling</a> — the same condition at the CloudFormation layer.</li>
+          <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — an API Gateway failure that <em>is</em> the template.</li>
+          <li><a href="./iam-policy-quota-exceeded.html">An IAM policy quota was exceeded</a> — a limit that retrying will never clear.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
