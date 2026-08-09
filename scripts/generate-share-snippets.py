@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlencode
 
 
 @dataclass(frozen=True)
@@ -68,17 +69,14 @@ BASE_URL = "https://sam-doctor.jacobgoldstein.dev/"
 
 
 def _snippet_link(error: str, utm_medium: str) -> str:
-    anchor = "#proof-title" if error in {"ecr", "build", "rollback"} else ""
-    base = BASE_URL.rstrip("/")
-    if anchor:
-        return (
-            f"{base}/{anchor}"
-            f"?utm_source=share_script&utm_medium={utm_medium}"
-        )
-    return (
-        f"{BASE_URL}?"
-        f"utm_source=share_script&utm_medium={utm_medium}"
+    fragment = "#proof-title" if error in {"ecr", "build", "rollback"} else ""
+    query = urlencode(
+        {
+            "utm_source": "share_script",
+            "utm_medium": utm_medium,
+        }
     )
+    return f"{BASE_URL}?{query}{fragment}"
 
 
 def generate_snippet(

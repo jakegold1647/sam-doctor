@@ -16,6 +16,15 @@ All notable changes to SAM Doctor are documented here.
   and their deterministic checks all move together instead of splitting search
   and release metadata across two hostnames.
 
+- **Generated share links now keep tracking data in the URL query and the page
+  anchor in the fragment.** The generator URL-encodes campaign values, and a
+  structural test verifies every generated link plus each referenced homepage
+  anchor instead of preserving a malformed literal string.
+
+- **Muted site copy now meets WCAG AA contrast on both paper backgrounds.** A
+  token-level regression test protects the small supporting text shared across
+  the homepage, quickstart, error index, and all 55 error guides.
+
 - **Reports now serialize consistently across platforms.** Output files, packet
   artifacts, and redirected CLI output use UTF-8 with LF newlines instead of
   inheriting Windows newline translation. Batch input ordering now uses exact path

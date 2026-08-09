@@ -1,6 +1,7 @@
 import importlib.util
 import sys
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 
 def _load_module(root: Path):
@@ -77,13 +78,35 @@ def test_main_rejects_unknown_error() -> None:
         raise AssertionError("Expected argparse to exit with code 2 for invalid error option")
 
 
-def test_snippet_link_includes_query_after_anchor() -> None:
+def test_snippet_links_have_real_queries_and_valid_fragments() -> None:
     module = _load_module(Path(__file__).resolve().parents[1])
-    text = module.generate_snippet(
-        error="build",
-        channel="chat",
-        include_link=True,
-        include_command=True,
-        utm_medium="x",
-    )
-    assert "https://sam-doctor.jacobgoldstein.dev/#proof-title?utm_source=share_script&utm_medium=x" in text
+    root = Path(__file__).resolve().parents[1]
+    homepage = (root / "site" / "index.html").read_text(encoding="utf-8")
+
+    for error in module.ERROR_TEMPLATES:
+        text = module.generate_snippet(
+            error=error,
+            channel="chat",
+            include_link=True,
+            include_command=True,
+            utm_medium="x / launch",
+        )
+        link = next(
+            line for line in text.splitlines() if line.startswith(module.BASE_URL)
+        )
+        parsed = urlsplit(link)
+
+        assert parsed.scheme == "https"
+        assert parsed.netloc == "sam-doctor.jacobgoldstein.dev"
+        assert parsed.path == "/"
+        assert parse_qs(parsed.query) == {
+            "utm_source": ["share_script"],
+            "utm_medium": ["x / launch"],
+        }
+
+        expected_fragment = (
+            "proof-title" if error in {"ecr", "build", "rollback"} else ""
+        )
+        assert parsed.fragment == expected_fragment
+        if expected_fragment:
+            assert f'id="{expected_fragment}"' in homepage
