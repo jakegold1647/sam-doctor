@@ -122,3 +122,42 @@ def test_every_rule_url_is_https_and_checked_once(checker) -> None:
         "some rules are expected to share a documentation link; if that stops "
         "being true this assertion can go, but the dedup path should stay tested"
     )
+
+
+def test_every_relative_markdown_link_resolves() -> None:
+    """Relative links between docs need no network, and nothing checked them.
+
+    The scheduled check above walks rule `documentation_url` values, which are all
+    external. The 58 relative links inside the README, CONTRIBUTING and the docs
+    directory - the ones that carry a reader from a rule to its worked example -
+    were verified by nobody. They are also the ones a rename breaks, which is the
+    same defect already closed today for the sitemap and for site HTML.
+
+    Kept in the per-push gate rather than the weekly one precisely because it needs
+    no network: a contributor should learn this from their own commit.
+    """
+
+    import re
+
+    sources = [
+        REPO_ROOT / "README.md",
+        REPO_ROOT / "CONTRIBUTING.md",
+        *sorted((REPO_ROOT / "docs").glob("*.md")),
+    ]
+
+    broken: list[str] = []
+    checked = 0
+    for markdown in sources:
+        if not markdown.is_file():
+            continue
+        for raw_target in re.findall(r"\]\(([^)]+)\)", markdown.read_text(encoding="utf-8")):
+            target = raw_target.strip().split()[0]
+            if target.startswith(("http://", "https://", "#", "mailto:")):
+                continue
+            checked += 1
+            relative = target.split("#")[0]
+            if relative and not (markdown.parent / relative).exists():
+                broken.append(f"{markdown.relative_to(REPO_ROOT)} -> {target}")
+
+    assert checked > 40, f"only {checked} relative links found; the scan probably broke"
+    assert broken == [], "broken relative links:\n  " + "\n  ".join(broken)
