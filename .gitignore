@@ -1,12 +1,25 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 *.egg-info/
 build/
 dist/
 tmp/
 sample-report.md
 artifacts/
+# CONTRIBUTING tells contributors to create a virtualenv inside the repo, so the
+# usual names belong here - otherwise following the setup guide leaves a dirty
+# tree and invites committing the environment.
+.venv/
+venv/
+env/
+# Coverage output is a machine-specific SQLite file: it changes on every test run
+# and embeds the absolute paths of whoever ran it.
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 # Operational trackers, outreach notes, and launch draft artifacts are kept local.
 # These files are intentionally excluded from git history.
 notes/
