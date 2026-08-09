@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import codecs
 import io
+import json
 from pathlib import Path
+
+import pytest
 
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import rules_report
@@ -141,3 +145,62 @@ def test_empty_log_leaves_the_json_contract_alone(tmp_path: Path, capsys) -> Non
     assert payload["finding_count"] == 0
     assert payload["findings"] == []
     assert sorted(payload) == ["finding_count", "findings", "sam_doctor_version", "source"]
+
+
+# Encoding handling. PowerShell writes redirected output as BOM-marked Unicode,
+# so `sam deploy > deploy.log` on Windows can hand this tool a UTF-16 log. Those
+# were read as UTF-8 and produced no findings at all - a silent miss on a log
+# full of failures, which is worse than an error.
+_UNICODE_CASES = {
+    "utf-8": lambda text: text.encode("utf-8"),
+    "utf-8-bom": lambda text: codecs.BOM_UTF8 + text.encode("utf-8"),
+    "utf-16-le": lambda text: codecs.BOM_UTF16_LE + text.encode("utf-16-le"),
+    "utf-16-be": lambda text: codecs.BOM_UTF16_BE + text.encode("utf-16-be"),
+    "utf-32-le": lambda text: codecs.BOM_UTF32_LE + text.encode("utf-32-le"),
+    "utf-32-be": lambda text: codecs.BOM_UTF32_BE + text.encode("utf-32-be"),
+}
+
+
+@pytest.mark.parametrize("label", sorted(_UNICODE_CASES))
+def test_diagnose_reads_every_bom_marked_encoding(
+    label: str, tmp_path: Path, capsys
+) -> None:
+    text = "Build Succeeded\nnoise line\nKMS Exception: DisabledException\n"
+    log = tmp_path / f"{label}.log"
+    log.write_bytes(_UNICODE_CASES[label](text))
+
+    exit_code = main(["diagnose", str(log), "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["finding_count"] == 1, f"{label} produced no finding"
+    # The line number must survive decoding, not just the match.
+    assert payload["findings"][0]["line_number"] == 3
+
+
+def test_diagnose_reads_crlf_without_shifting_line_numbers(
+    tmp_path: Path, capsys
+) -> None:
+    log = tmp_path / "crlf.log"
+    log.write_bytes(
+        b"Build Succeeded\r\nnoise line\r\nKMS Exception: DisabledException\r\n"
+    )
+
+    exit_code = main(["diagnose", str(log), "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["findings"][0]["line_number"] == 3
+
+
+def test_diagnose_reads_a_log_that_is_not_valid_utf8(tmp_path: Path, capsys) -> None:
+    # A latin-1 log must stay readable rather than raise: replacement characters
+    # in a stack trace are acceptable, losing the whole diagnosis is not.
+    log = tmp_path / "latin1.log"
+    log.write_bytes("R\xe9sum\xe9\nKMS Exception: DisabledException\n".encode("latin-1"))
+
+    exit_code = main(["diagnose", str(log), "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["finding_count"] == 1

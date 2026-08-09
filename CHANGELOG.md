@@ -4,6 +4,21 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Read logs that carry a byte-order mark.** Every input was decoded as UTF-8,
+  so a UTF-16 log produced no findings at all - each character separated by a
+  NUL, nothing matching, and a report saying "no supported pattern found" for a
+  log full of failures. That is not a rare shape on the platform this project
+  supports: PowerShell writes redirected output as BOM-marked Unicode, so
+  `sam deploy > deploy.log` under PowerShell 5.1 hands the tool UTF-16 LE. A
+  BOM is now honoured for UTF-8, UTF-16 and UTF-32 in both byte orders, with
+  UTF-32 tested before UTF-16 because its little-endian mark begins with the
+  UTF-16 one. Anything unmarked is still UTF-8 with replacement, which keeps a
+  latin-1 log readable rather than raising. UTF-8-with-BOM previously worked
+  only by luck - the mark decoded to a stray character and the unanchored
+  pattern matched past it - and is now decoded properly, so the mark no longer
+  appears in evidence. Line numbers are asserted to survive decoding, and CRLF
+  input is covered too.
+
 - **Stopped diagnosing four different Docker failures as the same one.** The
   Docker rule matched the bare phrase `Error response from daemon`, so a pull
   denial, a missing tag, a full disk and a platform mismatch all reported "SAM
