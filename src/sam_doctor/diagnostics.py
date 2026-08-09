@@ -187,6 +187,38 @@ def _stabilization_context_note(evidence: tuple[str, ...]) -> str:
     return ""
 
 
+_AWS_SERVICE_PREFIX_PATTERN = r"[a-z0-9]+(?:-[a-z0-9]+)*"
+_TAG_MUTATION_ACTION_PATTERN = (
+    r"(?:(?:Tag|Untag)[a-z0-9]+|(?:Create|Delete)Tags|"
+    r"AddTagsToResource|RemoveTagsFromResource)"
+)
+_TAG_ACTION_DENIAL_PATTERN = (
+    rf"not authorized to perform:?\s*{_AWS_SERVICE_PREFIX_PATTERN}:"
+    rf"{_TAG_MUTATION_ACTION_PATTERN}(?![a-z0-9*])"
+)
+
+_LAMBDA_ENV_KMS_FAILURE_PATTERNS = (
+    (
+        r"Lambda was unable to configure (?:access to )?your environment variables"
+        r".{0,800}KMS Exception:\s*"
+        r"(?:AccessDenied|Disabled|KMSInvalidState|InvalidArn|NotFound)Exception\b"
+    ),
+    (
+        r"KMS Exception:\s*AccessDeniedException\b.{0,240}"
+        r"ciphertext refers to a customer master key that does not exist,\s*"
+        r"does not exist in this region,\s*or you are not allowed to access\.?"
+    ),
+)
+
+_SSM_RESOLUTION_FAILURE_PATTERNS = (
+    (
+        r"Parameters:[ \t]*\[ssm(?:-secure)?:[^\r\n\]]{1,200}\]"
+        r"[ \t]*cannot be found\b"
+    ),
+    r"SSM parameter[ \t]+\S{1,200}[ \t]+not found\b",
+)
+
+
 _RULES = (
     Rule(
         id="github.oidc.token-request-denied",
@@ -354,7 +386,7 @@ _RULES = (
             # names the tag action and the create action it belongs with. Per
             # line, not whole log: a non-tag denial elsewhere in the same log
             # still reports here.
-            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
+            _TAG_ACTION_DENIAL_PATTERN,
         ),
         parse_denial_context=True,
     ),
@@ -384,7 +416,7 @@ _RULES = (
             r"ecr:GetAuthorizationToken",
             # See the note on the explicit-deny rule above: tag-action denials
             # belong to the tagging rule, per line rather than per log.
-            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
+            _TAG_ACTION_DENIAL_PATTERN,
         ),
         parse_denial_context=True,
     ),
@@ -432,34 +464,35 @@ _RULES = (
             r"(?:Error|Failed) uploading to \S+.{0,200}Access ?Denied",
             # The tagging rule names the tag action and the create action it
             # should be granted with, so those lines belong to it.
-            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
+            _TAG_ACTION_DENIAL_PATTERN,
             # A KMS denial inside a Lambda env-var failure needs the key policy
             # and the key's state reviewed, not the IAM policy simulator, so
             # sending it to the generic denial actively misdirects the reader.
-            r"KMS Exception:",
+            *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
         ),
         parse_denial_context=True,
     ),
     Rule(
         id="iam.tag.action-denied",
-        title="Tagging was denied while the resource operation itself was allowed",
+        title="AWS denied a tagging action required by the deployment",
         confidence="medium",
         patterns=(
-            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)[A-Za-z]{0,30}",
+            _TAG_ACTION_DENIAL_PATTERN,
             r"TagPolicyViolation",
         ),
         explanation=(
-            "The denied action is a tagging action, not the create or update "
-            "itself. A deploy role is often granted `CreateRole` or "
-            "`CreateFunction` without the matching `TagRole`/`TagResource` "
-            "permission, and CloudFormation applies tags in the same call - so "
-            "the resource operation fails on the tag. An AWS Organizations tag "
-            "policy or a CloudFormation hook can reject the tag set the same "
-            "way, from a layer the member account cannot see."
+            "The denied IAM action mutates tags. During a create or update, "
+            "CloudFormation and AWS services often apply tags in the same "
+            "operation, so a missing paired `TagResource` or `CreateTags` grant "
+            "can fail the resource operation. Direct retag and untag calls "
+            "produce the same diagnosis. An AWS Organizations tag policy or a "
+            "CloudFormation hook can reject the tag set from a layer the member "
+            "account cannot see."
         ),
         verification=(
-            "Record the exact tagging action and the resource named in the error before changing any policy.",
-            "Grant that tagging action alongside the create or update action it accompanies (for example `iam:TagRole` with `iam:CreateRole`), scoped to the same resources.",
+            "Record the exact tagging action, resource, and caller named in the error before changing any policy.",
+            "If the called operation was a create or update, grant its paired tagging action: for example `application-autoscaling:TagResource` with `RegisterScalableTarget`, `iam:TagRole` with `CreateRole`, or EC2 `CreateTags` for create-time tags. For a direct retag or untag call, grant only the exact denied mutation.",
+            "Scope the permission to the affected resource and, where the service supports them, constrain allowed keys with `aws:RequestTag/${TagKey}` and `aws:TagKeys` conditions.",
             "If an Organizations tag policy or a CloudFormation hook rejected the tag set, identify the layer that enforced it and resolve it with that layer's owner - do not remove a tag policy or hook to make a deployment pass.",
             "Confirm the grant with the IAM Policy Simulator, or look the denied call up in CloudTrail when the error carries a request ID.",
         ),
@@ -1037,26 +1070,23 @@ _RULES = (
             r"Embedded stack .* was not successfully (?:created|updated)",
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
-            r"KMS Exception:",
+            *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
         ),
     ),
     Rule(
         id="lambda.env-vars.kms-key-inaccessible",
         title="Lambda could not use the KMS key for its environment variables",
         confidence="high",
-        patterns=(
-            r"KMS Exception:\s*[A-Za-z]{3,40}Exception",
-            r"Lambda was unable to configure (?:access to )?your environment variables",
-            r"ciphertext refers to a customer master key that does not exist",
-        ),
+        patterns=_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
         explanation=(
             "Lambda encrypts environment variables with a customer-managed KMS "
             "key, and it could not use the configured key. The wrapper error is "
             "a Lambda `InvalidParameterValueException`, which reads like a bad "
             "template value - the real cause is the `KMS Exception:` inside it. "
             "Three causes account for nearly all of these, and they need "
-            "different fixes: the key policy does not let the deploying "
-            "principal create a grant (`AccessDeniedException`); the key is "
+            "different fixes: the key policy or grants do not let the "
+            "deploying principal, Lambda service, or function execution role "
+            "use the key (`AccessDeniedException`); the key is "
             "disabled or pending deletion, which fails even when every policy "
             "is correct (`DisabledException`, `KMSInvalidStateException`); or "
             "the key ARN is malformed, or names another Region or account "
@@ -1066,9 +1096,10 @@ _RULES = (
         verification=(
             "Read the exception name after `KMS Exception:` first - it separates a policy problem from a key-state problem from a bad ARN.",
             "Confirm the key exists and check its state in the function's own Region: `aws kms describe-key --key-id <key-arn>`, then read `KeyState` (a `Disabled` or `PendingDeletion` key fails this way regardless of policy).",
-            "Review the key policy, not only the deploy role's IAM policy: encrypting environment variables needs `kms:CreateGrant`, `kms:Encrypt`, `kms:Decrypt` and `kms:DescribeKey` on that key for the deploying principal.",
-            "If the ARN is malformed or points at another Region, correct `KmsKeyArn` in the template - a Lambda function can only use a key in its own Region.",
-            "For a key owned by another account, confirm the key policy in the owning account grants the deploying principal, and check whether an existing grant constrains the operation.",
+            "Review the key policy and grants for both the deploying principal and the function's execution role; do not begin by broadly changing IAM identity policies.",
+            "Confirm `kms:CreateGrant`, `kms:Encrypt`, and `kms:DescribeKey` for the deployment and Lambda grant path, plus `kms:Decrypt` wherever the execution role actually decrypts values.",
+            "If the ARN is malformed or points at another Region, correct `KmsKeyArn` in the template - a Lambda function can only use a key in its own Region. For a cross-account key, confirm the owning account's key policy and any existing grant permit the deployment path.",
+            "After correcting the key policy, key state, or ARN, re-save or re-encrypt the function's environment configuration and redeploy it.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html",
     ),
@@ -1566,8 +1597,7 @@ _RULES = (
             # CreateChangeSet call this rule reports generically, on its own
             # line, so the two describe one failure. Whole-log suppression is
             # right here for the same reason it is right above.
-            r"Parameters:\s*\[ssm(?:-secure)?:",
-            r"SSM parameter\s+\S{1,200}\s+not found",
+            *_SSM_RESOLUTION_FAILURE_PATTERNS,
         ),
         # The intrinsic-function reason can share a line with the generic
         # change-set wrapper. Exclude only that line: a different change-set
@@ -1580,10 +1610,7 @@ _RULES = (
         id="ssm.parameter.resolution-failed",
         title="An SSM parameter referenced by the template could not be resolved",
         confidence="high",
-        patterns=(
-            r"Parameters:\s*\[ssm(?:-secure)?:[^\]]{1,200}\]\s*cannot be found",
-            r"SSM parameter\s+\S{1,200}\s+not found",
-        ),
+        patterns=_SSM_RESOLUTION_FAILURE_PATTERNS,
         explanation=(
             "A `{{resolve:ssm:...}}` or `{{resolve:ssm-secure:...}}` dynamic "
             "reference, or an SSM parameter type, could not be resolved. These "

@@ -54,7 +54,7 @@ InvalidArnException (Service: Lambda, Error Code: InvalidParameterValueException
           in the wrapper and need completely different fixes:
         </p>
         <ul>
-          <li><strong><code>AccessDeniedException</code> — a key policy problem.</strong> The deploying principal cannot create a grant on the key. This is the one people misdiagnose as an IAM problem: a KMS key has its own resource policy, and an identity policy alone does not grant access to it.</li>
+          <li><strong><code>AccessDeniedException</code> — a key policy or grant problem.</strong> The deploying principal, Lambda service, or function execution role cannot use the key through the required grant path. This is the one people misdiagnose as an IAM problem: a KMS key has its own resource policy, and an identity policy alone does not grant access to it.</li>
           <li><strong><code>DisabledException</code> or <code>KMSInvalidStateException</code> — a key state problem.</strong> The key is disabled or pending deletion. No policy change helps; the key has to be enabled or the deletion cancelled.</li>
           <li><strong><code>InvalidArnException</code> or <code>NotFoundException</code> — a wrong key.</strong> The ARN is malformed, or names another Region or account. A Lambda function can only use a key in its own Region.</li>
         </ul>
@@ -79,12 +79,13 @@ InvalidArnException (Service: Lambda, Error Code: InvalidParameterValueException
             <code>PendingDeletion</code> explains the failure by itself.
           </li>
           <li>
-            <strong>Review the key policy, not just the deploy role.</strong>
-            Encrypting environment variables needs
-            <code>kms:CreateGrant</code>, <code>kms:Encrypt</code>,
-            <code>kms:Decrypt</code> and <code>kms:DescribeKey</code> on that key
-            for the deploying principal. A KMS key is one of the resources where
-            the resource policy is authoritative.
+            <strong>Review the key policy, not just IAM identity policies.</strong>
+            Check the key policy and grants for both the deploying principal and
+            the function's execution role. Confirm <code>kms:CreateGrant</code>,
+            <code>kms:Encrypt</code> and <code>kms:DescribeKey</code> for the
+            deployment and Lambda grant path, plus <code>kms:Decrypt</code>
+            wherever the execution role actually decrypts values. A KMS key is
+            one of the resources where the resource policy is authoritative.
           </li>
           <li>
             <strong>Check the Region and account in the ARN.</strong> If it is
@@ -97,7 +98,8 @@ InvalidArnException (Service: Lambda, Error Code: InvalidParameterValueException
             check whether an existing grant constrains the operation.
           </li>
           <li>
-            <strong>Re-run the deployment</strong> once
+            <strong>Re-save or re-encrypt the environment configuration, then
+            re-run the deployment</strong> once
             <code>describe-key</code> shows an enabled key in the right Region
             and the policy permits the grant.
           </li>

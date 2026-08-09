@@ -2019,7 +2019,7 @@ def test_an_iam_worded_s3_denial_stays_with_the_policy_layer_finding() -> None:
     assert "An explicit deny blocked a deployment action" in titles
 
 
-_TAG_DENIED_TITLE = "Tagging was denied while the resource operation itself was allowed"
+_TAG_DENIED_TITLE = "AWS denied a tagging action required by the deployment"
 _TAG_VALIDATION_TITLE = "A tag key or value was rejected by validation"
 
 
@@ -2047,6 +2047,95 @@ def test_tag_denial_names_the_denied_action_in_its_context() -> None:
     findings = [f for f in diagnose(log) if f.title == _TAG_DENIED_TITLE]
     assert findings, "the tagging rule did not fire"
     assert "lambda:TagResource" in findings[0].explanation
+
+
+@pytest.mark.parametrize(
+    "action",
+    (
+        "application-autoscaling:TagResource",
+        "application-autoscaling:UntagResource",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "lambda:TagResource",
+        "ec2:CreateTags",
+        "ec2:DeleteTags",
+        "rds:AddTagsToResource",
+        "rds:RemoveTagsFromResource",
+    ),
+)
+def test_tagging_action_variants_get_the_specific_finding(action: str) -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the resource operation: "
+        f"User is not authorized to perform: {action} on resource: example"
+    )
+
+    findings = diagnose(log)
+    assert [finding.rule_id for finding in findings] == ["iam.tag.action-denied"]
+    assert action in findings[0].explanation
+
+
+@pytest.mark.parametrize(
+    "policy_reason",
+    (
+        "with an explicit deny in a service control policy",
+        "because no identity-based policy allows the ec2:CreateTags action",
+    ),
+)
+def test_tag_denial_outranks_each_generic_iam_shape(policy_reason: str) -> None:
+    log = (
+        "User is not authorized to perform: ec2:CreateTags on resource: * "
+        f"{policy_reason}"
+    )
+
+    assert [finding.rule_id for finding in diagnose(log)] == [
+        "iam.tag.action-denied"
+    ]
+
+
+@pytest.mark.parametrize(
+    "denial",
+    (
+        "not authorized to perform APPLICATION-AUTOSCALING:tagresource",
+        "not authorized to perform: application-autoscaling:TagResource,",
+    ),
+)
+def test_tag_denial_accepts_runtime_format_variants(denial: str) -> None:
+    log = f"AccessDenied: User is {denial} on resource: example"
+
+    assert [finding.rule_id for finding in diagnose(log)] == [
+        "iam.tag.action-denied"
+    ]
+
+
+@pytest.mark.parametrize(
+    "action",
+    (
+        "application-autoscaling:ListTagsForResource",
+        "iam:ListRoleTags",
+        "ec2:DescribeTags",
+        "ec2:UpdateCapacityManagerMonitoredTagKeys",
+        "servicecatalog:CreateTagOption",
+        "ec2:CreateTagsExtra",
+        "iam:CreateRole",
+    ),
+)
+def test_a_non_mutating_tags_action_keeps_the_generic_iam_finding(
+    action: str,
+) -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling an operation: User is "
+        f"not authorized to perform: {action} on resource: *"
+    )
+
+    rule_ids = [finding.rule_id for finding in diagnose(log)]
+    assert "iam.tag.action-denied" not in rule_ids
+    assert "iam.access-denied.generic" in rule_ids
+
+
+def test_a_tag_action_mention_without_denial_wording_is_not_a_finding() -> None:
+    log = "Grant application-autoscaling:TagResource with RegisterScalableTarget."
+
+    assert diagnose(log) == []
 
 
 def test_a_non_tag_denial_in_the_same_log_still_reports_the_iam_denial() -> None:
@@ -2160,6 +2249,85 @@ def test_a_disabled_kms_key_gets_the_kms_finding() -> None:
     assert _KMS_ENV_TITLE in titles
 
 
+def test_a_non_lambda_kms_exception_keeps_the_generic_findings() -> None:
+    log = (
+        "CREATE_FAILED AWS::S3::Bucket ArtifactBucket "
+        "KMS Exception: AccessDeniedException"
+    )
+
+    rule_ids = [finding.rule_id for finding in diagnose(log)]
+    assert "lambda.env-vars.kms-key-inaccessible" not in rule_ids
+    assert "iam.access-denied.generic" in rule_ids
+    assert "cloudformation.resource.create-update-failed" in rule_ids
+
+
+def test_reserved_lambda_environment_keys_are_not_a_kms_failure() -> None:
+    log = (
+        "UPDATE_FAILED AWS::Lambda::Function Worker Lambda was unable to "
+        "configure your environment variables because the environment "
+        "variables you have provided contain reserved keys."
+    )
+
+    rule_ids = [finding.rule_id for finding in diagnose(log)]
+    assert "lambda.env-vars.kms-key-inaccessible" not in rule_ids
+    assert "cloudformation.resource.create-update-failed" in rule_ids
+
+
+@pytest.mark.parametrize(
+    "near_miss",
+    (
+        "KMS Exception: DisabledException",
+        "KMS Exception: AccessDeniedException while decrypting an unrelated key",
+        (
+            "The ciphertext refers to a customer master key that does not exist, "
+            "does not exist in this region, or you are not allowed to access."
+        ),
+    ),
+)
+def test_kms_signals_without_lambda_context_do_not_claim_the_rule(
+    near_miss: str,
+) -> None:
+    assert "lambda.env-vars.kms-key-inaccessible" not in {
+        finding.rule_id for finding in diagnose(near_miss)
+    }
+
+
+def test_lambda_kms_failure_keeps_unrelated_generic_failures_visible() -> None:
+    log = (
+        "CREATE_FAILED AWS::Lambda::Function Worker Lambda was unable to "
+        "configure access to your environment variables. KMS Exception: "
+        "AccessDeniedException\n"
+        "AccessDeniedException when calling the sqs:ListQueues operation\n"
+        "CREATE_FAILED AWS::DynamoDB::Table Orders Resource handler returned "
+        "message: throughput exceeded"
+    )
+
+    assert {finding.rule_id for finding in diagnose(log)} >= {
+        "lambda.env-vars.kms-key-inaccessible",
+        "iam.access-denied.generic",
+        "cloudformation.resource.create-update-failed",
+    }
+
+
+def test_kms_guidance_covers_both_roles_and_redeployment() -> None:
+    log = (
+        "KMS Exception: AccessDeniedException The ciphertext refers to a "
+        "customer master key that does not exist, does not exist in this "
+        "region, or you are not allowed to access."
+    )
+
+    finding = next(
+        finding
+        for finding in diagnose(log)
+        if finding.rule_id == "lambda.env-vars.kms-key-inaccessible"
+    )
+    guidance = " ".join(finding.verification)
+    assert "deploying principal and the function's execution role" in guidance
+    assert "kms:CreateGrant" in guidance
+    assert "kms:Decrypt" in guidance
+    assert "redeploy" in guidance
+
+
 def test_a_successful_env_var_configuration_reports_no_kms_finding() -> None:
     log = (
         "Environment variables encrypted with the customer managed key were "
@@ -2181,18 +2349,47 @@ def test_unresolvable_ssm_reference_gets_the_ssm_finding() -> None:
     assert _SSM_TITLE in titles
 
 
-def test_ssm_finding_suppresses_the_generic_configuration_rule() -> None:
+@pytest.mark.parametrize(
+    ("separator", "reason"),
+    (
+        ("\n", "Parameters: [ssm:/my-app/prod/db-password] cannot be found."),
+        ("\r\n", "Parameters: [ssm-secure:/my-app/prod/token] cannot be found."),
+        ("\n", "SSM parameter /my-app/prod/api-key not found."),
+    ),
+)
+def test_ssm_finding_suppresses_the_generic_configuration_rule(
+    separator: str, reason: str
+) -> None:
     # CloudFormation prints the generic changeset wrapper on its own line, so
     # this rule suppresses the generic finding for the whole log rather than
     # excluding a line - both lines describe one failure.
-    log = (
-        "Error: Failed to create changeset for the stack: my-app\n"
-        "Parameters: [ssm:/my-app/prod/db-password] cannot be found."
-    )
+    log = f"Error: Failed to create changeset for the stack: my-app{separator}{reason}"
 
     titles = [finding.title for finding in diagnose(log)]
     assert _SSM_TITLE in titles
     assert _SAM_CONFIG_TITLE not in titles
+
+
+@pytest.mark.parametrize(
+    "incomplete_reason",
+    (
+        "Parameters: [ssm:/my-app/prod/db-password] output truncated",
+        "Parameters: [ssm:/my-app/prod/db-password cannot be found",
+        "Parameters: [ssm:] cannot be found",
+        "Parameters: [ssm:/my-app/prod/db-password] could not be resolved",
+        "Parameters: [ssm:/my-app/prod/db-password]\ncannot be found",
+        "SSM parameter /my-app/prod/api-key\nnot found",
+        "SSM parameter /my-app/prod/api-key not foundational",
+    ),
+)
+def test_an_incomplete_ssm_reason_keeps_the_generic_configuration_finding(
+    incomplete_reason: str,
+) -> None:
+    log = f"Error: Failed to create changeset for the stack: my-app\n{incomplete_reason}"
+
+    rule_ids = [finding.rule_id for finding in diagnose(log)]
+    assert "ssm.parameter.resolution-failed" not in rule_ids
+    assert "sam.deploy.configuration-resolution-failed" in rule_ids
 
 
 def test_ssm_parameter_not_found_wording_also_matches() -> None:

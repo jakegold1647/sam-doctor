@@ -159,13 +159,17 @@ _UNICODE_CASES = {
     "utf-32-le": lambda text: codecs.BOM_UTF32_LE + text.encode("utf-32-le"),
     "utf-32-be": lambda text: codecs.BOM_UTF32_BE + text.encode("utf-32-be"),
 }
+_ENCODING_FAILURE_LINE = (
+    "Lambda was unable to configure access to your environment variables. "
+    "KMS Exception: DisabledException"
+)
 
 
 @pytest.mark.parametrize("label", sorted(_UNICODE_CASES))
 def test_diagnose_reads_every_bom_marked_encoding(
     label: str, tmp_path: Path, capsys
 ) -> None:
-    text = "Build Succeeded\nnoise line\nKMS Exception: DisabledException\n"
+    text = f"Build Succeeded\nnoise line\n{_ENCODING_FAILURE_LINE}\n"
     log = tmp_path / f"{label}.log"
     log.write_bytes(_UNICODE_CASES[label](text))
 
@@ -182,9 +186,8 @@ def test_diagnose_reads_crlf_without_shifting_line_numbers(
     tmp_path: Path, capsys
 ) -> None:
     log = tmp_path / "crlf.log"
-    log.write_bytes(
-        b"Build Succeeded\r\nnoise line\r\nKMS Exception: DisabledException\r\n"
-    )
+    text = f"Build Succeeded\r\nnoise line\r\n{_ENCODING_FAILURE_LINE}\r\n"
+    log.write_bytes(text.encode("utf-8"))
 
     exit_code = main(["diagnose", str(log), "--format", "json"])
     payload = json.loads(capsys.readouterr().out)
@@ -197,7 +200,8 @@ def test_diagnose_reads_a_log_that_is_not_valid_utf8(tmp_path: Path, capsys) -> 
     # A latin-1 log must stay readable rather than raise: replacement characters
     # in a stack trace are acceptable, losing the whole diagnosis is not.
     log = tmp_path / "latin1.log"
-    log.write_bytes("R\xe9sum\xe9\nKMS Exception: DisabledException\n".encode("latin-1"))
+    text = f"R\xe9sum\xe9\n{_ENCODING_FAILURE_LINE}\n"
+    log.write_bytes(text.encode("latin-1"))
 
     exit_code = main(["diagnose", str(log), "--format", "json"])
     payload = json.loads(capsys.readouterr().out)

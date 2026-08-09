@@ -148,8 +148,9 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "Status Code: 400; Error Code: InvalidParameterValueException)"
         ),
         negative=(
-            "Environment variables encrypted with the customer managed key "
-            "were configured for Worker"
+            "UPDATE_FAILED AWS::Lambda::Function Worker Lambda was unable to "
+            "configure your environment variables because the environment "
+            "variables contain reserved keys"
         ),
     ),
     "s3.artifact-bucket.access-denied": RuleFixture(

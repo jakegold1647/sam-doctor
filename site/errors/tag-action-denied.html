@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Not authorized to perform: iam:TagRole (tag-on-create denied) | SAM Doctor</title>
-    <meta name="description" content="Fix 'not authorized to perform: iam:TagRole' and other tag-on-create denials during AWS deployments: grant the tagging action alongside the create action, or find the tag policy that rejected the tag set." />
+    <title>Not authorized to perform a tagging action | SAM Doctor</title>
+    <meta name="description" content="Fix denied TagResource, UntagResource, CreateTags, DeleteTags, AddTagsToResource, and RemoveTagsFromResource actions during AWS deployments without weakening tag governance." />
     <meta name="author" content="Jake Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/tag-action-denied.html" />
     <meta name="theme-color" content="#0f5c4e" />
@@ -26,12 +26,11 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">Access denied on a tagging action, not on the resource</h1>
+        <h1 id="error-title">AWS denied a tagging action required by the deployment</h1>
         <p class="lede">
-          The deployment was allowed to create the resource and denied
-          permission to tag it. Because CloudFormation applies tags in the same
-          call that creates the resource, the whole operation fails — on the
-          tag, not on the thing you were deploying.
+          The denied IAM action changes tags. It may be paired with a create or
+          update operation, or it may be a direct retag or untag call. Either
+          way, fix the exact tagging permission without weakening tag policy.
         </p>
       </section>
 
@@ -42,15 +41,16 @@
           Read the action in the error, not just the word <code>AccessDenied</code>.
           When it names a <code>Tag*</code> or <code>Untag*</code> action —
           <code>iam:TagRole</code>, <code>lambda:TagResource</code>,
-          <code>ec2:CreateTags</code> — the permission gap is on tagging alone:
+          <code>ec2:CreateTags</code> — the permission gap is in the tag mutation:
         </p>
         <pre><code>An error occurred (AccessDenied) when calling the CreateRole operation:
 User is not authorized to perform: iam:TagRole on resource: role my-app-role</code></pre>
         <p>
           Note which operation was <em>called</em> (<code>CreateRole</code>) versus
-          which action was <em>denied</em> (<code>iam:TagRole</code>). That gap is
-          the whole diagnosis, and it is why granting more create permissions
-          changes nothing. Two things commonly cause it:
+          which action was <em>denied</em> (<code>iam:TagRole</code>). When they
+          differ, the tagging action is a permission paired with the create. A
+          direct <code>CreateTags</code> or <code>UntagResource</code> call is
+          already the primary operation. Two things commonly cause either shape:
         </p>
         <ul>
           <li><strong>A deploy policy written without the tagging pair.</strong> Roles are routinely granted <code>iam:CreateRole</code> while <code>iam:TagRole</code> is forgotten, because tagging looks like a separate, later step. It is not — it is part of the create call.</li>
@@ -69,12 +69,14 @@ User is not authorized to perform: iam:TagRole on resource: role my-app-role</co
             <pre><code>aws sts get-caller-identity</code></pre>
           </li>
           <li>
-            <strong>Grant the tagging action alongside the create action</strong>
-            it accompanies, scoped to the same resources — for example
-            <code>iam:TagRole</code> with <code>iam:CreateRole</code>, or
-            <code>lambda:TagResource</code> with
-            <code>lambda:CreateFunction</code>. Keep it least-privilege; a
-            tagging permission is narrow and does not need a broader role.
+            <strong>Grant the exact tagging action in its context.</strong> Pair
+            <code>application-autoscaling:TagResource</code> with
+            <code>RegisterScalableTarget</code>, <code>iam:TagRole</code> with
+            <code>iam:CreateRole</code>, or EC2 <code>CreateTags</code> with
+            create-time tags. For a direct retag or untag call, grant only that
+            mutation. Scope it to the affected resource and use
+            <code>aws:RequestTag/${TagKey}</code> and <code>aws:TagKeys</code>
+            conditions where the service supports them.
           </li>
           <li>
             <strong>If a tag policy or a hook rejected the tag set</strong>,

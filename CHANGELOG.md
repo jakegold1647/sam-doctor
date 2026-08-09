@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Three recently added diagnostics now honor their full acceptance
+  boundaries.** The Lambda environment-key rule requires KMS-specific context,
+  SSM precedence cannot erase a generic change-set finding on a truncated
+  reason, and tag denials cover hyphenated AWS service prefixes plus
+  `CreateTags`, `DeleteTags`, `AddTagsToResource`, and `RemoveTagsFromResource`.
+  Their generic fallbacks remain visible for nearby non-matches.
+
 - **Evidence-packet scenarios now receive the same secret redaction as their
   source and command fields.** A regression test puts a synthetic credential in
   `--scenario` and checks every generated packet file before it can be shared.

@@ -8,13 +8,12 @@ means a user can rely on what is already here.
    republished by hand after each release. The republish step is step 6 of the
    checklist in [pypi-publishing.md](pypi-publishing.md); what remains is
    following it on the next release and confirming the listing updates.
-2. Make the rule-request tracker tell the truth. #21 and #25 are the two
-   genuinely unimplemented requests and are reserved for first-time
-   contributors. #26, #27, and #33 were implemented in `fadacc9`, but their
-   issues stayed open because that commit did not use an auto-close keyword;
-   close those three completed requests and remove their contributor-invitation
-   labels. Entries 13-15 in [rule-roadmap.md](rule-roadmap.md) remain open
-   candidates. Each should land or be explicitly deferred before 1.0.
+2. Keep the rule-request tracker honest. #21 and #25 are the two genuinely
+   unimplemented requests and are reserved for first-time contributors. #26,
+   #27, and #33 were first implemented in `90cd680`; their acceptance boundaries
+   and precedence cases are now covered by focused regressions. Entries 13-15 in
+   [rule-roadmap.md](rule-roadmap.md) remain open candidates. Each should land or
+   be explicitly deferred before 1.0.
 3. Promise stability. The JSON report shape, the stable rule ids (landed in
    #47 and now carried through JSON, SARIF, the fixture registry, and the
    error-page map), and the CLI flags are what CI integrations depend on.

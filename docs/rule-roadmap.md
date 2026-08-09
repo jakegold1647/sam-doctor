@@ -658,11 +658,9 @@ that remain after entries 13 to 15 are mostly other tools' failures (CDK, Terraf
 CodeBuild) that this project does not claim to cover.
 
 Entries 1 to 12 have all landed. A fresh rule request from a real failure is
-always welcome, but the current
+always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-needs one cleanup before it can be treated as an available-work list: #26, #27,
-and #33 already shipped and should not be claimed. The two genuinely open
-requests —
+is the available-work list. The two open requests —
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
 and attachment quotas) and
 [#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
