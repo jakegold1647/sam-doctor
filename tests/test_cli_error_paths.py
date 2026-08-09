@@ -130,6 +130,33 @@ def test_demo_writes_report_to_output_file(tmp_path: Path, capsys) -> None:
     assert "SAM Doctor diagnostic report" in target.read_text(encoding="utf-8")
 
 
+@pytest.mark.parametrize("command", ("demo", "rules", "diagnose", "batch"))
+def test_regular_report_output_cannot_target_hard_link(
+    tmp_path: Path, capsys, command: str
+) -> None:
+    victim = tmp_path / "victim.txt"
+    sentinel = "keep this unrelated file\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    output = tmp_path / "report.txt"
+    try:
+        output.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    if command == "demo":
+        args = ["demo", "--output", str(output)]
+    elif command == "rules":
+        args = ["rules", "--output", str(output)]
+    else:
+        log = tmp_path / "failure.log"
+        log.write_text("AccessDeniedException: example\n", encoding="utf-8")
+        args = [command, str(log), "--format", "json", "--output", str(output)]
+
+    assert main(args) == 2
+    assert "must not be a hard link" in capsys.readouterr().err
+    assert victim.read_text(encoding="utf-8") == sentinel
+
+
 def test_rules_report_terminal_lists_every_rule() -> None:
     from sam_doctor.diagnostics import supported_rules
 

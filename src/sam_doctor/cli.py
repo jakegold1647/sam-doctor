@@ -717,6 +717,12 @@ def _read_demo(scenario: str = "oidc") -> str:
 
 def _write_report(path: Path, report: str) -> None:
     try:
+        hard_linked = path.exists() and path.stat().st_nlink > 1
+    except OSError as error:
+        raise ValueError(f"Could not inspect output target {path}: {error}") from error
+    if hard_linked:
+        raise ValueError(f"Output target must not be a hard link: {path}")
+    try:
         path.write_text(report, encoding="utf-8", newline="\n")
     except OSError as error:
         raise ValueError(f"Could not write {path}: {error}") from error
