@@ -131,6 +131,21 @@ def check_html(site_root: Path, html_file: Path, issues: list[str]) -> None:
     for bad in collector.script_links:
         issues.append(f"{html_file}: javascript link blocked: {bad}")
 
+    # Links into our own repository are classed as external and so were never
+    # checked, but they are as verifiable as a local link: the path after
+    # /blob/main/ is a file in this checkout. Rename a doc and eleven pages point
+    # at a 404 that no gate mentions. Genuinely external links stay unchecked -
+    # that needs the network, which is what the weekly link check is for.
+    for link in collector.external_links:
+        if REPO_BLOB_PREFIX not in link:
+            continue
+        repo_relative = link.split(REPO_BLOB_PREFIX, 1)[1].split("#")[0].split("?")[0]
+        if not (site_root.parent / repo_relative).is_file():
+            issues.append(
+                f"{html_file}: links to a repository file that does not exist: "
+                f"{repo_relative} ({link})"
+            )
+
 
 def _sitemap_relative_path(loc: str) -> str:
     """Map a sitemap URL to the site-relative file it stands for."""
