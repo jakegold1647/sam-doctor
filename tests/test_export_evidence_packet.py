@@ -198,6 +198,91 @@ def test_packet_allows_nested_artifact_names_inside_output_dir(tmp_path: Path) -
     assert (nested_dir / "researcher-notes.md").is_file()
 
 
+@pytest.mark.parametrize(
+    "json_name",
+    ("shared.txt", "nested/../shared.txt"),
+    ids=("literal", "normalized"),
+)
+def test_packet_rejects_colliding_artifact_names_before_writing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    json_name: str,
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            "shared.txt",
+            "--json-name",
+            json_name,
+            "--notes-name",
+            "notes.txt",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.err.startswith("usage:")
+    assert "must resolve to distinct files" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert list(output_dir.rglob("*")) == []
+
+
+def test_packet_rejects_existing_symlink_alias_before_writing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    target = output_dir / "shared.txt"
+    sentinel = "do not overwrite\n"
+    target.write_text(sentinel, encoding="utf-8")
+    alias = output_dir / "shared-link.txt"
+    try:
+        alias.symlink_to(target.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"symlinks unavailable: {error}")
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            target.name,
+            "--json-name",
+            alias.name,
+            "--notes-name",
+            "notes.txt",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.err.startswith("usage:")
+    assert "must resolve to distinct files" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert target.read_text(encoding="utf-8") == sentinel
+    assert alias.is_symlink()
+    assert not (output_dir / "notes.txt").exists()
+
+
 def test_cli_packet_supports_stdin(tmp_path: Path) -> None:
     output_dir = tmp_path / "artifacts"
     env = child_env()

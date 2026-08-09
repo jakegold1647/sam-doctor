@@ -795,6 +795,11 @@ def _packet_command(args: argparse.Namespace) -> int:
     markdown_path = _artifact_path(output_dir, args.markdown_name, "--markdown-name")
     json_path = _artifact_path(output_dir, args.json_name, "--json-name")
     notes_path = _artifact_path(output_dir, args.notes_name, "--notes-name")
+    if len({markdown_path, json_path, notes_path}) != 3:
+        raise ValueError(
+            "--markdown-name, --json-name, and --notes-name must resolve to "
+            "distinct files inside --output-dir."
+        )
 
     if args.input == "-":
         stdin_text = sys.stdin.read()

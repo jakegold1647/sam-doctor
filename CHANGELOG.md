@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Evidence packets reject colliding artifact filenames.** Markdown, JSON, and
+  researcher notes must resolve to three distinct targets, so literal,
+  normalized-path, and symlink aliases cannot silently overwrite earlier packet
+  files.
+
 - **Mobile brand links retain their accessible name at the narrow breakpoint.**
   The compact header still hides the long wordmark visually, but keeps “SAM
   Doctor” available to screen readers on all 58 pages; a shared CSS and markup
