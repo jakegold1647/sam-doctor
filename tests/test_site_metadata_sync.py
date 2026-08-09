@@ -10,6 +10,7 @@ been dead since the README was rewritten, and the release gate never said a word
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -159,6 +160,24 @@ def test_writing_makes_the_page_agree_and_is_idempotent(sync, monkeypatch) -> No
     # A second run must be a no-op, or --check would fail right after a sync.
     changes, _, missing = sync.sync_metadata(write=False)
     assert (changes, missing) == (0, [])
+
+
+def test_write_mode_rejects_hard_linked_target_before_any_write(
+    sync, tmp_path: Path
+) -> None:
+    _write_index(sync, heading="0.8.1")
+    original = sync.INDEX_PATH.read_text(encoding="utf-8")
+    victim = tmp_path / "victim.html"
+    victim.write_text(original, encoding="utf-8")
+    sync.INDEX_PATH.unlink()
+    try:
+        os.link(victim, sync.INDEX_PATH)
+    except OSError as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    with pytest.raises(ValueError, match="must not be a hard link"):
+        sync.sync_metadata(write=True)
+    assert victim.read_text(encoding="utf-8") == original
 
 
 def test_social_metadata_is_generated_from_the_page_and_is_idempotent(sync) -> None:

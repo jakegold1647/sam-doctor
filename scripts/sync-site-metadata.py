@@ -116,6 +116,17 @@ def _page_label(path: Path) -> str:
     return f"site/{path.relative_to(SITE_ROOT).as_posix()}"
 
 
+def _ensure_write_target_is_not_a_hard_link(path: Path) -> None:
+    """Reject an existing output alias before any metadata writes begin."""
+
+    try:
+        hard_linked = path.exists() and path.stat().st_nlink > 1
+    except OSError as error:
+        raise ValueError(f"Could not inspect metadata target: {path}") from error
+    if hard_linked:
+        raise ValueError(f"Metadata target must not be a hard link: {path}")
+
+
 def _social_metadata_block(
     *, path: Path, title: str, description: str, canonical: str, indent: str
 ) -> str:
@@ -236,6 +247,7 @@ def sync_metadata(write: bool = True) -> tuple[int, str, list[str]]:
     print(f"syncing metadata for version: {version}")
 
     changed_paths: set[Path] = set()
+    pending_writes: list[tuple[Path, str]] = []
     missing: list[str] = []
 
     index_text = INDEX_PATH.read_text(encoding="utf-8")
@@ -266,12 +278,12 @@ def sync_metadata(write: bool = True) -> tuple[int, str, list[str]]:
     )
     missing.extend(index_missing)
     if updated_index != index_text:
-        if write:
-            INDEX_PATH.write_text(updated_index, encoding="utf-8")
         changed_paths.add(INDEX_PATH)
+        if write:
+            pending_writes.append((INDEX_PATH, updated_index))
 
     for page in sorted(SITE_ROOT.rglob("*.html")):
-        if not write and page.resolve() == INDEX_PATH.resolve():
+        if page.resolve() == INDEX_PATH.resolve():
             page_text = updated_index
         else:
             page_text = page.read_text(encoding="utf-8")
@@ -279,9 +291,15 @@ def sync_metadata(write: bool = True) -> tuple[int, str, list[str]]:
         missing.extend(page_missing)
         if updated_page == page_text:
             continue
-        if write:
-            page.write_text(updated_page, encoding="utf-8")
         changed_paths.add(page)
+        if write:
+            pending_writes.append((page, updated_page))
+
+    if write:
+        for path, _ in pending_writes:
+            _ensure_write_target_is_not_a_hard_link(path)
+        for path, text in pending_writes:
+            path.write_text(text, encoding="utf-8")
 
     return len(changed_paths), version, missing
 
@@ -300,7 +318,11 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    initial_changes, _, missing = sync_metadata(write=not args.check)
+    try:
+        initial_changes, _, missing = sync_metadata(write=not args.check)
+    except (OSError, ValueError) as error:
+        print(f"metadata sync error: {error}")
+        return 1
     if missing:
         # Fails in both modes. In --check it would otherwise pass while blind; in
         # write mode the sync silently leaves that spot on the old version.
