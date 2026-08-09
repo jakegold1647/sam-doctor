@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
 :root {
   --paper: #faf8f4;
   --paper-deep: #f1eee6;
@@ -20,9 +22,9 @@
   --violet: #67549b;
   --shadow-sm: 0 1px 2px rgb(23 25 20 / 7%), 0 8px 28px rgb(23 25 20 / 5%);
   --shadow-lg: 0 24px 70px rgb(21 37 32 / 17%), 0 5px 18px rgb(21 37 32 / 10%);
-  --sans: "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
-  --serif: Georgia, "Times New Roman", serif;
-  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sans: "IBM Plex Sans", "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --page: min(100% - 2.5rem, 74rem);
   color-scheme: light;
 }
@@ -42,12 +44,16 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow-x: clip;
+  /* faint blueprint grid, same texture as jacobgoldstein.dev */
   background:
-    radial-gradient(circle at 12% -8%, rgb(15 92 78 / 9%), transparent 26rem),
+    linear-gradient(rgb(214 205 186 / 22%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(214 205 186 / 22%) 1px, transparent 1px),
     var(--paper);
+  background-size: 88px 88px, 88px 88px, auto;
   color: var(--ink);
-  font: 16px/1.65 var(--sans);
+  font: 16.5px/1.65 var(--sans);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 img,
@@ -84,8 +90,8 @@ a:hover {
 }
 
 ::selection {
-  background: #cfe3dc;
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--paper);
 }
 
 .skip-link {
@@ -113,14 +119,27 @@ footer {
 }
 
 .topbar {
-  position: relative;
-  z-index: 20;
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   min-width: 0;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
   min-height: 5rem;
+}
+
+/* full-bleed sticky bar background, like the main site's top bar */
+.topbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  right: calc(50% - 50vw);
+  z-index: -1;
+  background: rgb(250 248 244 / 97%);
   border-bottom: 1px solid var(--line);
 }
 
@@ -237,14 +256,14 @@ h3 {
 h1 {
   max-width: 12ch;
   margin-bottom: 1.4rem;
-  font: 500 clamp(3.2rem, 6.1vw, 5.35rem)/.98 var(--serif);
-  letter-spacing: -.055em;
+  font: 500 clamp(3.2rem, 6.1vw, 5.35rem)/1.02 var(--serif);
+  letter-spacing: -.02em;
 }
 
 h2 {
   margin-bottom: 1rem;
-  font: 500 clamp(2.15rem, 4vw, 3.55rem)/1.04 var(--serif);
-  letter-spacing: -.04em;
+  font: 500 clamp(2.15rem, 4vw, 3.55rem)/1.06 var(--serif);
+  letter-spacing: -.015em;
 }
 
 h3 {
