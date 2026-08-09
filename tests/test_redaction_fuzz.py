@@ -30,9 +30,20 @@ SECRETS = (
     '"SecretAccessKey": "je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY"',
     "xoxb-" + "1234567890-fuzzslackbot",
     "X-Amz-Signature=" + "deadbeef" * 8,
+    # Prefixed UPPER_SNAKE_CASE names: the conventional spelling for an
+    # environment variable, and the shape a word boundary on the keyword missed
+    # entirely (`\bpassword` never matches inside `DB_PASSWORD`).
+    "DB_PASSWORD=fuzz-prefixed-secret",
+    "MY_API_KEY=fuzz-prefixed-apikey",
+    # Credentials in a URL against a dotless internal host, which the email
+    # pattern that used to catch this incidentally cannot match.
+    "https://oauth2:glpat-fuzzgitlabtoken12345@gitlab/team/repo.git",
 )
 
 LEAK_MARKERS = (
+    "fuzz-prefixed-secret",
+    "fuzz-prefixed-apikey",
+    "glpat-fuzzgitlabtoken12345",
     "AKIA" + "IOSFODNN7EXAMPLE",
     "ASIA" + "Y34FZKBOKMUTVV7A",
     "IQoJb3JpZ2luX2VjENr",
@@ -77,7 +88,12 @@ def test_fuzzed_logs_never_leak_identifiers_in_any_format() -> None:
         log = "\n".join(lines)
 
         findings = diagnose(log)
-        for output_format in ("terminal", "markdown", "json", "github"):
+        # sarif is included defensively rather than because it leaks today: its
+        # results carry the title, explanation and a line number, and no evidence
+        # snippet, so an evidence-borne secret cannot currently reach it. If a
+        # `region.snippet` is ever added - SARIF consumers do expect one - this
+        # loop is what stops that change from shipping a leak.
+        for output_format in ("terminal", "markdown", "json", "github", "sarif"):
             report = _render_findings(findings, "fuzz.log", output_format)
             for marker in LEAK_MARKERS:
                 assert marker not in report, (

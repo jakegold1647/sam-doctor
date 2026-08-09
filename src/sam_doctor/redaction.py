@@ -17,14 +17,34 @@ _BEARER_TOKEN = re.compile(
 )
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(aws_secret_access_key|aws_session_token|github_token|access_token|api_key|password|secret|token"
+    # Deliberately no leading \b. Environment variables are conventionally
+    # UPPER_SNAKE_CASE with a prefix - DB_PASSWORD, APP_SECRET, MY_API_KEY - and
+    # `_` is a word character, so \b never matched between the prefix and the
+    # keyword. That left the most common real-world spelling of a secret
+    # unredacted while the bare `password=` form was caught. The `[:=]` that
+    # follows is what makes this specific, not the word boundary: a keyword
+    # inside an unrelated word (`tokenizer=fast`) still fails to match because
+    # the separator has to come directly after the keyword.
+    r"(?i)(aws_secret_access_key|aws_session_token|github[_-]?token|access[_-]?token"
+    r"|api[_-]?key|password|passwd|secret|token"
     # CamelCase JSON keys as printed by `aws sts assume-role` / `get-session-token`
     # output pasted into logs, plus common config spellings and the presigned-URL
     # signature parameter.
-    r"|secretaccesskey|sessiontoken|client[_-]?secret|private[_-]?key|x-amz-signature)"
+    r"|secret[_-]?access[_-]?key|session[_-]?token|client[_-]?secret|private[_-]?key"
+    r"|x-amz-signature)"
     # Never consume a value another pattern already redacted - the session-token
     # marker must survive this later, broader pass.
     r"[\"'`]?\s*[:=]\s*[\"'`]?(?!\[REDACTED)[^\s'\"`]+[\"'`]?"
+)
+# Credentials embedded in a URL: `https://user:token@host/path`, and the
+# token-as-username form `https://glpat-xxx@host/path`. Both are ordinary in CI
+# (`git clone https://oauth2:$TOKEN@host/repo`). These were previously redacted
+# only by accident, when the email pattern happened to match `password@host` -
+# which requires a dot in the host, so an internal single-label host like
+# `gitlab` or `localhost` leaked the credential in full, and when it did match
+# the value was mislabelled as an email address.
+_URL_CREDENTIALS = re.compile(
+    r"(?i)\b([a-z][a-z0-9+.\-]{1,20}://)([^\s:/@]{1,200})(:[^\s/@]{1,400})?@"
 )
 # Slack tokens show up in CI logs through notification steps.
 _SLACK_TOKEN = re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")
@@ -33,6 +53,22 @@ _SLACK_TOKEN = re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")
 _PRIVATE_KEY_BLOCK = re.compile(
     r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?s:.*?)(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)"
 )
+
+
+def _redact_url_credentials(match: re.Match[str]) -> str:
+    """Redact the credential half of a URL userinfo section.
+
+    With a password present the username is usually a harmless placeholder
+    (`oauth2`, `git`, `AWS`) and keeping it helps identify which credential
+    failed, so only the password is replaced. With no password the single value
+    *is* the credential - that is how a PAT is passed to `git clone` - so it is
+    replaced instead.
+    """
+
+    scheme, user, password = match.group(1), match.group(2), match.group(3)
+    if password:
+        return f"{scheme}{user}:[REDACTED_URL_CREDENTIAL]@"
+    return f"{scheme}[REDACTED_URL_CREDENTIAL]@"
 
 
 def redact(text: str) -> str:
@@ -53,5 +89,9 @@ def redact(text: str) -> str:
     text = _BEARER_TOKEN.sub(lambda match: f"{match.group(1)} [REDACTED_BEARER_TOKEN]", text)
     text = _SECRET_ASSIGNMENT.sub(lambda match: f"{match.group(1)}=[REDACTED_SECRET]", text)
     text = _JWT.sub("[REDACTED_JWT]", text)
+    # Must run before the email pass: `user:password@host.tld` also matches the
+    # email pattern, and letting that win both mislabels the credential and
+    # leaves the dotless-host case unredacted.
+    text = _URL_CREDENTIALS.sub(_redact_url_credentials, text)
     return _EMAIL.sub("[REDACTED_EMAIL]", text)
 
