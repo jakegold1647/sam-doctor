@@ -102,11 +102,17 @@ fail-on-confidence: high
 ```
 
 4. When the medium-confidence findings have also earned trust, switch to
-   strict mode:
+   strict mode - **replacing** `fail-on-confidence`, not adding alongside it:
 
 ```yaml
+# fail-on-confidence: high   <- remove this line
 fail-on-findings: true
 ```
+
+   `fail-on-confidence` is its own gate and takes precedence: while it is set it
+   decides the exit status by itself, and `fail-on-findings` is not consulted.
+   Leaving both in place keeps the job passing on medium-confidence findings,
+   which is the opposite of what this step is for.
 
 **Result**
 
