@@ -16,6 +16,8 @@ import yaml
 
 from sam_doctor.cli import main
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 @pytest.fixture
 def generated(tmp_path: Path) -> dict:
@@ -89,3 +91,50 @@ def test_no_unexpanded_placeholders_remain(tmp_path: Path) -> None:
 
     for placeholder in ("{trigger}", "{deploy_command}", "{summary}", "{annotations}"):
         assert placeholder not in text
+
+
+def test_the_scaffold_grants_the_permission_its_deploy_step_needs(generated: dict) -> None:
+    # Without id-token: write the runner never sets ACTIONS_ID_TOKEN_REQUEST_URL, so
+    # an OIDC deploy fails before it starts. Measuring this catalog against real logs
+    # found that exact failure in four unrelated repositories - it is the most common
+    # one there is, and a scaffold that walks into it is a poor first experience.
+    job = next(iter(generated["jobs"].values()))
+    permissions = job.get("permissions") or generated.get("permissions") or {}
+
+    assert permissions.get("id-token") == "write", f"permissions={permissions}"
+    assert permissions.get("contents") == "read", (
+        "naming permissions replaces the defaults, so contents: read has to be "
+        "restated or the checkout loses it"
+    )
+
+
+def test_the_scaffold_pins_the_same_action_versions_this_repo_uses() -> None:
+    """The template is a Python string, so dependabot cannot see it.
+
+    Every action reference in .github/workflows gets bumped when a new major lands;
+    the scaffold silently kept handing new users actions/checkout@v4 and
+    setup-python@v5 after the repository had moved to v7. Comparing the two means the
+    dependabot pull request that updates the workflows also fails here until the
+    template is updated with it.
+    """
+
+    import re
+
+    from sam_doctor.cli import _WORKFLOW_TEMPLATE
+
+    workflow_versions: dict[str, set[str]] = {}
+    for workflow in sorted((REPO_ROOT / ".github" / "workflows").glob("*.yml")):
+        text = workflow.read_text(encoding="utf-8")
+        for action, version in re.findall(r"uses:\s*([\w.-]+/[\w.-]+)@(v\d+)", text):
+            workflow_versions.setdefault(action, set()).add(version)
+
+    for action, version in re.findall(
+        r"uses:\s*([\w.-]+/[\w.-]+)@(v\d+)", _WORKFLOW_TEMPLATE
+    ):
+        if action not in workflow_versions:
+            continue  # the scaffold may use an action this repo's own CI does not
+        assert version in workflow_versions[action], (
+            f"the generated workflow pins {action}@{version} while this repository "
+            f"uses {sorted(workflow_versions[action])} - update the template in "
+            "src/sam_doctor/cli.py to match"
+        )

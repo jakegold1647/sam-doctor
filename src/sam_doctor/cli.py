@@ -45,9 +45,21 @@ on:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
+    # Naming permissions replaces the defaults rather than adding to them, so if
+    # your deploy step needs something else - packages: read for a private base
+    # image, pull-requests: write to comment - add it here.
+    #
+    # id-token: write is what lets the deploy step exchange an OIDC token for AWS
+    # credentials. Without it the runner never sets ACTIONS_ID_TOKEN_REQUEST_URL
+    # and the deploy fails before it starts. That failure is the single most
+    # common one in real logs, and sam-doctor diagnoses it - but it is a poor
+    # first experience to ship a scaffold that walks into it.
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Deploy

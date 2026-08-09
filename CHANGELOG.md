@@ -4,6 +4,29 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The workflow `sam-doctor init` writes now grants the permission its deploy step
+  needs, and pins current actions.** Two problems in the scaffold, both invisible to
+  the tooling that would normally catch them.
+
+  It declared no `permissions:` block, so an OIDC deploy failed before it started -
+  without `id-token: write` the runner never sets `ACTIONS_ID_TOKEN_REQUEST_URL`.
+  That is the most common failure in the real-log measurement, found in four
+  unrelated repositories. Shipping a scaffold that walks into the very failure this
+  tool is best known for diagnosing is a poor first experience. `contents: read` is
+  restated alongside it, because naming permissions replaces the defaults rather
+  than adding to them, and the generated file says so in a comment.
+
+  It also pinned `actions/checkout@v4` and `setup-python@v5` after this repository
+  had moved to v7. The template is a Python string, so dependabot cannot see it. A
+  test now compares the versions in the template against the ones the repository's
+  own workflows use, which means the dependabot pull request that bumps the
+  workflows fails until the scaffold is updated with it.
+
+- **Every pinned action is on its current major**, reviewed by diffing each action's
+  own definition across the two versions rather than taken on trust: no input was
+  removed and nothing became newly required in any of the six. The common thread is
+  node20 reaching end of life on the runners.
+
 - **Redaction was deleting the fix from the OIDC finding.** `token` sits in the
   secret-keyword list, so `permissions: id-token: write` was rewritten to
   `id-token=[REDACTED_SECRET]` - in the evidence line for the rule that fires most
