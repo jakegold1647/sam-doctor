@@ -1,8 +1,10 @@
 import json
 import re
+from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 try:
     import tomllib
@@ -96,6 +98,43 @@ class _VisibleFaqParser(HTMLParser):
             answer.append(data)
 
 
+class _HeadMetadataParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.values: defaultdict[tuple[str, str], list[str]] = defaultdict(list)
+        self.title_parts: list[str] = []
+        self._in_title = False
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        attributes = {name.lower(): value or "" for name, value in attrs}
+        if tag == "title":
+            self._in_title = True
+        elif tag == "meta":
+            if name := attributes.get("name", "").lower():
+                self.values[("name", name)].append(attributes.get("content", ""))
+            if prop := attributes.get("property", "").lower():
+                self.values[("property", prop)].append(
+                    attributes.get("content", "")
+                )
+        elif tag == "link" and attributes.get("rel", "").lower() == "canonical":
+            self.values[("link", "canonical")].append(attributes.get("href", ""))
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "title":
+            self._in_title = False
+
+    def handle_data(self, data: str) -> None:
+        if self._in_title:
+            self.title_parts.append(data)
+
+    def one(self, kind: str, key: str) -> str:
+        matches = self.values[(kind, key)]
+        assert len(matches) == 1, f"expected one {kind}={key}, found {len(matches)}"
+        return _normalize_whitespace(matches[0])
+
+
 def _current_version() -> str:
     payload = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project: dict[str, Any] = payload["project"]
@@ -162,6 +201,80 @@ def test_homepage_faq_schema_matches_visible_faq_in_order() -> None:
     parser.close()
     assert parser.entries, "homepage must contain visible .faq details"
     assert structured_entries == parser.entries
+
+
+def test_every_indexable_page_has_canonical_social_metadata() -> None:
+    site_root = ROOT / "site"
+    pages = sorted(site_root.rglob("*.html"))
+    assert pages
+
+    required_open_graph = (
+        "og:site_name",
+        "og:locale",
+        "og:type",
+        "og:title",
+        "og:description",
+        "og:url",
+        "og:image",
+        "og:image:type",
+        "og:image:width",
+        "og:image:height",
+        "og:image:alt",
+    )
+    required_twitter = (
+        "twitter:card",
+        "twitter:title",
+        "twitter:description",
+        "twitter:image",
+        "twitter:image:alt",
+    )
+
+    for page in pages:
+        parser = _HeadMetadataParser()
+        parser.feed(page.read_text(encoding="utf-8"))
+        parser.close()
+        robots = ",".join(parser.values[("name", "robots")]).lower()
+        robots_directives = {token.strip() for token in robots.split(",")}
+        if robots_directives & {"noindex", "none"}:
+            continue
+
+        title = _normalize_whitespace("".join(parser.title_parts))
+        assert title, f"{page} has no document title"
+        canonical = parser.one("link", "canonical")
+        for prop in required_open_graph:
+            assert parser.one("property", prop), f"{page} has an empty {prop}"
+        for name in required_twitter:
+            assert parser.one("name", name), f"{page} has an empty {name}"
+
+        assert parser.one("property", "og:title") == title
+        assert parser.one("name", "twitter:title") == title
+        assert parser.one("property", "og:url") == canonical
+        assert parser.one("name", "twitter:card") == "summary_large_image"
+        assert parser.one("property", "og:description") == parser.one(
+            "name", "twitter:description"
+        )
+        assert parser.one("property", "og:image:type") == "image/jpeg"
+        assert parser.one("property", "og:image:width") == "1280"
+        assert parser.one("property", "og:image:height") == "640"
+
+        og_image = parser.one("property", "og:image")
+        twitter_image = parser.one("name", "twitter:image")
+        assert twitter_image == og_image
+        canonical_url = urlparse(canonical)
+        image_url = urlparse(og_image)
+        assert (image_url.scheme, image_url.netloc) == (
+            canonical_url.scheme,
+            canonical_url.netloc,
+        )
+        image_relative = Path(image_url.path.lstrip("/"))
+        assert ".." not in image_relative.parts
+        assert (site_root / image_relative).is_file(), (
+            f"{page} social image has no local asset: {og_image}"
+        )
+
+        og_alt = parser.one("property", "og:image:alt")
+        twitter_alt = parser.one("name", "twitter:image:alt")
+        assert og_alt == twitter_alt
 
 
 def test_quickstart_page_has_metadata_and_guide_schema() -> None:

@@ -136,13 +136,18 @@ def test_a_written_report_file_does_not_leak(log: Path, tmp_path: Path) -> None:
     _assert_clean(target.read_text(encoding="utf-8"), "diagnose --output")
 
 
-def test_batch_output_does_not_leak(log: Path, tmp_path: Path, capsys) -> None:
-    second = tmp_path / "other.log"
+@pytest.mark.parametrize("output_format", ("terminal", "markdown"))
+def test_batch_output_does_not_leak(
+    log: Path, tmp_path: Path, capsys, output_format: str
+) -> None:
+    second = tmp_path / f"DB_PASSWORD={SCENARIO_SECRET}.log"
     second.write_text(LOG_TEXT, encoding="utf-8")
 
-    assert main(["batch", str(log), str(second), "--format", "markdown"]) == 0
+    assert main(["batch", str(log), str(second), "--format", output_format]) == 0
 
-    _assert_clean(capsys.readouterr().out, "batch --format markdown")
+    rendered = capsys.readouterr().out
+    _assert_clean(rendered, f"batch --format {output_format}")
+    assert "DB_PASSWORD=[REDACTED_SECRET]" in rendered
 
 
 def test_the_log_is_still_diagnosed_through_all_that_noise(log: Path, capsys) -> None:

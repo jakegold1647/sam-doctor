@@ -4,6 +4,20 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Every public guide now carries a complete social sharing card.** Open Graph
+  and Twitter metadata is generated from each page's canonical title and URL,
+  uses the local branded preview image, and is checked for completeness and
+  drift across all 58 indexable pages.
+
+- **Packet outputs cannot overwrite the file being diagnosed.** Both packet
+  commands reject literal, normalized-path, symlink, and hard-link aliases
+  between a file input and any output target before the first artifact write.
+
+- **Batch text reports redact sensitive source paths consistently.** Markdown
+  section headings and terminal prefixes now apply the same secret filtering as
+  their nested reports, preventing a credential-shaped filename from leaking
+  through the outer wrapper.
+
 - **Evidence packets reject colliding artifact filenames.** Markdown, JSON, and
   researcher notes must resolve to three distinct targets, so literal,
   normalized-path, and symlink aliases cannot silently overwrite earlier packet

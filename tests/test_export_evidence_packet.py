@@ -283,6 +283,143 @@ def test_packet_rejects_existing_symlink_alias_before_writing(
     assert not (output_dir / "notes.txt").exists()
 
 
+@pytest.mark.parametrize(
+    "name_option", ("--markdown-name", "--json-name", "--notes-name")
+)
+@pytest.mark.parametrize("alias_kind", ("literal", "normalized"))
+def test_packet_output_cannot_alias_file_input(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    name_option: str,
+    alias_kind: str,
+) -> None:
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    log = output_dir / "input.log"
+    sentinel = "Not authorized to perform: sts:AssumeRoleWithWebIdentity\n"
+    log.write_text(sentinel, encoding="utf-8")
+    output_name = "input.log" if alias_kind == "literal" else "nested/../input.log"
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            name_option,
+            output_name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.err.startswith("usage:")
+    assert "must not resolve to an output target" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert log.read_text(encoding="utf-8") == sentinel
+    assert {
+        path.relative_to(output_dir).as_posix() for path in output_dir.rglob("*")
+    } == {"input.log"}
+
+
+def test_packet_output_cannot_alias_file_input_through_existing_symlink(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    log = output_dir / "input.log"
+    sentinel = "Not authorized to perform: sts:AssumeRoleWithWebIdentity\n"
+    log.write_text(sentinel, encoding="utf-8")
+    alias = output_dir / "input-link.log"
+    try:
+        alias.symlink_to(log.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"symlinks unavailable: {error}")
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            alias.name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.err.startswith("usage:")
+    assert "must not resolve to an output target" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert log.read_text(encoding="utf-8") == sentinel
+    assert alias.is_symlink()
+    assert not (output_dir / "diagnosis.json").exists()
+    assert not (output_dir / "researcher-notes.md").exists()
+
+
+def test_packet_output_cannot_alias_file_input_through_hard_link(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    log = output_dir / "input.log"
+    sentinel = "Not authorized to perform: sts:AssumeRoleWithWebIdentity\n"
+    log.write_text(sentinel, encoding="utf-8")
+    alias = output_dir / "input-hard-link.log"
+    try:
+        alias.hardlink_to(log)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            alias.name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "must not resolve to an output target" in captured.err
+    assert log.read_text(encoding="utf-8") == sentinel
+    assert alias.read_text(encoding="utf-8") == sentinel
+    assert not (output_dir / "diagnosis.json").exists()
+    assert not (output_dir / "researcher-notes.md").exists()
+
+
+def test_packet_missing_input_error_precedes_output_alias_check(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_dir = tmp_path / "artifacts"
+    missing_log = output_dir / "missing.log"
+
+    exit_code = main(
+        [
+            "packet",
+            str(missing_log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            missing_log.name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "Could not read" in captured.err
+    assert "must not resolve to an output target" not in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert list(output_dir.rglob("*")) == []
+
+
 def test_cli_packet_supports_stdin(tmp_path: Path) -> None:
     output_dir = tmp_path / "artifacts"
     env = child_env()

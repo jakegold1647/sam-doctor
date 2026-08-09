@@ -616,6 +616,7 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
             # output.  Native separators made the same relative input appear as
             # `logs\\deploy.log` on Windows and `logs/deploy.log` elsewhere.
             source = file_path.as_posix()
+            display_source = redact(source)
             findings = diagnose(text)
             confidences.extend(finding.confidence for finding in findings)
             if output_format == "sarif":
@@ -640,9 +641,9 @@ def _batch_render(inputs: list[str], output_format: str) -> tuple[str, list[str]
                     text_reports.append(report.rstrip())
                 continue
             text_reports.append(
-                f"## Source: <code>{escape(source)}</code>\n\n{report.rstrip()}"
+                f"## Source: <code>{escape(display_source)}</code>\n\n{report.rstrip()}"
                 if output_format == "markdown"
-                else f"{source}\n{report.rstrip()}"
+                else f"{display_source}\n{report.rstrip()}"
             )
 
     if output_format == "json":
@@ -734,6 +735,32 @@ def _artifact_path(output_dir: Path, name: str, option_name: str) -> Path:
     return candidate
 
 
+def _ensure_input_is_not_output(
+    input_path: Path, output_paths: tuple[Path, ...]
+) -> None:
+    """Reject artifact targets that would overwrite the file being diagnosed."""
+
+    try:
+        resolved_input = input_path.resolve()
+    except (OSError, RuntimeError) as error:
+        raise ValueError(f"Could not resolve input path {input_path}: {error}") from error
+    aliases_output = resolved_input in output_paths
+    if not aliases_output:
+        try:
+            aliases_output = any(
+                output_path.exists() and input_path.samefile(output_path)
+                for output_path in output_paths
+            )
+        except OSError as error:
+            raise ValueError(
+                f"Could not compare input and output paths: {error}"
+            ) from error
+    if aliases_output:
+        raise ValueError(
+            f"Input file must not resolve to an output target: {input_path}"
+        )
+
+
 def _make_output_dir(path: Path) -> Path:
     """Create an output directory, reporting failure the way reads and writes do.
 
@@ -817,6 +844,9 @@ def _packet_command(args: argparse.Namespace) -> int:
         # OS user name. The name is the part that carries diagnostic meaning.
         source_name = source_path.name
         text = _read_text(source_path)
+        _ensure_input_is_not_output(
+            source_path, (markdown_path, json_path, notes_path)
+        )
         findings = diagnose(text)
 
     input_is_empty = not text.strip()
@@ -872,6 +902,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
         # CONTRIBUTING tells contributors never to post - as well as the OS user.
         source_name = source_path.name
         text = _read_text(source_path)
+        _ensure_input_is_not_output(source_path, (notes_path,))
 
     excerpt = likely_error_excerpt(text, context=args.context, max_lines=args.max_lines)
     command = f"sam-doctor request-packet {source_name}"
