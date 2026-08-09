@@ -10,7 +10,7 @@ discovers failures locally instead of after pushing:
 4. rule catalog quality gate       (scripts/check-rule-catalog.py)
 5. rule fixture registry gate      (scripts/check-rule-fixtures.py)
 6. error page mapping gate         (scripts/check-error-pages.py)
-7. test suite                      (pytest -q)
+7. test suite + coverage floor     (pytest -q --cov)
 8. package build                   (python -m build)
 9. built wheel in a clean env      (scripts/verify-wheel.py)
 10. onboarding smoke check         (scripts/run-smoke.py)
@@ -42,7 +42,7 @@ def _steps(fast: bool) -> list[tuple[str, list[str]]]:
         ("rule catalog quality", [python, "scripts/check-rule-catalog.py"]),
         ("rule fixture registry", [python, "scripts/check-rule-fixtures.py"]),
         ("error page mapping", [python, "scripts/check-error-pages.py"]),
-        ("test suite", [python, "-m", "pytest", "-q"]),
+        ("test suite", [python, "-m", "pytest", "-q", "--cov"]),
     ]
     if not fast:
         steps.append(("package build", [python, "-m", "build"]))
