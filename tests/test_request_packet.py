@@ -130,3 +130,28 @@ def test_cli_request_packet_empty_stdin_exits_2(tmp_path: Path, monkeypatch, cap
 
     assert exit_code == 2
     assert "empty" in capsys.readouterr().err
+
+
+def test_rule_request_excerpt_names_the_file_not_the_path(tmp_path: Path) -> None:
+    # This artifact exists to be pasted into a public rule request, and a working
+    # path usually names the repository - which CONTRIBUTING tells contributors
+    # never to post - along with the OS user name. The file name is the part that
+    # carries diagnostic meaning.
+    private_dir = tmp_path / "acme-private-client" / "infra"
+    private_dir.mkdir(parents=True)
+    log = private_dir / "deployment.log"
+    log.write_text(
+        "SomeNovelFailure: the reticulator exploded\nError: deploy failed\n",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+
+    exit_code = main(
+        ["request-packet", str(log), "--output-dir", str(output_dir)]
+    )
+
+    assert exit_code == 0
+    excerpt = (output_dir / "rule-request.md").read_text(encoding="utf-8")
+    assert "- Source: deployment.log" in excerpt
+    assert "acme-private-client" not in excerpt
+    assert str(private_dir) not in excerpt

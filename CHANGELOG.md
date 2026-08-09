@@ -4,6 +4,20 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The shareable artifacts name the log file, not the path it came from.**
+  `request-packet` writes an excerpt specifically to be pasted into a public
+  rule request, and `packet` writes notes whose own text says to discuss the
+  case using those files - and both recorded the full working path, twice, in
+  the `Source` and `Command` lines. Source names are redacted, but only for the
+  identifier patterns: an ARN, an account id, an email. A path is none of those,
+  so it passed through whole.
+
+  CONTRIBUTING asks contributors never to post private repository names, and a
+  working path usually contains exactly that - `.../acme-private-client/infra/
+  deployment.log` - along with the OS user name from the home directory. The
+  file name is the part with diagnostic meaning; the directories above it are
+  not the maintainer's business. Both now record the name alone.
+
 - **Read logs that carry a byte-order mark.** Every input was decoded as UTF-8,
   so a UTF-16 log produced no findings at all - each character separated by a
   NUL, nothing matching, and a report saying "no supported pattern found" for a

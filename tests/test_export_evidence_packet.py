@@ -176,3 +176,24 @@ def test_packet_keeps_unmatched_wording_for_a_real_log(tmp_path: Path) -> None:
     rendered = (out_dir / "diagnosis.md").read_text(encoding="utf-8")
     assert "No supported pattern found" in rendered
     assert "Nothing to diagnose" not in rendered
+
+
+def test_packet_notes_name_the_file_not_the_path(tmp_path: Path) -> None:
+    # The packet's own notes say to discuss the case using these files, so they
+    # are a sharing artifact: the directory a log happened to sit in should not
+    # travel with them.
+    private_dir = tmp_path / "acme-private-client" / "infra"
+    private_dir.mkdir(parents=True)
+    log = private_dir / "deployment.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+
+    exit_code = main(["packet", str(log), "--output-dir", str(output_dir)])
+
+    assert exit_code == 0
+    notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
+    assert "- Source: deployment.log" in notes
+    assert "acme-private-client" not in notes
