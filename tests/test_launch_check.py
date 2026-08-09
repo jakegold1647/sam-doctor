@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 def _load_script(root: Path):
     script_path = root / "scripts" / "check-launch.py"
@@ -109,6 +111,28 @@ def test_run_distribution_rejects_colliding_outputs_before_loading(tmp_path) -> 
         loader=lambda _path: (_ for _ in ()).throw(AssertionError("loaded")),
     )
     assert tracker.read_text(encoding="utf-8") == sentinel
+
+
+def test_run_distribution_rejects_hard_link_output_before_loading(tmp_path) -> None:
+    script = _load_script(Path(__file__).resolve().parents[1])
+    victim = tmp_path / "victim.json"
+    sentinel = "keep this unrelated file\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    output = tmp_path / "snapshot.json"
+    try:
+        output.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    assert not script.run_distribution(
+        tmp_path,
+        "jakegold1647/sam-doctor",
+        None,
+        output_format="json",
+        output=str(output),
+        loader=lambda _path: (_ for _ in ()).throw(AssertionError("loaded")),
+    )
+    assert victim.read_text(encoding="utf-8") == sentinel
 
 
 def test_run_outreach_rejects_summary_alias_before_loading(tmp_path) -> None:

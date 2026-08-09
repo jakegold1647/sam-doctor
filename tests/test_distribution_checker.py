@@ -76,6 +76,36 @@ def test_distribution_outputs_must_be_distinct_before_collection(
     assert first.read_text(encoding="utf-8") == sentinel
 
 
+def test_distribution_rejects_hard_link_output_before_collection(
+    tmp_path: Path, capsys
+) -> None:
+    mod = _load_distribution_script()
+    victim = tmp_path / "victim.json"
+    sentinel = "keep this unrelated file\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    output = tmp_path / "snapshot.json"
+    try:
+        output.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-distribution.py",
+            "--output-format",
+            "json",
+            "--output",
+            str(output),
+        ]
+        assert mod.main() == 2
+    finally:
+        sys.argv = argv_backup
+
+    assert "must not be a hard link" in capsys.readouterr().err
+    assert victim.read_text(encoding="utf-8") == sentinel
+
+
 def test_to_int_handles_non_numeric_values():
     mod = _load_distribution_script()
 

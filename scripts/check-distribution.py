@@ -56,6 +56,21 @@ def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
                 )
 
 
+def _ensure_output_targets_are_not_hard_links(named_paths: dict[str, str]) -> None:
+    """Reject output targets that could mutate an unrelated file through a link."""
+
+    for name, value in named_paths.items():
+        if not value:
+            continue
+        target = Path(value)
+        try:
+            hard_linked = target.exists() and target.stat().st_nlink > 1
+        except OSError as error:
+            raise ValueError(f"Could not inspect {name}: {error}") from error
+        if hard_linked:
+            raise ValueError(f"{name} must not be a hard link: {target}")
+
+
 @dataclass
 class Status:
     name: str
@@ -479,6 +494,7 @@ def main() -> int:
     }
     try:
         _ensure_distinct_paths(active_outputs)
+        _ensure_output_targets_are_not_hard_links(active_outputs)
     except ValueError as error:
         print(f"check-distribution: error: {error}", file=sys.stderr)
         return 2

@@ -65,6 +65,21 @@ def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
                 )
 
 
+def _ensure_output_targets_are_not_hard_links(named_paths: dict[str, str]) -> None:
+    """Reject output targets that could mutate an unrelated file through a link."""
+
+    for name, value in named_paths.items():
+        if not value:
+            continue
+        target = Path(value)
+        try:
+            hard_linked = target.exists() and target.stat().st_nlink > 1
+        except OSError as error:
+            raise ValueError(f"Could not inspect {name}: {error}") from error
+        if hard_linked:
+            raise ValueError(f"{name} must not be a hard link: {target}")
+
+
 def _to_bool(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
@@ -384,6 +399,7 @@ def main() -> int:
         _ensure_distinct_paths(
             {"outreach log": args.path, "--summary": args.summary}
         )
+        _ensure_output_targets_are_not_hard_links({"--summary": args.summary})
     except ValueError as error:
         print(f"check-outreach: error: {error}", file=sys.stderr)
         return 2

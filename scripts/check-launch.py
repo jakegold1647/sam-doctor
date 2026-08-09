@@ -30,6 +30,21 @@ def _ensure_distinct_paths(named_paths: dict[str, str]) -> None:
                 )
 
 
+def _ensure_output_targets_are_not_hard_links(named_paths: dict[str, str]) -> None:
+    """Reject output targets that could mutate an unrelated file through a link."""
+
+    for name, value in named_paths.items():
+        if not value:
+            continue
+        target = Path(value)
+        try:
+            hard_linked = target.exists() and target.stat().st_nlink > 1
+        except OSError as error:
+            raise ValueError(f"Could not inspect {name}: {error}") from error
+        if hard_linked:
+            raise ValueError(f"{name} must not be a hard link: {target}")
+
+
 def _load_script(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, str(path))
     if spec is None or spec.loader is None:
@@ -87,6 +102,13 @@ def run_distribution(
 ) -> bool:
     try:
         _ensure_distinct_paths(
+            {
+                "--output": output if output_format == "json" else "",
+                "--append-csv": append_csv,
+                "--summary": summary,
+            }
+        )
+        _ensure_output_targets_are_not_hard_links(
             {
                 "--output": output if output_format == "json" else "",
                 "--append-csv": append_csv,
@@ -172,6 +194,7 @@ def run_outreach(
         _ensure_distinct_paths(
             {"outreach log": outreach_log, "outreach summary": summary}
         )
+        _ensure_output_targets_are_not_hard_links({"outreach summary": summary})
     except ValueError as error:
         print(f"outreach output error: {error}", file=sys.stderr)
         return False

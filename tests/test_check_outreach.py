@@ -168,6 +168,41 @@ def test_outreach_summary_cannot_alias_input_csv(
     assert sample.read_text(encoding="utf-8") == sentinel
 
 
+def test_outreach_summary_rejects_hard_link_output(
+    tmp_path: Path, capsys
+) -> None:
+    module = _load_script(Path(__file__).resolve().parents[1])
+    sample = tmp_path / "outreach-log.csv"
+    sample.write_text(
+        "week,date,contact_channel,problem_area,conversation_stage,next_action,"
+        "voluntary_star,outcome,feedback_signal,repeat_contact\n",
+        encoding="utf-8",
+    )
+    victim = tmp_path / "victim.md"
+    sentinel = "keep this unrelated file\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    summary = tmp_path / "summary.md"
+    try:
+        summary.hardlink_to(victim)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    argv_backup = sys.argv
+    try:
+        sys.argv = [
+            "check-outreach.py",
+            str(sample),
+            "--summary",
+            str(summary),
+        ]
+        assert module.main() == 2
+    finally:
+        sys.argv = argv_backup
+
+    assert "must not be a hard link" in capsys.readouterr().err
+    assert victim.read_text(encoding="utf-8") == sentinel
+
+
 def test_growth_score_prefers_feedback_and_follow_through() -> None:
     module = _load_script(Path(__file__).resolve().parent.parent)
 
