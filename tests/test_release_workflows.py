@@ -1,4 +1,10 @@
+import gzip
+import io
+import os
 import re
+import subprocess
+import sys
+import tarfile
 from pathlib import Path
 
 import yaml
@@ -78,6 +84,60 @@ def test_release_build_is_manual_default_branch_and_read_only() -> None:
     assert "actions/upload-artifact@" in serialized_steps
     assert "contents: write" not in yaml.dump(build)
     assert "actions: write" not in yaml.dump(build)
+
+
+def test_release_build_pins_and_normalizes_package_timestamps() -> None:
+    path = ROOT / ".github" / "workflows" / "release.yml"
+    parsed = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    steps = yaml.dump(parsed["jobs"]["build"]["steps"])
+
+    assert "git show -s --format=%ct" in steps
+    assert "SOURCE_DATE_EPOCH" in steps
+    assert "scripts/reproducible-sdist.py dist/*.tar.gz" in steps
+
+
+def _write_test_archive(path: Path, *, member_mtime: int, gzip_mtime: int) -> None:
+    with (
+        path.open("wb") as raw,
+        gzip.GzipFile(fileobj=raw, mode="wb", mtime=gzip_mtime) as compressed,
+        tarfile.open(fileobj=compressed, mode="w") as archive,
+    ):
+        root = tarfile.TarInfo("sam_doctor-0.0.0")
+        root.type = tarfile.DIRTYPE
+        root.mtime = member_mtime
+        archive.addfile(root)
+
+        payload = b"stable source bytes\n"
+        member = tarfile.TarInfo("sam_doctor-0.0.0/README.md")
+        member.mtime = member_mtime
+        member.size = len(payload)
+        archive.addfile(member, io.BytesIO(payload))
+
+
+def test_reproducible_sdist_normalizer_produces_identical_bytes(tmp_path: Path) -> None:
+    first = tmp_path / "first.tar.gz"
+    second = tmp_path / "second.tar.gz"
+    _write_test_archive(first, member_mtime=1_700_000_001, gzip_mtime=1_700_000_002)
+    _write_test_archive(second, member_mtime=1_700_000_101, gzip_mtime=1_700_000_102)
+
+    environment = os.environ.copy()
+    environment["SOURCE_DATE_EPOCH"] = "1700000000"
+    command = [
+        sys.executable,
+        str(ROOT / "scripts" / "reproducible-sdist.py"),
+    ]
+    for archive in (first, second):
+        subprocess.run(
+            [*command, str(archive)],
+            check=True,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+
+    assert first.read_bytes() == second.read_bytes()
+    with tarfile.open(first, mode="r:gz") as archive:
+        assert all(member.mtime == 1_700_000_000 for member in archive.getmembers())
 
 
 def test_release_write_job_only_verifies_and_publishes_prebuilt_bytes() -> None:
