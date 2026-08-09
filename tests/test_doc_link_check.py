@@ -161,3 +161,52 @@ def test_every_relative_markdown_link_resolves() -> None:
 
     assert checked > 40, f"only {checked} relative links found; the scan probably broke"
     assert broken == [], "broken relative links:\n  " + "\n  ".join(broken)
+
+
+def test_roadmap_documentation_links_are_discovered(checker) -> None:
+    # Contributors are pointed at these as the authoritative reference for a rule
+    # they are about to write, and nothing checked them before.
+    links = checker.roadmap_documentation_links()
+
+    assert len(links) >= 10, f"only found {len(links)}; the roadmap parse looks broken"
+    for url, label in links.items():
+        assert url.startswith("https://")
+        assert label.startswith("rule-roadmap entry ")
+
+
+def test_the_roadmap_links_join_the_checked_set(checker, monkeypatch) -> None:
+    from sam_doctor.diagnostics import supported_rules
+
+    _stub_status(checker, monkeypatch, [404])
+    problems = checker.check_doc_links()
+
+    rule_urls = {rule.documentation_url for rule in supported_rules()}
+    roadmap_only = set(checker.roadmap_documentation_links()) - rule_urls
+    assert roadmap_only, "expected at least one link that only the roadmap uses"
+
+    reported = {problem.split(" returned ")[0] for problem in problems}
+    assert roadmap_only <= reported, f"unchecked roadmap links: {sorted(roadmap_only - reported)}"
+
+
+def test_a_roadmap_only_failure_names_the_entry(checker, monkeypatch) -> None:
+    # The message has to say where to fix it. "used by rule-roadmap entry 14" sends
+    # the maintainer straight to the paragraph; a bare URL does not.
+    from sam_doctor.diagnostics import supported_rules
+
+    _stub_status(checker, monkeypatch, [404])
+    rule_urls = {rule.documentation_url for rule in supported_rules()}
+    problems = checker.check_doc_links()
+
+    roadmap_only = set(checker.roadmap_documentation_links()) - rule_urls
+    for problem in problems:
+        url = problem.split(" returned ")[0]
+        if url in roadmap_only:
+            assert "rule-roadmap entry" in problem, problem
+
+
+def test_a_missing_roadmap_file_is_not_an_error(checker, monkeypatch, tmp_path) -> None:
+    # The checker must survive the file being renamed rather than crashing a
+    # scheduled run over it.
+    monkeypatch.setattr(checker, "_ROADMAP", tmp_path / "absent.md")
+
+    assert checker.roadmap_documentation_links() == {}

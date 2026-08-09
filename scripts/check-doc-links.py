@@ -18,6 +18,7 @@ Exit code 0 when every link resolves, 1 when any does not.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
 import urllib.error
@@ -72,12 +73,42 @@ def _status_with_retry(url: str) -> tuple[int | str, str]:
     return code, final
 
 
+_ROADMAP = REPO_ROOT / "docs" / "rule-roadmap.md"
+_ROADMAP_LINK = re.compile(
+    r"^## (?P<entry>\d+)\.[^\n]*$(?P<body>.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL
+)
+_DOCUMENTATION_FIELD = re.compile(r"\*\*Documentation link\.\*\*\s*<(?P<url>https://[^>]+)>")
+
+
+def roadmap_documentation_links() -> dict[str, str]:
+    """Map each roadmap entry's documentation link to a label naming that entry.
+
+    These are handed to contributors as the authoritative reference for a rule they
+    are about to write, which makes them worth the same treatment as a shipped
+    rule's link - and nothing was checking them. A contributor following a 404 to
+    research a failure is a worse first impression than a broken link in a finding,
+    because they have no way to know the link is stale rather than themselves lost.
+    """
+
+    if not _ROADMAP.is_file():
+        return {}
+
+    links: dict[str, str] = {}
+    for match in _ROADMAP_LINK.finditer(_ROADMAP.read_text(encoding="utf-8")):
+        field = _DOCUMENTATION_FIELD.search(match.group("body"))
+        if field:
+            links[field.group("url")] = f"rule-roadmap entry {match.group('entry')}"
+    return links
+
+
 def check_doc_links() -> list[str]:
     """Return one human-readable problem per unreachable documentation link."""
 
     urls: dict[str, list[str]] = {}
     for rule in supported_rules():
         urls.setdefault(rule.documentation_url, []).append(rule.id)
+    for url, label in roadmap_documentation_links().items():
+        urls.setdefault(url, []).append(label)
 
     problems: list[str] = []
     for url in sorted(urls):
@@ -101,7 +132,10 @@ def main() -> int:
     args = parser.parse_args()
 
     problems = check_doc_links()
-    link_count = len({rule.documentation_url for rule in supported_rules()})
+    link_count = len(
+        {rule.documentation_url for rule in supported_rules()}
+        | set(roadmap_documentation_links())
+    )
     if not problems:
         print(f"Documentation links OK: {link_count} unique links all resolve.")
         return 0
