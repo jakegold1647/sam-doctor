@@ -60,7 +60,7 @@ Researcher_Overview = "https://github.com/jakegold1647/sam-doctor/blob/main/RESE
 sam-doctor = "sam_doctor.cli:main"
 
 [project.optional-dependencies]
-dev = ["build>=1", "pytest>=8", "ruff>=0.6", "jsonschema>=4"]
+dev = ["build>=1", "pytest>=8", "ruff>=0.6", "jsonschema>=4", "pyyaml>=6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
