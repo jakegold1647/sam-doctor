@@ -4,7 +4,12 @@
 Usage:
   python scripts/sync-site-metadata.py
 
-This keeps the public site and README release display aligned with pyproject.toml.
+This keeps the public site's release display aligned with pyproject.toml.
+
+The README deliberately carries no version: it installs unpinned from PyPI and
+points at `@<tag>` for source installs, so there is nothing here to sync. Its
+three anchors were removed once this script started reporting dead ones - they
+had matched nothing since the README was rewritten on 2026-08-05.
 """
 
 from __future__ import annotations
@@ -22,15 +27,9 @@ except ModuleNotFoundError:  # pragma: no cover
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-README_PATH = PROJECT_ROOT / "README.md"
 INDEX_PATH = PROJECT_ROOT / "site" / "index.html"
 PYPROJECT_PATH = PROJECT_ROOT / "pyproject.toml"
-CURRENT_RELEASE_PATTERN = re.compile(r"Current release: \*\*v(?P<version>\d+\.\d+\.\d+)\*\*")
 SOFTWARE_VERSION_PATTERN = re.compile(r'"softwareVersion":\s*"(?P<version>\d+\.\d+\.\d+)"')
-README_PIN_PATTERN = re.compile(r"sam-doctor==(?P<version>\d+\.\d+\.\d+)")
-README_GITPIN_PATTERN = re.compile(
-    r'sam-doctor @ git\+https://github\.com/jakegold1647/sam-doctor\.git@v(?P<version>\d+\.\d+\.\d+)'
-)
 INDEX_INSTALL_HEADING_PATTERN = re.compile(
     r'(<h2 id="install-title">)Install v(?P<version>\d+\.\d+\.\d+) in one command\.</h2>'
 )
@@ -51,52 +50,68 @@ def _read_version() -> str:
     return version.strip()
 
 
-def sync_metadata(write: bool = True) -> tuple[int, str]:
+def _apply_anchors(
+    text: str, anchors: list[tuple[str, re.Pattern[str], str]]
+) -> tuple[str, list[str]]:
+    """Rewrite each anchor, reporting any whose pattern no longer matches.
+
+    Every check here is a regex substitution, so a pattern that stops matching
+    does not report a problem - it quietly rewrites nothing, the text compares
+    equal to itself, and --check prints "metadata is in sync". Rewording a
+    heading is enough to switch off its version check permanently, and the next
+    release ships a page advertising the previous version with the release gate
+    green. A missing anchor is therefore a failure in its own right: it means
+    this script has stopped watching something it claims to watch.
+    """
+
+    missing: list[str] = []
+    for label, pattern, replacement in anchors:
+        text, count = pattern.subn(lambda _match, r=replacement: r, text)
+        if count == 0:
+            missing.append(label)
+    return text, missing
+
+
+def sync_metadata(write: bool = True) -> tuple[int, str, list[str]]:
     version = _read_version()
     print(f"syncing metadata for version: {version}")
 
     changes = 0
-    readme_text = README_PATH.read_text(encoding="utf-8")
-    updated_readme = CURRENT_RELEASE_PATTERN.sub(
-        lambda _match: f"Current release: **v{version}**",
-        readme_text,
-    )
-    updated_readme = README_PIN_PATTERN.sub(
-        lambda _match: f"sam-doctor=={version}",
-        updated_readme,
-    )
-    updated_readme = README_GITPIN_PATTERN.sub(
-        lambda _match: f"sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@v{version}",
-        updated_readme,
-    )
-    if updated_readme != readme_text:
-        if write:
-            README_PATH.write_text(updated_readme, encoding="utf-8")
-        changes += 1
+    missing: list[str] = []
 
     index_text = INDEX_PATH.read_text(encoding="utf-8")
-    updated_index = SOFTWARE_VERSION_PATTERN.sub(
-        lambda _match: f'"softwareVersion": "{version}"',
+    updated_index, index_missing = _apply_anchors(
         index_text,
+        [
+            (
+                'site/index.html: "softwareVersion" in structured data',
+                SOFTWARE_VERSION_PATTERN,
+                f'"softwareVersion": "{version}"',
+            ),
+            (
+                "site/index.html: install heading",
+                INDEX_INSTALL_HEADING_PATTERN,
+                f'<h2 id="install-title">Install v{version} in one command.</h2>',
+            ),
+            (
+                "site/index.html: release-tag link",
+                INDEX_RELEASE_LINK_PATTERN,
+                f"https://github.com/jakegold1647/sam-doctor/releases/tag/v{version}",
+            ),
+            (
+                "site/index.html: 'View vX.Y.Z release notes' label",
+                INDEX_RELEASE_LINK_LABEL_PATTERN,
+                f"View v{version} release notes",
+            ),
+        ],
     )
-    updated_index = INDEX_INSTALL_HEADING_PATTERN.sub(
-        lambda _match: f'<h2 id="install-title">Install v{version} in one command.</h2>',
-        updated_index,
-    )
-    updated_index = INDEX_RELEASE_LINK_PATTERN.sub(
-        lambda _match: f"https://github.com/jakegold1647/sam-doctor/releases/tag/v{version}",
-        updated_index,
-    )
-    updated_index = INDEX_RELEASE_LINK_LABEL_PATTERN.sub(
-        lambda _match: f"View v{version} release notes",
-        updated_index,
-    )
+    missing.extend(index_missing)
     if updated_index != index_text:
         if write:
             INDEX_PATH.write_text(updated_index, encoding="utf-8")
         changes += 1
 
-    return changes, version
+    return changes, version, missing
 
 
 def _parse_args() -> argparse.Namespace:
@@ -113,7 +128,18 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    initial_changes, _ = sync_metadata(write=not args.check)
+    initial_changes, _, missing = sync_metadata(write=not args.check)
+    if missing:
+        # Fails in both modes. In --check it would otherwise pass while blind; in
+        # write mode the sync silently leaves that spot on the old version.
+        print("these version anchors no longer match anything:")
+        for label in missing:
+            print(f"- {label}")
+        print(
+            "the text they look for was reworded or removed; update the pattern "
+            "in scripts/sync-site-metadata.py so the version stays checked"
+        )
+        return 1
     if args.check:
         if initial_changes:
             print("metadata is out of sync; run without --check to update files")
