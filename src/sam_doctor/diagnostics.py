@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.parse
 from dataclasses import dataclass
 from html import escape
 
@@ -1937,9 +1938,26 @@ _SARIF_LEVELS = {"high": "error", "medium": "warning", "low": "note"}
 
 
 def _sarif_artifact_uri(source_name: str) -> str:
-    """A redacted source name as a forward-slash relative URI."""
+    """A redacted source name as a forward-slash relative URI.
 
-    return redact(source_name).replace("\\", "/")
+    SARIF's `artifactLocation.uri` is a URI reference, not a file path, and the
+    difference is not cosmetic. A `#` in a filename starts a fragment, so
+    `logs/#build.log` reaches a consumer as the path `logs/` with a fragment
+    attached and the finding is attributed to the directory rather than the file.
+    A space is not allowed in a URI at all, and a strict consumer may reject the
+    whole document over one - which loses every finding in it, not just that one.
+
+    Percent-encoding the path fixes both. Only `/` stays literal, so separators
+    survive and everything else is encoded - including the colon after a Windows
+    drive letter. That last one looks like over-encoding and is not: RFC 3986
+    forbids a colon in the first segment of a relative-path reference precisely
+    because it is ambiguous, and `C:/builds/deploy.log` really does parse with
+    `C` as the scheme, which silently drops the drive letter from the path a
+    consumer sees. `C%3A/builds/deploy.log` keeps it.
+    """
+
+    forward_slashed = redact(source_name).replace("\\", "/")
+    return urllib.parse.quote(forward_slashed, safe="/")
 
 
 def sarif_report(results: list[tuple[str, list[Finding]]]) -> str:
