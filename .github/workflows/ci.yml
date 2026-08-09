@@ -36,7 +36,7 @@ jobs:
         run: python scripts/check-rule-fixtures.py --format github
       - name: Error page mapping gate (annotated)
         run: python scripts/check-error-pages.py --format github
-      - run: python -m pytest -q
+      - run: python -m pytest -q --cov
       - run: rm -rf dist
       - run: python -m build
       # Was an inline bash block, which scripts/check-pr.py had no way to mirror,
@@ -69,7 +69,7 @@ jobs:
       - run: python scripts/check-error-pages.py
       # The action-wrapper tests skip themselves here: they need a WSL-style
       # bash, and the composite action is exercised directly below instead.
-      - run: python -m pytest -q
+      - run: python -m pytest -q --cov
       - run: python -m sam_doctor.cli demo
       - name: Exercise batch, packet, and init path handling on Windows paths
         shell: bash

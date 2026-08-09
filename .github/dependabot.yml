@@ -1,0 +1,29 @@
+version: 2
+
+# Two ecosystems, and only two things to keep current: the actions this project's
+# own workflows pin, and its dev-only dependencies. The shipped wheel declares no
+# runtime dependencies at all, which is a deliberate part of the offline promise -
+# so there is nothing for a user of the package to update, and nothing here that
+# can change what `sam-doctor diagnose` does to a log.
+updates:
+  # Actions are pinned by major tag (actions/checkout@v4), so this mostly catches a
+  # new major that needs a look rather than a stream of patch bumps.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+
+  # pytest, ruff, build, jsonschema, pyyaml, pytest-cov. A ruff release can add
+  # lint rules that fail the gate, which is exactly the sort of thing worth
+  # arriving as one reviewable pull request rather than as a surprise in CI on an
+  # unrelated change.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
