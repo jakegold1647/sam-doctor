@@ -4,6 +4,22 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Coloured logs no longer lose findings.** The SAM CLI colours its own output,
+  as do most build tools, so a log saved from a terminal or downloaded raw from a
+  CI provider can read `ESC[31mFAILED ESC[0m` where a rule pattern expects
+  `FAILED`. The escape sits inside the word, which is the worst place for it: the
+  line reads normally to a human, the pattern quietly does not match, and the
+  finding is simply absent - no error, no warning, just a shorter report.
+  Colouring the words a CI provider actually colours dropped one of the two
+  findings on the bundled CloudFormation sample. Escape sequences are now removed
+  before anything tries to match, which also covers the whole-log suppression
+  search and keeps evidence snippets free of escapes in JSON and SARIF output.
+
+  Timestamp prefixes, CRLF, lone carriage returns from progress bars, indented
+  output and non-breaking spaces were checked at the same time and needed no
+  handling, since patterns are searched within a line. They are pinned by tests
+  anyway, so a later change to normalization cannot break them either.
+
 - **The weekly documentation-link check no longer cries wolf on one bad
   request.** It made a single attempt per URL and treated any failure as rot, so
   one timeout or one 503 from a documentation host would report a healthy link as

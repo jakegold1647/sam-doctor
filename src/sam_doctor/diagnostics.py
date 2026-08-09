@@ -1614,6 +1614,37 @@ def supported_rules() -> tuple[Rule, ...]:
     return _RULES
 
 
+_ANSI_ESCAPE = re.compile(
+    r"""
+      \x1b\[ [0-9;:?]* [ -/]* [@-~]        # CSI: colour, bold, cursor movement
+    | \x1b\] [^\x07\x1b]* (?:\x07|\x1b\\)  # OSC: window titles, hyperlinks
+    | \x1b [@-Z\\-_]                       # two-character escapes
+    """,
+    re.VERBOSE,
+)
+
+
+def _strip_ansi(text: str) -> str:
+    r"""Remove terminal escape sequences before anything tries to match text.
+
+    The SAM CLI colours its own output and so do most build tools, so a log
+    saved from a terminal or downloaded raw from a CI provider can read
+    `\x1b[31mFAILED\x1b[0m` where a rule pattern expects `FAILED`. The colour
+    sits inside the word, which is the worst place for it: the line still looks
+    entirely normal to a human reading it, the pattern quietly does not match,
+    and the finding is simply absent. Measured on the bundled CloudFormation
+    sample, colouring the words a CI provider actually colours dropped one of
+    its two findings.
+
+    Timestamp prefixes, CRLF, lone carriage returns from progress bars, leading
+    whitespace and non-breaking spaces were all checked at the same time and
+    need no handling - patterns are searched within a line, so a prefix is
+    harmless. Only the escapes broke matching.
+    """
+
+    return _ANSI_ESCAPE.sub("", text)
+
+
 def _compact_evidence(line: str) -> str:
     """Normalize a log line and keep reports readable for noisy CI output."""
 
@@ -1692,7 +1723,7 @@ def likely_error_excerpt(
     error at all.
     """
 
-    lines = text.splitlines()
+    lines = _strip_ansi(text).splitlines()
     for index, line in enumerate(lines):
         if not _LIKELY_ERROR_LINE.search(line):
             continue
@@ -1713,6 +1744,10 @@ def diagnose(text: str) -> list[Finding]:
     deployment log is chronological evidence, and the earlier failure is the
     more useful one to inspect before downstream rollback messages.
     """
+
+    # Before anything matches: escape sequences inside a word defeat every
+    # pattern below, including the whole-log `suppressed_by` search.
+    text = _strip_ansi(text)
 
     combined = _candidate_pattern()
     candidate_lines = [
