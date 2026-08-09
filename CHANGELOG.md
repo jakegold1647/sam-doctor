@@ -4,6 +4,22 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The stability promise now checks itself.** `docs/stability.md` names the
+  subcommands covered by the CLI-surface guarantee, and the list had drifted:
+  `request-packet` has shipped for a while and was not in it, so a reader could
+  not tell whether it was covered. It is listed now, and a test compares that
+  clause against the subcommands the parser actually registers, so a new one
+  cannot ship without someone deciding whether it belongs under the promise.
+
+  The same file promises that rule ids never change, because integrations are
+  told to match on `rule_id` rather than the title - but nothing compared the
+  catalog against the ids that had actually been released. A frozen baseline of
+  the 48 ids shipped in v0.11.0 is now asserted to still exist, so removing or
+  renaming one fails the suite instead of quietly breaking someone's pipeline.
+  Adding rules needs no maintenance; only a release appends to the baseline.
+  A third test guards the guard, since an empty baseline would pass vacuously.
+  Verified against v0.11.0: 48 ids then, 54 now, none removed or renamed.
+
 - **`init` wrote a GitHub expression that GitHub would not have interpolated.**
   The generated workflow ends with a commented-out follow-up step for the user
   to uncomment, and its `echo` referenced

@@ -19,9 +19,11 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
   reworded, and the catalog check rejects duplicates. Match on the id, not
   the title.
 - **CLI surface.** The subcommands (`diagnose`, `demo`, `rules`, `schemas`,
-  `packet`, `batch`, `init`) and their documented flags. Flags may be added;
-  documented flags will not be removed or change meaning within a major
-  version.
+  `packet`, `request-packet`, `batch`, `init`) and their documented flags. Flags
+  may be added; documented flags will not be removed or change meaning within a
+  major version. A test asserts this list matches the subcommands the CLI
+  actually registers, so a new one cannot ship without a decision about whether
+  it belongs under the promise.
 - **Exit codes.** As documented in `docs/cli-exit-and-action-exit-codes.md`.
   `0` and `1` keep their meanings; new nonzero codes may be added for new
   failure classes.
