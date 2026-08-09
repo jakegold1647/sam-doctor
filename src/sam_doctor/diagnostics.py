@@ -1559,7 +1559,14 @@ _RULES = (
         id="sam.deploy.interactive-confirmation-required",
         title="SAM deployment prompted for interactive changeset confirmation",
         confidence="medium",
-        patterns=(r"Deploy this changeset\?\s*\[y/N\]:", r"Aborted!"),
+        # `Aborted!` alone is deliberately not matched. Many tools print it -
+        # docker, pip, terraform, any script interrupted with Ctrl-C - and on its
+        # own it is no evidence that an *interactive changeset prompt* was the
+        # cause, which is what this rule tells the reader to fix with
+        # `--no-confirm-changeset`. Primary patterns are matched per line, so the
+        # word cannot be qualified by context here; the prompt itself is the
+        # signal, and SAM prints it immediately above its own `Aborted!`.
+        patterns=(r"Deploy this changeset\?\s*\[y/N\]:",),
         explanation=(
             "SAM stopped at an interactive confirm step and could not continue in a "
             "non-interactive pipeline."
@@ -1578,7 +1585,12 @@ _RULES = (
         patterns=(
             r"duplicate.*OPTIONS",
             r"OPTIONS.*(?:already exists|duplicate)",
-            r"(?:CORS|preflight).{0,80}(?:conflict|error|failed|duplicate|overlap)",
+            # `error` and `failed` used to be in this alternation, and across an
+            # 80-character window from the word CORS they matched ordinary
+            # configuration output - "Configuring CORS ... - no errors" reported a
+            # preflight conflict. They add almost nothing: a real conflict says so
+            # in the words kept below, or is caught by the OPTIONS patterns.
+            r"(?:CORS|preflight).{0,80}(?:conflict|duplicate|overlap)",
         ),
         explanation=(
             "SAM can generate CORS preflight handling. Defining an overlapping OPTIONS "
