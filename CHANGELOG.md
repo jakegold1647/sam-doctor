@@ -4,6 +4,28 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **A release tag that disagreed with the packaged version would have shipped
+  silently.** Nothing compared the pushed tag to `pyproject.toml`. Tag `v0.12.0`
+  while the package still said `0.11.0` and the chain fails without failing:
+  `sync-site-metadata --check` passes because the site matches the *package*,
+  the readiness check passes because pyproject and `__init__` agree with each
+  other, `python -m build` produces `0.11.0` artifacts, `gh release create`
+  attaches them to `v0.12.0` regardless, and the PyPI step - correctly using
+  `skip-existing` so re-dispatching a recovery is a no-op - sees `0.11.0`
+  already published and does nothing. The outcome is a GitHub release tagged for
+  a version it does not contain, PyPI unchanged, and no error anywhere.
+
+  `check-launch-readiness.py` takes a `--tag` now, and `release.yml` passes
+  `github.ref_name`. The check is opt-in so the scheduled monitoring run, which
+  has no tag, does not start failing. A tag with or without the `v` prefix is
+  accepted; a mismatch exits 1 and stops the release before anything is
+  published.
+
+  Also audited every flag the workflows pass to a repo script against what that
+  script declares - eight invocations, no drift. Worth checking because release
+  and schedule workflows only run at release time, so a renamed flag there stays
+  invisible until the moment it costs the most.
+
 - **Froze what the shipped sample logs report.** `src/sam_doctor/data/*.txt` go
   inside the wheel: `sam-doctor demo` runs one, the README quotes them, and the
   Action's own CI asserts a finding count against

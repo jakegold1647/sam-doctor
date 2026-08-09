@@ -239,3 +239,60 @@ def test_launch_readiness_skips_remote_metadata_without_token(tmp_path: Path) ->
     )
     assert result.failed == 0
     assert result.passed == 6
+
+
+def _run_with_tag(module, root: Path, tag: str):
+    return module._run_checks_with_options(
+        root,
+        repo="jakegold1647/sam-doctor",
+        token=None,
+        check_release_state=False,
+        tag=tag,
+    )
+
+
+def test_a_tag_matching_the_packaged_version_passes(tmp_path: Path) -> None:
+    _create_repo(tmp_path, "1.2.3")
+    module = _load_module(tmp_path)
+
+    result = _run_with_tag(module, tmp_path, "v1.2.3")
+
+    assert result.ok, "a correct tag must not fail the readiness check"
+
+
+def test_a_tag_that_disagrees_with_the_packaged_version_fails(tmp_path: Path) -> None:
+    # This is the check's whole reason for existing. Without it the release
+    # builds the packaged version, `gh release create` attaches those artifacts
+    # to the mismatched tag anyway, and the PyPI step - correctly using
+    # skip-existing so a re-dispatch is a no-op - sees that version already
+    # published and does nothing. A release tagged for a version it does not
+    # contain, and nothing fails to say so.
+    _create_repo(tmp_path, "1.2.3")
+    module = _load_module(tmp_path)
+
+    result = _run_with_tag(module, tmp_path, "v1.3.0")
+
+    assert not result.ok
+    assert result.failed == 1
+
+
+def test_the_tag_check_is_opt_in(tmp_path: Path) -> None:
+    # Scheduled monitoring runs have no tag, and must not start failing.
+    _create_repo(tmp_path, "1.2.3")
+    module = _load_module(tmp_path)
+
+    without = module._run_checks_with_options(
+        tmp_path, repo="jakegold1647/sam-doctor", token=None, check_release_state=False
+    )
+    with_tag = _run_with_tag(module, tmp_path, "v1.2.3")
+
+    assert without.ok
+    # The tag check adds exactly one assertion when a tag is supplied.
+    assert with_tag.passed == without.passed + 1
+
+
+def test_a_tag_without_the_v_prefix_is_accepted(tmp_path: Path) -> None:
+    _create_repo(tmp_path, "1.2.3")
+    module = _load_module(tmp_path)
+
+    assert _run_with_tag(module, tmp_path, "1.2.3").ok

@@ -264,11 +264,18 @@ def _is_prerelease(version: str) -> bool:
     return "-" in version
 
 
+def _version_from_tag(tag: str) -> str:
+    """Strip a leading `v` from a release tag, leaving the version."""
+
+    return tag.removeprefix("v")
+
+
 def _run_checks_with_options(
     root: Path,
     repo: str,
     token: str | None,
     check_release_state: bool = True,
+    tag: str | None = None,
 ) -> _CheckResult:
     result = _CheckResult()
     pyproject_version = _version_from_pyproject(root)
@@ -280,6 +287,22 @@ def _run_checks_with_options(
         pyproject_version == init_version,
         f"pyproject={pyproject_version}, __init__={init_version}",
     )
+
+    # A tag that disagrees with the packaged version fails silently rather than
+    # loudly, which is the reason for this check. `python -m build` produces
+    # artifacts for the *packaged* version; `gh release create` attaches them to
+    # the tag regardless; and the PyPI step - correctly using `skip-existing` so
+    # that re-dispatching a recovery is a no-op - sees that version already
+    # published and does nothing. The result is a release tagged for a version it
+    # does not contain, PyPI unchanged, and no failure anywhere to notice.
+    if tag:
+        tag_version = _version_from_tag(tag)
+        result.report(
+            "tag matches packaged version",
+            tag_version == pyproject_version,
+            f"tag={tag} (version {tag_version}), pyproject={pyproject_version}",
+        )
+
     launch_assets_ok, launch_assets_detail = _launch_asset_checks(root)
     result.report("launch assets", launch_assets_ok, launch_assets_detail)
 
@@ -356,6 +379,15 @@ def main() -> int:
         action="store_true",
         help="Skip the remote stable/prerelease state check (use for scheduled monitoring).",
     )
+    parser.add_argument(
+        "--tag",
+        default="",
+        help=(
+            "Release tag being published (for example v0.11.0). When given, the "
+            "tag must match the packaged version; a mismatch would otherwise "
+            "publish a release tagged for a version it does not contain."
+        ),
+    )
     args = parser.parse_args()
     root = Path(args.repo_root).resolve()
     if not root.exists():
@@ -371,6 +403,7 @@ def main() -> int:
         repo=args.repo,
         token=token,
         check_release_state=not args.skip_release_state,
+        tag=args.tag or None,
     )
     print(f"checks passed: {result.passed}, checks failed: {result.failed}")
     return 0 if result.ok else 1
