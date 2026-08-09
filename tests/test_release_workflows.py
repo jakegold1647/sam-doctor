@@ -2,6 +2,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+_IMMUTABLE_ACTION_REF = re.compile(r"^[^@\s]+@[0-9a-f]{40}$")
+_USES_LINE = re.compile(r"^\s*(?:-\s*)?uses:\s*(\S+)")
 
 
 def _project_version() -> str:
@@ -9,6 +11,35 @@ def _project_version() -> str:
     match = re.search(r'^version = "([^"]+)"$', pyproject, flags=re.MULTILINE)
     assert match is not None
     return match.group(1)
+
+
+def test_external_workflow_actions_use_immutable_commit_shas() -> None:
+    workflow_dir = ROOT / ".github" / "workflows"
+    workflows = sorted(
+        path
+        for path in workflow_dir.rglob("*")
+        if path.suffix in {".yml", ".yaml"}
+    )
+    unpinned: list[str] = []
+
+    for workflow in workflows:
+        for line_number, line in enumerate(
+            workflow.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            match = _USES_LINE.match(line)
+            if match is None:
+                continue
+            target = match.group(1).strip("'\"")
+            if target.startswith("./"):
+                continue
+            if _IMMUTABLE_ACTION_REF.fullmatch(target) is None:
+                relative_path = workflow.relative_to(ROOT)
+                unpinned.append(f"{relative_path}:{line_number}: {target}")
+
+    assert not unpinned, (
+        "External workflow actions must use a 40-character lowercase commit SHA:\n"
+        + "\n".join(unpinned)
+    )
 
 
 def test_stable_release_dispatches_pypi_from_main() -> None:

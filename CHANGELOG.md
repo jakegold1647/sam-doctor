@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Repository workflows now pin every external GitHub Action to an immutable
+  commit.** Readable version comments and Dependabot keep updates reviewable,
+  while a static gate prevents a mutable tag or branch from returning to CI,
+  Pages deployment, release creation, or trusted PyPI publishing.
+
 - **Packet artifact filenames can no longer escape their output directory.**
   `packet` and `request-packet` reject traversal and absolute outside paths for
   every filename option before writing an artifact, while retaining nested

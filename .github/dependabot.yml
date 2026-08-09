@@ -6,8 +6,9 @@ version: 2
 # so there is nothing for a user of the package to update, and nothing here that
 # can change what `sam-doctor diagnose` does to a log.
 updates:
-  # Actions are pinned by major tag (actions/checkout@v4), so this mostly catches a
-  # new major that needs a look rather than a stream of patch bumps.
+  # Actions are pinned to immutable commit SHAs with readable ref comments.
+  # Dependabot refreshes those pins so each upstream update stays explicit and
+  # reviewable.
   - package-ecosystem: github-actions
     directory: /
     schedule:
