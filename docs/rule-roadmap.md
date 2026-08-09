@@ -547,12 +547,14 @@ reading their own template.
 **Sanitized signal lines.**
 
 ```text
-Resource handler returned message: "Value (Pre-deploy Lambda -> RDS + VPC endpoints) for parameter GroupDescription is invalid. Character sets beyond ASCII are not supported"
+Resource handler returned message: "Value (Pre-deploy Lambda → RDS plus VPC endpoints) for parameter GroupDescription is invalid. Character sets beyond ASCII are not supported"
 ```
 
 **Pattern hints.** Anchor on `Character sets beyond ASCII are not supported`. The
 parameter name in the message varies by resource type, so do not hard-code
-`GroupDescription`; capture nothing and let the evidence line carry it.
+`GroupDescription`; capture nothing and let the evidence line carry it. Add the
+exact phrase to the generic resource-failure rule's per-line
+`excluded_line_patterns`, rather than suppressing that rule for the whole log.
 
 **Nearby non-matches to test.** A different `is invalid` parameter rejection (for
 example a value that breaks a length limit), which must keep producing the
@@ -560,11 +562,14 @@ generic resource-failure finding rather than this one.
 
 **Safe verification steps to include.** Name the offending property from the
 evidence line, and suggest finding the character rather than retyping the value
-blindly - `grep -n -P "[^[:ascii:]]" template.yaml` locates it. Worth saying that
-the fix is to replace the character, not to remove the description.
+blindly - `python -c "from pathlib import Path; p=Path('template.yaml'); print([n for n,s in enumerate(p.read_text(encoding='utf-8').splitlines(),1) if not s.isascii()])"`
+locates it. Worth saying that the fix is to replace the character with wording
+allowed by the property's documentation, not to remove the description. For the
+sample, use `to`, not `->`: the documented `GroupDescription` character set does
+not include `>`.
 
 **Documentation link.**
-<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html>
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-ec2-securitygroup.html>
 
 **Suggested confidence.** high.
 
@@ -572,16 +577,16 @@ the fix is to replace the character, not to remove the description.
 
 ## 14. CloudFormation early validation rejected a property
 
-**Status:** open, from the field measurement. This one is newer behaviour and the
-sampled log did not include the full message, so a contributor should collect a
-complete example before writing the pattern. Tracked in
-[issue #63](https://github.com/jakegold1647/sam-doctor/issues/63) - claim it
-there.
+**Status:** needs a sanitized reproduction, from the field measurement. The
+sampled log did not include the full message, so collect a complete example before
+writing the pattern. [Issue #63](https://github.com/jakegold1647/sam-doctor/issues/63)
+has the requested evidence and acceptance criteria.
 
 **Failure family.** CloudFormation now validates some properties before the
-change set is created, and reports the failure as an `AWS::EarlyValidation::`
-pseudo-resource inside the usual waiter error. Because the waiter wrapper is what
-surfaces, the generic changeset rule fires and sends the reader to
+change set is created, and reports the failure as an
+`AWS::EarlyValidation::PropertyValidation` pseudo-resource inside the usual
+waiter error. Because the waiter wrapper is what surfaces, the generic changeset
+rule fires and sends the reader to
 `samconfig.toml` - the wrong place entirely, since the template is what was
 rejected.
 
@@ -591,21 +596,23 @@ rejected.
 Waiter ChangeSetCreateComplete failed: AWS::EarlyValidation::PropertyValidation
 ```
 
-**Pattern hints.** Anchor on `AWS::EarlyValidation::`, which is stable across the
-specific validation that failed. The interesting design question is precedence:
-this should claim the line ahead of the generic changeset rule, which means
+**Pattern hints.** Anchor on the exact `AWS::EarlyValidation::PropertyValidation`
+marker. Do not match the separate `AWS::EarlyValidation::ResourceExistenceCheck`
+family. The interesting design question is precedence: this should claim the line
+ahead of the generic changeset rule, which means
 `excluded_line_patterns` on that rule rather than a whole-log suppression - see
 the note on choosing between them in the contributing guide.
 
 **Nearby non-matches to test.** An ordinary `Waiter ChangeSetCreateComplete
 failed` with a `Status: FAILED` reason, which must keep its existing finding.
 
-**Safe verification steps to include.** Read the property named after the
-pseudo-resource; `aws cloudformation describe-change-set` on the failed change set
-returns the full reason when the CLI output was truncated.
+**Safe verification steps to include.** Use `aws cloudformation describe-events`
+to inspect `LogicalResourceId`, `ResourceType`, `ValidationPath`, and
+`ValidationStatusReason`, then compare that path with the submitted or generated
+template. The generic change-set status reason alone may not contain those details.
 
 **Documentation link.**
-<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html>
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/validate-stack-deployments.html>
 
 **Suggested confidence.** medium - the sample is incomplete, so a narrow pattern
 with an honest confidence beats a broad one.
@@ -626,8 +633,8 @@ summary line alone tells the reader nothing actionable.
 **Sanitized signal lines.**
 
 ```text
+[[E1031: ToJsonString validation of parameters] (Fn::ToJsonString is not supported without 'AWS::LanguageExtensions' transform) matched 17]
 Error: Linting failed. At least one linting rule was matched to the provided template.
-[E1031: ToJsonString validation of parameters] (Fn::ToJsonString is not supported without 'AWS::LanguageExtensions' transform)
 ```
 
 **Pattern hints.** Match `Linting failed. At least one linting rule was matched`.
@@ -635,15 +642,15 @@ The useful work is in the explanation rather than the pattern: point the reader 
 the `E`/`W` codes above the summary line, since those name the actual problem. A
 rule that only repeats "linting failed" is not worth adding.
 
-**Nearby non-matches to test.** A successful `sam validate` run, and a cfn-lint
-warning-only run that does not fail the command.
+**Nearby non-matches to test.** A successful `sam validate` run, a standalone
+cfn-lint code, `InvalidSamDocumentException`, and a named property mismatch.
 
 **Safe verification steps to include.** Re-run `sam validate --lint` and read the
-rule codes; look a code up with `cfn-lint --docs E1031` rather than guessing from
-the message.
+nearby rule codes; use the official cfn-lint rule catalog or `cfn-lint
+--list-rules` rather than guessing from the message.
 
 **Documentation link.**
-<https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html>
+<https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/validate-cfn-lint.html>
 
 **Suggested confidence.** medium.
 
@@ -666,19 +673,18 @@ CodeBuild) that this project does not claim to cover.
 Entries 1 to 12 have all landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. The two open requests —
-[#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
-and attachment quotas) and
-[#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
-`TooManyRequestsException`) — are labelled `good first issue` and are held for
-first-time contributors, so please leave those two even if you are able to do
-them quickly.
+is the available-work list. Four requests are ready for first-time contributors:
+[#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
+attachment quotas), [#25](https://github.com/jakegold1647/sam-doctor/issues/25)
+(API Gateway `TooManyRequestsException`),
+[#62](https://github.com/jakegold1647/sam-doctor/issues/62) (non-ASCII resource
+properties), and [#64](https://github.com/jakegold1647/sam-doctor/issues/64)
+(`sam validate --lint`). They are labelled `good first issue`, `status: ready`,
+and `mentor available`; please leave them for new contributors.
 
-Entries 13 to 15 now have tracking issues of their own —
-[#62](https://github.com/jakegold1647/sam-doctor/issues/62),
-[#63](https://github.com/jakegold1647/sam-doctor/issues/63), and
-[#64](https://github.com/jakegold1647/sam-doctor/issues/64) — so claiming
-happens there rather than by opening a fresh rule request.
+[#63](https://github.com/jakegold1647/sam-doctor/issues/63) is intentionally
+`status: needs-repro`, so contribute a complete sanitized example there before
+implementing a rule.
 
 Nothing is currently claimed.
 
