@@ -32,18 +32,21 @@ jobs:
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
           HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
         run: |
           if [ -n "$BASE" ]; then
             RANGE="$BASE..$HEAD"
             echo "Scanning pull request commits: $RANGE"
           else
-            RANGE="${{ github.event.before }}..$HEAD"
-            # A new branch or force-push can leave 'before' unusable; fall back to the tip.
-            if ! git rev-parse --quiet --verify "${{ github.event.before }}^{commit}" >/dev/null 2>&1; then
-              RANGE="$HEAD~1..$HEAD"
-              echo "Previous SHA unavailable; scanning tip commit only"
-            else
+            if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              RANGE="$HEAD"
+              echo "Initial push; scanning all commits reachable from $HEAD"
+            elif git rev-parse --quiet --verify "${BEFORE}^{commit}" >/dev/null 2>&1; then
+              RANGE="$BEFORE..$HEAD"
               echo "Scanning pushed commits: $RANGE"
+            else
+              echo "::error::Previous SHA $BEFORE is unavailable; refusing a partial commit scan"
+              exit 1
             fi
           fi
 
@@ -61,7 +64,12 @@ jobs:
           ATTRIBUTABLE='noreply@github\.com|@users\.noreply\.github\.com'
           FAILED=0
 
-          for sha in $(git rev-list "$RANGE" 2>/dev/null || echo "$HEAD"); do
+          COMMITS=$(git rev-list "$RANGE" 2>/dev/null) || {
+            echo "::error::Unable to enumerate the complete commit range $RANGE"
+            exit 1
+          }
+
+          for sha in $COMMITS; do
             SHORT=$(git rev-parse --short "$sha")
             MSG=$(git log -1 --format='%B' "$sha")
 
