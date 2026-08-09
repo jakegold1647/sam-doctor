@@ -238,3 +238,28 @@ def test_the_readme_names_every_redaction_pattern_family() -> None:
         "Docker Hub",
     ):
         assert phrase in claim, f"the README no longer mentions {phrase!r}"
+
+
+def test_every_pattern_is_actually_applied() -> None:
+    """A pattern that is defined but never used protects nothing, silently.
+
+    This morning's site-QA gate had exactly that shape: a check for `javascript:`
+    links sat below a filter that had already dropped them, so the guard could
+    never fire and read as coverage for years. Eighteen patterns applied by hand in
+    a fixed order is the same risk - one can be added to the module and left out of
+    `redact()`, and every test that does not happen to use it still passes.
+    """
+
+    import inspect
+
+    from sam_doctor import redaction
+
+    body = inspect.getsource(redaction.redact)
+    families = sorted(
+        name
+        for name in vars(redaction)
+        if name.startswith("_") and not name.startswith("__") and name.isupper()
+    )
+    unused = [name for name in families if name not in body]
+
+    assert unused == [], f"defined but never applied in redact(): {unused}"
