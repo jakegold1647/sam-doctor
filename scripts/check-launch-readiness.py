@@ -197,9 +197,29 @@ def _release_note_is_appropriate(
             f"GitHub release v{version} is marked as prerelease; publish as stable first",
         )
 
+    expected_assets = {
+        f"sam_doctor-{version}-py3-none-any.whl",
+        f"sam_doctor-{version}.tar.gz",
+    }
+    assets = payload.get("assets")
+    actual_assets = {
+        asset.get("name")
+        for asset in assets
+        if isinstance(asset, dict) and isinstance(asset.get("name"), str)
+    } if isinstance(assets, list) else set()
+    if len(actual_assets) != 2 or actual_assets != expected_assets:
+        return (
+            False,
+            (
+                "GitHub release "
+                f"v{version} must contain exactly the wheel and source archive assets; "
+                f"found {', '.join(sorted(actual_assets)) if actual_assets else 'none'}"
+            ),
+        )
+
     return (
         True,
-        f"launch/RELEASE-v{version}.md present and GitHub release is stable",
+        f"launch/RELEASE-v{version}.md present, GitHub release is stable, and assets are canonical",
     )
 
 

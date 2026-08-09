@@ -219,6 +219,45 @@ def test_launch_readiness_flags_stable_release_marked_as_draft(tmp_path: Path, m
     assert result.passed == 5
 
 
+def test_launch_readiness_flags_stable_release_without_package_assets(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _create_repo(tmp_path, "1.2.3", with_release=True, with_changelog=True)
+
+    module = _load_module(tmp_path)
+    expected_topics = [
+        "aws",
+        "aws-sam",
+        "cloudformation",
+        "github-actions",
+        "iam",
+        "python",
+        "serverless",
+        "cli",
+    ]
+
+    def fake_get_json(url: str, token: str | None):
+        if url.endswith("/jakegold1647/sam-doctor/releases/tags/v1.2.3"):
+            return {"prerelease": False, "draft": False, "assets": []}, 200
+        if url == "https://api.github.com/repos/jakegold1647/sam-doctor":
+            return {
+                "homepage": "https://sam-doctor.jacobgoldstein.dev/",
+                "topics": expected_topics,
+            }, 200
+        raise AssertionError(f"unexpected URL: {url}")
+
+    monkeypatch.setattr(module, "_get_json", fake_get_json)
+
+    result = module._run_checks_with_options(
+        tmp_path,
+        repo="jakegold1647/sam-doctor",
+        token="token",
+    )
+    assert not result.ok
+    assert result.failed == 1
+    assert result.passed == 5
+
+
 def test_launch_readiness_fails_when_action_metadata_is_missing(tmp_path: Path) -> None:
     _create_repo(tmp_path, "1.2.3", with_release=True, with_changelog=True)
     (tmp_path / "action.yml").unlink()
