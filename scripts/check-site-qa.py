@@ -13,6 +13,7 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SITE_ROOT = ROOT / "site"
 SITE_BASE_URL = "https://jakegold1647.github.io/sam-doctor/"
+REPO_BLOB_PREFIX = "/blob/main/"
 
 
 class LinkCollector(HTMLParser):
@@ -155,6 +156,20 @@ def check_sitemap(site_root: Path, issues: list[str]) -> None:
 
     listed: set[str] = set()
     for loc in locs:
+        if REPO_BLOB_PREFIX in loc:
+            # Sitemap entries pointing at files in the repository rather than at
+            # published pages. These were skipped entirely, and they break the same
+            # way a page link does: rename a doc and the sitemap advertises a 404
+            # to search engines with every gate still green. That is not
+            # hypothetical here - commit 1db8d9f is "Point the sitemap at the
+            # renamed rollout and examples docs", found and fixed by hand.
+            repo_relative = loc.split(REPO_BLOB_PREFIX, 1)[1]
+            if not (site_root.parent / repo_relative).is_file():
+                issues.append(
+                    f"sitemap.xml points at a repository file that does not exist: "
+                    f"{repo_relative} ({loc})"
+                )
+            continue
         if not loc.startswith(SITE_BASE_URL):
             continue
         rel = _sitemap_relative_path(loc)

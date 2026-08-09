@@ -222,3 +222,33 @@ def test_the_exit_code_reflects_the_findings(qa, tmp_path: Path, monkeypatch) ->
         PAGE.format(canonical="https://example.com/o", body=""), encoding="utf-8"
     )
     assert qa.main() == 1
+
+
+def test_a_sitemap_link_to_a_renamed_repository_file_is_reported(qa, tmp_path: Path) -> None:
+    # Sitemap entries pointing at repository files were skipped entirely. They
+    # break the same way a page link does - rename a doc and the sitemap
+    # advertises a 404 to search engines with every gate green. Commit 1db8d9f,
+    # "Point the sitemap at the renamed rollout and examples docs", is that
+    # having already happened once and been caught by hand.
+    site = tmp_path / "site"
+    site.mkdir()
+    _write_site(
+        site,
+        extra_locs=(
+            "https://github.com/jakegold1647/sam-doctor/blob/main/docs/present.md",
+            "https://github.com/jakegold1647/sam-doctor/blob/main/docs/renamed-away.md",
+        ),
+    )
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "present.md").write_text("# present", encoding="utf-8")
+
+    problems = [p for p in _issues(qa, site) if "repository file" in p]
+
+    assert len(problems) == 1
+    assert "docs/renamed-away.md" in problems[0]
+
+
+def test_the_real_sitemaps_repository_links_all_resolve(qa) -> None:
+    problems = [p for p in _issues(qa, SITE_ROOT) if "repository file" in p]
+
+    assert problems == []
