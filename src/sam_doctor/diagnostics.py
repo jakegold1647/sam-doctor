@@ -597,76 +597,6 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
     ),
     Rule(
-        id="apigateway.control-plane.throttled",
-        title="API Gateway's control plane throttled the deployment",
-        confidence="medium",
-        patterns=(
-            # Deliberately not a bare TooManyRequestsException: Lambda and other
-            # services answer with the same code, and a rule titled for API
-            # Gateway must not put its name on another service's 429.
-            r"An error occurred \(TooManyRequestsException\) when calling the [A-Za-z]{3,40} operation",
-            r"Too Many Requests \(Service:\s*ApiGateway",
-            r"TooManyRequestsException.{0,200}?Service:\s*ApiGateway",
-        ),
-        explanation=(
-            "API Gateway rejected control-plane calls with HTTP 429. Its control "
-            "plane throttles far more aggressively than CloudFormation's, and a "
-            "single template that creates many resources, stages, or usage plans "
-            "can exceed the limit on its own - as can several deployments running "
-            "at once in the same account and Region.\n\n"
-            "This is transient capacity, not a template or permission problem: "
-            "the same template succeeds once the call rate drops. The trap is that "
-            "it arrives looking like a resource error, so the usual response is to "
-            "start editing the template, and unbounded CI retries make the "
-            "throttling worse rather than better.\n\n"
-            "Other services return `TooManyRequestsException` too - the "
-            "`Service:` field in the error names which one answered."
-        ),
-        verification=(
-            "Retry the deployment after a pause, with backoff rather than an immediate loop - retrying instantly extends the throttling.",
-            "Serialize deployments that create API Gateway resources in the same account and Region instead of running them in parallel from CI.",
-            "Count the API Gateway resources one deployment creates; splitting a template that creates many APIs, stages, or usage plans at once spreads the calls out.",
-            "If this recurs at a steady rate rather than in bursts, check the API Gateway control-plane quotas in Service Quotas before assuming the deployment is at fault.",
-        ),
-        documentation_url="https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html",
-    ),
-    Rule(
-        id="iam.policy.quota-exceeded",
-        title="An IAM policy size or attachment quota was exceeded",
-        confidence="high",
-        patterns=(
-            r"Cannot exceed quota for (?:PolicySize|PoliciesPerRole|PolicyVersionsInUse)",
-            r"Maximum policy size of \d{3,6} bytes exceeded",
-            r"An error occurred \(LimitExceeded\) when calling the (?:Attach|Put|Create)[A-Za-z]{0,30}Polic",
-        ),
-        explanation=(
-            "IAM refused the policy because it hit a quota, not because anything "
-            "was denied - so permission advice does not apply here. Which quota "
-            "decides the fix:\n\n"
-            "- Document too large. A managed policy allows 6,144 characters and "
-            "all inline policy on a role allows 10,240 in total. These are hard "
-            "limits that cannot be raised. Split the policy, consolidate "
-            "statements sharing actions and resources, or use a deliberate "
-            "wildcard where the resource list is what keeps growing.\n"
-            "- Too many attachments. `PoliciesPerRole` defaults to 10 and is "
-            "adjustable, which makes this the one case where asking for an "
-            "increase is a real answer rather than a workaround.\n"
-            "- Too many versions. A managed policy keeps 5 versions; deleting "
-            "the ones no longer in use is safe and immediate.\n\n"
-            "Growing templates reach these quietly, because each new function "
-            "adds policy and the failure lands on whichever deploy crosses the "
-            "line rather than on the change that caused it."
-        ),
-        verification=(
-            "Read the quota name in the error first - PolicySize, PoliciesPerRole and PolicyVersionsInUse need different fixes, and only one of them is adjustable.",
-            "For an attachment quota, list what is attached with `aws iam list-attached-role-policies --role-name <role>` and consolidate before requesting an increase.",
-            "For a version quota, list versions with `aws iam list-policy-versions --policy-arn <arn>` and delete the ones no longer in use.",
-            "For a size quota, measure the rendered policy rather than the template source: SAM expands policy templates, so the document IAM receives is larger than what is written.",
-            "Request an increase in Service Quotas only for the attachment quota - policy size limits are hard, and a request against them will be refused.",
-        ),
-        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html",
-    ),
-    Rule(
         id="sam.template.invalid-property",
         title="A SAM template property is not valid for its resource type",
         confidence="high",
@@ -1063,13 +993,6 @@ _RULES = (
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             r"KMS Exception:",
-            # Both of these arrive on the CREATE_FAILED line itself and name a
-            # cause the generic rule cannot: a throttled control plane, and an
-            # IAM quota. Excluding the line rather than suppressing the rule
-            # keeps any other resource that failed in the same deploy reported.
-            r"Too Many Requests \(Service:\s*ApiGateway",
-            r"Cannot exceed quota for (?:PolicySize|PoliciesPerRole|PolicyVersionsInUse)",
-            r"Maximum policy size of \d{3,6} bytes exceeded",
         ),
     ),
     Rule(
