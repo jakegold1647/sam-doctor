@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **`init` wrote a GitHub expression that GitHub would not have interpolated.**
+  The generated workflow ends with a commented-out follow-up step for the user
+  to uncomment, and its `echo` referenced
+  `${ steps.sam-doctor.outputs.finding-count }` with single braces. GitHub needs
+  `${{ ... }}`; with one brace it prints the literal text. The template source
+  had it right - the workflow is rendered with `str.format()`, which collapses
+  `{{` to `{`, so the correct-looking source emitted the broken output. The
+  braces are quadrupled now, with a note saying why, and a test that fails on
+  any single-brace expression in either trigger mode.
+
 - **The shareable artifacts name the log file, not the path it came from.**
   `request-packet` writes an excerpt specifically to be pasted into a public
   rule request, and `packet` writes notes whose own text says to discuss the
