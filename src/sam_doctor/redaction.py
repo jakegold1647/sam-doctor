@@ -62,6 +62,26 @@ _URL_CREDENTIALS = re.compile(
 )
 # Slack tokens show up in CI logs through notification steps.
 _SLACK_TOKEN = re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b")
+_DOCKER_HUB_TOKEN = re.compile(r"\bdckr_pat_[A-Za-z0-9_-]{16,}\b")
+# A password passed on a login command line. This matters here more than it looks:
+# `ecr.auth.login-failed` is a rule in this catalog, so a log containing a failed
+# registry login is a log this tool is built to be handed - and `docker login -p
+# <token>` puts a live registry credential in it.
+#
+# Anchored to a line containing `login` on purpose. A bare `-p` cannot be matched
+# on its own: `mkdir -p /some/path` would have its path redacted, which mangles
+# ordinary build output. `--password-stdin` is excluded because it is the *safe*
+# idiom - it names no secret, and redacting it would hide the fact that the log
+# shows someone doing the right thing.
+_LOGIN_PASSWORD_FLAG = re.compile(
+    r"(?i)(\blogin\b[^\n]{0,120}?)(--password(?!-stdin)|(?<=\s)-p)(\s+|=)(?!-)\S{6,}"
+)
+# The .netrc shape, which uses whitespace rather than `=` or `:` and so is invisible
+# to the assignment pattern. Deliberately requires the `login <user>` prefix: a bare
+# `password <word>` pattern redacts prose like "password is invalid".
+_NETRC_PASSWORD = re.compile(r"(?i)\b(login\s+\S+\s+password)\s+\S+")
+# `curl -u user:token`. The colon is required, so `-u AWS` alone is left alone.
+_CURL_USERINFO = re.compile(r"(?i)(?<=\s)(-u|--user)(\s+|=)([^\s:]{1,120}):\S{4,}")
 # PEM private-key material: redact from the BEGIN marker through the END
 # marker, or to the end of the text when the block is truncated.
 _PRIVATE_KEY_BLOCK = re.compile(
@@ -99,6 +119,19 @@ def redact(text: str) -> str:
     # no longer matches and the token half of the URL, which is the actual secret,
     # survives into the report. Later passes may safely narrow what is left.
     text = _WEBHOOK_URL.sub("[REDACTED_WEBHOOK_URL]", text)
+    # Also before the account-id pass, which would otherwise rewrite the registry
+    # host in `docker login ... 123456789012.dkr.ecr...` and shorten the window
+    # this pattern searches for the flag.
+    text = _LOGIN_PASSWORD_FLAG.sub(
+        lambda match: f"{match.group(1)}{match.group(2)}{match.group(3)}[REDACTED_PASSWORD]",
+        text,
+    )
+    text = _NETRC_PASSWORD.sub(lambda match: f"{match.group(1)} [REDACTED_PASSWORD]", text)
+    text = _CURL_USERINFO.sub(
+        lambda match: f"{match.group(1)}{match.group(2)}{match.group(3)}:[REDACTED_PASSWORD]",
+        text,
+    )
+    text = _DOCKER_HUB_TOKEN.sub("[REDACTED_DOCKER_TOKEN]", text)
     text = _ARN.sub("[REDACTED_ARN]", text)
     text = _ACCOUNT_ID.sub("[REDACTED_ACCOUNT_ID]", text)
     text = _AWS_ACCESS_KEY_ID.sub("[REDACTED_AWS_ACCESS_KEY]", text)

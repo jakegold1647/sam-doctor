@@ -10,6 +10,8 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
+import pytest
+
 from sam_doctor.cli import _render_findings
 from sam_doctor.diagnostics import diagnose
 
@@ -154,3 +156,47 @@ def test_the_ecr_rule_line_survives_redaction() -> None:
     line = "Error response from daemon: Head https://registry/v2/app: no basic auth credentials"
 
     assert "no basic auth credentials" in redact(line)
+
+
+CREDENTIAL_COMMAND_LINES = (
+    # `ecr.auth.login-failed` is a rule in this catalog, so a log with a failed
+    # registry login is a log this tool is built to receive - and `-p` puts a live
+    # registry credential in it.
+    ("docker login -u AWS -p leakmarkerecrtoken 1234.dkr.ecr.us-east-1.amazonaws.com", "leakmarkerecrtoken"),
+    ("docker login --password leakmarkerdockerpass registry.example.test", "leakmarkerdockerpass"),
+    ("npm login --registry https://npm.example.test --password leakmarkernpmpass", "leakmarkernpmpass"),
+    # The .netrc shape: whitespace instead of `=`, invisible to the assignment pattern.
+    ("machine registry.example.test login deploy password leakmarkernetrc", "leakmarkernetrc"),
+    ("curl -u deploy:leakmarkercurltoken https://api.example.test/v1/build", "leakmarkercurltoken"),
+    ("using dckr_pat_" + "abcdefghij0123456789abcdef", "dckr_pat_abcdefghij"),
+)
+
+
+@pytest.mark.parametrize(("line", "marker"), CREDENTIAL_COMMAND_LINES)
+def test_credentials_on_a_command_line_are_redacted(line: str, marker: str) -> None:
+    from sam_doctor.redaction import redact
+
+    assert marker not in redact(line)
+
+
+# Redaction has to stay narrow enough to leave build output readable. Each of
+# these is a near-miss for one of the patterns above, and several would be
+# actively harmful to redact: `--password-stdin` is the *safe* idiom, and starring
+# it out would hide the fact that the log shows someone doing the right thing.
+MUST_SURVIVE = (
+    "aws ecr get-login-password | docker login --password-stdin 1234.dkr.ecr.us-east-1.amazonaws.com",
+    "mkdir -p /home/runner/work/app/build/artifacts",
+    "cp -p /usr/local/lib/node_modules/pkg/index.js dist/",
+    "docker run -p 8080:8080 myimage:latest",
+    "Error: password is invalid or has expired",
+    "curl -u AWS https://api.example.test/v1/build",
+    "Login Succeeded",
+    "Error response from daemon: Head https://registry/v2/app: no basic auth credentials",
+)
+
+
+@pytest.mark.parametrize("line", MUST_SURVIVE)
+def test_ordinary_build_output_is_not_redacted(line: str) -> None:
+    from sam_doctor.redaction import redact
+
+    assert redact(line) == line

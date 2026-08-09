@@ -4,6 +4,27 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **`docker login -p <token>` left a live registry credential in the report.**
+  This one matters more than it first looks: `ecr.auth.login-failed` is a rule in
+  this catalog, so a log containing a failed registry login is a log sam-doctor is
+  built to be handed — and the `-p` form of that command carries the credential
+  the login used. Also redacted now: the `.netrc` shape (`login <user> password
+  <value>`, which uses whitespace instead of `=` and so was invisible to the
+  assignment pattern), `curl -u user:token`, and Docker Hub `dckr_pat_` tokens.
+
+  The patterns are deliberately narrow, because over-redaction has real costs
+  here. `--password-stdin` is excluded: it is the *safe* idiom, names no secret,
+  and starring it out would hide the fact that the log shows someone doing the
+  right thing. A bare `-p` is never matched, or `mkdir -p /path` would lose its
+  path. The `.netrc` pattern requires the `login <user>` prefix, or prose like
+  "password is invalid" gets redacted. Eight near-miss lines of ordinary build
+  output are pinned as must-not-change, including the ECR rule's own pattern line.
+
+  Out of scope and left alone deliberately: Stripe, SendGrid and similar
+  third-party API keys. They are recognizable by prefix, but they do not appear in
+  AWS deployment logs, and every pattern added is a chance to redact something a
+  reader needed.
+
 - **Two credentials survived redaction: `Authorization: Basic` and incoming
   webhook URLs.** `Bearer` was handled and `Basic` was not, which is the wrong way
   round if either had to be missed — a Basic value is base64 of `user:password`,
