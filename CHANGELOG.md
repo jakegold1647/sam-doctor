@@ -4,6 +4,22 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **An output directory that could not be created crashed instead of failing.**
+  `packet`, `request-packet` and `init` called `mkdir` bare, while reads
+  (`_read_text`) and writes (`_write_report`) both translate `OSError` into the
+  message-plus-exit-2 path. So a read-only checkout, an output path that is
+  already a file, or a full disk produced a Python traceback and exit `1` — the
+  code reserved for a fail gate being hit, which a CI step branching on it reads
+  as "this deployment has findings". All three now report
+  `sam-doctor: error: Could not create <path>: ...` and exit `2`.
+
+  Found by running the documented exit-code table against the real CLI. The other
+  thirteen cases matched, including `--fail-on-confidence` taking precedence over
+  `--fail-on-findings` in both `diagnose` and `batch`, and the empty-log path,
+  which already explains itself rather than silently reporting nothing. Two
+  behaviours the table did not mention are now written down: this one, and that
+  `init` exits `2` rather than overwriting an existing workflow file.
+
 - **The packet wrapper reported "findings found" when the path was wrong.**
   `scripts/export-evidence-packet.py` ran the CLI with `check=True`, so a missing
   log file — which the CLI correctly answers with exit 2 and a clear "Could not

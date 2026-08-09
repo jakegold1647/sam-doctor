@@ -661,8 +661,9 @@ def _init_workflow_command(
     target = Path(workflow_file).expanduser().resolve()
     if target.exists() and not force:
         raise ValueError(f"Workflow file already exists: {target}. Use --force to overwrite.")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(
+    _make_output_dir(target.parent)
+    _write_report(
+        target,
         textwrap.dedent(
             _WORKFLOW_TEMPLATE.format(
                 trigger=_TRIGGER_ON_PUSH if on_push else _TRIGGER_MANUAL,
@@ -674,7 +675,6 @@ def _init_workflow_command(
                 fail_on_confidence=fail_on_confidence or "",
             )
         ),
-        encoding="utf-8",
     )
 
 
@@ -690,6 +690,25 @@ def _write_report(path: Path, report: str) -> None:
         path.write_text(report, encoding="utf-8")
     except OSError as error:
         raise ValueError(f"Could not write {path}: {error}") from error
+
+
+def _make_output_dir(path: Path) -> Path:
+    """Create an output directory, reporting failure the way reads and writes do.
+
+    `mkdir` was called bare at each site while `_read_text` and `_write_report`
+    both translate OSError into a ValueError the dispatcher renders as
+    `sam-doctor: error: ...` with exit 2. So an output directory that could not be
+    created - a read-only checkout, a path that is already a file, a full disk -
+    surfaced as a Python traceback and exit 1, which in this project's contract
+    means a fail gate was hit. A CI step branching on the code would read "this
+    deployment has findings" from "that directory could not be created".
+    """
+
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise ValueError(f"Could not create {path}: {error}") from error
+    return path
 
 
 def _write_packet_notes(
@@ -730,8 +749,7 @@ def _write_packet_notes(
 
 
 def _packet_command(args: argparse.Namespace) -> int:
-    output_dir = Path(args.output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _make_output_dir(Path(args.output_dir).resolve())
 
     if args.input == "-":
         stdin_text = sys.stdin.read()
@@ -792,8 +810,7 @@ def _packet_command(args: argparse.Namespace) -> int:
 
 
 def _request_packet_command(args: argparse.Namespace) -> int:
-    output_dir = Path(args.output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _make_output_dir(Path(args.output_dir).resolve())
 
     if args.input == "-":
         stdin_text = sys.stdin.read()
