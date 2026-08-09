@@ -41,6 +41,16 @@ fully specified diagnostic rules waiting for a contributor — each with sample
 log lines, pattern hints, non-match cases, and verification steps already
 drafted, so the PR is mostly a translation exercise.
 
+Two of those are **reserved for first-time contributors**:
+[#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
+attachment quotas) and
+[#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
+`TooManyRequestsException`). If this is your first PR here, either is yours for
+the asking. If it is not, please leave them. That reservation is repeated here and
+at the top of the roadmap because it used to appear only in a paragraph halfway
+down the roadmap, below the specs themselves - easy to read the spec and miss the
+request.
+
 For rule proposals, use `docs/contributing-a-diagnostic-rule.md` and keep the
 change scope to one signal and one fixture pair.
 
