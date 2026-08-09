@@ -4,6 +4,34 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Two new rules, from issues #25 and #21.** Both failures were previously
+  answered by a generic rule, and one of them was answered wrongly.
+
+  *API Gateway control-plane throttling* (`apigateway.control-plane.throttled`,
+  medium confidence) reads `Too Many Requests (Service: ApiGateway, Status Code:
+  429)` and `TooManyRequestsException` as what they are: transient capacity, with
+  a fine template. It matters because the error arrives as `CREATE_FAILED` on a
+  template resource, which reads like a template error and sends people editing
+  YAML that was never wrong - and because unbounded CI retries extend the
+  throttling they were meant to ride out. Before this rule the CLI sample was
+  attributed to SAM deploy configuration resolution, which is a different problem
+  with different advice. The rule deliberately does not match a bare
+  `TooManyRequestsException`: Lambda and others answer with the same code, and a
+  rule named for API Gateway must not put its name on another service's 429.
+
+  *IAM policy quotas* (`iam.policy.quota-exceeded`, high confidence) reads
+  `Maximum policy size of N bytes exceeded` and `Cannot exceed quota for
+  PolicySize / PoliciesPerRole / PolicyVersionsInUse`. Nothing was denied here,
+  so permission advice does not apply, and the three quotas need three different
+  answers: policy size is a hard limit that a quota request will be refused for,
+  attachments-per-role is adjustable and the one place asking is right, and
+  versions just need pruning. The finding separates them rather than saying
+  "limit exceeded".
+
+  Both are wired with `excluded_line_patterns` rather than a whole-log
+  suppression, so each claims its own line while any unrelated resource failure
+  in the same deployment still reports - covered by a test.
+
 - **Coloured logs no longer lose findings.** The SAM CLI colours its own output,
   as do most build tools, so a log saved from a terminal or downloaded raw from a
   CI provider can read `ESC[31mFAILED ESC[0m` where a rule pattern expects

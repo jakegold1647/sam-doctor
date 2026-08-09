@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cannot exceed quota for PolicySize / PoliciesPerRole (IAM LimitExceeded) | SAM Doctor</title>
+    <meta name="description" content="Fix IAM LimitExceeded during a SAM deploy: 'Maximum policy size of 6144 bytes exceeded' and 'Cannot exceed quota for PolicySize, PoliciesPerRole or PolicyVersionsInUse' — which quotas are hard and which one you can raise." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/iam-policy-quota-exceeded.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">An IAM policy size or attachment quota was exceeded</h1>
+        <p class="lede">
+          Nothing was denied here. IAM accepted the request and refused it on a
+          quota, which is why permission advice does not help — and why the fix
+          depends entirely on <em>which</em> quota the error names.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>CREATE_FAILED  AWS::IAM::Policy  FunctionPolicy  Maximum policy size of 6144 bytes exceeded for role my-function-role (Service: Iam, Status Code: 409)
+An error occurred (LimitExceeded) when calling the AttachRolePolicy operation: Cannot exceed quota for PoliciesPerRole: 10</code></pre>
+        <p>
+          Growing templates arrive here quietly. Every function adds policy, and
+          the deploy that fails is whichever one crossed the line — not the change
+          that caused the growth. Three different quotas produce this error and
+          only one of them can be raised:
+        </p>
+        <ul>
+          <li><strong>The document is too large.</strong> A managed policy allows 6,144 characters; all inline policy on a role allows 10,240 in total. These are hard limits. A quota-increase request against them will be refused.</li>
+          <li><strong>Too many policies are attached.</strong> <code>PoliciesPerRole</code> defaults to 10 and <em>is</em> adjustable — the one case where asking for an increase is a real answer rather than a workaround.</li>
+          <li><strong>Too many versions exist.</strong> A managed policy keeps 5 versions. Deleting the ones no longer in use is safe and takes effect immediately.</li>
+        </ul>
+        <p>
+          One detail catches people out on the size limits: SAM expands policy
+          templates, so the document IAM receives is larger than the one written
+          in <code>template.yaml</code>. Measuring the source will make the limit
+          look further away than it is.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Read the quota name before changing anything.</strong>
+            <code>PolicySize</code>, <code>PoliciesPerRole</code> and
+            <code>PolicyVersionsInUse</code> need different fixes, and only the
+            middle one is adjustable.
+          </li>
+          <li>
+            <strong>For an attachment quota, see what is already attached</strong>
+            and consolidate before requesting an increase:
+            <pre><code>aws iam list-attached-role-policies --role-name my-function-role</code></pre>
+          </li>
+          <li>
+            <strong>For a version quota, prune old versions.</strong> This is the
+            cheapest of the three fixes and carries no design decision:
+            <pre><code>aws iam list-policy-versions --policy-arn arn:aws:iam::123456789012:policy/my-policy
+aws iam delete-policy-version --policy-arn arn:aws:iam::123456789012:policy/my-policy --version-id v2</code></pre>
+          </li>
+          <li>
+            <strong>For a size quota, reduce the rendered document.</strong> Split
+            the policy across resources, consolidate statements that share the
+            same actions and resources, or use a wildcard deliberately where the
+            resource list is what keeps growing. Widening a policy to fit a limit
+            is a security decision — make it on purpose, not to get a deploy
+            through.
+          </li>
+          <li>
+            <strong>Request an increase in Service Quotas only for the attachment
+            quota.</strong> The size limits are hard; a request there costs a
+            round trip and returns a refusal.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor names the IAM quota (high confidence) rather than reporting a
+          generic resource failure, and separates the three cases so the advice
+          matches the quota. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./access-denied-no-policy-allows.html">no identity-based policy allows the action</a> — a genuine denial rather than a quota.</li>
+          <li><a href="./template-limit-exceeded.html">The template exceeds a CloudFormation quota</a> — the same shape of problem one layer up.</li>
+          <li><a href="./rate-exceeded.html">Rate exceeded / Throttling</a> — the other "exceeded" that means something completely different.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

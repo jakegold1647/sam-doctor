@@ -101,6 +101,32 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="AccessDeniedException: action is not authorized",
         negative="The API call completed without an access denial",
     ),
+    "apigateway.control-plane.throttled": RuleFixture(
+        positive=(
+            "CREATE_FAILED  AWS::ApiGateway::RestApi  Api  Too Many Requests "
+            "(Service: ApiGateway, Status Code: 429)"
+        ),
+        # Another service's 429: same exception name, no service attribution.
+        # This rule must leave it to the generic throttling rule rather than
+        # put API Gateway's name on it.
+        negative=(
+            "An error occurred (TooManyRequestsException): Rate exceeded for "
+            "ReservedConcurrentExecutions"
+        ),
+    ),
+    "iam.policy.quota-exceeded": RuleFixture(
+        positive=(
+            "CREATE_FAILED  AWS::IAM::Policy  FunctionPolicy  Maximum policy "
+            "size of 6144 bytes exceeded for role my-function-role "
+            "(Service: Iam, Status Code: 409)"
+        ),
+        # Throttling, not a quota. Both say "exceeded" and the advice for each
+        # has nothing in common.
+        negative=(
+            "An error occurred (Throttling) when calling the CreateChangeSet "
+            "operation: Rate exceeded"
+        ),
+    ),
     "iam.tag.action-denied": RuleFixture(
         positive=(
             "An error occurred (AccessDenied) when calling the CreateRole "

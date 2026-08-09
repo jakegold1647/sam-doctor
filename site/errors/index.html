@@ -68,6 +68,7 @@
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
           <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
           <li><a href="./rate-exceeded.html">An error occurred (Throttling): Rate exceeded</a> — per-account API rate limits, usually from CI fan-out.</li>
+          <li><a href="./apigateway-too-many-requests.html">Too Many Requests (Service: ApiGateway, Status Code: 429)</a> — API Gateway's control plane throttles harder than CloudFormation's, and it arrives looking like a template error.</li>
           <li><a href="./no-changes-to-deploy.html">No changes to deploy / No updates are to be performed</a> — the empty change set that fails CI on purpose.</li>
           <li><a href="./resource-did-not-stabilize.html">Resource did not stabilize (NotStabilized)</a> — the wait-window wrapper around a slower or nested failure.</li>
           <li><a href="./export-in-use.html">Export cannot be updated/deleted as it is in use</a> — cross-stack import pins and the staged migration out of them.</li>
@@ -93,6 +94,7 @@
           <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — API Gateway deployment/method ordering races.</li>
           <li><a href="./invalid-sam-document.html">InvalidSamDocumentException / property not defined for resource type</a> — template schema validation before any resource exists.</li>
           <li><a href="./template-limit-exceeded.html">Template exceeds a size or count quota</a> — the 51,200-byte inline body limit and the 500-resource cap.</li>
+          <li><a href="./iam-policy-quota-exceeded.html">Maximum policy size exceeded / Cannot exceed quota for PoliciesPerRole</a> — which IAM quotas are hard, and the one you can actually raise.</li>
           <li><a href="./lambda-package-size-limit.html">Unzipped size must be smaller than 262144000 bytes</a> — the per-function package ceilings and the container-image escape hatch.</li>
           <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded (CodeStorageExceededException)</a> — the regional quota that months of retained versions quietly fill.</li>
           <li><a href="./reserved-concurrency-below-minimum.html">ReservedConcurrentExecutions decreases UnreservedConcurrentExecution below its minimum value</a> — the account-wide concurrency floor a fresh account often can't clear.</li>
