@@ -25,6 +25,25 @@ inspect an AWS account or claim an authoritative root cause.
 10. Add a short changelog entry and include this PR in the next release if the
     rule is accepted.
 
+## What is already normalized before your patterns run
+
+Write patterns against the log as a person reads it. `diagnose()` strips terminal
+escape sequences first, so a pattern never has to tolerate a colour code sitting
+inside a word — do not write `FAIL(?:\x1b\[[0-9;]*m)?ED`.
+
+Nothing else is normalized, and nothing else needs to be: patterns are searched
+*within* a line, so a timestamp prefix, a CI log prefix, leading indentation, or a
+progress-bar carriage return ahead of your text cannot stop a match. CRLF and
+trailing whitespace are harmless for the same reason.
+
+Two consequences worth knowing:
+
+- Do not anchor with `^` unless you truly mean a line with nothing before your
+  text. Real deployment logs almost always have something before it.
+- `suppressed_by` is searched against the whole log rather than one line, which is
+  why it is the wrong tool when two rules describe the same line — see
+  [the note below](#choosing-between-suppressed_by-and-excluded_line_patterns).
+
 ## Local workflow
 
 ```bash
