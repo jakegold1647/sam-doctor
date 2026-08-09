@@ -4,6 +4,25 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The weekly documentation-link check no longer cries wolf on one bad
+  request.** It made a single attempt per URL and treated any failure as rot, so
+  one timeout or one 503 from a documentation host would report a healthy link as
+  broken. A maintenance signal that fires falsely gets ignored, and then it is
+  worth nothing when it fires correctly. Transient answers - timeouts, DNS
+  failures, 408, 425, 429, 5xx - now get one retry after a pause. A 404 is taken
+  at its word and not retried, because the host already told the truth and asking
+  twice only doubles the load on it.
+
+  The checker had no tests at all, which is understandable: it needs the network
+  and runs on a schedule outside the pull-request gate on purpose. But the
+  *decision* about what counts as rot does not need the network, so that is now
+  covered offline by stubbing the one function that fetches - including that a
+  persistently failing host still reports, so the retry cannot swallow a real
+  outage.
+
+  Confirmed against the live hosts as well: all 38 unique links resolve,
+  including the six added with this release's new rules.
+
 - **A release tag that disagreed with the packaged version would have shipped
   silently.** Nothing compared the pushed tag to `pyproject.toml`. Tag `v0.12.0`
   while the package still said `0.11.0` and the chain fails without failing:
