@@ -4,6 +4,24 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Two rollout guides walked the reader into a gate that silently does
+  nothing.** Both describe tightening CI in stages: observe, then
+  `fail-on-confidence: high`, then strict `fail-on-findings: true`. Neither said
+  to *remove* the threshold at the last step, and `team-rollout.md` showed both
+  keys in one YAML block - so a team following it literally ends up with both
+  set, where the threshold takes precedence and medium-confidence findings keep
+  passing. They would believe strict mode was on when it was not.
+
+  The behaviour is correct and deliberate, and already pinned by
+  `test_threshold_overrides_fail_on_findings_when_both_are_given`. Only the
+  guides were wrong: both now say to replace rather than add, and explain why.
+
+  Found by extracting every `sam-doctor` invocation from the README and all
+  fifteen docs and checking each against the real parser - 30 real commands,
+  every flag valid, no rot there. The claims in `worked-examples.md` check out
+  too: the OIDC example's stated finding, title, confidence and verification
+  steps all match what the tool emits.
+
 - **Two rules matched words instead of failures.** `Aborted!` was a pattern in
   its own right on the interactive-confirmation rule, so every interrupted tool
   in a job - docker, pip, terraform, anything stopped with Ctrl-C - was reported

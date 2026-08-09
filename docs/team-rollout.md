@@ -55,11 +55,18 @@ steps rather than one: gate on high-confidence findings first, and only move
 to failing on any finding once the team trusts the medium-confidence rules
 too.
 
+Use **one** gate key at a time. `fail-on-confidence` takes precedence: while it
+is set it decides the exit status by itself and `fail-on-findings` is not
+consulted, so keeping both would leave the job passing on medium-confidence
+findings - the opposite of step 3.
+
 ```yaml
-    # step 1: observe            (no gate keys at all)
+    # step 1: observe - no gate keys at all
+
     # step 2: gate the sure things
     fail-on-confidence: high
-    # step 3: strict
+
+    # step 3: strict - remove the fail-on-confidence line, then
     fail-on-findings: true
 ```
 
@@ -158,8 +165,8 @@ failure and compare output.
 - [ ] Share only sanitized outputs in handoffs
 - [ ] File a rule request if a real non-covered failure appears
 - [ ] Enable `fail-on-confidence: high` after 2-3 stable runs
-- [ ] Enable `fail-on-findings: true` only once medium-confidence findings
-      have also proven trustworthy on your logs
+- [ ] Swap to `fail-on-findings: true` - removing `fail-on-confidence` - only
+      once medium-confidence findings have also proven trustworthy on your logs
 
 ## 4) Safe sharing reminder
 
