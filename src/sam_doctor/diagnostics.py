@@ -333,6 +333,11 @@ _RULES = (
             r"AssumeRoleWithWebIdentity",
             r"ECR image",
             r"ecr:GetAuthorizationToken",
+            # A denied Tag*/Untag* action is claimed by the tagging rule, which
+            # names the tag action and the create action it belongs with. Per
+            # line, not whole log: a non-tag denial elsewhere in the same log
+            # still reports here.
+            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
         ),
         parse_denial_context=True,
     ),
@@ -360,6 +365,9 @@ _RULES = (
             r"AssumeRoleWithWebIdentity",
             r"ECR image",
             r"ecr:GetAuthorizationToken",
+            # See the note on the explicit-deny rule above: tag-action denials
+            # belong to the tagging rule, per line rather than per log.
+            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
         ),
         parse_denial_context=True,
     ),
@@ -405,8 +413,65 @@ _RULES = (
             # own findings.
             r"S3 error: Access ?Denied",
             r"(?:Error|Failed) uploading to \S+.{0,200}Access ?Denied",
+            # The tagging rule names the tag action and the create action it
+            # should be granted with, so those lines belong to it.
+            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)",
+            # A KMS denial inside a Lambda env-var failure needs the key policy
+            # and the key's state reviewed, not the IAM policy simulator, so
+            # sending it to the generic denial actively misdirects the reader.
+            r"KMS Exception:",
         ),
         parse_denial_context=True,
+    ),
+    Rule(
+        id="iam.tag.action-denied",
+        title="Tagging was denied while the resource operation itself was allowed",
+        confidence="medium",
+        patterns=(
+            r"not authorized to perform:\s*[a-z0-9]{2,20}:(?:Tag|Untag)[A-Za-z]{0,30}",
+            r"TagPolicyViolation",
+        ),
+        explanation=(
+            "The denied action is a tagging action, not the create or update "
+            "itself. A deploy role is often granted `CreateRole` or "
+            "`CreateFunction` without the matching `TagRole`/`TagResource` "
+            "permission, and CloudFormation applies tags in the same call - so "
+            "the resource operation fails on the tag. An AWS Organizations tag "
+            "policy or a CloudFormation hook can reject the tag set the same "
+            "way, from a layer the member account cannot see."
+        ),
+        verification=(
+            "Record the exact tagging action and the resource named in the error before changing any policy.",
+            "Grant that tagging action alongside the create or update action it accompanies (for example `iam:TagRole` with `iam:CreateRole`), scoped to the same resources.",
+            "If an Organizations tag policy or a CloudFormation hook rejected the tag set, identify the layer that enforced it and resolve it with that layer's owner - do not remove a tag policy or hook to make a deployment pass.",
+            "Confirm the grant with the IAM Policy Simulator, or look the denied call up in CloudTrail when the error carries a request ID.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html",
+        parse_denial_context=True,
+    ),
+    Rule(
+        id="cloudformation.tag.key-validation-failed",
+        title="A tag key or value was rejected by validation",
+        confidence="medium",
+        patterns=(
+            r"validation error.{0,120}?'tags\.\d{1,3}\.member\.(?:key|value)'",
+            r"'tags\.\d{1,3}\.member\.(?:key|value)'\s*failed to satisfy constraint",
+            r"[Tt]ag key.{0,60}?(?:reserved|cannot begin with|must not begin with).{0,20}?aws:",
+        ),
+        explanation=(
+            "A tag key or value was rejected before the resource was touched, so "
+            "this is a template problem rather than a permissions one. The usual "
+            "causes are a key using the reserved `aws:` prefix, which is "
+            "reserved for AWS-generated tags and cannot be set, or a key or "
+            "value that breaks the allowed character set or length. The index in "
+            "`tags.N.member.key` points at which tag in the submitted set failed."
+        ),
+        verification=(
+            "Read the index in the error (`tags.N.member.key`) and find the matching tag in the template or `samconfig.toml` tag list.",
+            "Rename any key using the reserved `aws:` prefix; that prefix is reserved for AWS and cannot be applied by a deployment.",
+            "Check the key and value against the tag restrictions - length limits and the allowed character set - and re-run the deployment.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html",
     ),
     Rule(
         id="s3.artifact-bucket.access-denied",
@@ -689,7 +754,14 @@ _RULES = (
         confidence="high",
         patterns=(
             r"Cannot connect to the Docker daemon",
-            r"Error response from daemon",
+            # `Error response from daemon` is deliberately NOT matched here. The
+            # daemon producing a response is proof it is running, so treating it
+            # as evidence of an unreachable daemon inverts the meaning - a pull
+            # denial, a missing tag, a full disk and a platform mismatch were all
+            # reported as "Docker is unavailable", each with the wrong fix. The
+            # two rules below claim the cases worth naming; anything else is left
+            # unmatched on purpose, because "no supported pattern found" with a
+            # rule-request prompt costs less than a confident wrong answer.
             r"Error:\s*Docker is unavailable or not running",
             r"Building image for .* requires Docker\.",
             r"sam build --use-container.*(?:cannot execute|executable file not found|not found|is not recognized|command not found)",
@@ -709,6 +781,63 @@ _RULES = (
             "If Docker is not available in your environment, disable containerized build paths (`sam build` without `--use-container`) and retry.",
         ),
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html#sam-cli-command-reference-sam-build-use-container",
+    ),
+    Rule(
+        id="docker.registry.image-unavailable",
+        title="The build could not pull a container image from the registry",
+        confidence="high",
+        patterns=(
+            r"pull access denied for \S+",
+            r"repository does not exist or may require ['\"]?docker login",
+            r"manifest for \S+ not found",
+            r"manifest unknown",
+        ),
+        explanation=(
+            "Docker reached the registry and was refused, or asked for a tag the "
+            "registry does not have. The daemon is running - it returned this "
+            "error - so this is not a Docker-availability problem. Registries "
+            "answer an unauthenticated request for a private image and a request "
+            "for a missing image almost identically, which is why the message "
+            "mentions both possibilities: either the runner is not logged in to "
+            "that registry, or the image and tag really are absent (a tag that "
+            "was never pushed, or one built for a different architecture)."
+        ),
+        verification=(
+            "Pull the exact image and tag from the failing runner to reproduce it outside SAM: `docker pull <image>:<tag>`.",
+            "For a private registry, log in first in the same job - `aws ecr get-login-password | docker login --username AWS --password-stdin <registry>` for ECR, or the equivalent action - and confirm the login step runs before the build.",
+            "Confirm the tag exists: `aws ecr describe-images --repository-name <repo> --image-ids imageTag=<tag>`, or the registry's own listing.",
+            "Check the image's architecture matches the function: an arm64-only image requested for an x86_64 build reports as a missing manifest.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html",
+        # No suppression against the ECR-login rule on purpose. The two patterns
+        # cannot match the same line, and a job that fails to authenticate for a
+        # push can separately be refused a pull - reporting both is right, and
+        # suppressing for the whole log would drop one of two real failures.
+    ),
+    Rule(
+        id="build.host.disk-full",
+        title="The build host ran out of disk space",
+        confidence="high",
+        patterns=(
+            r"no space left on device",
+            r"\bENOSPC\b",
+        ),
+        explanation=(
+            "The build wrote until the filesystem was full. On a hosted CI runner "
+            "this is usually not the project's own output: a container build "
+            "keeps every intermediate layer, dependency caches accumulate across "
+            "steps, and the runner image itself already occupies much of the "
+            "disk. The failure often surfaces in an unrelated-looking step - "
+            "whichever one happened to need the next block - so the step that "
+            "reports it is not necessarily the step at fault."
+        ),
+        verification=(
+            "Print the disk state at the point of failure to confirm it and see what is consuming it: `df -h` and `docker system df`.",
+            "Reclaim space in the job before the build step: `docker system prune -af` and remove any large caches restored earlier in the workflow.",
+            "On GitHub-hosted runners, free the preinstalled toolchains you do not use (the several gigabytes under `/usr/share/dotnet`, `/usr/local/lib/android`, `/opt/ghc`) before building.",
+            "If the build genuinely needs more room than the runner has, move it to a larger runner rather than pruning further.",
+        ),
+        documentation_url="https://docs.docker.com/engine/manage-resources/pruning/",
     ),
     Rule(
         id="lambda.package.size-limit-exceeded",
@@ -861,7 +990,42 @@ _RULES = (
             r"Code storage limit exceeded",
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
             r"Embedded stack .* was not successfully (?:created|updated)",
+            # The KMS env-var rule explains the same event and names the key
+            # checks; CloudFormation prints both on one line here.
+            r"KMS Exception:",
         ),
+    ),
+    Rule(
+        id="lambda.env-vars.kms-key-inaccessible",
+        title="Lambda could not use the KMS key for its environment variables",
+        confidence="high",
+        patterns=(
+            r"KMS Exception:\s*[A-Za-z]{3,40}Exception",
+            r"Lambda was unable to configure (?:access to )?your environment variables",
+            r"ciphertext refers to a customer master key that does not exist",
+        ),
+        explanation=(
+            "Lambda encrypts environment variables with a customer-managed KMS "
+            "key, and it could not use the configured key. The wrapper error is "
+            "a Lambda `InvalidParameterValueException`, which reads like a bad "
+            "template value - the real cause is the `KMS Exception:` inside it. "
+            "Three causes account for nearly all of these, and they need "
+            "different fixes: the key policy does not let the deploying "
+            "principal create a grant (`AccessDeniedException`); the key is "
+            "disabled or pending deletion, which fails even when every policy "
+            "is correct (`DisabledException`, `KMSInvalidStateException`); or "
+            "the key ARN is malformed, or names another Region or account "
+            "(`InvalidArnException`, `NotFoundException`), which no permission "
+            "change can fix."
+        ),
+        verification=(
+            "Read the exception name after `KMS Exception:` first - it separates a policy problem from a key-state problem from a bad ARN.",
+            "Confirm the key exists and check its state in the function's own Region: `aws kms describe-key --key-id <key-arn>`, then read `KeyState` (a `Disabled` or `PendingDeletion` key fails this way regardless of policy).",
+            "Review the key policy, not only the deploy role's IAM policy: encrypting environment variables needs `kms:CreateGrant`, `kms:Encrypt`, `kms:Decrypt` and `kms:DescribeKey` on that key for the deploying principal.",
+            "If the ARN is malformed or points at another Region, correct `KmsKeyArn` in the template - a Lambda function can only use a key in its own Region.",
+            "For a key owned by another account, confirm the key policy in the owning account grants the deploying principal, and check whether an existing grant constrains the operation.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html",
     ),
     Rule(
         id="lambda.code-storage.limit-exceeded",
@@ -1176,7 +1340,13 @@ _RULES = (
         title="SAM Python dependency resolution failed",
         confidence="high",
         patterns=(
-            r"PythonPipBuilder:ResolveDependencies",
+            # The trailing " - " matters: SAM prints
+            # `Running PythonPipBuilder:ResolveDependencies` as ordinary progress
+            # on every successful Python build, and only the failure carries a
+            # continuation (`Error: PythonPipBuilder:ResolveDependencies - {...}`).
+            # Matching the bare token reported a high-confidence dependency
+            # failure for a clean build.
+            r"PythonPipBuilder:ResolveDependencies\s+-",
             r"Could not find a version that satisfies the requirement",
         ),
         explanation=(
@@ -1309,7 +1479,11 @@ _RULES = (
             r"Requires capabilities",
             r"Cannot use both --resolve-s3 and --s3-bucket",
             r"Esbuild Failed:\s*(?:Cannot|can not) find esbuild",
-            r"PythonPipBuilder:ResolveDependencies",
+            # Needs the failure continuation for the same reason as the rule
+            # itself: as a bare token this suppressed the whole rule whenever a
+            # Python build had merely *run*, so a successful build followed by a
+            # real change-set failure reported nothing about the change set.
+            r"PythonPipBuilder:ResolveDependencies\s+-",
             r"property\s+\S+:\s+not defined for resource of type AWS::Serverless::",
             r"Error Code:\s*InvalidBucketName",
             r"The specified bucket is not valid",
@@ -1336,7 +1510,43 @@ _RULES = (
             # left out: an upload denial can precede an unrelated change-set
             # problem later in the same log.
             r"S3 error: Access ?Denied",
+            # An unresolvable SSM reference is reported by the same
+            # CreateChangeSet call this rule reports generically, on its own
+            # line, so the two describe one failure. Whole-log suppression is
+            # right here for the same reason it is right above.
+            r"Parameters:\s*\[ssm(?:-secure)?:",
+            r"SSM parameter\s+\S{1,200}\s+not found",
         ),
+    ),
+    Rule(
+        id="ssm.parameter.resolution-failed",
+        title="An SSM parameter referenced by the template could not be resolved",
+        confidence="high",
+        patterns=(
+            r"Parameters:\s*\[ssm(?:-secure)?:[^\]]{1,200}\]\s*cannot be found",
+            r"SSM parameter\s+\S{1,200}\s+not found",
+        ),
+        explanation=(
+            "A `{{resolve:ssm:...}}` or `{{resolve:ssm-secure:...}}` dynamic "
+            "reference, or an SSM parameter type, could not be resolved. These "
+            "resolve at change-set time, in the target account and Region, "
+            "using the deployment's own credentials - so a parameter that "
+            "exists locally, or in the account you develop in, proves nothing "
+            "about the account being deployed to. The usual causes are a path "
+            "that encodes an environment name that does not match the target "
+            "(`/my-app/prod/...` deployed to staging), a new environment whose "
+            "parameters were never seeded, a deployment pointed at a different "
+            "Region than the parameter, or - for `ssm-secure` - a principal "
+            "that can read the parameter but cannot decrypt it."
+        ),
+        verification=(
+            "Look up the exact path from the error using the same credentials and Region the deployment used: `aws ssm get-parameter --name <name> --region <region>`.",
+            "Compare the path against the target environment's naming: an environment segment left at another stage's value is the most common cause.",
+            "If the environment is new, seed the parameter in the target account and Region before re-deploying - the template cannot create what it resolves.",
+            "For `ssm-secure`, add `--with-decryption` to that lookup, and confirm the deploy principal has `ssm:GetParameters` plus `kms:Decrypt` on the key protecting the parameter.",
+            "Confirm the deployment's Region matches where the parameter lives; a correct path in the wrong Region reports as missing.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html",
     ),
     Rule(
         id="sam.deploy.interactive-confirmation-required",

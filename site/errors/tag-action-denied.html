@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Not authorized to perform: iam:TagRole (tag-on-create denied) | SAM Doctor</title>
+    <meta name="description" content="Fix 'not authorized to perform: iam:TagRole' and other tag-on-create denials during AWS deployments: grant the tagging action alongside the create action, or find the tag policy that rejected the tag set." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/errors/tag-action-denied.html" />
+    <meta name="theme-color" content="#11152a" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span> SAM Doctor</a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Access denied on a tagging action, not on the resource</h1>
+        <p class="lede">
+          The deployment was allowed to create the resource and denied
+          permission to tag it. Because CloudFormation applies tags in the same
+          call that creates the resource, the whole operation fails — on the
+          tag, not on the thing you were deploying.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Read the action in the error, not just the word <code>AccessDenied</code>.
+          When it names a <code>Tag*</code> or <code>Untag*</code> action —
+          <code>iam:TagRole</code>, <code>lambda:TagResource</code>,
+          <code>ec2:CreateTags</code> — the permission gap is on tagging alone:
+        </p>
+        <pre><code>An error occurred (AccessDenied) when calling the CreateRole operation:
+User is not authorized to perform: iam:TagRole on resource: role my-app-role</code></pre>
+        <p>
+          Note which operation was <em>called</em> (<code>CreateRole</code>) versus
+          which action was <em>denied</em> (<code>iam:TagRole</code>). That gap is
+          the whole diagnosis, and it is why granting more create permissions
+          changes nothing. Two things commonly cause it:
+        </p>
+        <ul>
+          <li><strong>A deploy policy written without the tagging pair.</strong> Roles are routinely granted <code>iam:CreateRole</code> while <code>iam:TagRole</code> is forgotten, because tagging looks like a separate, later step. It is not — it is part of the create call.</li>
+          <li><strong>An Organizations tag policy or a CloudFormation hook rejecting the tag set.</strong> That verdict is enforced from a layer the member account cannot see, so nothing in the account's own policies looks wrong.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Record the exact tagging action and resource</strong> from
+            the error before changing any policy, and confirm the identity that
+            actually made the call:
+            <pre><code>aws sts get-caller-identity</code></pre>
+          </li>
+          <li>
+            <strong>Grant the tagging action alongside the create action</strong>
+            it accompanies, scoped to the same resources — for example
+            <code>iam:TagRole</code> with <code>iam:CreateRole</code>, or
+            <code>lambda:TagResource</code> with
+            <code>lambda:CreateFunction</code>. Keep it least-privilege; a
+            tagging permission is narrow and does not need a broader role.
+          </li>
+          <li>
+            <strong>If a tag policy or a hook rejected the tag set</strong>,
+            identify the organizational layer that enforced it and resolve it
+            with that layer's owner. Do not disable a tag policy or a
+            CloudFormation hook to make a deployment pass — those exist to keep
+            tagging consistent, and removing them to unblock a deploy trades a
+            governance control for a green build.
+          </li>
+          <li>
+            <strong>Confirm before re-running</strong> with the IAM Policy
+            Simulator, or look the denied call up in CloudTrail when the error
+            carries a request ID.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor separates a denied tagging action from an ordinary
+          missing-permission failure (medium confidence) and reports the denied
+          action from redacted evidence — no raw ARNs. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./tag-key-validation-failed.html">A tag key or value failed validation</a> — the same tag set rejected for its contents rather than for permissions.</li>
+          <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — when a Deny statement blocks the action outright.</li>
+          <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit-deny sibling for non-tagging actions.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

@@ -4,6 +4,138 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Stopped diagnosing four different Docker failures as the same one.** The
+  Docker rule matched the bare phrase `Error response from daemon`, so a pull
+  denial, a missing tag, a full disk and a platform mismatch all reported "SAM
+  build requires Docker for containerized builds" - and were all told to check
+  `docker version`, inspect `docker.sock` permissions, and consider disabling
+  container builds. That advice is wrong for every one of them.
+
+  The phrase is evidence of the opposite of what it was being read as: a
+  response *from* the daemon means the daemon is running and answered. It no
+  longer matches, and two rules now claim the cases worth naming - a registry
+  refusing or lacking the image (`pull access denied`, `manifest unknown`), and
+  a build host with no disk left (`no space left on device`, `ENOSPC`). The
+  registry rule also notes that an arm64-only image requested for an x86_64
+  build reports as a *missing manifest*, which reads like a typo and is not one.
+
+  The platform-mismatch case is deliberately left unmatched rather than folded
+  into a neighbouring rule. An unmatched log says "no supported pattern found"
+  and offers the rule-request link, which costs the reader less than a confident
+  wrong answer - the whole problem being fixed here.
+
+- **Fixed a false positive that also hid the real failure.** Running the tool
+  over a completely successful build-and-deploy log produced a high-confidence
+  "SAM Python dependency resolution failed" finding. The rule matched the bare
+  token `PythonPipBuilder:ResolveDependencies`, and SAM prints
+  `Running PythonPipBuilder:ResolveDependencies` as ordinary progress on every
+  successful Python build - so the finding fired for any project that builds
+  with pip, which is the default Python path.
+
+  The second half is worse. That same bare token was a whole-log
+  `suppressed_by` pattern on the change-set rule, so merely *having built* with
+  pip switched that rule off: a successful build followed by a genuine
+  `Failed to create changeset` reported the Python failure that had not happened
+  and stayed silent about the one that had. Both now require the failure
+  continuation (`... ResolveDependencies - {...}`), which is the form SAM only
+  prints when the stage actually fails.
+
+  Two things were added so this class cannot come back. The build-stage progress
+  lines are now in the catalog gate's benign-log corpus - every builder stage
+  prints `Running <stage>` on success, and only `CopySource` was listed, which
+  is why this slipped through. And the gate now checks `suppressed_by` patterns
+  against those benign lines too, not just primary patterns: a suppression
+  pattern matching a benign line is the more dangerous of the two, because it
+  removes a real finding silently instead of adding a visible wrong one. The
+  rule-interaction guard could not have caught this - it pairs fixtures with
+  fixtures, so it never puts a benign line next to a failure.
+
+- **Fixed two redaction gaps that leaked live credentials.** Both were found by
+  probing the layer with realistic CI lines rather than by a rule change, and
+  both defeated the one promise this tool has to keep.
+
+  First: the secret-assignment pattern required a word boundary before the
+  keyword, and `_` is a word character - so `\bpassword` never matched inside
+  `DB_PASSWORD`. `password=hunter2` was redacted and `DB_PASSWORD=hunter2` was
+  not. Environment variables are conventionally UPPER_SNAKE_CASE with a prefix,
+  so the spelling that leaked was the *common* one, and Lambda environment
+  variables are squarely in this tool's subject matter. The boundary is gone;
+  the `[:=]` that follows the keyword is what makes the pattern specific, and
+  `tokenizer=fast` still does not match. Hyphenated spellings (`x-api-key`) and
+  `passwd` are covered too.
+
+  Second: credentials in a URL - `https://user:token@host/path` - were only
+  redacted by accident, when the *email* pattern happened to match
+  `password@host.tld`. That pattern needs a dot in the host, so an internal
+  single-label host leaked the credential in full:
+  `git clone https://oauth2:glpat-...@gitlab/team/repo.git` passed through
+  untouched, and that is an ordinary line in a CI log. When it did match, the
+  value was labelled `[REDACTED_EMAIL]`, which hides what actually leaked.
+  There is now a dedicated pattern, running before the email pass, that keeps a
+  placeholder username like `oauth2` (it identifies which credential failed)
+  and redacts the secret half as `[REDACTED_URL_CREDENTIAL]`. The
+  token-as-username form, `https://glpat-...@host`, redacts the username
+  instead, because there the single value *is* the credential.
+
+- Added a rule for an SSM dynamic reference that cannot be resolved
+  (`Parameters: [ssm:/path] cannot be found`, `SSM parameter ... not found`),
+  which previously landed on the generic configuration finding and got generic
+  advice. The thing worth saying about this failure is *when* resolution
+  happens: at change-set time, in the target account and Region, as the
+  deploying identity - so a parameter you can read from your own terminal
+  proves nothing about the account being deployed to, and checking it with the
+  wrong profile is the usual way this investigation goes quiet. The rule names
+  the four causes that account for nearly all of them (a stage baked into the
+  path, an environment nobody seeded, the wrong Region, and `ssm-secure` that
+  is readable but not decryptable) and gives the lookup with the Region and
+  `--with-decryption` flags that actually reproduce it. The generic rule
+  suppresses for the whole log here rather than per line, matching the existing
+  choice for the other change-set reasons: CloudFormation prints the wrapper on
+  a separate line from the reason, so excluding one line would report the same
+  failure twice.
+
+- Added a rule for a Lambda function that cannot use its environment-variable
+  KMS key. AWS wraps this one badly: the outer error is a Lambda
+  `InvalidParameterValueException`, which reads like a bad template value, and
+  the actual cause is the `KMS Exception:` buried inside the status reason.
+  Worse, when that inner exception is `AccessDeniedException` the log matched
+  the generic denial rule, so the report pointed at the IAM policy simulator
+  when the thing to review is the key's own resource policy - a wrong answer is
+  more expensive than no answer here. The rule now reads the inner exception
+  name and splits the three causes that look identical in the wrapper: a key
+  policy that will not grant `kms:CreateGrant`, a key that is disabled or
+  pending deletion (where no policy change helps), and an ARN that is malformed
+  or names another Region. `KMS Exception:` is excluded per line from the
+  generic denial and the generic resource-failure rules, so a second failed
+  resource in the same stack still reports.
+
+- Added two rules for tag failures, which previously fell through to the
+  generic denial finding or produced nothing at all. A tag-on-create denial is
+  the more confusing of the two: the error names the operation that was called
+  (`CreateRole`) and, separately, the action that was denied (`iam:TagRole`),
+  and the fix is on the second one. A deploy policy granted `iam:CreateRole`
+  without `iam:TagRole` fails the whole create, because CloudFormation applies
+  tags in the same call - so reading the old finding as "I need more create
+  permissions" sent you looking in the wrong place. The rule names the tagging
+  action and says to grant it alongside the create action it belongs with.
+  Where an Organizations tag policy or a CloudFormation hook rejected the tag
+  set instead, it says to find the layer that enforced it, and deliberately
+  does not suggest removing the control to get a green deploy.
+
+- The second rule covers a tag key or value rejected by validation, which is a
+  template problem wearing a permission problem's clothes - most often the
+  reserved `aws:` prefix, which no policy can grant the ability to write, or a
+  value interpolated from a branch name or commit subject that breaks the
+  allowed character set. It points at the index in `tags.N.member.key`, since
+  that names which tag of the set failed and beats re-reading the template.
+
+- The three IAM denial rules exclude tag-action denials per line rather than
+  suppressing themselves for the whole log. A deployment that fails on a tag
+  usually fails other things too, and whole-log suppression would have dropped
+  those other denials from the report - so a non-tag `AccessDenied` sharing the
+  log still produces its own finding, with a regression test that fails if that
+  stops being true.
+
 ## v0.11.0 - 2026-08-08
 
 - Added a rule-interaction guard. Every rule's fixture is paired with every

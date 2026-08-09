@@ -1083,6 +1083,211 @@ def test_redaction_leaves_non_secret_identifiers_alone() -> None:
     assert redact(text) == text
 
 
+@pytest.mark.parametrize(
+    "line",
+    [
+        "DB_PASSWORD=hunter2",
+        "DATABASE_PASSWORD: hunter2",
+        "MY_API_KEY=abc123xyz456",
+        "APP_SECRET=shhhhhhh",
+        "x-api-key=abc123xyz456",
+        "STRIPE_SECRET=sk_live_abcdef123456",
+    ],
+)
+def test_redaction_covers_prefixed_secret_variable_names(line: str) -> None:
+    # Environment variables are conventionally UPPER_SNAKE_CASE with a prefix,
+    # and `_` is a word character - so a leading \b on the keyword never matched
+    # between the prefix and the keyword. The bare `password=` form was redacted
+    # while `DB_PASSWORD=` was not, which is the spelling that actually shows up
+    # in a Lambda environment-variable failure.
+    result = redact(line)
+
+    assert "hunter2" not in result
+    assert "abc123xyz456" not in result
+    assert "shhhhhhh" not in result
+    assert "sk_live_abcdef123456" not in result
+    assert "[REDACTED_SECRET]" in result
+
+
+def test_redaction_keeps_the_variable_name_it_redacts() -> None:
+    # The name is the useful half: it says which secret to rotate.
+    assert redact("DB_PASSWORD=hunter2").startswith("DB_PASSWORD=")
+
+
+@pytest.mark.parametrize(
+    ("line", "secret"),
+    [
+        (
+            "fetch failed https://user:p4ssw0rd@artifacts.internal/app.zip",
+            "p4ssw0rd",
+        ),
+        # A single-label internal host has no dot, so the email pattern that used
+        # to catch this incidentally does not match - the credential leaked in
+        # full. `git clone https://oauth2:$TOKEN@host/repo` is ordinary in CI.
+        ("fetch failed https://user:p4ssw0rd@localhost/app.zip", "p4ssw0rd"),
+        (
+            "git clone https://oauth2:glpat-abcdefghijklmnopqrst@gitlab/team/repo.git",
+            "glpat-abcdefghijklmnopqrst",
+        ),
+        # Token-as-username: the single value *is* the credential.
+        (
+            "git clone https://glpat-abcdefghijklmnopqrst@gitlab/team/repo.git",
+            "glpat-abcdefghijklmnopqrst",
+        ),
+        (
+            "Error connecting: postgres://admin:S3cr3tPass@db.internal:5432/orders",
+            "S3cr3tPass",
+        ),
+    ],
+)
+def test_redaction_covers_credentials_embedded_in_a_url(line: str, secret: str) -> None:
+    result = redact(line)
+
+    assert secret not in result
+    assert "[REDACTED_URL_CREDENTIAL]" in result
+    # Mislabelling a credential as an email address hides what actually leaked.
+    assert "[REDACTED_EMAIL]" not in result
+
+
+_DOCKER_UNAVAILABLE_TITLE = "SAM build requires Docker for containerized builds"
+_REGISTRY_TITLE = "The build could not pull a container image from the registry"
+_DISK_FULL_TITLE = "The build host ran out of disk space"
+
+
+def test_an_unreachable_docker_daemon_still_reports_the_docker_rule() -> None:
+    log = (
+        "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. "
+        "Is the docker daemon running?"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _DOCKER_UNAVAILABLE_TITLE in titles
+
+
+@pytest.mark.parametrize(
+    ("log", "expected"),
+    [
+        (
+            (
+                "Error response from daemon: pull access denied for myco/base, "
+                "repository does not exist or may require 'docker login'"
+            ),
+            _REGISTRY_TITLE,
+        ),
+        (
+            (
+                "Error response from daemon: manifest for myco/base:v9 not "
+                "found: manifest unknown"
+            ),
+            _REGISTRY_TITLE,
+        ),
+        ("failed to write layer: no space left on device", _DISK_FULL_TITLE),
+        ("npm ERR! nospc ENOSPC: no space left on device", _DISK_FULL_TITLE),
+    ],
+)
+def test_a_daemon_response_is_not_reported_as_an_unavailable_daemon(
+    log: str, expected: str
+) -> None:
+    # `Error response from daemon` means the daemon replied, so it is running.
+    # Matching that phrase reported a pull denial, a missing tag and a full disk
+    # as "Docker is unavailable", each with the wrong fix.
+    titles = [finding.title for finding in diagnose(log)]
+    assert expected in titles
+    assert _DOCKER_UNAVAILABLE_TITLE not in titles
+
+
+def test_a_login_failure_keeps_the_ecr_auth_finding() -> None:
+    # The two rules cannot match the same line, so no suppression is needed
+    # between them: an unauthenticated push reports the ECR finding and nothing
+    # from the registry rule.
+    titles = [finding.title for finding in diagnose("no basic auth credentials")]
+    assert "The CI runner could not authenticate to ECR to push the image" in titles
+    assert _REGISTRY_TITLE not in titles
+
+
+def test_a_push_auth_failure_and_a_pull_refusal_both_report() -> None:
+    # Two real failures in one job: the runner could not authenticate to push,
+    # and a pull was refused. Neither should hide the other.
+    log = (
+        "no basic auth credentials\n"
+        "Error response from daemon: pull access denied for myco/base, "
+        "repository does not exist or may require 'docker login'"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "The CI runner could not authenticate to ECR to push the image" in titles
+    assert _REGISTRY_TITLE in titles
+
+
+def test_a_successful_image_pull_reports_nothing() -> None:
+    log = (
+        "Status: Downloaded newer image for public.ecr.aws/sam/build-python3.12:latest\n"
+        "Filesystem 58G used 21G available /home/runner"
+    )
+
+    assert list(diagnose(log)) == []
+
+
+_PY_DEP_TITLE = "SAM Python dependency resolution failed"
+
+
+def test_a_successful_python_build_reports_no_dependency_failure() -> None:
+    # `Running PythonPipBuilder:ResolveDependencies` is ordinary progress output
+    # printed by every successful Python build. Matching the bare token reported
+    # a high-confidence dependency failure for a clean build.
+    log = (
+        "Building codeuri: /workspace/src runtime: python3.12 architecture: x86_64\n"
+        "Running PythonPipBuilder:ResolveDependencies\n"
+        "Running PythonPipBuilder:CopySource\n"
+        "Build Succeeded\n"
+        "Successfully created/updated stack - my-app in us-east-1"
+    )
+
+    assert list(diagnose(log)) == []
+
+
+def test_a_successful_python_build_does_not_hide_a_later_deploy_failure() -> None:
+    # The same token was also a whole-log `suppressed_by` pattern, so merely
+    # having built with pip switched the change-set rule off - the tool reported
+    # a failure that had not happened and hid the one that had.
+    log = (
+        "Running PythonPipBuilder:ResolveDependencies\n"
+        "Build Succeeded\n"
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "Parameter 'Stage' must have values"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _PY_DEP_TITLE not in titles
+    assert "AWS SAM deployment configuration or parameter resolution failed" in titles
+
+
+@pytest.mark.parametrize(
+    "log",
+    [
+        (
+            "Error: PythonPipBuilder:ResolveDependencies - {pip_failure_reason: "
+            "ERROR: Could not find a version that satisfies the requirement "
+            "pydantic-core==2.18.4}"
+        ),
+        "Could not find a version that satisfies the requirement pydantic-core==2.18.4",
+    ],
+)
+def test_a_real_python_dependency_failure_is_still_detected(log: str) -> None:
+    titles = [finding.title for finding in diagnose(log)]
+    assert _PY_DEP_TITLE in titles
+
+
+def test_redaction_leaves_ordinary_urls_alone() -> None:
+    for text in (
+        "see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html",
+        "https://github.com/jakegold1647/sam-doctor",
+        "Uploading to my-bucket/artifact.zip (100%)",
+        "tokenizer=fast",
+    ):
+        assert redact(text) == text
+
+
 def test_redaction_covers_bearer_and_jwt_style_tokens() -> None:
     bearer_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJydW4ifQ.signaturevalue123"
     result = redact(f"Authorization: Bearer {bearer_token} standalone {bearer_token}")
@@ -1734,6 +1939,214 @@ def test_an_iam_worded_s3_denial_stays_with_the_policy_layer_finding() -> None:
     titles = [finding.title for finding in diagnose(log)]
     assert "The deployment bucket denied access to the packaged artifacts" not in titles
     assert "An explicit deny blocked a deployment action" in titles
+
+
+_TAG_DENIED_TITLE = "Tagging was denied while the resource operation itself was allowed"
+_TAG_VALIDATION_TITLE = "A tag key or value was rejected by validation"
+
+
+def test_tag_on_create_denial_gets_the_tagging_finding() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the CreateRole "
+        "operation: User: arn:aws:iam::123456789012:user/deploy is not "
+        "authorized to perform: iam:TagRole on resource: role my-app-role"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_DENIED_TITLE in titles
+    # The denied action is the tag, so the generic denial would only restate it
+    # less usefully.
+    assert "AWS denied an API action required by the deployment" not in titles
+
+
+def test_tag_denial_names_the_denied_action_in_its_context() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the CreateFunction "
+        "operation: User is not authorized to perform: lambda:TagResource on "
+        "resource: function my-app-fn"
+    )
+
+    findings = [f for f in diagnose(log) if f.title == _TAG_DENIED_TITLE]
+    assert findings, "the tagging rule did not fire"
+    assert "lambda:TagResource" in findings[0].explanation
+
+
+def test_a_non_tag_denial_in_the_same_log_still_reports_the_iam_denial() -> None:
+    # The roadmap requirement for this rule: claiming the tag line must not
+    # silence an unrelated denial that happens to share the log.
+    log = (
+        "An error occurred (AccessDenied) when calling the CreateRole "
+        "operation: User is not authorized to perform: iam:TagRole on "
+        "resource: role my-app-role\n"
+        "An error occurred (AccessDenied) when calling the CreateChangeSet "
+        "operation: User is not authorized to perform: "
+        "cloudformation:CreateChangeSet because no identity-based policy "
+        "allows the cloudformation:CreateChangeSet action"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_DENIED_TITLE in titles
+    assert "A deployment action was denied because no policy allows it" in titles
+
+
+def test_a_denial_on_the_create_action_is_not_reported_as_a_tagging_problem() -> None:
+    log = (
+        "An error occurred (AccessDenied) when calling the CreateRole "
+        "operation: User is not authorized to perform: iam:CreateRole on "
+        "resource: role my-app-role"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_DENIED_TITLE not in titles
+    assert "AWS denied an API action required by the deployment" in titles
+
+
+def test_a_benign_tag_listing_does_not_report_a_tag_finding() -> None:
+    log = "Tags: Environment=prod, Team=platform, CostCenter=1234"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_DENIED_TITLE not in titles
+    assert _TAG_VALIDATION_TITLE not in titles
+
+
+def test_reserved_tag_prefix_reports_the_validation_finding() -> None:
+    log = (
+        "1 validation error detected: Value 'aws:team' at "
+        "'tags.1.member.key' failed to satisfy constraint: Member must "
+        "satisfy regular expression pattern"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_VALIDATION_TITLE in titles
+    # A rejected tag key is a template problem; reporting it as a permission
+    # failure would send the reader to the wrong place entirely.
+    assert _TAG_DENIED_TITLE not in titles
+    assert "AWS denied an API action required by the deployment" not in titles
+
+
+def test_tag_value_validation_failure_reports_the_validation_finding() -> None:
+    log = (
+        "1 validation error detected: Value 'build 12:34' at "
+        "'tags.3.member.value' failed to satisfy constraint: Member must "
+        "satisfy regular expression pattern"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _TAG_VALIDATION_TITLE in titles
+
+
+_KMS_ENV_TITLE = "Lambda could not use the KMS key for its environment variables"
+
+
+def test_kms_env_var_failure_gets_the_kms_finding() -> None:
+    log = (
+        "CREATE_FAILED  AWS::Lambda::Function  Worker  Lambda was unable to "
+        "configure access to your environment variables because the KMS key is "
+        "invalid for CreateGrant. Please check your KMS key settings. KMS "
+        "Exception: InvalidArnException (Service: Lambda, Status Code: 400; "
+        "Error Code: InvalidParameterValueException)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _KMS_ENV_TITLE in titles
+    # CloudFormation prints the status reason on the same line as the event, so
+    # the generic resource-failure rule would restate this one less usefully.
+    assert "CloudFormation resource creation or update failed" not in titles
+
+
+def test_a_kms_denial_is_not_routed_to_the_generic_iam_denial() -> None:
+    # The point of the rule: this line contains AccessDeniedException, and the
+    # generic denial would send the reader to the IAM policy simulator when the
+    # thing to review is the KMS key policy.
+    log = (
+        "KMS Exception: AccessDeniedException The ciphertext refers to a "
+        "customer master key that does not exist, does not exist in this "
+        "region, or you are not allowed to access."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _KMS_ENV_TITLE in titles
+    assert "AWS denied an API action required by the deployment" not in titles
+
+
+def test_a_disabled_kms_key_gets_the_kms_finding() -> None:
+    log = (
+        "UPDATE_FAILED  AWS::Lambda::Function  Worker  Lambda was unable to "
+        "configure your environment variables because the environment "
+        "variables you have provided contains reserved keys or the KMS key "
+        "provided is disabled. KMS Exception: DisabledException (Error Code: "
+        "InvalidParameterValueException)"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _KMS_ENV_TITLE in titles
+
+
+def test_a_successful_env_var_configuration_reports_no_kms_finding() -> None:
+    log = (
+        "Environment variables encrypted with the customer managed key were "
+        "configured for Worker"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _KMS_ENV_TITLE not in titles
+
+
+_SSM_TITLE = "An SSM parameter referenced by the template could not be resolved"
+_SAM_CONFIG_TITLE = "AWS SAM deployment configuration or parameter resolution failed"
+
+
+def test_unresolvable_ssm_reference_gets_the_ssm_finding() -> None:
+    log = "Parameters: [ssm:/my-app/prod/db-password] cannot be found."
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _SSM_TITLE in titles
+
+
+def test_ssm_finding_suppresses_the_generic_configuration_rule() -> None:
+    # CloudFormation prints the generic changeset wrapper on its own line, so
+    # this rule suppresses the generic finding for the whole log rather than
+    # excluding a line - both lines describe one failure.
+    log = (
+        "Error: Failed to create changeset for the stack: my-app\n"
+        "Parameters: [ssm:/my-app/prod/db-password] cannot be found."
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _SSM_TITLE in titles
+    assert _SAM_CONFIG_TITLE not in titles
+
+
+def test_ssm_parameter_not_found_wording_also_matches() -> None:
+    log = "SSM parameter /my-app/prod/api-key not found."
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _SSM_TITLE in titles
+
+
+def test_a_generic_missing_parameter_is_not_reported_as_an_ssm_failure() -> None:
+    # The pre-existing wording must keep its own finding: this rule targets
+    # SSM-specific shapes only.
+    log = "Parameter 'Stage' must have values"
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _SSM_TITLE not in titles
+    assert _SAM_CONFIG_TITLE in titles
+
+
+def test_kms_env_var_failure_keeps_an_unrelated_resource_failure_visible() -> None:
+    log = (
+        "CREATE_FAILED  AWS::Lambda::Function  Worker  Lambda was unable to "
+        "configure access to your environment variables. KMS Exception: "
+        "DisabledException\n"
+        "CREATE_FAILED  AWS::DynamoDB::Table  Orders  Resource handler "
+        "returned message: throughput exceeded"
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert _KMS_ENV_TITLE in titles
+    # Excluding the KMS line must not silence the other failed resource.
+    assert "CloudFormation resource creation or update failed" in titles
 
 
 def test_artifact_bucket_denial_keeps_unrelated_resource_failures_visible() -> None:

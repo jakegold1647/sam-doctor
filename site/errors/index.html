@@ -44,7 +44,11 @@
           <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — unauthenticated Docker push to Amazon ECR.</li>
           <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
           <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
+          <li><a href="./tag-action-denied.html">Not authorized to perform: iam:TagRole</a> — the create was allowed and the tagging was not; grant the tagging action with the create action.</li>
+          <li><a href="./tag-key-validation-failed.html">Value at 'tags.N.member.key' failed to satisfy constraint</a> — the reserved <code>aws:</code> prefix and the tag character and length limits.</li>
           <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the repository policy gating the Lambda service's own pull.</li>
+          <li><a href="./lambda-env-vars-kms-key.html">Lambda was unable to configure access to your environment variables</a> — read the <code>KMS Exception:</code> inside the wrapper: key policy, disabled key, or wrong-Region ARN.</li>
+          <li><a href="./ssm-parameter-cannot-be-found.html">Parameters: [ssm:/path] cannot be found</a> — dynamic references resolve in the target account and Region, not where you wrote the template.</li>
           <li><a href="./unable-to-get-id-token.html">Unable to get ID Token</a> — the id-token: write permission the OIDC credentials step needs.</li>
           <li><a href="./incorrect-token-audience.html">Incorrect token audience (InvalidIdentityToken)</a> — a token minted for a different consumer than STS expects.</li>
           <li><a href="./no-oidc-provider.html">No OpenIDConnect provider found in your account</a> — the per-account IAM registration OIDC deploys need first.</li>
@@ -83,6 +87,8 @@
         <h2 id="build-title">Build and template errors</h2>
         <ul>
           <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — container builds without a reachable Docker daemon.</li>
+          <li><a href="./docker-image-pull-failed.html">pull access denied / manifest unknown</a> — the daemon replied, so it is running: the registry refused, or the tag is not there.</li>
+          <li><a href="./build-host-disk-full.html">no space left on device (ENOSPC)</a> — container layers, restored caches, and the runner's preinstalled toolchains.</li>
           <li><a href="./esbuild-not-found.html">Esbuild Failed: Cannot find esbuild</a> — the bundler missing from the function project or runner.</li>
           <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — API Gateway deployment/method ordering races.</li>
           <li><a href="./invalid-sam-document.html">InvalidSamDocumentException / property not defined for resource type</a> — template schema validation before any resource exists.</li>

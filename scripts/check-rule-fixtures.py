@@ -101,6 +101,57 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="AccessDeniedException: action is not authorized",
         negative="The API call completed without an access denial",
     ),
+    "iam.tag.action-denied": RuleFixture(
+        positive=(
+            "An error occurred (AccessDenied) when calling the CreateRole "
+            "operation: User is not authorized to perform: iam:TagRole on "
+            "resource: role my-app-role"
+        ),
+        # A denial on the create action itself, not the tag: it must keep
+        # producing the IAM denial findings rather than this one.
+        negative=(
+            "User is not authorized to perform: iam:CreateRole on resource: "
+            "role my-app-role"
+        ),
+    ),
+    "cloudformation.tag.key-validation-failed": RuleFixture(
+        positive=(
+            "1 validation error detected: Value 'aws:team' at "
+            "'tags.1.member.key' failed to satisfy constraint: Member must "
+            "satisfy regular expression pattern"
+        ),
+        negative="Tags: Environment=prod, Team=platform, CostCenter=1234",
+    ),
+    "docker.registry.image-unavailable": RuleFixture(
+        positive=(
+            "Error response from daemon: pull access denied for myco/base, "
+            "repository does not exist or may require 'docker login'"
+        ),
+        negative="Status: Downloaded newer image for myco/base:latest",
+    ),
+    "build.host.disk-full": RuleFixture(
+        positive="failed to write layer: no space left on device",
+        negative="Filesystem 58G used 21G available /home/runner",
+    ),
+    "ssm.parameter.resolution-failed": RuleFixture(
+        positive="Parameters: [ssm:/my-app/prod/db-password] cannot be found.",
+        # The pre-existing generic parameter wording must keep its own finding:
+        # this rule targets SSM-specific shapes only.
+        negative="Parameter 'Stage' must have values",
+    ),
+    "lambda.env-vars.kms-key-inaccessible": RuleFixture(
+        positive=(
+            "CREATE_FAILED  AWS::Lambda::Function  Worker  Lambda was unable "
+            "to configure access to your environment variables because the KMS "
+            "key is invalid for CreateGrant. Please check your KMS key "
+            "settings. KMS Exception: InvalidArnException (Service: Lambda, "
+            "Status Code: 400; Error Code: InvalidParameterValueException)"
+        ),
+        negative=(
+            "Environment variables encrypted with the customer managed key "
+            "were configured for Worker"
+        ),
+    ),
     "s3.artifact-bucket.access-denied": RuleFixture(
         positive=(
             "Error: Failed to create changeset for the stack: my-app, An "
