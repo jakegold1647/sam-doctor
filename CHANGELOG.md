@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **PyPI recovery now publishes only immutable, prebuilt release assets.** A
+  default-branch validator resolves strict stable tags, verifies the tagged project
+  version, release state, GitHub asset IDs and SHA-256 digests, and embedded wheel and
+  source metadata before environment approval. The OIDC job performs the same checks
+  and re-downloads the same asset IDs after approval; it cannot check out an arbitrary
+  ref or rebuild package contents.
+
 - **Every public guide now carries a complete social sharing card.** Open Graph
   and Twitter metadata is generated from each page's canonical title and URL,
   uses the local branded preview image, and is checked for completeness and

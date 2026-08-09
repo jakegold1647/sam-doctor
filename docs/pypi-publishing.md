@@ -1,8 +1,10 @@
 # Publishing SAM Doctor to PyPI
 
 SAM Doctor's release workflow publishes a normal release for plain version tags and
-publishes prereleases for tags with pre-release suffixes. PyPI publishes on the
-`release` GitHub event only when the release is not marked as a prerelease.
+publishes prereleases for tags with pre-release suffixes. After a stable release has
+both package artifacts, that workflow dispatches the separate PyPI workflow from the
+repository's default branch. The PyPI workflow is manual-dispatch only; it never runs
+a publisher definition taken from a release tag.
 
 ## One-time owner setup
 
@@ -13,8 +15,10 @@ publishes prereleases for tags with pre-release suffixes. PyPI publishes on the
    - Repository: `sam-doctor`
    - Workflow filename: `pypi-publish.yml`
    - Environment name: `pypi`
-2. In the GitHub repository, configure the existing `pypi` environment with the
-   desired deployment protection rule or reviewers before the first stable release.
+2. In the GitHub repository, configure the existing `pypi` environment with a
+   required reviewer before the first stable release. Keep that protection in place:
+   the environment is the human approval boundary between validation and OIDC
+   publication.
 3. Confirm the package name is still available immediately before publishing.
 
 The pending publisher does not reserve the package name. If another account
@@ -36,17 +40,43 @@ than attempting to take it over.
    users get the new one - the drift `docs/v1-milestone.md` item 1 warns
    about.
 
-The release workflow explicitly dispatches `pypi-publish.yml` for stable tags
-because releases created with the repository `GITHUB_TOKEN` do not fan out a
-second workflow from the `release` event. Both that dispatch and the strict
-post-publish health check run from `main`, where the current workflow definition
-is available. The publisher then checks out the requested release tag before
-building, so the package contents stay tied to the release being recovered.
+The release workflow creates the GitHub release with `dist/*` before it dispatches
+`pypi-publish.yml` for a stable tag. The PyPI workflow accepts only a dispatch from
+the current default-branch head. Before requesting environment approval, its trusted
+validator:
 
-To retry a stable publication, run the PyPI workflow manually and provide the
-same `release-tag` value. In the GitHub UI, open **Actions -> Publish to PyPI ->
-Run workflow**, choose `main` as the workflow ref, and enter the stable release
-tag (for example, `v0.7.6`) in `release-tag`.
+- requires an exact `vMAJOR.MINOR.PATCH` tag with no prerelease text or leading
+  zeroes;
+- peels lightweight or annotated tags to a commit and checks that commit's
+  `pyproject.toml` project name and version;
+- requires a published, non-draft, non-prerelease GitHub release containing exactly
+  the canonical wheel and source archive;
+- records each GitHub asset's immutable numeric ID, non-empty size, and lowercase
+  SHA-256 digest; and
+- downloads both assets and verifies their digest plus the `Name` and `Version` in
+  wheel `METADATA` and source-archive `PKG-INFO`.
+
+Only after those checks pass does the `publish` job enter the protected `pypi`
+environment. After approval it fetches the same validator from the already-recorded
+default-branch commit, verifies the validator's own SHA-256 digest, resolves the tag
+and release again, and re-downloads the same immutable asset IDs. Any tag, commit,
+asset ID, name, size, digest, or package-metadata change fails the run before the
+publisher requests an OIDC token. The OIDC job never checks out an operator-supplied
+ref, installs build tools, or rebuilds the package.
+
+To retry a stable publication, run the PyPI workflow manually and provide the same
+`release-tag` value. In the GitHub UI, open **Actions -> Publish to PyPI -> Run
+workflow**, choose the current default branch (`main`) as the workflow ref, and enter
+the exact stable release tag (for example, `v0.11.0`) in `release-tag`. A stale
+default-branch workflow dispatch fails and must be dispatched again.
+
+Recovery is intentionally fail closed. A legacy release with missing, renamed,
+empty, duplicate, digestless, or invalid package assets cannot publish through this
+workflow. It does not fall back to rebuilding a tag. Restore independently verified
+canonical assets through a separately reviewed process, or leave that release
+unpublished on PyPI. Re-running a release that is already present on PyPI remains a
+safe no-op because the publisher skips existing filenames only after every validation
+and recheck succeeds.
 
 The workflow uses PyPI Trusted Publishing with a short-lived GitHub Actions OIDC
 token. It does not require a long-lived PyPI API token in repository secrets.
