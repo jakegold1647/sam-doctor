@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Release tags can no longer supply code to a write-capable workflow.** GitHub
+  releases now start by manual dispatch from the current default-branch head,
+  build reviewed tag history with read-only permissions, and transfer only
+  fingerprinted distributions to the job that creates releases, dispatches
+  PyPI, and advances `v0`.
+
 - **PyPI recovery now publishes only immutable, prebuilt release assets.** A
   default-branch validator resolves strict stable tags, verifies the tagged project
   version, release state, GitHub asset IDs and SHA-256 digests, and embedded wheel and

@@ -40,7 +40,9 @@ than attempting to take it over.
    users get the new one - the drift `docs/v1-milestone.md` item 1 warns
    about.
 
-The release workflow creates the GitHub release with `dist/*` before it dispatches
+The manually dispatched release workflow builds the selected reviewed tag in a
+read-only job, transfers only the fingerprinted wheel and source archive to its
+write-capable job, and creates the GitHub release before it dispatches
 `pypi-publish.yml` for a stable tag. The PyPI workflow accepts only a dispatch from
 the current default-branch head. Before requesting environment approval, its trusted
 validator:

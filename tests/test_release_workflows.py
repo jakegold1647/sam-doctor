@@ -44,18 +44,74 @@ def test_external_workflow_actions_use_immutable_commit_shas() -> None:
     )
 
 
-def test_stable_release_dispatches_pypi_from_main() -> None:
-    workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
-        encoding="utf-8"
-    )
+def test_release_build_is_manual_default_branch_and_read_only() -> None:
+    path = ROOT / ".github" / "workflows" / "release.yml"
+    parsed = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
 
-    release_creation = workflow.index('gh release create "$TAG" dist/*')
-    dispatch_start = workflow.index("gh workflow run pypi-publish.yml")
-    dispatch = workflow[dispatch_start:]
+    assert set(parsed["on"]) == {"workflow_dispatch"}
+    assert parsed["permissions"] == {}
+    assert parsed["concurrency"] == {
+        "group": "release-publishing",
+        "cancel-in-progress": "false",
+    }
 
-    assert release_creation < dispatch_start
-    assert "--ref main" in dispatch
-    assert '-f release-tag="$TAG"' in dispatch
+    build = parsed["jobs"]["build"]
+    assert build["permissions"] == {"contents": "read"}
+    resolver = build["steps"][0]
+    assert resolver["env"]["RELEASE_TAG"] == "${{ inputs.release-tag }}"
+    resolver_script = resolver["run"]
+    for required in (
+        'GITHUB_REF" != "refs/heads/${default_branch}',
+        'WORKFLOW_SHA" != "$default_commit',
+        "/git/ref/tags/${encoded_tag}",
+        "/git/tags/${tag_commit}",
+        "/compare/${tag_commit}...${default_commit}",
+        "merge_base_commit.sha",
+    ):
+        assert required in resolver_script
+
+    checkout = build["steps"][1]
+    assert checkout["with"]["ref"] == "${{ steps.resolve.outputs.tag_commit }}"
+    assert checkout["with"]["persist-credentials"] == "false"
+    serialized_steps = yaml.dump(build["steps"])
+    assert "python -m build" in serialized_steps
+    assert "actions/upload-artifact@" in serialized_steps
+    assert "contents: write" not in yaml.dump(build)
+    assert "actions: write" not in yaml.dump(build)
+
+
+def test_release_write_job_only_verifies_and_publishes_prebuilt_bytes() -> None:
+    path = ROOT / ".github" / "workflows" / "release.yml"
+    parsed = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    publish = parsed["jobs"]["publish"]
+
+    assert publish["needs"] == "build"
+    assert publish["permissions"] == {"actions": "write", "contents": "write"}
+    serialized_steps = yaml.dump(publish["steps"])
+    assert "actions/checkout@" not in serialized_steps
+    assert "actions/setup-python@" not in serialized_steps
+    assert "pip install" not in serialized_steps
+    assert "python " not in serialized_steps
+    assert 'gh run download "$GITHUB_RUN_ID"' in publish["steps"][0]["run"]
+    assert "sha256sum --check --strict" in publish["steps"][1]["run"]
+    release_script = publish["steps"][2]["run"]
+    assert 'gh release create "$RELEASE_TAG"' in release_script
+    assert "/git/ref/tags/${encoded_tag}" in release_script
+    assert 'current_tag_commit" != "$TAG_COMMIT' in release_script
+    assert ".draft == false" in release_script
+    assert ".assets | type" in release_script
+    assert ".digest == $wheel_digest" in release_script
+    assert ".digest == $sdist_digest" in release_script
+    assert "dist/*" not in serialized_steps
+
+    stable_step = publish["steps"][-1]
+    assert stable_step["if"] == "${{ needs.build.outputs.prerelease == 'false' }}"
+    assert "gh workflow run pypi-publish.yml" in stable_step["run"]
+    assert '--ref "$DEFAULT_BRANCH"' in stable_step["run"]
+    assert '-f release-tag="$RELEASE_TAG"' in stable_step["run"]
+    assert "/git/refs/tags/v0" in stable_step["run"]
+    assert "/compare/${v0_commit}...${TAG_COMMIT}" in stable_step["run"]
+    assert "v0 already points to a newer stable release" in stable_step["run"]
 
 
 def test_pypi_publish_uses_only_default_branch_manual_dispatch() -> None:

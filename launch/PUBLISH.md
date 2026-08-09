@@ -18,7 +18,7 @@ python -m sam_doctor.cli demo
 Confirm that the version in `pyproject.toml`, `src/sam_doctor/__init__.py`,
 `CHANGELOG.md`, and the release note all agree.
 
-For a quick machine-check of repository release readiness before tag push, run:
+For a quick machine-check of repository release readiness before publishing, run:
 
 ```powershell
 python scripts/check-launch-readiness.py --repo jakegold1647/sam-doctor
@@ -27,10 +27,13 @@ python scripts/check-launch-readiness.py --repo jakegold1647/sam-doctor
 ## 2. Publish the public tool
 
 1. Open the repository's Actions tab and confirm the `Verify free core` workflow passes.
-2. Push the matching `vX.Y.Z` tag. The `Publish release` workflow builds the
-   wheel and source archive. It creates a regular release for plain semantic
-   version tags (such as `v0.7.4`) and a prerelease for pre-release tag names
-   (such as `v0.7.4-rc.1`) using `launch/RELEASE-${TAG}.md` when present.
+2. Create and push the matching `vX.Y.Z` tag, then open **Actions -> Publish
+   release -> Run workflow** on `main` and enter that exact tag. The workflow
+   accepts only a tag on the reviewed `main` history. It builds the wheel and
+   source archive without write permission, then transfers the verified bytes
+   to the release job. Plain semantic version tags (such as `v0.7.4`) create a
+   regular release; pre-release tag names (such as `v0.7.4-rc.1`) create a
+   prerelease using `launch/RELEASE-${TAG}.md` when present.
 3. Verify the release is published and not a pre-release before final
    Marketplace publishing. A draft or pre-release can cause Marketplace and GitHub
    to surface misleading "Latest pre-release" metadata.
