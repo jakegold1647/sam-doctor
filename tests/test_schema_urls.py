@@ -122,3 +122,49 @@ def test_the_diagnose_schema_accepts_a_report_containing_every_rule() -> None:
     errors = sorted(Draft202012Validator(schema).iter_errors(payload), key=lambda e: list(e.path))
 
     assert errors == [], "\n".join(f"{list(e.path)}: {e.message}" for e in errors[:5])
+
+
+def test_the_rules_and_sarif_schemas_accept_full_catalog_payloads() -> None:
+    # Same reasoning as the diagnose case above, for the other two schemas that can
+    # be produced offline. `rules --format json` is inherently full-catalog; the
+    # SARIF one is not, so it gets two sources' worth of every rule.
+    from jsonschema import Draft202012Validator
+
+    from sam_doctor.diagnostics import (
+        Finding,
+        rules_report,
+        sarif_report,
+        supported_rules,
+    )
+
+    findings = [
+        Finding(
+            rule_id=rule.id,
+            title=rule.title,
+            confidence=rule.confidence,
+            explanation=rule.explanation,
+            verification=rule.verification,
+            documentation_url=rule.documentation_url,
+            evidence=("2026-08-02 CREATE_FAILED some log line",),
+            line_number=index + 1,
+        )
+        for index, rule in enumerate(supported_rules())
+    ]
+
+    payloads = {
+        "rules-report.schema.json": json.loads(rules_report("json")),
+        "sarif-report.schema.json": json.loads(
+            sarif_report([("a.log", findings), ("b.log", findings)])
+        ),
+    }
+
+    for schema_file, payload in payloads.items():
+        schema = json.loads(
+            (REPO_ROOT / "docs" / "schemas" / schema_file).read_text(encoding="utf-8")
+        )
+        errors = sorted(
+            Draft202012Validator(schema).iter_errors(payload), key=lambda e: list(e.path)
+        )
+        assert errors == [], f"{schema_file}: " + "; ".join(
+            f"{list(e.path)}: {e.message}" for e in errors[:3]
+        )
