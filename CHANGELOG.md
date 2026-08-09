@@ -4,6 +4,21 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **A `#` in a log filename sent the SARIF finding to the wrong place.**
+  `artifactLocation.uri` is a URI reference rather than a path, and the log name
+  was written into it unencoded. In a URI a `#` starts a fragment, so
+  `logs/#build.log` reached a consumer as the path `logs/` — the finding
+  attributed to the directory, the filename discarded. A space is not legal in a
+  URI at all, and a strict consumer rejecting the document loses every finding in
+  it rather than just the one. Both are percent-encoded now.
+
+  The colon after a Windows drive letter is encoded too, which looks like
+  over-encoding and is not: RFC 3986 forbids a colon in the first segment of a
+  relative reference because it is ambiguous, and `C:/builds/deploy.log` really
+  does parse with `C` as a scheme, dropping the drive from the path. Ordinary
+  relative paths are untouched, so what code scanning matches against the
+  repository is unchanged.
+
 - **Coloured logs no longer lose findings.** The SAM CLI colours its own output,
   as do most build tools, so a log saved from a terminal or downloaded raw from a
   CI provider can read `ESC[31mFAILED ESC[0m` where a rule pattern expects
