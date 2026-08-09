@@ -1498,6 +1498,13 @@ _RULES = (
             r"The submitted information didn't contain changes",
             r"No updates are to be performed",
             r"is in (?:CREATE|UPDATE|DELETE)_IN_PROGRESS state and (?:can not|cannot) be updated",
+            # The ROLLBACK_COMPLETE variant of the sentence above. CloudFormation
+            # returns both inside the CreateChangeSet ValidationError, on the same
+            # line as the generic wrapper this rule matches, so they cannot be
+            # describing separate failures - and the recreate-required rule says
+            # what to actually do, where this rule would only suggest checking
+            # `samconfig.toml` and running `sam validate`.
+            r"is in ROLLBACK_COMPLETE state and (?:can not|cannot) be updated",
             r"OperationInProgressException",
             r"Unable to upload artifact",
             r"refers to a file or folder that does not exist",

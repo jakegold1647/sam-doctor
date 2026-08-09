@@ -4,6 +4,25 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **A stack in `ROLLBACK_COMPLETE` reported the right answer and a distracting
+  one.** CloudFormation returns "is in ROLLBACK_COMPLETE state and can not be
+  updated" inside the `CreateChangeSet` ValidationError, on the same line as the
+  generic wrapper - so the precise recreate-required finding arrived alongside
+  the generic configuration finding, which tells the reader to run
+  `sam validate --lint` and check `samconfig.toml` for a stack that simply has
+  to be deleted first. The `*_IN_PROGRESS` form of the same sentence was already
+  suppressed; the ROLLBACK_COMPLETE form was not. It is now, matching its
+  sibling.
+
+  Found by a new whole-log test file. Every other test hands a rule the single
+  line it was written for, but real output wraps the status reason inside a
+  ValidationError, prints several failed resources for one stack, and threads
+  progress lines through all of it - and precedence between rules only matters
+  in that shape. Eight realistic logs now assert the whole finding *set*,
+  including a clean deployment that must report nothing, a stack that fails
+  three resources at once and must report all three, and an unrecognised failure
+  reason that must name the failed resource without inventing a cause for it.
+
 - **Determinism is now checked across processes, not just within one.** The
   README promises identical output for identical input, and the existing tests
   render twice in the same process - where dict and set iteration order is
