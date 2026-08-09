@@ -57,8 +57,6 @@
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/unable-to-get-id-token.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/unable-to-upload-artifact.html</loc></url>
   <url><loc>https://jakegold1647.github.io/sam-doctor/errors/update-rollback-failed.html</loc></url>
-  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/apigateway-too-many-requests.html</loc></url>
-  <url><loc>https://jakegold1647.github.io/sam-doctor/errors/iam-policy-quota-exceeded.html</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md</loc></url>
   <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md</loc></url>
