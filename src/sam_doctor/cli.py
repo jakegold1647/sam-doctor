@@ -737,7 +737,12 @@ def _packet_command(args: argparse.Namespace) -> int:
         findings = diagnose(stdin_text)
     else:
         source_path = Path(args.input)
-        source_name = str(source_path)
+        # File name only, not the path it was read from. This packet exists to be
+        # shared - its own notes say to discuss the case using these files - and
+        # CONTRIBUTING asks contributors never to post private repository names,
+        # which is exactly what a working path usually contains, along with the
+        # OS user name. The name is the part that carries diagnostic meaning.
+        source_name = source_path.name
         text = _read_text(source_path)
         findings = diagnose(text)
 
@@ -793,7 +798,10 @@ def _request_packet_command(args: argparse.Namespace) -> int:
         text = stdin_text
     else:
         source_path = Path(args.input)
-        source_name = str(source_path)
+        # File name only: this excerpt is written to be pasted into a public rule
+        # request, and a full working path usually names the repository - which
+        # CONTRIBUTING tells contributors never to post - as well as the OS user.
+        source_name = source_path.name
         text = _read_text(source_path)
 
     excerpt = likely_error_excerpt(text, context=args.context, max_lines=args.max_lines)
