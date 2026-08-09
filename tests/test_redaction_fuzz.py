@@ -38,6 +38,14 @@ SECRETS = (
     # Credentials in a URL against a dotless internal host, which the email
     # pattern that used to catch this incidentally cannot match.
     "https://oauth2:glpat-fuzzgitlabtoken12345@gitlab/team/repo.git",
+    # Basic auth: base64 of user:password, so it hands over a reusable credential
+    # rather than an expiring token. Bearer was handled and this was not.
+    "Authorization: Basic ZnV6ei1iYXNpYy1jcmVkZW50aWFs",
+    # Incoming webhook URLs, which are credentials in link form - whoever holds
+    # one can post as the integration. A deploy notification step prints them
+    # when the post fails, which is the log that ends up attached to a report.
+    "https://hooks.slack.com/services/T00000000/B00000000/fuzzslackwebhooktoken00",
+    "https://discord.com/api/webhooks/123456789012/fuzzdiscordwebhooktoken",
 )
 
 LEAK_MARKERS = (
@@ -56,6 +64,9 @@ LEAK_MARKERS = (
     "je7MtGbClwBF",
     "fuzzslackbot",
     "deadbeef" * 8,
+    "ZnV6ei1iYXNpYy1jcmVkZW50aWFs",
+    "fuzzslackwebhooktoken00",
+    "fuzzdiscordwebhooktoken",
 )
 
 
@@ -104,3 +115,42 @@ def test_fuzzed_logs_never_leak_identifiers_in_any_format() -> None:
     # Guard against vacuity: the fuzz must actually have pushed secrets into
     # rendered evidence, not just onto lines the reports never show.
     assert rendered_redactions > 50
+
+
+def test_a_webhook_url_is_redacted_whole_not_in_pieces() -> None:
+    # Ordering trap, hit while adding this: a Discord webhook path starts with a
+    # numeric id, and the twelve-digit account-id pass rewrites that id first.
+    # After that this URL no longer looks like a webhook, so the token half - the
+    # part that is actually the secret - survived into the report while the
+    # harmless id was starred out. The webhook pass has to run before it.
+    from sam_doctor.redaction import redact
+
+    text = "POST https://discord.com/api/webhooks/123456789012/tokenpart-abcdef failed"
+
+    redacted = redact(text)
+
+    assert "tokenpart-abcdef" not in redacted
+    assert redacted == "POST [REDACTED_WEBHOOK_URL] failed"
+
+
+def test_ordinary_documentation_links_are_left_alone() -> None:
+    # Over-redaction has a cost of its own: every rule points at a documentation
+    # URL, and a report that stars them out is harder to act on.
+    from sam_doctor.redaction import redact
+
+    for url in (
+        "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html",
+        "https://api.slack.com/messaging/webhooks",
+        "https://github.com/jakegold1647/sam-doctor",
+    ):
+        assert redact(url) == url
+
+
+def test_the_ecr_rule_line_survives_redaction() -> None:
+    # "no basic auth credentials" is the ECR rule's own pattern. A Basic-auth
+    # rule that matched the prose would redact the very line a diagnosis needs.
+    from sam_doctor.redaction import redact
+
+    line = "Error response from daemon: Head https://registry/v2/app: no basic auth credentials"
+
+    assert "no basic auth credentials" in redact(line)

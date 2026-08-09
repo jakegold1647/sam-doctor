@@ -4,6 +4,27 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Two credentials survived redaction: `Authorization: Basic` and incoming
+  webhook URLs.** `Bearer` was handled and `Basic` was not, which is the wrong way
+  round if either had to be missed — a Basic value is base64 of `user:password`,
+  so it hands over a reusable credential rather than a token that expires. Docker,
+  npm and pip registry auth all print that header, as does any verbose curl.
+  Incoming webhook URLs (Slack, Discord, Teams) are credentials in link form:
+  whoever holds one can post as the integration, and a deploy notification step
+  prints the URL when its own post fails — which is exactly the log someone
+  attaches to a bug report. Both are redacted now, and both are in the fuzz
+  corpus, which was confirmed to fail without the fix.
+
+  Ordering mattered more than the patterns. A Discord webhook path begins with a
+  numeric id, so the twelve-digit account-id pass rewrote that id first, after
+  which the URL no longer looked like a webhook: the harmless id was starred out
+  and the token half — the actual secret — went into the report. The webhook pass
+  runs first now, with a test naming the trap.
+
+  Over-redaction was checked too, because it has its own cost: the ECR rule's own
+  `no basic auth credentials` line and every documentation URL come through
+  untouched.
+
 - **An output directory that could not be created crashed instead of failing.**
   `packet`, `request-packet` and `init` called `mkdir` bare, while reads
   (`_read_text`) and writes (`_write_report`) both translate `OSError` into the
