@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Evidence-packet scenarios now receive the same secret redaction as their
+  source and command fields.** A regression test puts a synthetic credential in
+  `--scenario` and checks every generated packet file before it can be shared.
+
+- **The sitemap now stays on the public site's own origin.** Search-engine entries
+  cover the 58 published pages only, while repository and package destinations
+  remain ordinary outbound links. Site QA rejects any future off-origin sitemap
+  URL instead of silently accepting it.
+
 - **The project site is now a focused, responsive product page.** The new layout
   puts the local diagnostic flow, real output shape, install path, supported
   failure families, CI example, and safety boundaries into one clear path. The

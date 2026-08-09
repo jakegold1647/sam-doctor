@@ -758,7 +758,7 @@ def _write_packet_notes(
             [
                 "# Researcher evidence packet",
                 f"- Generated: {datetime.now(timezone.utc).isoformat()}",
-                f"- Scenario: {scenario}",
+                f"- Scenario: {redact(scenario)}",
                 f"- Source: {redact(source)}",
                 f"- Command: {redact(command)}",
                 f"- Markdown report: {markdown_path.name}",

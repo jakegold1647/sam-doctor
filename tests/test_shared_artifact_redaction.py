@@ -35,6 +35,7 @@ SECRET_LINES = (
     "contact " + "release-owner@example.test",
     "token " + "ghp_" + "abcdefghij0123456789abcdefghij456789",
 )
+SCENARIO_SECRET = "leakmarkerscenario"
 
 LEAK_MARKERS = (
     "WxlYWt5LWJhc2ljLWNyZWQ",
@@ -47,6 +48,7 @@ LEAK_MARKERS = (
     "123456789012",
     "release-owner@example.test",
     "ghp_" + "abcdefghij",
+    SCENARIO_SECRET,
 )
 
 # A real failure keeps the log diagnosable, so the artifacts have findings in them
@@ -90,12 +92,26 @@ def test_no_report_format_leaks(log: Path, capsys, output_format: str) -> None:
 def test_no_packet_file_leaks(log: Path, tmp_path: Path) -> None:
     output_dir = tmp_path / "packet"
 
-    assert main(["packet", str(log), "--output-dir", str(output_dir)]) == 0
+    assert (
+        main(
+            [
+                "packet",
+                str(log),
+                "--output-dir",
+                str(output_dir),
+                "--scenario",
+                "DB_PASSWORD=" + SCENARIO_SECRET,
+            ]
+        )
+        == 0
+    )
 
     written = sorted(output_dir.iterdir())
     assert written, "the packet wrote nothing to check"
     for path in written:
         _assert_clean(path.read_text(encoding="utf-8"), f"packet/{path.name}")
+    notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
+    assert "- Scenario: DB_PASSWORD=[REDACTED_SECRET]" in notes
 
 
 def test_the_rule_request_excerpt_does_not_leak(log: Path, tmp_path: Path) -> None:

@@ -58,15 +58,4 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/unable-to-get-id-token.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/unable-to-upload-artifact.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/update-rollback-failed.html</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/github-actions-integration.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cli-exit-and-action-exit-codes.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/worked-examples.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/blob/main/examples/README.md</loc></url>
-  <url><loc>https://github.com/jakegold1647/sam-doctor/releases/latest</loc></url>
-  <url><loc>https://pypi.org/project/sam-doctor/</loc></url>
 </urlset>
