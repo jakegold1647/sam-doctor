@@ -1,7 +1,10 @@
 import importlib.util
+import os
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
+
+import pytest
 
 
 def _load_module(root: Path):
@@ -76,6 +79,20 @@ def test_main_rejects_unknown_error() -> None:
         assert exc.code == 2
     else:
         raise AssertionError("Expected argparse to exit with code 2 for invalid error option")
+
+
+def test_main_rejects_hard_link_output(tmp_path: Path) -> None:
+    module = _load_module(Path(__file__).resolve().parents[1])
+    victim = tmp_path / "victim.txt"
+    victim.write_text("keep me\n", encoding="utf-8")
+    output = tmp_path / "snippet.txt"
+    try:
+        os.link(victim, output)
+    except OSError as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    assert module.main(["--out", str(output)]) == 1
+    assert victim.read_text(encoding="utf-8") == "keep me\n"
 
 
 def test_snippet_links_have_real_queries_and_valid_fragments() -> None:

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlencode
@@ -66,6 +67,17 @@ CHANNEL_PREFIX = {
 
 
 BASE_URL = "https://sam-doctor.jacobgoldstein.dev/"
+
+
+def _ensure_output_target_is_not_a_hard_link(path: Path) -> None:
+    """Reject an existing output alias before writing through it."""
+
+    try:
+        hard_linked = path.exists() and path.stat().st_nlink > 1
+    except OSError as error:
+        raise ValueError(f"Could not inspect output target: {path}") from error
+    if hard_linked:
+        raise ValueError(f"Output target must not be a hard link: {path}")
 
 
 def _snippet_link(error: str, utm_medium: str) -> str:
@@ -137,7 +149,13 @@ def main(argv: list[str] | None = None) -> int:
         utm_medium=args.utm_medium,
     )
     if args.out:
-        Path(args.out).write_text(snippet + "\n", encoding="utf-8")
+        output = Path(args.out)
+        try:
+            _ensure_output_target_is_not_a_hard_link(output)
+            output.write_text(snippet + "\n", encoding="utf-8")
+        except (OSError, ValueError) as error:
+            print(f"snippet output error: {error}", file=sys.stderr)
+            return 1
 
     print(snippet)
     return 0

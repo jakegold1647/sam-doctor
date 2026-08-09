@@ -8,6 +8,7 @@ CSV header for a new local tracker.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 _OUTREACH_HEADER = (
@@ -16,11 +17,23 @@ _OUTREACH_HEADER = (
 )
 
 
+def _ensure_output_target_is_not_a_hard_link(path: Path) -> None:
+    """Reject an existing output alias before writing through it."""
+
+    try:
+        hard_linked = path.exists() and path.stat().st_nlink > 1
+    except OSError as error:
+        raise ValueError(f"Could not inspect outreach log target: {path}") from error
+    if hard_linked:
+        raise ValueError(f"Outreach log target must not be a hard link: {path}")
+
+
 def bootstrap_log(path: Path) -> tuple[bool, str]:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
 
     if path.exists():
+        _ensure_output_target_is_not_a_hard_link(path)
         existing = path.read_text(encoding="utf-8")
         if not existing.strip():
             path.write_text(_OUTREACH_HEADER, encoding="utf-8")
@@ -49,7 +62,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args() if argv is None else _parse_args(argv)
-    created, message = bootstrap_log(Path(args.path))
+    try:
+        created, message = bootstrap_log(Path(args.path))
+    except (OSError, ValueError) as error:
+        print(f"outreach log error: {error}", file=sys.stderr)
+        return 1
     print(message)
     return 0 if created or "already initialized" in message else 1
 

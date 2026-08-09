@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
+
+import pytest
 
 
 def _load_module(path: Path):
@@ -47,3 +50,18 @@ def test_bootstrap_rejects_mismatched_tracker(tmp_path: Path) -> None:
     created, message = module.bootstrap_log(target)
     assert not created
     assert "does not match expected header" in message
+
+
+def test_bootstrap_rejects_hard_link_tracker(tmp_path: Path) -> None:
+    module = _load_module(Path(__file__).resolve().parents[1] / "scripts" / "bootstrap-outreach-log.py")
+    victim = tmp_path / "victim.csv"
+    victim.write_text("keep me\n", encoding="utf-8")
+    target = tmp_path / "outreach-log-template.csv"
+    try:
+        os.link(victim, target)
+    except OSError as error:
+        pytest.skip(f"hard links unavailable: {error}")
+
+    with pytest.raises(ValueError, match="must not be a hard link"):
+        module.bootstrap_log(target)
+    assert victim.read_text(encoding="utf-8") == "keep me\n"
