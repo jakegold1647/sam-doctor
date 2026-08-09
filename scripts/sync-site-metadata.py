@@ -41,8 +41,9 @@ SOCIAL_IMAGE_ALT = (
 )
 SOCIAL_DESCRIPTION_OVERRIDES = {
     "index.html": (
-        "Turn a failed AWS deployment log into one evidence-backed finding and "
-        "the next safe check."
+        "Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures "
+        "into a focused next check. SAM Doctor runs locally, cites the evidence it "
+        "matched, and never needs AWS credentials."
     ),
     "quickstart.html": (
         "Start with one sanitized excerpt and get an actionable finding in "

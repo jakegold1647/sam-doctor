@@ -27,7 +27,7 @@ INDEX = """<!doctype html>
 <meta property="og:locale" content="en_US" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="SAM Doctor" />
-<meta property="og:description" content="Turn a failed AWS deployment log into one evidence-backed finding and the next safe check." />
+<meta property="og:description" content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures into a focused next check. SAM Doctor runs locally, cites the evidence it matched, and never needs AWS credentials." />
 <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/" />
 <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -36,7 +36,7 @@ INDEX = """<!doctype html>
 <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="SAM Doctor" />
-<meta name="twitter:description" content="Turn a failed AWS deployment log into one evidence-backed finding and the next safe check." />
+<meta name="twitter:description" content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures into a focused next check. SAM Doctor runs locally, cites the evidence it matched, and never needs AWS credentials." />
 <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
 <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
 <script type="application/ld+json">{{"softwareVersion": "{software}"}}</script>
