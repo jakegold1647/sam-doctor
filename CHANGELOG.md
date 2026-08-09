@@ -4,6 +4,18 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The project site is now a focused, responsive product page.** The new layout
+  puts the local diagnostic flow, real output shape, install path, supported
+  failure families, CI example, and safety boundaries into one clear path. The
+  same design system now keeps the quickstart and all 55 error guides readable
+  on narrow screens, including long commands and exact AWS error strings.
+
+- **Public site metadata now points to
+  `https://sam-doctor.jacobgoldstein.dev/`.** Canonical links, social cards,
+  structured data, sitemaps, share snippets, package metadata, documentation,
+  and their deterministic checks all move together instead of splitting search
+  and release metadata across two hostnames.
+
 - **Reports now serialize consistently across platforms.** Output files, packet
   artifacts, and redirected CLI output use UTF-8 with LF newlines instead of
   inheriting Windows newline translation. Batch input ordering now uses exact path

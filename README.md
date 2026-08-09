@@ -17,7 +17,7 @@ It does **not** access AWS, upload logs, change resources, or claim an
 authoritative root cause. It matches known patterns in text you provide. When
 nothing matches, it says so instead of guessing.
 
-[Project page](https://jakegold1647.github.io/sam-doctor/) |
+[Project page](https://sam-doctor.jacobgoldstein.dev/) |
 [GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics) |
 [Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml) |
 [Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
@@ -324,7 +324,7 @@ see [docs/stability.md](docs/stability.md). The current set:
 - IAM trust-policy shape errors and Lambda code-signing conflicts
 
 Every rule also has a human-written reference page on the
-[deployment error index](https://jakegold1647.github.io/sam-doctor/errors/) -
+[deployment error index](https://sam-doctor.jacobgoldstein.dev/errors/) -
 what the exact error string means, the fix, and read-only verification
 commands.
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jakegold1647.github.io/sam-doctor/sitemap.xml
+Sitemap: https://sam-doctor.jacobgoldstein.dev/sitemap.xml

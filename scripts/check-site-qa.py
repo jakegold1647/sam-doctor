@@ -12,7 +12,7 @@ from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SITE_ROOT = ROOT / "site"
-SITE_BASE_URL = "https://jakegold1647.github.io/sam-doctor/"
+SITE_BASE_URL = "https://sam-doctor.jacobgoldstein.dev/"
 REPO_BLOB_PREFIX = "/blob/main/"
 
 

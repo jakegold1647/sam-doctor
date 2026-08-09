@@ -52,7 +52,7 @@ jobs:
         run: |
           echo "SAM Doctor found ${{ steps.sam-doctor.outputs.finding-count }} supported finding(s)."
           echo "Start here:"
-          echo "https://jakegold1647.github.io/sam-doctor/#founder"
+          echo "https://sam-doctor.jacobgoldstein.dev/#founder"
 
       - name: Continue while running in pilot mode
         if: always() && steps.sam-doctor.outputs.has-findings == 'true' && github.event_name != 'workflow_dispatch'

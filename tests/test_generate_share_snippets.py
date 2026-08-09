@@ -86,4 +86,4 @@ def test_snippet_link_includes_query_after_anchor() -> None:
         include_command=True,
         utm_medium="x",
     )
-    assert "https://jakegold1647.github.io/sam-doctor/#proof-title?utm_source=share_script&utm_medium=x" in text
+    assert "https://sam-doctor.jacobgoldstein.dev/#proof-title?utm_source=share_script&utm_medium=x" in text

@@ -64,7 +64,7 @@ CHANNEL_PREFIX = {
 }
 
 
-BASE_URL = "https://jakegold1647.github.io/sam-doctor/"
+BASE_URL = "https://sam-doctor.jacobgoldstein.dev/"
 
 
 def _snippet_link(error: str, utm_medium: str) -> str:

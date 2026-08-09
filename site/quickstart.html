@@ -6,8 +6,8 @@
     <title>SAM Doctor Quickstart | AWS SAM, CDK, and CloudFormation Deployment Diagnostics</title>
     <meta name="description" content="Start using SAM Doctor in 60 seconds: install, run your first diagnose command, and wire GitHub Actions with an example step." />
     <meta name="author" content="Jake Goldstein" />
-    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/quickstart.html" />
-    <meta name="theme-color" content="#11152a" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/quickstart.html" />
+    <meta name="theme-color" content="#0f5c4e" />
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="SAM Doctor, AWS SAM, AWS CDK, CloudFormation, CloudFront, GitHub Actions deployment diagnostics, sam deploy, cdk deploy, aws cloudformation deploy, deployment log triage, IAM OIDC, rollback debugging" />
     <meta name="geo.region" content="US" />
@@ -24,14 +24,14 @@
       content="Install SAM Doctor in under 60 seconds, diagnose `sam deploy`, `cdk deploy`, or `aws cloudformation deploy` failures, and add fast CI triage."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://jakegold1647.github.io/sam-doctor/quickstart.html" />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/quickstart.html" />
     <meta
       property="og:image"
-      content="https://jakegold1647.github.io/sam-doctor/assets/sam-doctor-social-preview.jpg"
+      content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg"
     />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in an AWS deployment failure" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://jakegold1647.github.io/sam-doctor/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in an AWS deployment failure" />
     <meta name="twitter:title" content="SAM Doctor Quickstart | AWS SAM, CDK, and CloudFormation Deployment Diagnostics" />
     <meta
@@ -90,14 +90,11 @@
   <body>
     <a class="skip-link" href="#quickstart-content">Skip to content</a>
     <header class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
-      <nav>
+      <a class="brand" href="./"><span aria-hidden="true">SD</span><span class="brand-name">SAM Doctor</span></a>
+      <nav aria-label="Site navigation">
         <a href="./">Home</a>
-        <a href="./quickstart.html">Quickstart</a>
-        <a href="./errors/">Errors</a>
-        <a href="#download">Download</a>
-        <a href="#workflow">Workflow</a>
-        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+        <a href="./errors/">Error index</a>
+        <a class="nav-github" href="https://github.com/jakegold1647/sam-doctor">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
 
@@ -138,7 +135,7 @@ sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary -
         <p class="note">Use this in Slack/Discord:</p>
         <pre><code>I triaged a deploy failure with SAM Doctor:
 sam-doctor diagnose deployment.log --format markdown
-https://jakegold1647.github.io/sam-doctor/quickstart.html?utm_source=share_copy&utm_medium=chat</code></pre>
+https://sam-doctor.jacobgoldstein.dev/quickstart.html?utm_source=share_copy&utm_medium=chat</code></pre>
       </section>
 
       <section class="steps" aria-labelledby="first-run-title">

@@ -3,47 +3,41 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SAM Doctor | AWS SAM, AWS CDK, and CloudFormation Deployment Diagnostics</title>
+    <title>SAM Doctor | Evidence-first AWS deployment diagnostics</title>
+    <meta
+      name="description"
+      content="Turn AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures into a focused next check. SAM Doctor runs locally, cites the evidence it matched, and never needs AWS credentials."
+    />
     <meta name="author" content="Jake Goldstein" />
-    <link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/" />
-    <meta name="theme-color" content="#11152a" />
     <meta name="robots" content="index, follow" />
-    <meta name="keywords" content="AWS SAM, AWS CDK, CloudFormation, sam deploy, cdk deploy, aws cloudformation deploy, deployment diagnostics, CI diagnostics, OIDC AssumeRoleWithWebIdentity, GitHub Actions deployment errors, IaC troubleshooting, serverless debug" />
+    <meta name="keywords" content="AWS SAM, AWS CDK, CloudFormation, GitHub Actions, deployment diagnostics, OIDC, IAM AccessDenied, rollback debugging, CI diagnostics" />
     <meta name="geo.region" content="US" />
     <meta name="geo.placename" content="United States" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/" />
     <link rel="sitemap" type="application/xml" href="./sitemap.xml" />
     <link rel="alternate" type="text/plain" href="./llms.txt" />
     <link rel="alternate" href="./" hreflang="en-us" />
     <link rel="alternate" href="./" hreflang="x-default" />
-    <meta
-      name="description"
-      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally. Find the next check for AssumeRoleWithWebIdentity, InsufficientCapabilities, rollback, and AccessDenied errors without AWS credentials or log uploads."
-    />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:title" content="SAM Doctor | AWS SAM, AWS CDK, and CloudFormation Deployment Diagnostics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SAM Doctor | Evidence-first AWS deployment diagnostics" />
     <meta
       property="og:description"
-      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally, including OIDC, rollback, capability, and AccessDenied errors."
+      content="Turn a failed AWS deployment log into one evidence-backed finding and the next safe check. Local by design; no AWS credentials or log uploads."
     />
-    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
-    <meta property="og:url" content="https://jakegold1647.github.io/sam-doctor/" />
-    <meta
-      property="og:image"
-      content="https://jakegold1647.github.io/sam-doctor/assets/sam-doctor-social-preview.jpg"
-    />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
-    <meta name="twitter:title" content="SAM Doctor | AWS SAM, AWS CDK, and CloudFormation Deployment Diagnostics" />
+    <meta name="twitter:title" content="SAM Doctor | Evidence-first AWS deployment diagnostics" />
     <meta
       name="twitter:description"
-      content="Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally, including OIDC, rollback, capability, and AccessDenied errors."
+      content="Turn a failed AWS deployment log into one evidence-backed finding and the next safe check."
     />
-    <meta
-      name="twitter:image"
-      content="https://jakegold1647.github.io/sam-doctor/assets/sam-doctor-social-preview.jpg"
-    />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -52,16 +46,23 @@
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows, macOS, Linux",
         "softwareVersion": "0.11.0",
-        "description": "Diagnose AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally without AWS credentials or log uploads.",
+        "description": "Diagnose supported AWS SAM, CloudFormation, IAM, and GitHub Actions deployment failures locally without AWS credentials or log uploads.",
         "publisher": {
           "@type": "Person",
           "name": "Jake Goldstein",
           "url": "https://jacobgoldstein.dev"
         },
-        "keywords": "AWS SAM, CloudFormation deployment error, GitHub Actions OIDC, AssumeRoleWithWebIdentity, InsufficientCapabilities, IAM AccessDenied",
-        "featureList": ["Local log diagnosis", "Redacted evidence", "Safe verification steps", "GitHub Actions integration"],
-        "url": "https://jakegold1647.github.io/sam-doctor/",
-        "downloadUrl": "https://github.com/jakegold1647/sam-doctor/releases/latest",
+        "keywords": "AWS SAM, CloudFormation deployment error, GitHub Actions OIDC, IAM AccessDenied, deployment diagnostics",
+        "featureList": [
+          "Local log diagnosis",
+          "Evidence-backed findings",
+          "Redacted excerpts",
+          "Safe verification steps",
+          "GitHub Actions integration"
+        ],
+        "url": "https://sam-doctor.jacobgoldstein.dev/",
+        "downloadUrl": "https://pypi.org/project/sam-doctor/",
+        "codeRepository": "https://github.com/jakegold1647/sam-doctor",
         "license": "https://opensource.org/licenses/MIT",
         "offers": {
           "@type": "Offer",
@@ -74,45 +75,29 @@
       {
         "@context": "https://schema.org",
         "@type": "HowTo",
-        "name": "Run SAM Doctor on a failed deployment log",
-        "description": "Use SAM Doctor in a repository CI pipeline or locally to get the first actionable AWS deployment finding.",
-        "totalTime": "PT120S",
-        "tool": [
-          {
-            "@type": "HowToTool",
-            "name": "sam-doctor CLI"
-          },
-          {
-            "@type": "HowToTool",
-            "name": "GitHub Actions"
-          }
-        ],
+        "name": "Diagnose a failed AWS deployment log with SAM Doctor",
+        "description": "Install SAM Doctor, point it at a failed deployment log, and review the first evidence-backed finding.",
+        "totalTime": "PT2M",
         "step": [
           {
             "@type": "HowToStep",
-            "name": "Install SAM Doctor",
-            "text": "Install with Python pip: python -m pip install sam-doctor."
+            "name": "Install",
+            "text": "Run python -m pip install sam-doctor."
           },
           {
             "@type": "HowToStep",
-            "name": "Capture the failure log",
-            "text": "Run your deployment command and save output to deployment.log using tee."
+            "name": "Capture the failure",
+            "text": "Save the smallest authorized deployment-log excerpt."
           },
           {
             "@type": "HowToStep",
-            "name": "Run diagnosis",
-            "text": "Run `sam-doctor diagnose deployment.log --format markdown` and review the top finding."
+            "name": "Diagnose",
+            "text": "Run sam-doctor diagnose deployment.log --format markdown."
           },
           {
             "@type": "HowToStep",
-            "name": "Verify safely",
-            "text": "Use the suggested verification command, and run your deployment checks again."
-          }
-        ],
-        "supply": [
-          {
-            "@type": "HowToSupply",
-            "name": "A deployment failure log"
+            "name": "Verify",
+            "text": "Review the cited evidence and use the suggested safe verification step before changing infrastructure."
           }
         ]
       }
@@ -124,34 +109,26 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What does SAM Doctor diagnose?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "SAM Doctor recognizes explicit AWS SAM, CloudFormation, IAM, API Gateway, and GitHub Actions deployment failure patterns such as OIDC token errors, CloudFormation rollback states, capability errors, and container build failures."
-            }
-          },
-          {
-            "@type": "Question",
             "name": "Does SAM Doctor access AWS or upload logs?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The CLI and GitHub Action process only provided text locally. SAM Doctor does not call AWS APIs, upload deployment logs, or apply any automatic resource changes."
+              "text": "No. SAM Doctor processes only the text you provide, on the machine where you run it. It does not call AWS APIs, upload logs, or change resources."
             }
           },
           {
             "@type": "Question",
-            "name": "How do I use SAM Doctor in CI?",
+            "name": "What does SAM Doctor diagnose?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Run your deployment command with tee to write the output to a file, then run `sam-doctor diagnose` on that file in the same job with `if: always()` so it runs after failures. In GitHub Actions, use the provided composite action with `log-file` and `fail-on-findings: true` for strict gating."
+              "text": "It recognizes supported AWS SAM, CloudFormation, IAM, API Gateway, container-build, and GitHub Actions OIDC failure patterns."
             }
           },
           {
             "@type": "Question",
-            "name": "What happens when a log has no supported failure pattern?",
+            "name": "Can SAM Doctor prove the root cause?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "SAM Doctor reports no supported pattern and recommends sharing a short sanitized excerpt so the diagnostic rule set can be improved."
+              "text": "No. It provides an evidence-backed starting point, confidence, and a safe next check. Operators should still verify findings before changing infrastructure."
             }
           }
         ]
@@ -159,500 +136,312 @@
     </script>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="landing">
     <a class="skip-link" href="#main-content">Skip to content</a>
+
     <header class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="./"><span aria-hidden="true">SD</span> SAM Doctor</a>
-      <nav>
-      <a href="#install">Install</a>
-      <a href="./quickstart.html">Quickstart</a>
-      <a href="./errors/">Errors</a>
-      <a href="#decision-title">Start here</a>
-      <a href="#proof-studies-title">Case studies</a>
-      <a href="#onboarding">Onboarding</a>
-      <a href="#ci">Use in CI</a>
-      <a href="#researcher-title">Research</a>
-      <a href="#workflow">How it works</a>
-      <a href="#ecosystem">Ecosystem</a>
-      <a href="#founder">Feedback</a>
-      <a href="https://jacobgoldstein.dev">Portfolio</a>
-      <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      <a class="brand" href="./" aria-label="SAM Doctor home">
+        <span aria-hidden="true">SD</span>
+        <span class="brand-name">SAM Doctor</span>
+      </a>
+      <nav aria-label="Site navigation">
+        <a href="#workflow">How it works</a>
+        <a href="./errors/">Error index</a>
+        <a href="./quickstart.html">Quickstart</a>
+        <a class="nav-github" href="https://github.com/jakegold1647/sam-doctor">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
+
     <main id="main-content">
-      <section class="hero">
-        <p class="eyebrow">LOCAL AWS DEPLOYMENT DIAGNOSTICS</p>
-        <h1>Debug AWS SAM, CloudFormation, and GitHub Actions deployment failures.</h1>
-        <p class="lede">
-          SAM Doctor reads a deployment log on your machine, identifies supported
-          SAM, CloudFormation, IAM, and GitHub Actions OIDC failure patterns, and
-          produces evidence, safe checks, and a shareable Markdown report.
-        </p>
-        <div class="actions">
-          <a class="button primary" href="#install">
-            Try the free tool
+      <section class="hero landing-hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span aria-hidden="true"></span> Local AWS deployment diagnostics</p>
+          <h1 id="hero-title">Turn deployment noise into the next check.</h1>
+          <p class="lede">
+            SAM Doctor reads a failed deployment log, finds supported AWS failure
+            patterns, and returns the evidence, confidence, and safest next step—
+            without AWS credentials or a log upload.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="./quickstart.html">Start in 60 seconds <span aria-hidden="true">→</span></a>
+            <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor">View source <span aria-hidden="true">↗</span></a>
+          </div>
+          <ul class="hero-proof" aria-label="Product highlights">
+            <li><strong>55</strong><span>documented diagnostics</span></li>
+            <li><strong>Local</strong><span>analysis by design</span></li>
+            <li><strong>0</strong><span>AWS credentials required</span></li>
+          </ul>
+        </div>
+
+        <div class="diagnostic-window" aria-label="Example SAM Doctor diagnosis">
+          <div class="window-bar">
+            <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>deployment.log</span>
+            <span class="window-status"><i aria-hidden="true"></i> local</span>
+          </div>
+          <div class="window-body">
+            <p class="command"><span>$</span> sam-doctor diagnose deployment.log</p>
+            <div class="finding-meta">
+              <span class="finding-number">Finding 01</span>
+              <span class="confidence">high confidence</span>
+            </div>
+            <h2>GitHub Actions cannot assume the configured AWS role through OIDC.</h2>
+            <dl class="finding-details">
+              <div>
+                <dt>Evidence</dt>
+                <dd><code>Not authorized to perform:<br />sts:AssumeRoleWithWebIdentity</code></dd>
+              </div>
+              <div>
+                <dt>Check next</dt>
+                <dd>Verify <code>id-token: write</code>, then review the audience and subject conditions.</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="window-footer">
+            <span>Matched line 41</span>
+            <span>Identifiers redacted</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="signal-band" aria-label="Supported deployment signals">
+        <p>Built for the failure paths around</p>
+        <ul>
+          <li>AWS SAM</li>
+          <li>CloudFormation</li>
+          <li>IAM</li>
+          <li>GitHub Actions</li>
+          <li>CDK logs</li>
+        </ul>
+      </section>
+
+      <section class="section-block" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-heading">
+          <p class="eyebrow">A smaller incident loop</p>
+          <h2 id="workflow-title">One command between the failure and the fix.</h2>
+          <p>Keep the original deployment flow. Add a deterministic first pass before changing IAM, templates, or CI configuration.</p>
+        </div>
+        <ol class="process-grid">
+          <li>
+            <span class="step-number">01</span>
+            <h3>Give it the log.</h3>
+            <p>Point the CLI at a file, a sanitized excerpt, or stdin. The input stays on the machine running the command.</p>
+            <code>sam-doctor diagnose deployment.log</code>
+          </li>
+          <li>
+            <span class="step-number">02</span>
+            <h3>See what matched.</h3>
+            <p>Each finding includes the exact redacted evidence, a stable rule ID, and a confidence level.</p>
+            <code>Evidence · line 41 · high</code>
+          </li>
+          <li>
+            <span class="step-number">03</span>
+            <h3>Verify before changing.</h3>
+            <p>Use the focused next check and linked source material. SAM Doctor never applies a remediation for you.</p>
+            <code>Next · inspect trust policy</code>
+          </li>
+        </ol>
+      </section>
+
+      <section class="proof-section" aria-labelledby="proof-title">
+        <div class="proof-copy">
+          <p class="eyebrow">Evidence over guesses</p>
+          <h2 id="proof-title">A useful answer, not another wall of logs.</h2>
+          <p>
+            SAM Doctor ranks supported signals, keeps excerpts short, and tells you
+            where the match came from. The output is designed to drop into an issue,
+            incident thread, or pull request without exposing an entire production log.
+          </p>
+          <ul class="check-list">
+            <li>Evidence and source line for every finding</li>
+            <li>Common account IDs, ARNs, and tokens redacted</li>
+            <li>Markdown, JSON, SARIF, and GitHub annotation output</li>
+            <li>Stable rule IDs for CI and code-scanning workflows</li>
+          </ul>
+          <a class="text-link" href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/worked-examples.md">See worked incident examples <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="report-card" aria-label="Example shareable report">
+          <div class="report-label">Shareable report · Markdown</div>
+          <div class="report-body">
+            <p class="report-kicker">Likely cause · high confidence</p>
+            <h3>OIDC trust conditions reject this workflow identity.</h3>
+            <p><strong>Evidence</strong><br /><code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code></p>
+            <p><strong>Verify</strong><br />Confirm the workflow can mint an ID token, then compare its audience and subject to the role trust policy.</p>
+          </div>
+          <div class="report-foot">1 finding · 1 next check · 0 secrets</div>
+        </div>
+      </section>
+
+      <section class="section-block" aria-labelledby="coverage-title">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Failure coverage</p>
+            <h2 id="coverage-title">Start with the errors that stall deploys.</h2>
+          </div>
+          <a class="text-link" href="./errors/">Browse all 55 error guides <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="coverage-grid">
+          <a href="./errors/assume-role-with-web-identity.html">
+            <span class="coverage-tag">Identity</span>
+            <h3>OIDC &amp; role assumption</h3>
+            <p>Token permissions, trust-policy audience and subject mismatches, missing providers, and expired sessions.</p>
+            <span class="card-link">Open guide <span aria-hidden="true">↗</span></span>
           </a>
-          <a class="button secondary" href="./quickstart.html">
-            Get started in 60 seconds
+          <a href="./errors/rollback-complete-cannot-be-updated.html">
+            <span class="coverage-tag">Stacks</span>
+            <h3>Rollback &amp; lifecycle states</h3>
+            <p>Find the first failed resource beneath ROLLBACK_COMPLETE, DELETE_FAILED, and nested-stack noise.</p>
+            <span class="card-link">Open guide <span aria-hidden="true">↗</span></span>
           </a>
-          <a class="button secondary" href="#founder">
-            Help shape the next version
+          <a href="./errors/access-denied.html">
+            <span class="coverage-tag">Permissions</span>
+            <h3>IAM access decisions</h3>
+            <p>Separate explicit denies from missing allows, then identify the principal, action, and policy layer.</p>
+            <span class="card-link">Open guide <span aria-hidden="true">↗</span></span>
+          </a>
+          <a href="./errors/docker-unavailable.html">
+            <span class="coverage-tag">Build</span>
+            <h3>Packaging &amp; containers</h3>
+            <p>Docker availability, registry pulls, esbuild, Python runtimes, dependency resolution, and artifact uploads.</p>
+            <span class="card-link">Open guide <span aria-hidden="true">↗</span></span>
           </a>
         </div>
-        <p class="note">Copy this for Slack/Teams:</p>
-        <pre><code>I triaged a deploy failure in ~60s with SAM Doctor:
-`sam-doctor diagnose deployment.log --format markdown`
-Share one finding + one next verification command.
-https://jakegold1647.github.io/sam-doctor/?utm_source=share_copy&utm_medium=chat</code></pre>
-        <p class="note">Runs locally. No AWS credentials. No log upload. No automatic changes.</p>
-        <p class="note"><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md">Read the OIDC deployment debugging guide</a> | <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md">Find the first useful CloudFormation failure</a> | <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md">Fix InsufficientCapabilities</a></p>
       </section>
 
-      <section class="steps" id="onboarding" aria-labelledby="quickstart-site-title">
-        <p class="eyebrow">START IN 90 SECONDS</p>
-        <h2 id="quickstart-site-title">Get a local triage flow in under two minutes.</h2>
-        <p>
-          Add a starter workflow, then run one diagnosis command:
-        </p>
-        <pre><code>mkdir -p .github/workflows
-curl -sSL https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml -o .github/workflows/sam-doctor.yml</code></pre>
-        <p>
-          Save a short failing excerpt to <code>deployment-failure.log</code> and run:
-        </p>
-        <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
-        <p class="muted">
-          Share only a top finding, one verification command, and a redacted excerpt.
-          If the result is wrong or unclear, open
-          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml">an issue</a>.
-        </p>
-        <p class="muted">
-          Prefer a local smoke check first:
-          <code>python scripts/run-smoke.py</code>
-          (runs one demo + one diagnose flow and validates output shape).
-        </p>
-        <p class="muted">
-          If you're setting this up for a team, see
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md">rolling out SAM Doctor on a team</a>
-          (ready-to-run commands by role).
-        </p>
+      <section id="install" class="install product-panel" aria-labelledby="install-title">
+        <div class="panel-copy">
+          <p class="eyebrow">Get started</p>
+          <h2 id="install-title">Install v0.11.0 in one command.</h2>
+          <p>Python 3.10 or newer. Run the built-in demo first, or point SAM Doctor straight at a failed deployment log.</p>
+          <div class="actions compact-actions">
+            <a class="button light" href="https://pypi.org/project/sam-doctor/">View on PyPI <span aria-hidden="true">↗</span></a>
+            <a class="button ghost" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.11.0">View v0.11.0 release notes</a>
+          </div>
+        </div>
+        <div class="command-stack" aria-label="Installation commands">
+          <div>
+            <span>Install</span>
+            <code>python -m pip install sam-doctor</code>
+          </div>
+          <div>
+            <span>Try it</span>
+            <code>sam-doctor demo</code>
+          </div>
+          <div>
+            <span>Diagnose</span>
+            <code>sam-doctor diagnose deployment.log --format markdown</code>
+          </div>
+        </div>
       </section>
 
-      <section class="steps" aria-labelledby="intent-title">
-        <p class="eyebrow">LOOKING FOR A SPECIFIC ERROR?</p>
-        <h2 id="intent-title">Try these common failure families directly</h2>
-        <ul>
-          <li><strong>sts:AssumeRoleWithWebIdentity / OIDC failures:</strong> use the OIDC deployment debugging flow.</li>
-          <li><strong>ROLLBACK_COMPLETE and rollback noise:</strong> identify the first failed resource.</li>
-          <li><strong>CAPABILITY_IAM / CAPABILITY_NAMED_IAM:</strong> confirm required capability flags.</li>
-          <li><strong>ECR image access in CI:</strong> validate token and repository access before changing IAM.</li>
-          <li><strong>CDK / SAM packaging and build issues:</strong> route the first matching command output to SAM Doctor.</li>
-        </ul>
+      <section id="ci" class="ci-section" aria-labelledby="ci-title">
+        <div class="section-heading">
+          <p class="eyebrow">Close to the failure</p>
+          <h2 id="ci-title">Add the same first pass to CI.</h2>
+          <p>Run after the deployment step with <code>if: always()</code>. Start non-blocking, then opt into confidence-based or strict gating after the signal is proven.</p>
+        </div>
+        <div class="ci-layout">
+          <pre aria-label="GitHub Actions example"><code><span class="code-dim">- name:</span> Diagnose deployment log
+  <span class="code-dim">if:</span> always()
+  <span class="code-dim">uses:</span> jakegold1647/sam-doctor@v0
+  <span class="code-dim">with:</span>
+    <span class="code-dim">log-file:</span> deployment.log
+    <span class="code-dim">summary:</span> true
+    <span class="code-dim">annotations:</span> true
+    <span class="code-dim">fail-on-findings: true</span></code></pre>
+          <div class="ci-copy">
+            <h3>Roll it out at your pace.</h3>
+            <p>Use <code>--fail-on-findings</code> for shell-based CI, or keep the composite action advisory while your team measures signal quality.</p>
+            <a class="text-link" href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml">Download the sam-doctor GitHub Actions starter <span aria-hidden="true">→</span></a>
+            <details>
+              <summary>More deployment and CI starters</summary>
+              <ul class="resource-list">
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-sam-sync.yml">github-actions-workflow-sam-sync.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-cf-pipeline.yml">github-actions-workflow-cf-pipeline.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-cdk.yml">github-actions-workflow-cdk.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml">github-actions-workflow-two-phase-gating.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/gitlab-ci-sam-doctor.yml">gitlab-ci-sam-doctor.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/circleci-sam-doctor.yml">circleci-sam-doctor.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/azure-pipelines-sam-doctor.yml">azure-pipelines-sam-doctor.yml</a></li>
+                <li><a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/bitbucket-pipelines-sam-doctor.yml">bitbucket-pipelines-sam-doctor.yml</a></li>
+              </ul>
+            </details>
+            <p class="fine-print">Choose by command in the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md">CI command matrix</a>, or browse <a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/README.md">examples/README.md</a>.</p>
+          </div>
+        </div>
       </section>
 
-      <section class="steps" aria-labelledby="decision-title">
-        <p class="eyebrow">CHOOSE YOUR STARTING PATH</p>
-        <h2 id="decision-title">Start with the option that matches how you got here.</h2>
-        <ul>
-          <li><strong>Single failed log file:</strong> run <code>sam-doctor diagnose deployment.log --format markdown</code>.</li>
-          <li><strong>CI output available now:</strong> add <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json</code> in the failed step.</li>
-          <li><strong>GitHub code scanning:</strong> emit <code>--format sarif</code> and upload with <code>codeql-action/upload-sarif</code> - alerts track stable rule ids across releases.</li>
-          <li><strong>Team rollout:</strong> use the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md">team rollout guide</a>.</li>
-          <li><strong>Safe pilot rollout:</strong> start with the <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-two-phase-gating.yml">two-phase GitHub Actions template</a> (pilot → high-confidence → strict).</li>
-          <li><strong>Research / review loop:</strong> run <code>sam-doctor packet deployment.log</code> and export the reproducible evidence packet.</li>
-        </ul>
+      <section class="trust-section" aria-labelledby="trust-title">
+        <div class="trust-intro">
+          <p class="eyebrow">Useful boundaries</p>
+          <h2 id="trust-title">Private by default. Deliberately not magic.</h2>
+        </div>
+        <div class="trust-grid">
+          <article>
+            <span class="trust-icon" aria-hidden="true">01</span>
+            <h3>Your log stays local.</h3>
+            <p>No cloud service, account connection, telemetry requirement, or raw-log upload.</p>
+          </article>
+          <article>
+            <span class="trust-icon" aria-hidden="true">02</span>
+            <h3>Nothing changes automatically.</h3>
+            <p>No policy edits, stack updates, resource deletes, or remediation commands are run for you.</p>
+          </article>
+          <article>
+            <span class="trust-icon" aria-hidden="true">03</span>
+            <h3>Every answer remains reviewable.</h3>
+            <p>A finding is a focused starting point—not a claim of guaranteed root-cause analysis or a replacement for operator judgment.</p>
+          </article>
+        </div>
       </section>
 
-      <section class="steps" aria-labelledby="proof-studies-title">
-        <p class="eyebrow">REAL INCIDENT FLOWS</p>
-        <h2 id="proof-studies-title">Real incident pattern examples</h2>
-        <p class="muted">
-          See concrete before/after flows:
-        </p>
-        <ul>
-          <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/worked-examples.md">OIDC token trust mismatch</a></li>
-          <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/worked-examples.md">Rollback masking root event</a></li>
-          <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/worked-examples.md">Non-blocking pilot to gating rollout</a></li>
-        </ul>
+      <section id="founder" class="founder final-cta" aria-labelledby="feedback-title">
+        <div>
+          <p class="eyebrow">Make the next failure easier</p>
+          <h2 id="feedback-title">Bring the exact error that stopped your deploy.</h2>
+          <p>Missing a signal, or seeing the wrong diagnosis? Share a short sanitized excerpt and help improve the next release.</p>
+        </div>
+        <div class="actions compact-actions">
+          <a class="button primary" href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">Request a diagnostic rule</a>
+          <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml">Report a bad diagnosis</a>
+        </div>
       </section>
 
-      <section class="steps" aria-labelledby="who-for-title">
-        <p class="eyebrow">WHO THIS IS FOR</p>
-        <h2 id="who-for-title">Use it if you need a fast first-pass on deployment failures.</h2>
-        <ul>
-          <li>Works best for failed SAM, CloudFormation, IAM, and GitHub Actions deployments with clear error lines.</li>
-          <li>Not for account-state inspection, drift analysis, or automatic remediation.</li>
-          <li>Best when a teammate has one concrete failing run you need triaged quickly.</li>
-        </ul>
-      </section>
-
-      <section class="steps" aria-labelledby="adoption-title">
-        <p class="eyebrow">WHO SHOULD USE NOW</p>
-        <h2 id="adoption-title">Use it where the incident loop slows down.</h2>
-        <ul>
-          <li><strong>Developers on-call:</strong> run in the first 60 seconds, then ask for one safety check.</li>
-          <li><strong>SRE/DevOps:</strong> use as a deterministic triage step before paging additional owners.</li>
-          <li><strong>Team leads:</strong> standardize handoffs with one finding + one follow-up per thread.</li>
-        </ul>
-        <p class="muted">
-          Slack/Teams post template:
-        </p>
-        <pre><code>I ran sam-doctor on the failing excerpt.
-Finding: [top finding]
-Evidence: [top evidence]
-Safety check: [next verification command]
-Next action: [one specific change to validate]</code></pre>
-      </section>
-
-      <section class="steps" aria-labelledby="use-case-title">
-        <p class="eyebrow">Use case</p>
-        <h2 id="use-case-title">Fix a blocked OIDC deploy in under 90 seconds.</h2>
-        <p class="muted">
-          Your teammate reports a blocked deployment with this line:
-        </p>
-        <p><code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code></p>
-        <p>
-          Run one command on the pasted log or file:
-        </p>
-        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
-        <p class="muted">SAM Doctor returns a ranked, redacted finding with the first safe follow-up command and source docs.</p>
-        <ul>
-          <li>Confirm the workflow includes <code>id-token: write</code>.</li>
-          <li>Validate the role trust audience and subject matching the expected token claim.</li>
-          <li>Re-run deploy only after the trust policy check passes.</li>
-        </ul>
-      </section>
-
-      <section class="steps" aria-labelledby="use-case-rollback-title">
-        <p class="eyebrow">Use case</p>
-        <h2 id="use-case-rollback-title">Unpack rollback noise in under 2 minutes.</h2>
-        <p class="muted">
-          A teammate says the stack is stuck in <code>ROLLBACK_COMPLETE</code> and asks what failed first.
-        </p>
-        <p>
-          Run one command:
-        </p>
-        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
-        <p class="muted">
-          The report points to the first actionable resource/event instead of the final rollback symptom.
-        </p>
-        <ul>
-          <li>Share the first non-rollback failure event, not the end-of-stack state.</li>
-          <li>Resolve that root event and rerun deployment after verification.</li>
-          <li>Repeat only if another explicit failure is shown.</li>
-        </ul>
-      </section>
-
-      <section class="steps" aria-labelledby="use-case-capability-title">
-        <p class="eyebrow">Use case</p>
-        <h2 id="use-case-capability-title">Resolve IAM capability failures in one step.</h2>
-        <p class="muted">
-          A teammate sees a capability prompt instead of a deeper root cause:
-        </p>
-        <p><code>CAPABILITY_IAM is required but was not acknowledged</code></p>
-        <p>
-          Run:
-        </p>
-        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
-        <p class="muted">
-          Then apply only the specific required capability flag from the report, re-run,
-          and continue only after the IAM change intent is confirmed.
-        </p>
-        <ul>
-          <li>Confirm whether IAM resources are intentionally changed by this template.</li>
-          <li>Use the smallest required capability flag first (CAPABILITY_IAM vs CAPABILITY_NAMED_IAM).</li>
-          <li>Re-run deploy and use SAM Doctor on the next failure if needed.</li>
-        </ul>
-      </section>
-
-      <section class="steps" aria-labelledby="proof-title">
-        <p class="eyebrow">Proof</p>
-        <h2 id="proof-title">A real flow, redacted and repeatable.</h2>
-        <p class="muted">Use this exact pattern to show safe, useful output to a teammate:</p>
-        <pre><code># incident_excerpt.txt (sanitized)
-An error occurred: Not authorized to perform: sts:AssumeRoleWithWebIdentity
-Check that the identity-based policy attached to the role allows id-token:write.</code></pre>
-        <pre><code>sam-doctor diagnose incident_excerpt.txt --format markdown</code></pre>
-        <p class="muted">Expected output starts with a single actionable finding and a verification path.</p>
-        <ul>
-          <li>One finding, ranked with confidence.</li>
-          <li>Redacted evidence lines only.</li>
-          <li>Suggested next verification command for safe follow-up.</li>
-        </ul>
-        <p class="muted">No account IDs, ARNs, or tokens are printed in this flow.</p>
-      </section>
-
-      <section class="steps" aria-labelledby="playbook-title">
-        <p class="eyebrow">Quickstart</p>
-        <h2 id="playbook-title">On-call playbook, ready to run.</h2>
-        <p>
-          Teams can use one shared sequence and a single handoff template for every incident:
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/on-call-playbook.md">SAM Doctor on-call playbook</a>.
-        </p>
-        <ul>
-          <li>60-second triage sequence with one diagnosis command.</li>
-          <li>Slack/Teams handoff message format.</li>
-          <li>Failure-type checks for OIDC, rollback, and IAM capabilities.</li>
-          <li>Escalation rule when evidence is not yet actionable.</li>
-        </ul>
-      </section>
-
-      <section id="install" class="install" aria-labelledby="install-title">
-        <p class="eyebrow">GET STARTED</p>
-        <h2 id="install-title">Install v0.11.0 in one command.</h2>
-        <pre><code>python -m pip install sam-doctor</code></pre>
-        <p class="muted">Alternative install path:
-          <code>pipx install sam-doctor</code> (isolated) or
-          <code>uvx sam-doctor demo</code> (run without install).</p>
-        <p>
-          This installs the latest stable release from PyPI. Then run
-          <code>sam-doctor demo</code> to see a local example, or pass a log to
-          <code>sam-doctor diagnose deployment.log</code>.
-        </p>
-        <a class="button secondary" href="https://pypi.org/project/sam-doctor/">View on PyPI</a>
-        <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/releases/tag/v0.11.0">View v0.11.0 release notes</a>
-      </section>
-
-      <section class="terminal" aria-label="Example diagnostic output">
-        <p><span>$</span> sam-doctor diagnose failed-deploy.log --format markdown</p>
-        <p class="muted">Likely cause - high confidence</p>
-        <h2>GitHub Actions cannot assume the configured AWS role through OIDC.</h2>
-        <p>
-          Evidence: <code>Not authorized to perform: sts:AssumeRoleWithWebIdentity</code>
-        </p>
-        <p class="muted">Matched on line 1</p>
-        <p class="muted">
-          Next: verify <code>id-token: write</code>, the OIDC audience, and the trust policy subject condition.
-        </p>
-      </section>
-
-      <section class="steps" aria-labelledby="site-quickstart-title">
-        <p class="eyebrow">60-SECOND FIRST RESPONSE</p>
-        <h2 id="site-quickstart-title">Diagnose a teammate's failure in under two minutes.</h2>
-        <p class="muted">Pick the closest path:</p>
-        <ul>
-          <li><strong>Deployment log file:</strong> <code>sam-doctor diagnose deployment.log --format markdown</code></li>
-          <li><strong>Pasted excerpt:</strong> <code>sam-doctor diagnose - --format markdown</code></li>
-          <li><strong>CI-friendly JSON:</strong> <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json</code></li>
-          <li><strong>GitHub annotation output:</strong> <code>sam-doctor diagnose deployment.log --format github</code></li>
-          <li><strong>GitHub Action pipeline:</strong> add the action step in the CI section below.</li>
-        </ul>
-        <pre><code>sam-doctor diagnose deployment.log --format markdown</code></pre>
-        <ol>
-          <li><strong>Run the command</strong> from the shared log or pasted excerpt.</li>
-          <li><strong>Send back one finding</strong> (or say no supported signal found).</li>
-          <li><strong>Include one safe verification command</strong> and ask for one follow-up.</li>
-        </ol>
-        <p class="muted">
-          For stdin workflows, use
-          <code>sam-doctor diagnose - --format markdown</code>.
-          If you still can't match the failure, open <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml">Report a bad diagnosis</a>.
-        </p>
-      </section>
-
-      <section id="ci" class="integration" aria-labelledby="ci-title">
-        <p class="eyebrow">GITHUB ACTIONS</p>
-        <h2 id="ci-title">Keep the diagnostic close to the failed workflow.</h2>
-        <pre><code>- name: Deploy
-  shell: bash
-  run: |
-    set -o pipefail
-    sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
-
-- name: Diagnose deployment log
-  if: always()
-  id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0
-  with:
-    log-file: deployment.log
-    summary: true
-    # fail-on-findings: true</code></pre>
-        <p>
-          Put the action after the command that writes the log and keep
-          <code>if: always()</code>, or GitHub skips it when deployment fails.
-          It exposes <code>finding-count</code> and <code>has-findings</code> outputs;
-          job summaries and failure gating are opt-in. Uncomment
-          <code>fail-on-findings: true</code> when a supported diagnosis should
-          fail the job.
-        </p>
-        <p>
-          Download the same starter as a base workflow:
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml">sam-doctor GitHub Actions starter</a>.
-        </p>
-        <p class="muted">
-          Use the right starter for your deployment style:
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-sam-sync.yml">SAM sync</a> |
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-cf-pipeline.yml">CloudFormation deploy</a> |
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-cdk.yml">cdk deploy</a>.
-        </p>
-        <p class="muted">
-          Track your onboarding edits in
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/README.md">examples/README.md</a>.
-        </p>
-        <p class="muted">
-          Non-GitHub CI templates:
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/gitlab-ci-sam-doctor.yml">GitLab CI</a>,
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/circleci-sam-doctor.yml">CircleCI</a>,
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/azure-pipelines-sam-doctor.yml">Azure Pipelines</a>,
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/bitbucket-pipelines-sam-doctor.yml">Bitbucket Pipelines</a>.
-        </p>
-        <p class="muted">
-          Pick by deployment command using
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-command-matrix.md">the CI command matrix</a>.
-        </p>
-        <p class="muted">
-          If you ingest diagnostics directly in a `run:` step, use
-          <code>sam-doctor diagnose deployment.log --format github</code> and add
-          it after the deploy command.
-        </p>
-        <p class="muted">
-          If your workflow produces more than one log, use the batched GitHub Action
-          starter:
-          <a href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow-batch-logs.yml">github-actions-workflow-batch-logs.yml</a>.
-        </p>
-        <p>
-          For shell-based CI, run
-          <code>sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings</code>.
-          It writes the report and returns status 1 only when a supported finding
-          is present.
-        </p>
-        <p>
-          For batched pipeline logs, set <code>batch: true</code> in the action
-          and pass a directory or wildcard to <code>log-file</code>:
-          <code>log-file: logs/</code>. The action aggregates finding counts across files.
-        </p>
-        <p class="muted">
-          After you confirm these batches are stable and high-signal, you can add
-          <code>fail-on-findings: true</code> in the action to fail the diagnose
-          step when any supported finding appears in the batched inputs.
-        </p>
-        <p class="muted">
-          In 90 seconds: run a log through SAM Doctor, share the first finding (or
-          no-signal outcome), then run one safe check from the report before changing
-          IAM, policy, or deployment configuration.
-        </p>
-        <a class="button secondary" href="https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics">Use from GitHub Marketplace</a>
-      </section>
-
-      <section id="workflow" class="grid" aria-label="How SAM Doctor works">
-        <article>
-          <p class="eyebrow">WHAT IT HANDLES NOW</p>
-          <h2>Start with the failures that waste deployment time.</h2>
-          <ul>
-            <li>GitHub Actions OIDC and role-assumption failures</li>
-            <li>GitHub Actions job summaries and opt-in CI gating</li>
-            <li>IAM access-denied errors</li>
-            <li>CloudFormation rollback states</li>
-            <li>CloudFormation capability acknowledgement errors</li>
-          <li>Template, IAM trust-policy, and deployment-artifact errors</li>
-          <li>SAM container builds that fail because Docker is unavailable</li>
-          <li>SAM Python build dependency resolution and runtime-binary validation errors</li>
-          <li>SAM configuration and change-set failures</li>
-          <li>API Gateway CORS preflight conflicts</li>
-          </ul>
-        </article>
-        <article>
-          <p class="eyebrow">WHAT IT DOES NOT DO</p>
-          <h2>Useful without pretending to be magic.</h2>
-          <ul>
-            <li>No AWS account access or automatic remediation</li>
-            <li>No claim of guaranteed root-cause analysis</li>
-            <li>No replacement for a security review or production operator</li>
-            <li>No raw-log upload or cloud processing</li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="steps" aria-labelledby="steps-title">
-        <p class="eyebrow">A SMALL, USEFUL LOOP</p>
-        <h2 id="steps-title">From noisy log to next check.</h2>
-        <ol>
-          <li><strong>Give it a log.</strong> Point the CLI at a file or pipe text through stdin.</li>
-          <li><strong>See the evidence.</strong> Matching lines are redacted and kept short.</li>
-          <li><strong>Verify the cause.</strong> Use the linked docs and review every suggested change.</li>
-        </ol>
-      </section>
-
-      <section class="steps" aria-labelledby="researcher-title">
-        <p class="eyebrow">RESEARCHER-READY</p>
-        <h2 id="researcher-title">Create a reproducible evidence packet</h2>
-        <p>
-          For collaboration or reproducible discussion, generate both human and machine
-          outputs, then share only sanitized artifacts:
-        </p>
-        <pre><code>sam-doctor packet deployment.log</code></pre>
-        <p class="muted">
-          Use the same packet approach for papers, code reviews, and practitioner notes.
-          Start from the full workflow in
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/RESEARCHER_OVERVIEW.md">RESEARCHER_OVERVIEW.md</a>.
-          Start with the minimal excerpt, and include
-          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/researcher-evidence-packet.md">the template</a>
-          for repeatable reporting.
-        </p>
-      </section>
-
-      <section class="steps" aria-labelledby="ecosystem-title">
-        <p class="eyebrow">ECOSYSTEM</p>
-        <h2 id="ecosystem-title">Related work and research tools</h2>
-        <p class="muted">
-          SAM Doctor is part of a larger applied research and tooling portfolio.
-        </p>
-        <ul>
-          <li>
-            <a href="https://github.com/jakegold1647/aktreader">aktreader</a>:
-            curation and public-facing research tooling for Cyrillic civil-register work.
-          </li>
-          <li>
-            <a href="https://github.com/jakegold1647/aktreader-research">aktreader-research</a>:
-            research edition for reproducible evidence workflows and review packaging.
-          </li>
-          <li>
-            <a href="https://github.com/jakegold1647/congress-poland-registers">congress-poland-registers</a>:
-            benchmark corpus project for 19th-century Polish/Russian vital records.
-          </li>
-          <li>
-            <a href="https://jacobgoldstein.dev">jacobgoldstein.dev</a>:
-            project portfolio and broader context.
-          </li>
-        </ul>
-      </section>
-
-      <section id="founder" class="founder">
-        <p class="eyebrow">SHAPE THE NEXT VERSION</p>
-        <h2>Tell me the exact error that stopped your deploy.</h2>
-        <p>
-          SAM Doctor is a free tool. Share a sanitized error and exact failure signal
-          so failures are fixed in order. You can report:
-        </p>
-        <p>
-          <a class="button primary" href="https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml">Report incorrect diagnosis</a>
-          <a class="button secondary" href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">Request a rule</a>
-        </p>
-        <p class="note">Please remove account IDs, ARNs, tokens, and customer data before posting.</p>
+      <section class="resources" aria-labelledby="resources-title">
+        <h2 id="resources-title">For deeper evaluation</h2>
+        <p>See the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/team-rollout.md">team rollout guide</a>, generate a reproducible packet with <code>sam-doctor packet deployment.log</code>, or read <a href="https://github.com/jakegold1647/sam-doctor/blob/main/RESEARCHER_OVERVIEW.md">RESEARCHER_OVERVIEW.md</a>.</p>
       </section>
 
       <section class="faq" aria-labelledby="faq-title">
-        <h2 id="faq-title">Common AWS deployment questions</h2>
+        <p class="eyebrow">Common questions</p>
+        <h2 id="faq-title">Before you put it in the pipeline.</h2>
         <details>
-          <summary>What does SAM Doctor diagnose?</summary>
-          <p>It recognizes explicit AWS SAM, CloudFormation, IAM, API Gateway, and GitHub Actions deployment failure patterns, including <code>AssumeRoleWithWebIdentity</code>, <code>InsufficientCapabilitiesException</code>, rollback states, and ECR image access failures.</p>
+          <summary>Does SAM Doctor need AWS access?</summary>
+          <p>No. It reads only the text you provide and does not make AWS API calls.</p>
         </details>
         <details>
-          <summary>Does SAM Doctor access AWS or upload logs?</summary>
-          <p>No. The CLI and core diagnostic logic process the text locally. They do not call AWS, upload logs, change resources, or make an automatic fix.</p>
+          <summary>What if no supported pattern matches?</summary>
+          <p>It reports no supported finding. That is safer than inventing a cause; you can then open a rule request with a short sanitized excerpt.</p>
         </details>
         <details>
-          <summary>What should I do with a CloudFormation ROLLBACK_COMPLETE error?</summary>
-          <p>Find the earliest related <code>CREATE_FAILED</code> or <code>UPDATE_FAILED</code> resource event first. Run the sanitized status reason through SAM Doctor, then verify the underlying service cause before retrying.</p>
-        </details>
-        <details>
-          <summary>Can SAM Doctor prove the root cause?</summary>
-          <p>No. It reports only what a matched text pattern supports and labels confidence. Use its safe checks and official documentation to confirm the diagnosis before changing a policy or stack.</p>
+          <summary>Can it fail a CI job?</summary>
+          <p>Yes, but only when you opt in. Start advisory, gate high-confidence findings when ready, then use strict gating if it fits your workflow.</p>
         </details>
       </section>
     </main>
+
     <footer>
-      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
-      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+      <div>
+        <a class="brand footer-brand" href="./"><span aria-hidden="true">SD</span><span class="brand-name">SAM Doctor</span></a>
+        <p>Evidence-first deployment diagnostics, built and maintained by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>.</p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="./quickstart.html">Quickstart</a>
+        <a href="./errors/">Error index</a>
+        <a href="https://pypi.org/project/sam-doctor/">PyPI</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+      <p class="legal">SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
     </footer>
   </body>
 </html>

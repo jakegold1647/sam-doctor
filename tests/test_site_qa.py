@@ -48,7 +48,7 @@ PAGE = """<!doctype html>
 def _write_site(root: Path, *, body: str = "", extra_locs: tuple[str, ...] = ()) -> None:
     """A minimal site that passes every check, ready to be broken one way."""
 
-    base = "https://jakegold1647.github.io/sam-doctor/"
+    base = "https://sam-doctor.jacobgoldstein.dev/"
     (root / "index.html").write_text(
         PAGE.format(canonical=base, body=body), encoding="utf-8"
     )
@@ -103,13 +103,13 @@ def test_a_page_absent_from_the_sitemap_is_reported(qa, tmp_path: Path) -> None:
     assert len(problems) == 1
     assert "orphan.html" in problems[0]
     # The message has to carry the line to paste, or the fix means hand-building a URL.
-    assert "<url><loc>https://jakegold1647.github.io/sam-doctor/orphan.html" in problems[0]
+    assert "<url><loc>https://sam-doctor.jacobgoldstein.dev/orphan.html" in problems[0]
 
 
 def test_a_sitemap_entry_for_a_missing_file_is_reported(qa, tmp_path: Path) -> None:
     _write_site(
         tmp_path,
-        extra_locs=("https://jakegold1647.github.io/sam-doctor/deleted.html",),
+        extra_locs=("https://sam-doctor.jacobgoldstein.dev/deleted.html",),
     )
 
     problems = [p for p in _issues(qa, tmp_path) if "missing local path" in p]
@@ -122,7 +122,7 @@ def test_a_directory_url_satisfies_its_index_page(qa, tmp_path: Path) -> None:
     # `/errors/` in the sitemap is the entry for errors/index.html. Treating those
     # as different pages would report the whole error index as unlisted forever,
     # and a gate that cries wolf gets bypassed.
-    base = "https://jakegold1647.github.io/sam-doctor/"
+    base = "https://sam-doctor.jacobgoldstein.dev/"
     _write_site(tmp_path, extra_locs=(f"{base}errors/",))
     (tmp_path / "errors").mkdir()
     (tmp_path / "errors" / "index.html").write_text(
@@ -141,7 +141,7 @@ def test_a_broken_local_link_is_reported(qa, tmp_path: Path) -> None:
 
 
 def test_a_working_local_link_is_not_reported(qa, tmp_path: Path) -> None:
-    base = "https://jakegold1647.github.io/sam-doctor/"
+    base = "https://sam-doctor.jacobgoldstein.dev/"
     _write_site(
         tmp_path,
         body='<a href="./other.html#section">there</a>',
@@ -183,7 +183,7 @@ def test_missing_head_metadata_is_reported(
 ) -> None:
     _write_site(tmp_path)
     page = tmp_path / "index.html"
-    base = "https://jakegold1647.github.io/sam-doctor/"
+    base = "https://sam-doctor.jacobgoldstein.dev/"
     page.write_text(
         page.read_text(encoding="utf-8").replace(removed.format(canonical=base), ""),
         encoding="utf-8",

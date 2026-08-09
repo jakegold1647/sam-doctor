@@ -48,7 +48,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://jakegold1647.github.io/sam-doctor/"
+Homepage = "https://sam-doctor.jacobgoldstein.dev/"
 Repository = "https://github.com/jakegold1647/sam-doctor"
 Documentation = "https://github.com/jakegold1647/sam-doctor/tree/main/docs"
 Issues = "https://github.com/jakegold1647/sam-doctor/issues"

@@ -20,7 +20,7 @@ def _current_version() -> str:
 def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
 
-    assert '<link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/"' in page
+    assert '<link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/"' in page
     assert 'name="author" content="Jake Goldstein"' in page
     assert 'name="geo.region" content="US"' in page
     assert 'name="geo.placename" content="United States"' in page
@@ -49,7 +49,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
 def test_quickstart_page_has_metadata_and_guide_schema() -> None:
     page = (ROOT / "site" / "quickstart.html").read_text(encoding="utf-8")
 
-    assert '<link rel="canonical" href="https://jakegold1647.github.io/sam-doctor/quickstart.html"' in page
+    assert '<link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/quickstart.html"' in page
     assert "geo.region" in page
     assert "geo.placename" in page
     assert 'property="og:image"' in page

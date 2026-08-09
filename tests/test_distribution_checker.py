@@ -81,7 +81,7 @@ def test_launch_readiness_checks_homepage_and_topics():
 
     setup = mod._evaluate_launch_readiness(
         {
-            "homepage": "https://jakegold1647.github.io/sam-doctor/",
+            "homepage": "https://sam-doctor.jacobgoldstein.dev/",
             "topics": [
                 "aws",
                 "aws-sam",

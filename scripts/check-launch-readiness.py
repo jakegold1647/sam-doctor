@@ -30,7 +30,7 @@ EXPECTED_TOPICS = {
     "serverless",
     "cli",
 }
-EXPECTED_HOMEPAGE = "https://jakegold1647.github.io/sam-doctor/"
+EXPECTED_HOMEPAGE = "https://sam-doctor.jacobgoldstein.dev/"
 
 
 @dataclass

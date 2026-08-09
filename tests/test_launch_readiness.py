@@ -132,7 +132,7 @@ def test_launch_readiness_flags_stable_release_marked_as_prerelease(tmp_path: Pa
         if url.endswith("/jakegold1647/sam-doctor/releases/tags/v1.2.3"):
             return {"prerelease": True}, 200
         if url == "https://api.github.com/repos/jakegold1647/sam-doctor":
-            return {"homepage": "https://jakegold1647.github.io/sam-doctor/", "topics": expected_topics}, 200
+            return {"homepage": "https://sam-doctor.jacobgoldstein.dev/", "topics": expected_topics}, 200
         return original_get_json(url, token)
 
     monkeypatch.setattr(module, "_get_json", fake_get_json)
@@ -167,7 +167,7 @@ def test_launch_readiness_can_skip_remote_release_state_for_monitoring(
     def fake_get_json(url: str, token: str | None):
         assert url == "https://api.github.com/repos/jakegold1647/sam-doctor"
         return {
-            "homepage": "https://jakegold1647.github.io/sam-doctor/",
+            "homepage": "https://sam-doctor.jacobgoldstein.dev/",
             "topics": expected_topics,
         }, 200
 
@@ -204,7 +204,7 @@ def test_launch_readiness_flags_stable_release_marked_as_draft(tmp_path: Path, m
         if url.endswith("/jakegold1647/sam-doctor/releases/tags/v1.2.3"):
             return {"prerelease": False, "draft": True}, 200
         if url == "https://api.github.com/repos/jakegold1647/sam-doctor":
-            return {"homepage": "https://jakegold1647.github.io/sam-doctor/", "topics": expected_topics}, 200
+            return {"homepage": "https://sam-doctor.jacobgoldstein.dev/", "topics": expected_topics}, 200
         return original_get_json(url, token)
 
     monkeypatch.setattr(module, "_get_json", fake_get_json)

@@ -23,7 +23,7 @@ PYPI_PROJECT = "sam-doctor"
 MARKETPLACE_URL = (
     "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
 )
-SITE_URL = "https://jakegold1647.github.io/sam-doctor/"
+SITE_URL = "https://sam-doctor.jacobgoldstein.dev/"
 EXPECTED_TOPICS = {
     "aws",
     "aws-sam",

@@ -6,7 +6,7 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 
 ## Start here
 
-- [Project homepage](https://jakegold1647.github.io/sam-doctor/): install, demo, supported categories, and GitHub Actions usage.
+- [Project homepage](https://sam-doctor.jacobgoldstein.dev/): install, demo, supported categories, and GitHub Actions usage.
 - [PyPI package](https://pypi.org/project/sam-doctor/): install the stable CLI with `python -m pip install sam-doctor`.
 - [GitHub repository](https://github.com/jakegold1647/sam-doctor): source, tests, issues, and contribution guide.
 - [GitHub Marketplace Action](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics): diagnose saved deployment logs in CI.
@@ -17,7 +17,7 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 - [AssumeRoleWithWebIdentity / GitHub Actions OIDC](https://github.com/jakegold1647/sam-doctor/blob/main/docs/oidc-deployment-debugging.md): check `id-token: write`, the STS audience, and the trust-policy subject.
 - [CloudFormation ROLLBACK_COMPLETE](https://github.com/jakegold1647/sam-doctor/blob/main/docs/cloudformation-first-failure.md): find the first failed resource event instead of treating rollback as the root cause.
 - [InsufficientCapabilitiesException](https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md): review IAM resources and acknowledge `CAPABILITY_IAM` or `CAPABILITY_NAMED_IAM` deliberately.
-- [Deployment error index](https://jakegold1647.github.io/sam-doctor/errors/): one reference page per exact error string - every diagnostic rule has a dedicated page covering the meaning, the fix, and the read-only verification commands.
+- [Deployment error index](https://sam-doctor.jacobgoldstein.dev/errors/): one reference page per exact error string - every diagnostic rule has a dedicated page covering the meaning, the fix, and the read-only verification commands.
 
 ## Supported signals
 
