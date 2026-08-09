@@ -200,3 +200,41 @@ def test_ordinary_build_output_is_not_redacted(line: str) -> None:
     from sam_doctor.redaction import redact
 
     assert redact(line) == line
+
+
+def test_the_readme_names_every_redaction_pattern_family() -> None:
+    """The README enumerates what redaction covers, and that list is a promise.
+
+    A pattern added without updating it leaves the README claiming less than the
+    tool does, which is harmless; the dangerous direction is a pattern *removed*
+    while the README still promises it, so a reader trusts coverage that is gone.
+    This checks the count rather than the wording, so rephrasing is free but adding
+    or removing a family forces a look at the paragraph.
+    """
+
+    from sam_doctor import redaction
+
+    families = [
+        name
+        for name in vars(redaction)
+        if name.startswith("_") and not name.startswith("__") and name.isupper()
+    ]
+    readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    claim = readme[readme.index("Reports redact AWS account IDs") :][:1400]
+
+    assert len(families) == 18, (
+        f"redaction has {len(families)} pattern families ({sorted(families)}); "
+        "update the README paragraph that enumerates them, then this count"
+    )
+    for phrase in (
+        "account IDs",
+        "ARNs",
+        "email addresses",
+        "bearer tokens",
+        "Authorization: Basic",
+        "private-key blocks",
+        "webhook URLs",
+        "login command line",
+        "Docker Hub",
+    ):
+        assert phrase in claim, f"the README no longer mentions {phrase!r}"
