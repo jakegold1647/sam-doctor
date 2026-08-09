@@ -742,6 +742,8 @@ def _artifact_path(output_dir: Path, name: str, option_name: str) -> Path:
 
     if candidate == resolved_output_dir:
         raise ValueError(f"{option_name} must name a file inside --output-dir: {name}")
+    if candidate.exists() and not candidate.is_file():
+        raise ValueError(f"{option_name} must name a file inside --output-dir: {name}")
     return candidate
 
 

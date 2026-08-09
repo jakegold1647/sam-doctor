@@ -199,6 +199,42 @@ def test_packet_allows_nested_artifact_names_inside_output_dir(tmp_path: Path) -
 
 
 @pytest.mark.parametrize(
+    "name_option", ("--markdown-name", "--json-name", "--notes-name")
+)
+def test_packet_rejects_existing_directory_artifact_before_writing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    name_option: str,
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+    output_dir.mkdir()
+    existing_dir = output_dir / "already-a-directory"
+    existing_dir.mkdir()
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            name_option,
+            existing_dir.name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert name_option in captured.err
+    assert "must name a file inside --output-dir" in captured.err
+    assert list(output_dir.rglob("*")) == [existing_dir]
+
+
+@pytest.mark.parametrize(
     "json_name",
     ("shared.txt", "nested/../shared.txt"),
     ids=("literal", "normalized"),
