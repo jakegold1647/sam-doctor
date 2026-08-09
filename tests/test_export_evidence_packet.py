@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from conftest import child_env
 
 from sam_doctor.cli import main
@@ -120,6 +121,81 @@ def test_cli_packet_generates_default_artifacts(tmp_path: Path) -> None:
     assert (output_dir / "researcher-notes.md").exists()
     report = json.loads((output_dir / "diagnosis.json").read_text(encoding="utf-8"))
     assert report["finding_count"] == 1
+
+
+@pytest.mark.parametrize(
+    "name_option", ("--markdown-name", "--json-name", "--notes-name")
+)
+@pytest.mark.parametrize("escape_kind", ("traversal", "absolute"))
+def test_packet_artifact_names_cannot_escape_output_dir(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    name_option: str,
+    escape_kind: str,
+) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+    victim = tmp_path / f"{name_option.removeprefix('--')}-{escape_kind}.sentinel"
+    sentinel = "do not overwrite\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    unsafe_name = (
+        f"../{victim.name}" if escape_kind == "traversal" else str(victim.resolve())
+    )
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            name_option,
+            unsafe_name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert victim.read_text(encoding="utf-8") == sentinel
+    assert captured.err.startswith("usage:")
+    assert name_option in captured.err
+    assert "inside --output-dir" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert list(output_dir.rglob("*")) == []
+
+
+def test_packet_allows_nested_artifact_names_inside_output_dir(tmp_path: Path) -> None:
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "artifacts"
+    nested_dir = output_dir / "nested"
+    nested_dir.mkdir(parents=True)
+
+    exit_code = main(
+        [
+            "packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--markdown-name",
+            "nested/diagnosis.md",
+            "--json-name",
+            "nested/diagnosis.json",
+            "--notes-name",
+            "nested/researcher-notes.md",
+        ]
+    )
+
+    assert exit_code == 0
+    assert (nested_dir / "diagnosis.md").is_file()
+    assert (nested_dir / "diagnosis.json").is_file()
+    assert (nested_dir / "researcher-notes.md").is_file()
 
 
 def test_cli_packet_supports_stdin(tmp_path: Path) -> None:

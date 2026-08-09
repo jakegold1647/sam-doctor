@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Packet artifact filenames can no longer escape their output directory.**
+  `packet` and `request-packet` reject traversal and absolute outside paths for
+  every filename option before writing an artifact, while retaining nested
+  filenames that resolve safely inside the selected directory.
+
+- **Homepage FAQ structured data now mirrors the visible FAQ exactly.** A
+  whitespace-normalized parity test keeps the ordered questions and answers in
+  the JSON-LD block synchronized with what readers can actually see.
+
 - **Three recently added diagnostics now honor their full acceptance
   boundaries.** The Lambda environment-key rule requires KMS-specific context,
   SSM precedence cannot erase a generic change-set finding on a truncated

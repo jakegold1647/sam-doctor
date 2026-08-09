@@ -109,26 +109,26 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Does SAM Doctor access AWS or upload logs?",
+            "name": "Does SAM Doctor need AWS access?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. SAM Doctor processes only the text you provide, on the machine where you run it. It does not call AWS APIs, upload logs, or change resources."
+              "text": "No. It reads only the text you provide and does not make AWS API calls."
             }
           },
           {
             "@type": "Question",
-            "name": "What does SAM Doctor diagnose?",
+            "name": "What if no supported pattern matches?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "It recognizes supported AWS SAM, CloudFormation, IAM, API Gateway, container-build, and GitHub Actions OIDC failure patterns."
+              "text": "It reports no supported finding. That is safer than inventing a cause; you can then open a rule request with a short sanitized excerpt."
             }
           },
           {
             "@type": "Question",
-            "name": "Can SAM Doctor prove the root cause?",
+            "name": "Can it fail a CI job?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. It provides an evidence-backed starting point, confidence, and a safe next check. Operators should still verify findings before changing infrastructure."
+              "text": "Yes, but only when you opt in. Start advisory, gate high-confidence findings when ready, then use strict gating if it fits your workflow."
             }
           }
         ]

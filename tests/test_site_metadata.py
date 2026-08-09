@@ -1,5 +1,6 @@
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,90 @@ except ModuleNotFoundError:  # pragma: no cover
     import tomli as tomllib  # type: ignore[no-redef]
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _normalize_whitespace(value: str) -> str:
+    return " ".join(value.split())
+
+
+class _VisibleFaqParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.entries: list[tuple[str, str]] = []
+        self._stack: list[tuple[str, bool, bool, bool, bool]] = []
+        self._faq_depth = 0
+        self._hidden_depth = 0
+        self._summary_depth = 0
+        self._current: tuple[list[str], list[str]] | None = None
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        attributes = dict(attrs)
+        opens_hidden = "hidden" in attributes or (
+            (attributes.get("aria-hidden") or "").lower() == "true"
+        )
+        visible = self._hidden_depth == 0 and not opens_hidden
+        classes = (attributes.get("class") or "").split()
+        opens_faq = visible and "faq" in classes
+        if opens_faq:
+            self._faq_depth += 1
+
+        opens_details = (
+            visible
+            and self._faq_depth > 0
+            and tag == "details"
+            and self._current is None
+        )
+        if opens_details:
+            self._current = ([], [])
+
+        opens_summary = visible and self._current is not None and tag == "summary"
+        if opens_summary:
+            self._summary_depth += 1
+
+        if opens_hidden:
+            self._hidden_depth += 1
+        self._stack.append(
+            (tag, opens_faq, opens_details, opens_summary, opens_hidden)
+        )
+
+    def handle_endtag(self, tag: str) -> None:
+        start_tag, opens_faq, opens_details, opens_summary, opens_hidden = (
+            self._stack.pop()
+        )
+        assert start_tag == tag
+        if opens_summary:
+            self._summary_depth -= 1
+        if opens_details:
+            assert self._current is not None
+            question, answer = self._current
+            self.entries.append(
+                (
+                    _normalize_whitespace("".join(question)),
+                    _normalize_whitespace("".join(answer)),
+                )
+            )
+            self._current = None
+        if opens_faq:
+            self._faq_depth -= 1
+        if opens_hidden:
+            self._hidden_depth -= 1
+
+    def handle_startendtag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        # Void elements cannot open a FAQ, details, or summary region.
+        return
+
+    def handle_data(self, data: str) -> None:
+        if self._current is None or self._hidden_depth > 0:
+            return
+        question, answer = self._current
+        if self._summary_depth:
+            question.append(data)
+        else:
+            answer.append(data)
 
 
 def _current_version() -> str:
@@ -44,6 +129,39 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["offers"]["price"] == "0"
     assert schema["publisher"]["name"] == "Jake Goldstein"
     assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"
+
+
+def test_homepage_faq_schema_matches_visible_faq_in_order() -> None:
+    page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+
+    schemas = [
+        json.loads(match.group(1))
+        for match in re.finditer(
+            r'<script type="application/ld\+json">\s*(.*?)\s*</script>',
+            page,
+            flags=re.DOTALL,
+        )
+    ]
+    faq_schemas = [schema for schema in schemas if schema.get("@type") == "FAQPage"]
+    assert faq_schemas, "homepage must publish FAQPage structured data"
+
+    structured_entries = []
+    for schema in faq_schemas:
+        for entity in schema["mainEntity"]:
+            assert entity["@type"] == "Question"
+            assert entity["acceptedAnswer"]["@type"] == "Answer"
+            structured_entries.append(
+                (
+                    _normalize_whitespace(entity["name"]),
+                    _normalize_whitespace(entity["acceptedAnswer"]["text"]),
+                )
+            )
+
+    parser = _VisibleFaqParser()
+    parser.feed(page)
+    parser.close()
+    assert parser.entries, "homepage must contain visible .faq details"
+    assert structured_entries == parser.entries
 
 
 def test_quickstart_page_has_metadata_and_guide_schema() -> None:

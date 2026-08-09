@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import likely_error_excerpt
 
@@ -78,6 +80,65 @@ def test_cli_request_packet_writes_excerpt_for_unmatched_log(tmp_path: Path) -> 
     assert "noise line 0" not in content
     assert "more noise 4" not in content
     assert "rule request" in content.lower()
+
+
+@pytest.mark.parametrize("escape_kind", ("traversal", "absolute"))
+def test_request_packet_name_cannot_escape_output_dir(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    escape_kind: str,
+) -> None:
+    log = tmp_path / "unmatched.log"
+    log.write_text("Error: a new deployment failure\n", encoding="utf-8")
+    output_dir = tmp_path / "artifacts"
+    victim = tmp_path / f"request-{escape_kind}.sentinel"
+    sentinel = "do not overwrite\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    unsafe_name = (
+        f"../{victim.name}" if escape_kind == "traversal" else str(victim.resolve())
+    )
+
+    exit_code = main(
+        [
+            "request-packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--name",
+            unsafe_name,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert victim.read_text(encoding="utf-8") == sentinel
+    assert captured.err.startswith("usage:")
+    assert "--name" in captured.err
+    assert "inside --output-dir" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert list(output_dir.rglob("*")) == []
+
+
+def test_request_packet_allows_nested_name_inside_output_dir(tmp_path: Path) -> None:
+    log = tmp_path / "unmatched.log"
+    log.write_text("Error: a new deployment failure\n", encoding="utf-8")
+    output_dir = tmp_path / "artifacts"
+    nested_dir = output_dir / "nested"
+    nested_dir.mkdir(parents=True)
+
+    exit_code = main(
+        [
+            "request-packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            "--name",
+            "nested/rule-request.md",
+        ]
+    )
+
+    assert exit_code == 0
+    assert (nested_dir / "rule-request.md").is_file()
 
 
 def test_cli_request_packet_reports_no_excerpt_when_nothing_looks_wrong(tmp_path: Path) -> None:

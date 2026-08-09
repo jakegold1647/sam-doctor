@@ -717,6 +717,23 @@ def _write_report(path: Path, report: str) -> None:
         raise ValueError(f"Could not write {path}: {error}") from error
 
 
+def _artifact_path(output_dir: Path, name: str, option_name: str) -> Path:
+    """Resolve an artifact name without letting it escape its output directory."""
+
+    try:
+        resolved_output_dir = output_dir.resolve()
+        candidate = (resolved_output_dir / name).resolve()
+        candidate.relative_to(resolved_output_dir)
+    except (OSError, RuntimeError, ValueError) as error:
+        raise ValueError(
+            f"{option_name} must resolve inside --output-dir: {name}"
+        ) from error
+
+    if candidate == resolved_output_dir:
+        raise ValueError(f"{option_name} must name a file inside --output-dir: {name}")
+    return candidate
+
+
 def _make_output_dir(path: Path) -> Path:
     """Create an output directory, reporting failure the way reads and writes do.
 
@@ -775,6 +792,9 @@ def _write_packet_notes(
 
 def _packet_command(args: argparse.Namespace) -> int:
     output_dir = _make_output_dir(Path(args.output_dir).resolve())
+    markdown_path = _artifact_path(output_dir, args.markdown_name, "--markdown-name")
+    json_path = _artifact_path(output_dir, args.json_name, "--json-name")
+    notes_path = _artifact_path(output_dir, args.notes_name, "--notes-name")
 
     if args.input == "-":
         stdin_text = sys.stdin.read()
@@ -795,10 +815,6 @@ def _packet_command(args: argparse.Namespace) -> int:
         findings = diagnose(text)
 
     input_is_empty = not text.strip()
-
-    markdown_path = output_dir / args.markdown_name
-    json_path = output_dir / args.json_name
-    notes_path = output_dir / args.notes_name
 
     _write_report(
         markdown_path,
@@ -836,6 +852,7 @@ def _packet_command(args: argparse.Namespace) -> int:
 
 def _request_packet_command(args: argparse.Namespace) -> int:
     output_dir = _make_output_dir(Path(args.output_dir).resolve())
+    notes_path = _artifact_path(output_dir, args.name, "--name")
 
     if args.input == "-":
         stdin_text = sys.stdin.read()
@@ -885,7 +902,6 @@ def _request_packet_command(args: argparse.Namespace) -> int:
         )
     lines.extend(["", f"Open a rule request: {RULE_REQUEST_URL}"])
 
-    notes_path = output_dir / args.name
     _write_report(notes_path, "\n".join(lines) + "\n")
     print(f"Rule request excerpt written to {notes_path}")
     return 0
