@@ -31,13 +31,22 @@ CI and local automation without guessing.
 
 - `sam-doctor packet`
   - Returns evidence packets and exits `0` when files are readable and report writes succeed.
+  - Exits `2` when the output directory cannot be created — a read-only checkout, a
+    path that is already a file, a full disk. Never `1`: that code means a fail
+    gate was hit, so a step branching on it would read "this deployment has
+    findings" from "that directory could not be created".
 
 - `sam-doctor request-packet`
   - Writes a small, sanitized excerpt for a rule request and exits `0`, whether or not a
-    likely error line was found. Exits `2` on a read/write failure (for example, empty stdin).
+    likely error line was found. Exits `2` on a read/write failure (for example, empty stdin,
+    or an output directory that cannot be created).
 
-- `sam-doctor init`, `demo`, `rules`
+- `sam-doctor init`, `demo`, `rules`, `schemas`
   - Exit `0` on successful command execution.
+  - `init` exits `2` rather than overwriting an existing workflow file, and names
+    `--force` in the message. Re-running it is therefore safe but not idempotent:
+    the second run refuses instead of silently rewriting a file you may have
+    edited.
 
 Use these codes with shell CI gates, for example:
 

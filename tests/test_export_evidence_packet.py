@@ -251,3 +251,29 @@ def test_a_successful_wrapper_run_still_exits_zero_and_writes_the_packet(
     assert (output_dir / "diagnosis.json").is_file()
     assert (output_dir / "diagnosis.md").is_file()
     assert (output_dir / "researcher-notes.md").is_file()
+
+
+def test_an_uncreatable_output_dir_is_a_precondition_failure(tmp_path: Path) -> None:
+    # docs/cli-exit-and-action-exit-codes.md promises exit 2 on a read/write
+    # failure. mkdir was called bare while reads and writes both translated
+    # OSError, so this raised a traceback and exit 1 - the code that means a fail
+    # gate was hit. A read-only checkout or a full disk lands here.
+    log = tmp_path / "failure.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity", encoding="utf-8"
+    )
+    blocked = tmp_path / "already-a-file"
+    blocked.write_text("not a directory", encoding="utf-8")
+
+    for command in ("packet", "request-packet"):
+        exit_code = main([command, str(log), "--output-dir", str(blocked / "out")])
+        assert exit_code == 2, f"{command} returned {exit_code}"
+
+
+def test_init_reports_an_uncreatable_workflow_directory(tmp_path: Path) -> None:
+    blocked = tmp_path / "already-a-file"
+    blocked.write_text("not a directory", encoding="utf-8")
+
+    exit_code = main(["init", "--workflow-file", str(blocked / "wf" / "sam-doctor.yml")])
+
+    assert exit_code == 2
