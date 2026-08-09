@@ -17,7 +17,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: python scripts/sync-site-metadata.py --check
-      - run: python scripts/check-launch-readiness.py --repo jakegold1647/sam-doctor --token "${{ github.token }}"
+      # --tag makes the pushed tag part of the readiness check. Without it, a tag
+      # disagreeing with the packaged version builds the packaged version,
+      # attaches it to the tag anyway, and then hits PyPI's skip-existing path -
+      # publishing a release tagged for a version it does not contain, with
+      # nothing failing along the way.
+      - run: python scripts/check-launch-readiness.py --repo jakegold1647/sam-doctor --token "${{ github.token }}" --tag "${{ github.ref_name }}"
       - run: python -m pip install build
       - run: python -m build
       - name: Create release with package artifacts
