@@ -52,6 +52,11 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
+The public guides follow the current `main` catalog (62 diagnostics). Stable
+PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
+`main` install above when you need newer rule coverage as well as `run` or
+clipboard support.
+
 To install from a tagged source release instead of PyPI, use
 `pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@<tag>"`
 with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/releases).

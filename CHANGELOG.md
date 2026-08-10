@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The stable-versus-current catalog boundary is now explicit.** The public
+  homepage, quickstart, machine-readable guide, and README say that the guides
+  follow `main` (62 diagnostics) while stable PyPI `0.11.0` contains the
+  released 48-rule catalog; the branch install remains the opt-in path until a
+  new stable release is authorized.
+
 - **Lambda invoke target misses now have a focused handoff.** A medium-confidence
   finding recognizes `ResourceNotFoundException` from the Lambda `Invoke`
   operation and points at the exact function, qualifier, account, Region, and
