@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Bedrock nested message-content validation failures now have a focused
+  handoff.** A medium-confidence finding surfaces the indexed missing field
+  path, including text, thinking, image, and document content blocks, before
+  changing model access or IAM.
+
 - **Bedrock missing-messages failures now have a focused handoff.** A
   medium-confidence finding recognizes the model-specific `messages: Field
   required` validation marker and points at the Claude Messages API body before

@@ -700,6 +700,40 @@ def test_messages_validation_without_bedrock_context_is_not_this_rule() -> None:
 @pytest.mark.parametrize(
     "log",
     (
+        (
+            "botocore.errorfactory.ValidationException: An error occurred "
+            "(ValidationException) when calling the InvokeModel operation: "
+            "messages.0.content.1.image.source: Field required"
+        ),
+        (
+            "ValidationException: The model returned the following errors: "
+            "messages.1.content.0.thinking.signature: Field required"
+        ),
+        "ValidationException: messages.0.content.0.document.source.type: Field required",
+    ),
+)
+def test_bedrock_message_content_field_required_routes_to_nested_body_check(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.request.message-content-field-required"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_message_content_field_rule_does_not_match_unindexed_text() -> None:
+    findings = diagnose(
+        "ValidationException: messages: Field required"
+    )
+
+    assert "bedrock.request.message-content-field-required" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "An error occurred (UnknownAction) when calling the GetTemplateSummary operation: Action is not supported",
         "An error occurred (InvalidAction) when calling the DescribeLaunchConfigurations operation: invalid action",
     ),

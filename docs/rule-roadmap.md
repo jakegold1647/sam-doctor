@@ -1212,6 +1212,42 @@ matching operation. Log only sanitized field names and values before retrying.
 
 ---
 
+## 32. Bedrock rejected a nested message content field
+
+**Status:** landed - the catalog now recognizes an indexed missing-field path
+such as `messages.1.content.0.thinking.signature: Field required`.
+
+**Failure family.** A model-specific Anthropic Messages request contains a
+content block with the wrong shape or a field dropped by an adapter. Bedrock's
+indexed path identifies the conversation turn, content block, and nested field;
+the correction is in the request body, not in model access or IAM.
+
+**Sanitized signal lines.**
+
+```text
+botocore.errorfactory.ValidationException: An error occurred (ValidationException) when calling the InvokeModel operation: messages.0.content.1.image.source: Field required
+ValidationException: The model returned the following errors: messages.1.content.0.thinking.signature: Field required
+```
+
+**Pattern hint.** Match `messages.N.content.N.<field>: Field required` with
+numeric indexes and a nested field path. Do not broaden this to an unindexed
+`messages: Field required` marker; that is the separate top-level request rule.
+
+**Safe verification steps.** Use the indexed path to inspect the exact turn and
+content block in the serialized request. Match the block type to the selected
+model schema: text blocks need text, thinking blocks need their signed fields
+when replayed, and image or document blocks need the required source object and
+type. If an adapter converts between Anthropic Messages, Bedrock InvokeModel,
+and Converse, log only sanitized content-block types and keys to find a dropped
+or renamed field, then retry before changing access or IAM.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1223,10 +1259,10 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 370 of 413 excerpts (90%), with 43 misses after entry 31. It included dedicated
+diagnosed 377 of 418 excerpts (90%), with 41 misses after entry 32. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, empty-system-prompt, empty-model-id, and
-missing-messages request-shape failures, ECS Exec
+missing-messages and nested message-content request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
@@ -1235,14 +1271,16 @@ from a repeated public Terraform/provider failure shape. Entry 30 adds the
 EKS VPC CNI pod-sandbox wrapper family from repeated public EKS and VPC CNI
 failure reports, while yielding to the nested EC2 cause when it is present.
 Entry 31 adds the model-specific Bedrock `messages: Field required` request
-family from repeated public InvokeModel failures.
+family from repeated public InvokeModel failures. Entry 32 adds the indexed
+nested message-content field family from repeated Claude image, document, and
+thinking-block validation failures.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 31 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 32 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

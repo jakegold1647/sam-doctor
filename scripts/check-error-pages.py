@@ -85,6 +85,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "bedrock.request.empty-system-prompt": "bedrock-empty-system-prompt.html",
     "bedrock.request.empty-model-id": "bedrock-empty-model-id.html",
     "bedrock.request.messages-required": "bedrock-messages-required.html",
+    "bedrock.request.message-content-field-required": "bedrock-message-content-field-required.html",
     "aws.api.action-invalid": "aws-invalid-action.html",
     "aws.api.action-not-implemented": "aws-action-not-implemented.html",
     "aws.api.service-unknown": "aws-service-unknown.html",

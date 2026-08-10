@@ -309,6 +309,11 @@ _BEDROCK_MESSAGES_REQUIRED_PATTERN = (
     r").{0,260}\bmessages:\s*Field required\b"
 )
 
+_BEDROCK_MESSAGE_CONTENT_FIELD_REQUIRED_PATTERN = (
+    r"\bmessages\.\d+\.content\.\d+\.[A-Za-z][A-Za-z0-9_.]*:\s*"
+    r"Field required\b"
+)
+
 _AWS_INVALID_ACTION_PATTERNS = (
     r"(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b",
     r"\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b",
@@ -1181,6 +1186,25 @@ _RULES = (
             "For the Claude Messages API, include `anthropic_version` set to `bedrock-2023-05-31`, a positive `max_tokens`, and at least the required user or assistant message shape with role and content.",
             "Do not send an OpenAI-style `prompt` body to a model expecting Messages API fields; if the model supports Converse, use its `messages` and `system` shape instead and verify the selected operation matches the body format.",
             "Retry after correcting the request body, then investigate model access or IAM only if Bedrock reports a separate service-side error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html",
+    ),
+    Rule(
+        id="bedrock.request.message-content-field-required",
+        title="A Bedrock message content block is missing a required field",
+        confidence="medium",
+        patterns=(_BEDROCK_MESSAGE_CONTENT_FIELD_REQUIRED_PATTERN,),
+        explanation=(
+            "Bedrock's model-specific validation named a missing field inside "
+            "a particular message content block. The indexed path identifies the "
+            "turn, content block, and nested field to inspect; this is a request "
+            "shape problem, not evidence that model access or IAM is wrong."
+        ),
+        verification=(
+            "Read the indexed path such as `messages.1.content.0.thinking.signature` or `messages.0.content.1.image.source` and inspect that exact block in the serialized request.",
+            "Match the content block type to the model's Messages API schema: text blocks need text, thinking blocks need their signed fields when replayed, and image or document blocks need the required source object and type.",
+            "If an adapter converts between Anthropic Messages, Bedrock InvokeModel, and Converse, log only the sanitized content-block types and keys to find the field that was dropped or renamed.",
+            "Retry after correcting the nested block, then investigate model access or IAM only if a separate service-side error remains.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html",
     ),

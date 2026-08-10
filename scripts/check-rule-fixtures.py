@@ -196,6 +196,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "content: Field required"
         ),
     ),
+    "bedrock.request.message-content-field-required": RuleFixture(
+        positive=(
+            "ValidationException: The model returned the following errors: "
+            "messages.1.content.0.thinking.signature: Field required"
+        ),
+        negative="ValidationException: messages: Field required",
+    ),
     "aws.api.action-invalid": RuleFixture(
         positive=(
             "An error occurred (UnknownAction) when calling the "
