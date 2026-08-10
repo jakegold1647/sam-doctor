@@ -87,6 +87,11 @@ bash wrapper script through a WSL-style bash and skip themselves when only
 Git Bash is available - the Windows CI job covers the Action itself directly,
 so a skip there is expected, not a failure to fix.
 
+The pull-request gate is fork-safe: it runs on public fixtures through
+`pull_request` and does not require AWS credentials, repository secrets, or
+write access. A first-time contributor can open a fork PR and let the same
+checks run before asking for maintainer help.
+
 ### Fork, clone, and branch
 
 1. Fork the repository on GitHub.
