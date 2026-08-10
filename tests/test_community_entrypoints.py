@@ -22,6 +22,8 @@ def test_public_entry_points_keep_a_ready_issue_path() -> None:
         ".github/ISSUE_TEMPLATE/config.yml"
     )
     assert "community welcome discussion" in _read("SUPPORT.md")
+    assert "docs/community-outreach-plan.md" in _read("README.md")
+    assert "docs/community-outreach-plan.md" in _read("CONTRIBUTING.md")
     assert "Browse mentored first issues" in _read("site/index.html")
     assert "Ask in the welcome discussion" in _read("site/index.html")
     assert "https://github.com/jakegold1647/sam-doctor/discussions/1" in _read(

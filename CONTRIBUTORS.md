@@ -8,12 +8,15 @@ The public version of this list is the [SAM Doctor contributor hall of fame](htt
 
 ## People who have shipped changes
 
-- [waterlemonnn](https://github.com/waterlemonnn) — diagnostic rules, CI, fixtures, and contributor tooling
-- [pui1ya](https://github.com/pui1ya) — Lambda package-size diagnostics
-- [alloutflo](https://github.com/alloutflo) — deprecated Lambda-runtime diagnostics
-- [rasmalai25](https://github.com/rasmalai25) — Lambda deployment diagnostics
-- [JasonColapietro](https://github.com/JasonColapietro) — diagnostic near-match test coverage
-- [agu2347](https://github.com/agu2347) — non-ASCII property validation diagnostics
+Each entry uses this format so the public contributor page can stay in sync:
+`- [handle](https://github.com/handle) — short badge — contribution summary`.
+
+- [waterlemonnn](https://github.com/waterlemonnn) — rules + tooling — Diagnostic rules, CI, fixtures, and contributor tooling that made the project easier to extend.
+- [pui1ya](https://github.com/pui1ya) — Lambda — Lambda package-size diagnostics that turn a confusing deployment ceiling into a focused next check.
+- [alloutflo](https://github.com/alloutflo) — runtime support — Deprecated Lambda-runtime diagnostics that help teams see the migration path before retrying a deploy.
+- [rasmalai25](https://github.com/rasmalai25) — deployment rules — Lambda deployment diagnostics that make a noisy failure easier to investigate locally.
+- [JasonColapietro](https://github.com/JasonColapietro) — test coverage — Near-match test coverage that protects the boundary between a useful signal and a false positive.
+- [agu2347](https://github.com/agu2347) — template validation — Non-ASCII property validation diagnostics that catch invisible template failures before they cost a deploy.
 
 This is a thank-you list, not an authoritative contributor count. GitHub's
 [contributor graph](https://github.com/jakegold1647/sam-doctor/graphs/contributors)

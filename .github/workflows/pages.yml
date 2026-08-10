@@ -32,6 +32,8 @@ jobs:
           python-version: "3.12"
       - name: Run website QA
         run: python scripts/check-site-qa.py site
+      - name: Verify contributor page sync
+        run: python scripts/sync-contributor-page.py --check
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:

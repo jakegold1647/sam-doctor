@@ -27,6 +27,16 @@ nothing matches, it says so instead of guessing.
 [Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml) |
 [Request a rule](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
 
+<!-- BEGIN GENERATED CONTRIBUTOR CALLOUT -->
+## Community
+
+The Hall of Fame is where shipped work gets remembered. If a diagnostic rule, fixture, docs fix, or thoughtful report makes SAM Doctor better, there is room for your name next to the people who helped build it.
+
+**Currently recognized:** [waterlemonnn](https://github.com/waterlemonnn) · [pui1ya](https://github.com/pui1ya) · [alloutflo](https://github.com/alloutflo) · [rasmalai25](https://github.com/rasmalai25) · [JasonColapietro](https://github.com/JasonColapietro) · [agu2347](https://github.com/agu2347)
+
+[Meet the contributors](https://sam-doctor.jacobgoldstein.dev/contributors/) · [Find a mentored first issue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22)
+<!-- END GENERATED CONTRIBUTOR CALLOUT -->
+
 ## Try it
 
 ```bash
@@ -592,6 +602,7 @@ not security, legal, or production-operations advice.
 - [Rolling out SAM Doctor on a team (commands by role)](docs/team-rollout.md)
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
 - [Community triage: turn usage feedback into a contribution](docs/community-triage.md)
+- [Community outreach plan: put the tool in real hands](docs/community-outreach-plan.md)
 
 ## Contributing
 

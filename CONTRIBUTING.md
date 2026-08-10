@@ -12,6 +12,10 @@ and you can ask for help turning one into your first pull request.
 Maintainers use the [community triage checklist](docs/community-triage.md) to
 route that feedback into a focused, welcoming next step.
 
+The [community outreach plan](docs/community-outreach-plan.md) describes the
+help-first usage and contribution loop. It is intentionally conversation-first:
+no mass messages, star exchanges, or pressure to join another platform.
+
 Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before opening an issue,
 discussion, or pull request. It sets the project standard for respectful
 feedback and keeps the privacy boundary clear for everyone, including first-
@@ -75,6 +79,10 @@ comment before you start so nobody duplicates the work.
    the change is finished is welcome.
 4. Keep the change narrow and run the PR gate. Once the checks are green, we
    review the evidence and merge it with your credit preserved.
+
+If you would like to be named publicly, add or correct your entry in
+`CONTRIBUTORS.md` and run `python scripts/sync-contributor-page.py`. That keeps
+the README callout and the website Hall of Fame in the same reviewed change.
 
 If you want help before claiming an issue, ask in the [welcome discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)
 or use the [contributor setup form](https://github.com/jakegold1647/sam-doctor/issues/new?template=setup_problem.yml).

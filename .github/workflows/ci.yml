@@ -29,6 +29,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install ".[dev]"
       - run: python scripts/sync-site-metadata.py --check
+      - run: python scripts/sync-contributor-page.py --check
       - run: python -m ruff check src tests scripts
       - name: Rule catalog quality gate (annotated)
         run: python scripts/check-rule-catalog.py --format github
