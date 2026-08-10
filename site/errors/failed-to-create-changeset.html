@@ -58,7 +58,7 @@
         <ul>
           <li><code>Unable to locate credentials</code> — no credential source in this environment: the CI job never ran its auth step, or the profile is not set.</li>
           <li><code>Parameters: [Name] must have values</code> — a template parameter with no default and no supplied value, often after adding a parameter without updating <code>samconfig.toml</code> or the pipeline.</li>
-          <li><code>Error: Failed to create changeset</code> with a specific reason attached — read the reason; when it matches a sharper failure (quota, schema, S3 access), that failure is the real page to follow.</li>
+          <li><code>Failed to create changeset</code> or <code>Failed to create the changeset</code> with a specific reason attached — read the reason; when it matches a sharper failure (quota, schema, S3 access), that failure is the real page to follow.</li>
         </ul>
       </section>
 

@@ -955,6 +955,18 @@ def test_detects_sam_empty_changeset_failure() -> None:
     )
 
 
+def test_changeset_wrapper_with_the_prefix_keeps_generic_handoff() -> None:
+    findings = diagnose(
+        "Failed to create the changeset: Waiter ChangeSetCreateComplete failed: "
+        "Waiter encountered a terminal failure state: the complete reason was "
+        "redacted from this excerpt"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "sam.deploy.configuration-resolution-failed"
+    ]
+
+
 def test_unresolved_resource_dependency_routes_to_template_reference_check() -> None:
     findings = diagnose(
         "Failed to create the changeset: Waiter ChangeSetCreateComplete failed: "

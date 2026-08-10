@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **SAM change-set handoffs now recognize both wrapper wordings.** The existing
+  medium-confidence configuration handoff accepts `Failed to create changeset`
+  and `Failed to create the changeset`, while sharper template and service
+  findings still take precedence.
+
 - **The stable-versus-current catalog boundary is now explicit.** The public
   homepage, quickstart, machine-readable guide, and README say that the guides
   follow `main` (63 diagnostics) while stable PyPI `0.11.0` contains the

@@ -733,9 +733,10 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 239 of
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 240 of
 269 excerpts (89%), now including dedicated searches for CDK assembly-wrapper
-variants and Lambda `Invoke` target misses. That percentage is a moving sample,
+variants and Lambda `Invoke` target misses, plus the broader change-set wrapper
+wording. That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project

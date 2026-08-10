@@ -1754,6 +1754,7 @@ _RULES = (
             r"Unable to locate credentials",
             r"Parameter.*must have values",
             r"Error: Failed to create changeset",
+            r"Failed to create (?:the )?changeset\b",
             r"sam deploy.{0,80}(?:failed|error|unable)",
         ),
         explanation=(
