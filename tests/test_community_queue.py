@@ -23,7 +23,7 @@ def _issue(*, labels: tuple[str, ...], body: str, assigned: bool = False) -> dic
 
 def test_ready_issue_accepts_rule_issue_shape_and_claim_prompt() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="## Where to add it\n## Sample log excerpts to test against",
     )
 
@@ -37,12 +37,13 @@ def test_ready_issue_reports_missing_labels_and_claim_prompt() -> None:
 
     assert "missing `good first issue` label" in problems
     assert "missing `mentor available` label" in problems
+    assert "missing `effort:*` label" in problems
     assert "missing maintainer claim prompt" in problems
 
 
 def test_ready_issue_reports_assignment_and_missing_scope() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="A short issue with no implementation details.",
         assigned=True,
     )
@@ -55,7 +56,7 @@ def test_ready_issue_reports_assignment_and_missing_scope() -> None:
 
 def test_ready_issue_reports_unassigned_contributor_claim() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="## Acceptance criteria",
     )
 
@@ -71,7 +72,7 @@ def test_ready_issue_reports_unassigned_contributor_claim() -> None:
 
 def test_ready_issue_reports_curly_apostrophe_contributor_claim() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="## Acceptance criteria",
     )
 
@@ -90,7 +91,7 @@ def test_ready_issue_reports_curly_apostrophe_contributor_claim() -> None:
 
 def test_maintainer_invitation_is_not_an_active_claim() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="## Acceptance criteria",
     )
 
@@ -109,7 +110,7 @@ def test_maintainer_invitation_is_not_an_active_claim() -> None:
 
 def test_collaborator_invitation_is_not_an_active_claim() -> None:
     issue = _issue(
-        labels=("status: ready", "good first issue", "mentor available"),
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
         body="## Acceptance criteria",
     )
 

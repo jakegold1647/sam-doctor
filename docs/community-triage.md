@@ -34,7 +34,9 @@ Suggested reply:
 Do not add `good first issue` until the acceptance criteria and test or
 documentation path are clear. Add `status: ready` only when the issue has a
 concrete first file or command, acceptance criteria, and a maintainer path for
-questions. Pair it with `mentor available` when a newcomer can ask for help;
+questions. Add one `effort: small`, `effort: medium`, or `effort: large` label
+so a newcomer can choose work with an honest size signal. Pair it with
+`mentor available` when a newcomer can ask for help;
 remove `status: ready` when the issue is claimed, blocked, or needs more
 reproduction. When a newcomer explicitly claims an issue in a comment, assign
 it or remove `status: ready` promptly so nobody else starts duplicate work.

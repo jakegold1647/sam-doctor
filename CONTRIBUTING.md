@@ -58,6 +58,7 @@ To lower contributor friction, labels to look for:
 - `help wanted`
 - `status: ready`
 - `mentor available`
+- `effort: small` or `effort: medium`
 
 The [ready newcomer queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor+available%22)
 is the shortest route to a scoped first pull request. These issues have

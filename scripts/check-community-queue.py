@@ -3,9 +3,10 @@
 
 This is a scheduled maintainer check, not part of the offline pull-request
 gate. It reads the public GitHub issue queue and reports drift when a ready
-issue loses its newcomer labels, is assigned without being re-triaged, or no
-longer has enough context for a first contribution. It also reports an
-unassigned ready issue when a non-maintainer explicitly claims it in a comment.
+issue loses its newcomer or effort labels, is assigned without being
+re-triaged, or no longer has enough context for a first contribution. It also
+reports an unassigned ready issue when a non-maintainer explicitly claims it in
+a comment.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from typing import Any
 DEFAULT_REPOSITORY = "jakegold1647/sam-doctor"
 READY_LABEL = "status: ready"
 REQUIRED_LABELS = ("good first issue", "mentor available")
+EFFORT_LABEL_PREFIX = "effort:"
 CLAIM_MARKERS = ("take this", "claim this", "claim it")
 MAINTAINER_ASSOCIATIONS = frozenset(("OWNER", "MEMBER", "COLLABORATOR"))
 ACTIVE_CLAIM_MARKERS = (
@@ -100,6 +102,9 @@ def validate_ready_issue(issue: dict[str, Any], comments: list[dict[str, Any]]) 
     for required in REQUIRED_LABELS:
         if required not in labels:
             problems.append(f"missing `{required}` label")
+
+    if not any(label.startswith(EFFORT_LABEL_PREFIX) for label in labels):
+        problems.append("missing `effort:*` label")
 
     if issue.get("assignee") or issue.get("assignees"):
         problems.append("assigned work still carries `status: ready`")
