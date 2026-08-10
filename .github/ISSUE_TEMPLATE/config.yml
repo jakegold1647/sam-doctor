@@ -3,6 +3,9 @@ contact_links:
   - name: Find a mentored first issue
     url: https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor+available%22
     about: Browse scoped, available work if you want to make your first pull request.
+  - name: Community welcome
+    url: https://github.com/jakegold1647/sam-doctor/discussions/1
+    about: Share a safe result or ask what to contribute next.
   - name: Support boundaries
     url: https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md
     about: Read what SAM Doctor can and cannot help with before opening an issue.

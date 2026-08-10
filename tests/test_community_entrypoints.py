@@ -16,6 +16,9 @@ def test_public_entry_points_keep_a_ready_issue_path() -> None:
     assert "ready newcomer queue" in _read("CONTRIBUTING.md")
     assert "ready newcomer queue" in _read("CONTRIBUTORS.md")
     assert "Find a mentored first issue" in _read(".github/ISSUE_TEMPLATE/config.yml")
+    assert "https://github.com/jakegold1647/sam-doctor/discussions/1" in _read(
+        ".github/ISSUE_TEMPLATE/config.yml"
+    )
     assert "Browse mentored first issues" in _read("site/index.html")
 
 
