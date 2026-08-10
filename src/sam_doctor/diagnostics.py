@@ -254,6 +254,16 @@ _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN = (
     r"CreateNetworkInterface on EC2\b"
 )
 
+_LAMBDA_RUNTIME_DEPRECATED_CLAUSE = (
+    r"The runtime parameter of [A-Za-z0-9._-]+ is no longer supported for "
+    r"creating or updating AWS Lambda functions"
+)
+_LAMBDA_RUNTIME_DEPRECATED_PATTERN = (
+    rf"(?:\b(?:CREATE_FAILED|UPDATE_FAILED)\b.{{0,1000}}|"
+    rf"\bInvalidParameterValueException\b.{{0,500}})"
+    rf"{_LAMBDA_RUNTIME_DEPRECATED_CLAUSE}"
+)
+
 _IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS = (
     r"(?:following )?resource\s+['\"]?ImageRecipe['\"]?\s+already exists",
     r"ResourceAlreadyExistsException.*(?:ImageRecipe|CreateImageRecipe)",
@@ -1812,6 +1822,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html",
     ),
     Rule(
+        id="lambda.runtime.deprecated",
+        title="AWS Lambda runtime is no longer supported for deployment",
+        confidence="high",
+        patterns=(_LAMBDA_RUNTIME_DEPRECATED_PATTERN,),
+        explanation=(
+            "Lambda rejected the function create or update because the template "
+            "declares a runtime that has reached the stage of deprecation where "
+            "AWS no longer accepts deployments for it. Retrying the same template "
+            "cannot succeed; the function must move to a currently supported runtime."
+        ),
+        verification=(
+            "Inspect the function's `Runtime` in the submitted template and in `.aws-sam/build/template.yaml`, if SAM generated that deployment artifact.",
+            "Compare that value with the supported runtimes and deprecation dates in the AWS Lambda runtime documentation.",
+            "Before changing `Runtime:`, review language and dependency compatibility and confirm the matching local interpreter or build image is available; then rebuild and test before redeploying.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html",
+    ),
+    Rule(
         id="cloudformation.resource.create-update-failed",
         title="CloudFormation resource creation or update failed",
         confidence="high",
@@ -1871,6 +1899,7 @@ _RULES = (
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
             _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN,
+            _LAMBDA_RUNTIME_DEPRECATED_CLAUSE,
             # The Lambda VPC execution-role rule explains this exact handler
             # reason; keep generic CREATE_FAILED available for other resources.
             _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,
