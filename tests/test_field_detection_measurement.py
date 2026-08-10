@@ -47,6 +47,7 @@ REAL_FAILURE_LINES = (
     "[BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed",
     "An error occurred (ResourceNotFoundException) when calling the Invoke operation",
     "Waiter ChangeSetCreateComplete failed: Template format error: Unresolved resource dependencies [Environment]",
+    "CannotStartManagedAgentError: failed to start managed agent inside container",
 )
 
 NOT_FAILURE_LINES = (

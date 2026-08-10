@@ -280,6 +280,11 @@ _LAMBDA_INVOKE_NOT_FOUND_PATTERNS = (
     r"\bwhen calling (?:the )?Invoke(?: operation)?\b.{0,160}ResourceNotFoundException\b",
 )
 
+_ECS_EXEC_AGENT_FAILURE_PATTERNS = (
+    r"CannotStartManagedAgentError\b",
+    r"execute command failed because execute command was not enabled when the task was run or the execute command agent (?:isn't|is not) running",
+)
+
 
 _RULES = (
     Rule(
@@ -1016,6 +1021,24 @@ _RULES = (
             "Compare the invoke target with the stack output or transformed template; correct a stale function name, alias, Region, or account rather than broadening IAM permissions for a missing target.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html",
+    ),
+    Rule(
+        id="ecs.execute-command.agent-unavailable",
+        title="ECS Exec could not start the managed agent",
+        confidence="medium",
+        patterns=_ECS_EXEC_AGENT_FAILURE_PATTERNS,
+        explanation=(
+            "ECS could not start the managed SSM agent needed by `execute-command`. "
+            "The wrapper does not distinguish a task launched without Exec enabled "
+            "from an agent, task-role, network, or filesystem prerequisite that is "
+            "missing, so verify the task's reported state before changing IAM."
+        ),
+        verification=(
+            "Read the task's Exec state with `aws ecs describe-tasks --cluster <cluster> --tasks <task>` and check `enableExecuteCommand` plus the `ExecuteCommandAgent` managed-agent `lastStatus` and reason.",
+            "Ensure the task was launched after Exec was enabled, its task role allows the required `ssmmessages` channel actions, and the task can reach the Systems Manager Message Gateway endpoints (or the corresponding VPC endpoint).",
+            "ECS Exec requires a writable container filesystem; remove `readonlyRootFilesystem` or mounts that hide the managed-agent paths, then launch a new task before retrying.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html",
     ),
     Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",

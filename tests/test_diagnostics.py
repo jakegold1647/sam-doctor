@@ -503,6 +503,26 @@ def test_lambda_get_function_not_found_does_not_look_like_an_invoke_failure() ->
     }
 
 
+@pytest.mark.parametrize(
+    "log",
+    (
+        "CannotStartManagedAgentError: failed to start managed agent inside container",
+        (
+            "An error occurred (InvalidParameterException) when calling the ExecuteCommand "
+            "operation: The execute command failed because execute command was not enabled "
+            "when the task was run or the execute command agent isn't running"
+        ),
+    ),
+)
+def test_ecs_exec_agent_failures_route_to_prerequisite_checks(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "ecs.execute-command.agent-unavailable"
+    ]
+    assert findings[0].confidence == "medium"
+
+
 def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
     log = "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated."
 

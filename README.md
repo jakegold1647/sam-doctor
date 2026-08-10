@@ -412,6 +412,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   code storage quota (`CodeStorageExceededException`)
 - Lambda invoke target misses (`ResourceNotFoundException` on the `Invoke`
   operation), with function, qualifier, account, Region, and timing checks
+- ECS Exec managed-agent failures (`CannotStartManagedAgentError` and the
+  `ExecuteCommand` wrapper), with task-state and SSM prerequisite checks
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
 - ECR push authentication failures from the CI runner (missing login, expired
   token, denied `ecr:GetAuthorizationToken`)

@@ -11,9 +11,14 @@ All notable changes to SAM Doctor are documented here.
 
 - **The stable-versus-current catalog boundary is now explicit.** The public
   homepage, quickstart, machine-readable guide, and README say that the guides
-  follow `main` (63 diagnostics) while stable PyPI `0.11.0` contains the
+  follow `main` (64 diagnostics) while stable PyPI `0.11.0` contains the
   released 48-rule catalog; the branch install remains the opt-in path until a
   new stable release is authorized.
+
+- **ECS Exec managed-agent failures now have a focused handoff.** A
+  medium-confidence finding recognizes `CannotStartManagedAgentError` and the
+  matching `ExecuteCommand` wrapper, then points at task launch enablement,
+  `ssmmessages`, network, and writable-filesystem checks.
 
 - **Unresolved CloudFormation dependencies now have a focused diagnosis.** A
   high-confidence finding recognizes `Template format error: Unresolved resource

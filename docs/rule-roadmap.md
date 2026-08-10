@@ -723,6 +723,45 @@ the deploy submits.
 
 ---
 
+## 18. ECS Exec could not start its managed agent
+
+**Status:** landed - the catalog now recognizes both the managed-agent startup
+error and the `ExecuteCommand` wrapper that reports the same condition.
+
+**Failure family.** A task was launched without ECS Exec enabled, or the
+managed SSM agent could not start because the task role, SSM messaging path,
+network, agent version, or container filesystem does not satisfy the Exec
+prerequisites. Existing tasks must be replaced after launch-time settings
+change.
+
+**Sanitized signal lines.**
+
+```text
+CannotStartManagedAgentError: failed to start managed agent inside container
+```
+
+```text
+An error occurred (InvalidParameterException) when calling the ExecuteCommand operation: The execute command failed because execute command was not enabled when the task was run or the execute command agent isn't running.
+```
+
+**Pattern hint.** Match the explicit `CannotStartManagedAgentError` or the
+full ECS `ExecuteCommand` agent-not-running wording. Do not claim that every
+`InvalidParameterException` is an ECS Exec failure.
+
+**Safe verification steps.** Read `enableExecuteCommand` and the
+`ExecuteCommandAgent` `lastStatus` and reason with
+`aws ecs describe-tasks --cluster <cluster> --tasks <task>`. Then check the
+task role's `ssmmessages` permissions and network path, and confirm the task
+filesystem is writable; ECS Exec does not support `readonlyRootFilesystem`.
+Launch a new task after changing the task definition.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -733,16 +772,16 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 240 of
-269 excerpts (89%), now including dedicated searches for CDK assembly-wrapper
-variants and Lambda `Invoke` target misses, plus the broader change-set wrapper
-wording. That percentage is a moving sample,
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 241 of
+269 excerpts (90%), now including dedicated searches for CDK assembly-wrapper
+variants, Lambda `Invoke` target misses, and ECS Exec managed-agent failures,
+plus the broader change-set wrapper wording. That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 17 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 18 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

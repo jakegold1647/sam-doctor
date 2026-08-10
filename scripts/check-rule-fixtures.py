@@ -144,6 +144,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "GetFunction operation: Function not found"
         ),
     ),
+    "ecs.execute-command.agent-unavailable": RuleFixture(
+        positive=(
+            "CannotStartManagedAgentError: failed to start managed agent inside "
+            "container: the execute command agent is not running"
+        ),
+        negative="ECS ExecuteCommandAgent lastStatus: RUNNING",
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'
