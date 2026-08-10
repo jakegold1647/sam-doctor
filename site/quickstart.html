@@ -153,6 +153,21 @@ wl-paste | sam-doctor diagnose - --format markdown
 xclip -selection clipboard -o | sam-doctor diagnose - --format markdown</code></pre>
         <p class="muted">Review the excerpt before sharing it; redaction is helpful, not a substitute for review.</p>
 
+        <p class="muted">Make it part of every local deploy while preserving the deploy exit code:</p>
+        <pre><code># Bash / zsh
+set -o pipefail
+sam deploy --no-confirm-changeset 2>&amp;1 | tee deployment.log
+deploy_status=${PIPESTATUS[0]}
+sam-doctor diagnose deployment.log --format markdown
+exit "$deploy_status"
+
+# PowerShell
+sam deploy --no-confirm-changeset 2&gt;&amp;1 | Tee-Object deployment.log
+$deployStatus = $LASTEXITCODE
+sam-doctor diagnose deployment.log --format markdown
+exit $deployStatus</code></pre>
+        <p class="muted">These examples keep diagnosis advisory; add a confidence or findings gate only when you are ready.</p>
+
         <p class="muted">Use your command family directly:</p>
         <pre><code># AWS SAM
 sam-doctor diagnose deployment.log --format json --fail-on-findings

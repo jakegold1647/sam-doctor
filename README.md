@@ -126,6 +126,30 @@ xclip -selection clipboard -o | sam-doctor diagnose - --format markdown
 Review the excerpt before sharing it. SAM Doctor redacts common identifiers,
 but clipboard contents can still include sensitive text that needs your review.
 
+To make diagnosis part of every local deploy, capture the deploy output and
+keep the deploy command's exit status:
+
+```bash
+# Bash / zsh
+set -o pipefail
+sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+deploy_status=${PIPESTATUS[0]}
+sam-doctor diagnose deployment.log --format markdown
+exit "$deploy_status"
+```
+
+```powershell
+# PowerShell
+sam deploy --no-confirm-changeset 2>&1 | Tee-Object deployment.log
+$deployStatus = $LASTEXITCODE
+sam-doctor diagnose deployment.log --format markdown
+exit $deployStatus
+```
+
+The diagnosis stays advisory in these examples; the deploy still owns the
+process exit code. Add an explicit confidence or findings gate only when your
+team is ready to enforce it.
+
 ### Multiple findings
 
 When several supported patterns appear, findings are ordered by their first
