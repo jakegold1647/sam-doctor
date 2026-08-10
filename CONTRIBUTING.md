@@ -51,6 +51,13 @@ To lower contributor friction, labels to look for:
 - `good first issue`
 - `documentation`
 - `help wanted`
+- `status: ready`
+- `mentor available`
+
+The [ready newcomer queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor+available%22)
+is the shortest route to a scoped first pull request. These issues have
+acceptance criteria and a maintainer path for questions; leave a brief claim
+comment before you start so nobody duplicates the work.
 
 Want a ready-made first PR? The [rule roadmap](docs/rule-roadmap.md) lists
 fully specified diagnostic rules waiting for a contributor — each with sample
