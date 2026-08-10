@@ -308,6 +308,11 @@ _AWS_UNKNOWN_SERVICE_PATTERNS = (
     r"\bwhen calling\b.{0,160}\bUnknownService\b",
 )
 
+_AWS_STS_CALLER_IDENTITY_FAILURE_PATTERNS = (
+    r"\bError:\s*reading STS Caller Identity\b",
+    r"\boperation error STS:\s*GetCallerIdentity\b.{0,240}\b(?:error|failed|status)\b",
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1160,6 +1165,25 @@ _RULES = (
             "Retry against the intended AWS endpoint or update the client or emulator after correcting the routing mismatch; do not grant broader permissions for an endpoint that cannot identify the service.",
         ),
         documentation_url="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html",
+    ),
+    Rule(
+        id="aws.credentials.caller-identity-unavailable",
+        title="The deployment could not read the STS caller identity",
+        confidence="low",
+        patterns=_AWS_STS_CALLER_IDENTITY_FAILURE_PATTERNS,
+        explanation=(
+            "The deployment or provider could not complete the STS "
+            "GetCallerIdentity check. This wrapper line is not the root cause: "
+            "the nested response may point to an endpoint, Region, profile, "
+            "signature, network, or credential-source mismatch. It is not by "
+            "itself evidence that sts:GetCallerIdentity permission is missing."
+        ),
+        verification=(
+            "Read the nested STS response, HTTP status, endpoint, and Region from the same log block instead of stopping at the wrapper line.",
+            "In the failing environment, run `aws sts get-caller-identity --region <region>` with the same profile, role, endpoint URL, and credential source to identify the account and caller.",
+            "Correct the endpoint, Region, signing, network, or credential-source mismatch shown by the nested error; do not add an IAM allow for `sts:GetCallerIdentity`, which does not require permission for this check.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

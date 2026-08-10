@@ -202,6 +202,10 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="OpenTelemetry exported aws.local.service=UnknownService",
     ),
+    "aws.credentials.caller-identity-unavailable": RuleFixture(
+        positive="Error: reading STS Caller Identity",
+        negative="The caller identity was recorded successfully",
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

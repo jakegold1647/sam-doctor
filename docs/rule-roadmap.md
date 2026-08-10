@@ -958,6 +958,41 @@ the client/emulator before changing IAM.
 
 ---
 
+## 25. The deployment could not read the STS caller identity
+
+**Status:** landed - the catalog now recognizes the `Error: reading STS Caller
+Identity` wrapper and preserves the nested-cause handoff.
+
+**Failure family.** A deployment or provider failed while calling STS
+`GetCallerIdentity`. The wrapper is not the root cause: the nested response may
+identify an endpoint, Region, signing, network, profile, or credential-source
+mismatch. It does not by itself show that `sts:GetCallerIdentity` permission is
+missing.
+
+**Sanitized signal line.**
+
+```text
+Error: reading STS Caller Identity
+operation error STS: GetCallerIdentity, https response error StatusCode: 403, api error SignatureDoesNotMatch: Credential should be scoped to a valid region.
+```
+
+**Pattern hint.** Match the wrapper or the explicit STS `GetCallerIdentity`
+operation, then inspect the nested response; do not match generic prose about a
+caller identity.
+
+**Safe verification steps.** Preserve the nested HTTP status, endpoint, Region,
+profile or role, and error code. In the same environment run
+`aws sts get-caller-identity --region <region>` with the same credential source,
+then correct the endpoint, Region, signing, network, profile, or credentials
+shown by the nested cause. Do not add an IAM allow for this read-only check.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -969,18 +1004,21 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 297 of 335 excerpts (89%), with 38 misses. It included dedicated
+diagnosed 227 of 262 fetched excerpts (87%), with 35 misses; the first three
+searches were skipped by GitHub's unauthenticated rate limit. The preceding
+complete run diagnosed 297 of 335 excerpts (89%). These runs included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
 managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
-API actions, and unknown AWS services, plus the broader change-set wording.
+API actions, unknown AWS services, and STS caller-identity wrappers, plus the
+broader change-set wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 24 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 25 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

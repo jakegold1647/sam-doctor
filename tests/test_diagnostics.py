@@ -657,6 +657,30 @@ def test_unknown_aws_service_does_not_match_telemetry_label() -> None:
 @pytest.mark.parametrize(
     "log",
     (
+        "Error: reading STS Caller Identity\noperation error STS: GetCallerIdentity, https response error StatusCode: 403, api error SignatureDoesNotMatch: Credential should be scoped to a valid region.",
+        "Error: reading STS Caller Identity",
+    ),
+)
+def test_sts_caller_identity_wrapper_routes_to_nested_cause_checks(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "aws.credentials.caller-identity-unavailable"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_sts_caller_identity_rule_does_not_match_unrelated_identity_text() -> None:
+    findings = diagnose("The caller identity was recorded successfully")
+
+    assert "aws.credentials.caller-identity-unavailable" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
         "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (

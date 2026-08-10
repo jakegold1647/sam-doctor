@@ -86,6 +86,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "aws.api.action-invalid": "aws-invalid-action.html",
     "aws.api.action-not-implemented": "aws-action-not-implemented.html",
     "aws.api.service-unknown": "aws-service-unknown.html",
+    "aws.credentials.caller-identity-unavailable": "sts-caller-identity-unavailable.html",
     "ecs.execute-command.agent-unavailable": "ecs-execute-command-agent.html",
     "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",
