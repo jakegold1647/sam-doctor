@@ -206,6 +206,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Error: reading STS Caller Identity",
         negative="The caller identity was recorded successfully",
     ),
+    "glue.database.rename-rejected": RuleFixture(
+        positive=(
+            "An error occurred (InvalidInputException) when calling the "
+            "UpdateDatabase operation: Database cannot be renamed"
+        ),
+        negative=(
+            "An error occurred (InvalidInputException) when calling the "
+            "UpdateDatabase operation: Description is invalid"
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

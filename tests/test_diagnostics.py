@@ -678,6 +678,29 @@ def test_sts_caller_identity_rule_does_not_match_unrelated_identity_text() -> No
     }
 
 
+def test_glue_database_rename_routes_to_immutable_name_checks() -> None:
+    findings = diagnose(
+        "An error occurred (InvalidInputException) when calling the "
+        "UpdateDatabase operation: Database cannot be renamed"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "glue.database.rename-rejected"
+    ]
+    assert findings[0].confidence == "high"
+
+
+def test_glue_database_rule_does_not_match_other_update_input_errors() -> None:
+    findings = diagnose(
+        "An error occurred (InvalidInputException) when calling the "
+        "UpdateDatabase operation: Description is invalid"
+    )
+
+    assert "glue.database.rename-rejected" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

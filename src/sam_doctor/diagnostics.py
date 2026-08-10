@@ -313,6 +313,8 @@ _AWS_STS_CALLER_IDENTITY_FAILURE_PATTERNS = (
     r"\boperation error STS:\s*GetCallerIdentity\b.{0,240}\b(?:error|failed|status)\b",
 )
 
+_GLUE_DATABASE_RENAME_PATTERN = r"Database cannot be renamed\b"
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1184,6 +1186,24 @@ _RULES = (
             "Correct the endpoint, Region, signing, network, or credential-source mismatch shown by the nested error; do not add an IAM allow for `sts:GetCallerIdentity`, which does not require permission for this check.",
         ),
         documentation_url="https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html",
+    ),
+    Rule(
+        id="glue.database.rename-rejected",
+        title="AWS Glue cannot rename an existing catalog database",
+        confidence="high",
+        patterns=(_GLUE_DATABASE_RENAME_PATTERN,),
+        explanation=(
+            "AWS Glue rejected an UpdateDatabase request because the database "
+            "name is immutable. The DatabaseInput.Name must remain the existing "
+            "catalog name; description, location, parameters, and other mutable "
+            "fields can be updated without renaming the database."
+        ),
+        verification=(
+            "Read the current database definition with `aws glue get-database --name <database-name>` and preserve its exact catalog name in the UpdateDatabase request.",
+            "Remove the rename from `DatabaseInput.Name` while updating the other intended fields, then retry the same Glue Region and CatalogId.",
+            "If a new name is required, create a new database and migrate or recreate its tables and consumers before removing the old database; do not change IAM permissions for this validation error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/glue/latest/webapi/API_UpdateDatabase.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

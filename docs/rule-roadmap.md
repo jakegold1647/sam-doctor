@@ -993,6 +993,38 @@ shown by the nested cause. Do not add an IAM allow for this read-only check.
 
 ---
 
+## 26. AWS Glue rejected a catalog database rename
+
+**Status:** landed - the catalog now recognizes the exact
+`Database cannot be renamed` marker from Glue `UpdateDatabase`.
+
+**Failure family.** Glue treats the catalog database name as its identity. An
+`UpdateDatabase` request may change supported metadata fields, but
+`DatabaseInput.Name` must remain the existing database name. A real rename
+requires a replacement database and migration of its tables and consumers.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (InvalidInputException) when calling the UpdateDatabase operation: Database cannot be renamed
+```
+
+**Pattern hint.** Match the exact `Database cannot be renamed` marker; do not
+turn every `InvalidInputException` from Glue into a rename diagnosis.
+
+**Safe verification steps.** Read the current definition with
+`aws glue get-database --name <database-name>` in the same Region and CatalogId,
+keep `DatabaseInput.Name` unchanged while updating other fields, and retry. If
+the name must change, create a new database and move its tables and consumers
+before removing the old one. This is a request validation error, not IAM.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/glue/latest/webapi/API_UpdateDatabase.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1004,21 +1036,19 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 227 of 262 fetched excerpts (87%), with 35 misses; the first three
-searches were skipped by GitHub's unauthenticated rate limit. The preceding
-complete run diagnosed 297 of 335 excerpts (89%). These runs included dedicated
+diagnosed 309 of 347 excerpts (89%), with 38 misses. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
 managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
-API actions, unknown AWS services, and STS caller-identity wrappers, plus the
-broader change-set wording.
+API actions, unknown AWS services, STS caller-identity wrappers, and Glue
+database rename failures, plus the broader change-set wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 25 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 26 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:
