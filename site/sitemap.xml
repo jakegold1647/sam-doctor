@@ -60,6 +60,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cdk-assembly-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-access.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-end-of-life.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-identifier.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/bedrock-empty-system-prompt.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/bedrock-empty-model-id.html</loc></url>

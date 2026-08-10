@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(79 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(80 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -40,6 +40,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [Unresolved resource dependencies](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-unresolved-resource-dependency.html): check the logical IDs used by `Ref`, `Fn::GetAtt`, `DependsOn`, and substitutions.
 - [ResourceNotFoundException when calling the Invoke operation](https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html): verify the Lambda function, qualifier, account, Region, and deployment timing before changing IAM.
 - [Bedrock model use case details not submitted](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-access.html): complete the provider's first-use access form in the same account and Region before changing the stack or IAM.
+- [Bedrock model version reached end of life](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-end-of-life.html): migrate the configured model ID to an active version; retries and IAM changes cannot restore a retired version.
 - [Bedrock could not resolve the model identifier](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-identifier.html): compare the exact model ID, Region, endpoint, and API with the current Bedrock catalog.
 - [Bedrock empty system prompt](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-empty-system-prompt.html): omit an empty `system` content block from the Converse request before changing IAM or model access.
 - [Bedrock empty modelId](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-empty-model-id.html): pass a non-empty model identifier to InvokeModel before checking model access or IAM.

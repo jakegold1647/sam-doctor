@@ -52,6 +52,10 @@ REAL_FAILURE_LINES = (
         "Failed to bundle asset app/function/Api/Code/Stage, bundle output is "
         "located at /tmp/cdk.out/bundling-temp-error: Error: esbuild exited with status 1"
     ),
+    (
+        "operation error Bedrock Runtime: InvokeModel, ResourceNotFoundException: "
+        "This model version has reached the end of its life."
+    ),
 )
 
 NOT_FAILURE_LINES = (

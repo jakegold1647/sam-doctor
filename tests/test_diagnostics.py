@@ -525,6 +525,38 @@ def test_lambda_get_function_not_found_does_not_look_like_an_invoke_failure() ->
     }
 
 
+def test_bedrock_model_end_of_life_routes_to_model_migration() -> None:
+    findings = diagnose(
+        "Couldn't invoke ai21.j2-ultra-v1 model: operation error Bedrock Runtime: "
+        "InvokeModel, https response error StatusCode: 404, "
+        "ResourceNotFoundException: This model version has reached the end of its life."
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.model-lifecycle.end-of-life"
+    ]
+    assert findings[0].confidence == "high"
+
+
+def test_bedrock_model_end_of_life_rule_uses_the_exact_lifecycle_marker() -> None:
+    findings = diagnose(
+        "botocore.errorfactory.ResourceNotFoundException: This model version has "
+        "reached the end of its life."
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.model-lifecycle.end-of-life"
+    ]
+
+
+def test_bedrock_model_end_of_life_rule_does_not_match_a_different_lifecycle_phrase() -> None:
+    findings = diagnose("This model version is still active and available.")
+
+    assert "bedrock.model-lifecycle.end-of-life" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

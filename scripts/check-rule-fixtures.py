@@ -174,6 +174,18 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "InvokeModel operation: The requested model ID is not found."
         ),
     ),
+    "bedrock.model-lifecycle.end-of-life": RuleFixture(
+        positive=(
+            "operation error Bedrock Runtime: InvokeModel, https response error "
+            "StatusCode: 404, ResourceNotFoundException: This model version has "
+            "reached the end of its life."
+        ),
+        negative=(
+            "operation error Bedrock Runtime: InvokeModel, https response error "
+            "StatusCode: 404, ResourceNotFoundException: The requested model ID "
+            "is not found."
+        ),
+    ),
     "bedrock.request.empty-system-prompt": RuleFixture(
         positive=(
             "ParamValidationError: Invalid length for parameter system[0].text, "

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Bedrock end-of-life model failures now have a focused handoff.** A
+  high-confidence finding recognizes the model-lifecycle marker and points at
+  checking the active catalog and migrating the model ID instead of retrying or
+  changing IAM.
+
 - **CDK asset-bundling failures now have a focused handoff.** A low-confidence
   finding recognizes the asset and temporary output wrapper, then points at the
   underlying compiler, dependency, permission, or Docker error without guessing

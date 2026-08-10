@@ -62,6 +62,7 @@ QUERIES = (
     '"ResourceNotFoundException" "Invoke operation" in:body',
     '"Model use case details have not been submitted" in:body',
     '"Could not resolve the foundation model from the provided model identifier" in:body',
+    '"This model version has reached the end of its life" "Bedrock Runtime" in:body',
     '"Invalid length for parameter system[0].text" in:body',
     '"input member modelId must not be empty" in:body',
     '"ValidationException: messages: Field required" "InvokeModel" in:body',
@@ -102,6 +103,8 @@ FAILURE_SIGNAL = re.compile(
     r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
     r"|Model use case details have not been submitted for this account"
     r"|Could not resolve the foundation model from the provided model identifier"
+    r"|(?:Bedrock Runtime|bedrock-runtime).{0,500}ResourceNotFoundException\b.{0,160}This model version has reached the end of its life\b"
+    r"|This model version has reached the end of its life\b"
     r"|Invalid length for parameter system\[\d+\]\.text"
     r"|input member modelId must not be empty\b"
     r"|(?:operation error Bedrock Runtime:\s*InvokeModel(?:WithResponseStream)?|ValidationException).{0,260}\bmessages:\s*Field required\b"

@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (79 diagnostics). Stable
+The public guides follow the current `main` catalog (80 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -461,6 +461,8 @@ see [docs/stability.md](docs/stability.md). The current set:
 - AWS CDK synthesis and asset-bundling handoffs (`AssemblyError: Assembly builder
   failed`, `Failed to bundle asset`) that point at a reproducible
   `cdk synth --verbose` check without inventing the app error
+- Bedrock model-lifecycle failures where a requested model version reached
+  end of life, pointing at an active replacement instead of IAM changes
 - Artifact-path failures: a `CodeUri` that was never built, a deployment
   bucket that denies access to the packaged artifacts, and Lambda layer
   artifacts CloudFormation cannot read back

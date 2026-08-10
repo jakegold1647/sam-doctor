@@ -293,6 +293,15 @@ _BEDROCK_MODEL_IDENTIFIER_PATTERN = (
     r"Could not resolve the foundation model from the provided model identifier\b"
 )
 
+_BEDROCK_MODEL_EOL_PATTERNS = (
+    (
+        r"(?:Bedrock Runtime|bedrock-runtime).{0,500}"
+        r"ResourceNotFoundException\b.{0,160}"
+        r"This model version has reached the end of its life\b"
+    ),
+    r"\bThis model version has reached the end of its life\b",
+)
+
 _BEDROCK_EMPTY_SYSTEM_PROMPT_PATTERN = (
     r"Invalid length for parameter system\[\d+\]\.text\b"
 )
@@ -1121,6 +1130,23 @@ _RULES = (
             "Compare the invoke target with the stack output or transformed template; correct a stale function name, alias, Region, or account rather than broadening IAM permissions for a missing target.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html",
+    ),
+    Rule(
+        id="bedrock.model-lifecycle.end-of-life",
+        title="The Bedrock model version has reached end of life",
+        confidence="high",
+        patterns=_BEDROCK_MODEL_EOL_PATTERNS,
+        explanation=(
+            "Amazon Bedrock rejected the invocation because the requested model "
+            "version is no longer available. This is a model-lifecycle migration "
+            "problem, not a missing permission or a transient deployment failure."
+        ),
+        verification=(
+            "Record the exact model ID and Region from the evidence, then check its lifecycle status with `aws bedrock get-foundation-model --model-identifier <model-id>` (read-only).",
+            "Select an Active model version supported by the same Region and API, update the application or deployment configuration, and test the new model's request shape before retrying.",
+            "Do not retry the retired version or broaden IAM permissions; Bedrock does not migrate model IDs automatically after end of life.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/model-lifecycle.html",
     ),
     Rule(
         id="bedrock.model-access.first-use-form-required",

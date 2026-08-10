@@ -1285,6 +1285,40 @@ can read the asset input and write the output directory.
 
 ---
 
+## 34. A Bedrock model version reached end of life
+
+**Status:** landed - the catalog now recognizes Bedrock's explicit
+`This model version has reached the end of its life` response.
+
+**Failure family.** Bedrock model versions move through Active, Legacy, and
+End-of-Life states. Once a version reaches its end-of-life date, an invocation
+fails with a `ResourceNotFoundException` even though the model ID was once valid.
+The fix is to migrate the configured model, not to retry or change IAM.
+
+**Sanitized signal line.**
+
+```text
+operation error Bedrock Runtime: InvokeModel, https response error StatusCode: 404, ResourceNotFoundException: This model version has reached the end of its life. Please refer to the AWS documentation for more details.
+```
+
+**Pattern hint.** Match the exact lifecycle marker. It is specific enough to
+survive Botocore and Smithy wrappers that omit the `Bedrock Runtime` prefix;
+generic missing model IDs and the first-use access form stay with their existing
+rules.
+
+**Safe verification steps.** Read the exact model ID and Region from the request,
+then run `aws bedrock get-foundation-model --model-identifier <model-id>` and
+inspect its lifecycle fields. Select an Active replacement supported by the same
+Region and API, update the application or deployment configuration, and test its
+request body before retrying. Bedrock does not migrate retired IDs automatically.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/userguide/model-lifecycle.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1296,9 +1330,9 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 403 of 444 excerpts (91%), with 41 misses after entry 33. It included dedicated
+diagnosed 410 of 451 excerpts (91%), with 41 misses after entry 34. It included dedicated
 searches for CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
-Bedrock first-use, model-identifier, empty-system-prompt, empty-model-id, and
+Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
@@ -1317,7 +1351,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 33 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 34 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

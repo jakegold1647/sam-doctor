@@ -82,6 +82,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cdk.synth.assembly-failed": "cdk-assembly-failed.html",
     "lambda.invoke.function-not-found": "lambda-invoke-function-not-found.html",
     "bedrock.model-access.first-use-form-required": "bedrock-model-access.html",
+    "bedrock.model-lifecycle.end-of-life": "bedrock-model-end-of-life.html",
     "bedrock.model-identifier.unresolved": "bedrock-model-identifier.html",
     "bedrock.request.empty-system-prompt": "bedrock-empty-system-prompt.html",
     "bedrock.request.empty-model-id": "bedrock-empty-model-id.html",
