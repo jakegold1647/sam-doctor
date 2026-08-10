@@ -864,6 +864,37 @@ investigating model access or IAM.
 
 ---
 
+## 22. AWS rejected an unknown or invalid API action
+
+**Status:** landed - the catalog now recognizes AWS `UnknownAction` and
+`InvalidAction` responses that identify the rejected operation.
+
+**Failure family.** A CLI, SDK, or emulator sends an operation the selected
+endpoint does not recognize. The cause can be a misspelled operation, stale API
+version or SDK, wrong Region or endpoint, or missing emulator support; the error
+does not by itself indicate an IAM denial.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (UnknownAction) when calling the GetTemplateSummary operation: Action is not supported
+```
+
+**Pattern hint.** Anchor on `UnknownAction` or `InvalidAction` paired with
+`when calling`; do not broaden this to every `InvalidAction` in prose.
+
+**Safe verification steps.** Read the operation and endpoint from the exact
+line, compare them with the current service API and selected Region, update the
+CLI or SDK if needed, and confirm that a local emulator implements the action.
+Correct the request and retry before changing IAM permissions.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/ec2/latest/devguide/errors-overview.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -874,18 +905,19 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 263 of
-288 excerpts (91%), now including dedicated searches for CDK assembly-wrapper
-variants, Lambda `Invoke` target misses, Bedrock first-use, model-identifier, and
-request-shape failures, and ECS Exec managed-agent failures, plus the broader
-change-set wrapper wording.
+to find work that is definitely real. The latest follow-up run on 2026-08-10
+diagnosed 199 of 229 fetched excerpts (87%); three older searches were skipped by
+GitHub's unauthenticated rate limit. The run included dedicated searches for CDK
+assembly-wrapper variants, Lambda `Invoke` target misses, Bedrock first-use,
+model-identifier, and request-shape failures, ECS Exec managed-agent failures,
+and unknown or invalid AWS API actions, plus the broader change-set wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 21 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 22 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

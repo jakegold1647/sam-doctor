@@ -176,6 +176,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "toolConfig.tools[0].toolSpec.description, value: 0, valid min length: 1"
         ),
     ),
+    "aws.api.action-invalid": RuleFixture(
+        positive=(
+            "An error occurred (UnknownAction) when calling the "
+            "GetTemplateSummary operation: Action is not supported"
+        ),
+        negative=(
+            "An error occurred (AccessDeniedException) when calling the "
+            "DescribeStacks operation: User is not authorized to perform this action"
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

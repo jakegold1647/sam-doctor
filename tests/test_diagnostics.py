@@ -586,6 +586,31 @@ def test_bedrock_empty_system_prompt_does_not_match_empty_tool_description() -> 
 @pytest.mark.parametrize(
     "log",
     (
+        "An error occurred (UnknownAction) when calling the GetTemplateSummary operation: Action is not supported",
+        "An error occurred (InvalidAction) when calling the DescribeLaunchConfigurations operation: invalid action",
+    ),
+)
+def test_invalid_aws_action_routes_to_operation_and_endpoint_checks(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == ["aws.api.action-invalid"]
+    assert findings[0].confidence == "low"
+
+
+def test_invalid_aws_action_does_not_match_an_iam_denial() -> None:
+    findings = diagnose(
+        "An error occurred (AccessDeniedException) when calling the "
+        "DescribeStacks operation: User is not authorized to perform this action"
+    )
+
+    assert "aws.api.action-invalid" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
         "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (

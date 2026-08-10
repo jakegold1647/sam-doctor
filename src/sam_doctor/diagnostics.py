@@ -293,6 +293,11 @@ _BEDROCK_EMPTY_SYSTEM_PROMPT_PATTERN = (
     r"Invalid length for parameter system\[\d+\]\.text\b"
 )
 
+_AWS_INVALID_ACTION_PATTERNS = (
+    r"(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b",
+    r"\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b",
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1089,6 +1094,24 @@ _RULES = (
             "Retry the same model call after removing the empty block; only then investigate separate model-access or identifier errors.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_SystemContentBlock.html",
+    ),
+    Rule(
+        id="aws.api.action-invalid",
+        title="The AWS endpoint rejected the requested API action",
+        confidence="low",
+        patterns=_AWS_INVALID_ACTION_PATTERNS,
+        explanation=(
+            "The endpoint rejected the requested AWS API action as unknown or "
+            "invalid. The operation may be misspelled, unavailable in the service "
+            "API version or Region, unsupported by a local emulator, or being sent "
+            "to the wrong endpoint; the line does not establish an IAM problem."
+        ),
+        verification=(
+            "Read the operation name and endpoint from the evidence line, then compare them with the current service API and the Region selected by the caller.",
+            "Update the AWS CLI or SDK, correct the operation or endpoint, or check whether the local emulator implements that action before changing deployment code.",
+            "Retry the same call after the operation is supported; do not grant broader permissions for an action the endpoint does not recognize.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/ec2/latest/devguide/errors-overview.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

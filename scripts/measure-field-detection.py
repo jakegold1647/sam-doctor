@@ -63,6 +63,8 @@ QUERIES = (
     '"Could not resolve the foundation model from the provided model identifier" in:body',
     '"Invalid length for parameter system[0].text" in:body',
     '"CannotStartManagedAgentError" in:body',
+    '"UnknownAction" "when calling" in:body',
+    '"InvalidAction" "when calling" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -90,6 +92,8 @@ FAILURE_SIGNAL = re.compile(
     r"|Could not resolve the foundation model from the provided model identifier"
     r"|Invalid length for parameter system\[\d+\]\.text"
     r"|CannotStartManagedAgentError\b"
+    r"|(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b"
+    r"|\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"
     r")"
