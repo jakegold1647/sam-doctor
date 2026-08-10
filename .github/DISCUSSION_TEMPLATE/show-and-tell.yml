@@ -1,0 +1,47 @@
+title: "[Show and tell] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share a safe result, workflow, fixture, or integration that helped you.
+        Showing a real, reproducible path gives the next contributor something
+        concrete to build on.
+
+        Keep examples sanitized. Do not post credentials, AWS account IDs, ARNs,
+        customer data, private repository names, or raw production logs. SAM Doctor
+        does not collect telemetry.
+  - type: input
+    id: workflow
+    attributes:
+      label: Workflow or command family
+      placeholder: sam deploy, CDK deploy, CloudFormation, or GitHub Actions
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What did you build or try?
+      description: Describe the smallest reproducible workflow and what SAM Doctor surfaced.
+    validations:
+      required: true
+  - type: textarea
+    id: lesson
+    attributes:
+      label: What should the community reuse?
+      description: Share a safe command, fixture idea, documentation improvement, or next step.
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Public link (optional)
+      description: Link to a public example, PR, or guide if one exists.
+      placeholder: https://github.com/...
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Privacy check
+      description: Please confirm this before submitting.
+      options:
+        - label: I removed credentials, account IDs, ARNs, customer data, and other private identifiers.
+          required: true

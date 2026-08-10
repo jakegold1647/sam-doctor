@@ -1,0 +1,66 @@
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape SAM Doctor. Use this form for a workflow,
+        documentation, diagnostic, or community idea before it becomes an issue.
+
+        Keep examples sanitized. Do not post credentials, AWS account IDs, ARNs,
+        customer data, private repository names, or raw production logs. SAM Doctor
+        does not collect telemetry.
+  - type: dropdown
+    id: area
+    attributes:
+      label: What kind of idea is this?
+      options:
+        - Deployment workflow or adoption
+        - Documentation or examples
+        - Diagnostic rule or evidence
+        - Contributor or community experience
+    validations:
+      required: true
+  - type: input
+    id: use_case
+    attributes:
+      label: Who would this help?
+      description: Name the workflow or audience without sharing private repository details.
+      placeholder: Teams using GitHub Actions for SAM deployments
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should be easier?
+      description: Describe the problem and the outcome you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence or example (optional)
+      description: Share the smallest safe excerpt, command shape, or existing issue link.
+      placeholder: |
+        Command family:
+        Current behavior:
+        Desired behavior:
+  - type: dropdown
+    id: next_step
+    attributes:
+      label: What would you like to do next?
+      options:
+        - Discuss the idea with the community
+        - Help turn it into a focused issue
+        - Take a first pull request if it is scoped
+        - Share the idea only
+    validations:
+      required: true
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Privacy check
+      description: Please confirm this before submitting.
+      options:
+        - label: I removed credentials, account IDs, ARNs, customer data, and other private identifiers.
+          required: true
