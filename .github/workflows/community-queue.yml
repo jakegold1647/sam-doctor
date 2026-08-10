@@ -12,7 +12,7 @@ on:
   issues:
     types: [assigned, unassigned, labeled, unlabeled, edited, closed, reopened]
   issue_comment:
-    types: [created, edited]
+    types: [created, edited, deleted]
 
 permissions:
   contents: read

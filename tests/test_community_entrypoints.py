@@ -67,4 +67,4 @@ def test_queue_check_runs_when_issue_availability_changes() -> None:
         in workflow
     )
     assert "issue_comment:" in workflow
-    assert "types: [created, edited]" in workflow
+    assert "types: [created, edited, deleted]" in workflow
