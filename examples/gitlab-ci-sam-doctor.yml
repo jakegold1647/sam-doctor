@@ -8,6 +8,13 @@ deploy-and-diagnose:
   script:
     - pip install sam-doctor --quiet
     # Replace this with your real deployment command.
-    - sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
-    - sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true
-  allow_failure: true
+    - |
+      set -o pipefail
+      set +e
+      sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+      deploy_status=${PIPESTATUS[0]}
+      set -e
+      if [ "$deploy_status" -ne 0 ]; then
+        sam-doctor diagnose deployment.log --format json --output diagnosis.json
+      fi
+      exit "$deploy_status"

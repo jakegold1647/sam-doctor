@@ -5,6 +5,14 @@ pipelines:
         image: python:3.11
         script:
           - pip install sam-doctor
-          # Replace this with your deployment command.
-          - sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
-          - sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true
+          - |
+            # Replace this with the deployment command.
+            set -o pipefail
+            set +e
+            sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
+            deploy_status=${PIPESTATUS[0]}
+            set -e
+            if [ "$deploy_status" -ne 0 ]; then
+              sam-doctor diagnose deployment.log --format json --output diagnosis.json
+            fi
+            exit "$deploy_status"

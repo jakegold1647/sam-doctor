@@ -11,8 +11,15 @@ jobs:
           command: |
             pip install sam-doctor
             # Replace with your real deployment command.
+            set -o pipefail
+            set +e
             sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
-            sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings || true
+            deploy_status=${PIPESTATUS[0]}
+            set -e
+            if [ "$deploy_status" -ne 0 ]; then
+              sam-doctor diagnose deployment.log --format json --output diagnosis.json
+            fi
+            exit "$deploy_status"
 
 workflows:
   deploy-and-diagnose:

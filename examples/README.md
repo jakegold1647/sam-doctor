@@ -38,23 +38,25 @@ Use these templates to onboard quickly.
 
 - `gitlab-ci-sam-doctor.yml`
   - Add this as `.gitlab-ci.yml` and replace deployment command with your team's real deploy step.
-  - The example keeps diagnosis non-blocking with `|| true` so it does not fail before you're ready; switch to strict behavior when stable.
+  - The example keeps diagnosis advisory while preserving the deployment exit status.
 
 ## CircleCI starter
 
 - `circleci-sam-doctor.yml`
   - Add this as `.circleci/config.yml` and replace deployment command with your real deploy step.
-  - Use this when you have a non-GitHub pipeline but want the same one-command diagnosis.
+  - Use this when you have a non-GitHub pipeline but want the same one-command diagnosis without masking a failed deploy.
 
 ## Azure Pipelines starter
 
 - `azure-pipelines-sam-doctor.yml`
   - Add this as `azure-pipelines.yml` and replace deployment command with your real deploy step.
+  - The Bash step keeps diagnosis advisory while returning the deployment status.
 
 ## Bitbucket Pipelines starter
 
 - `bitbucket-pipelines-sam-doctor.yml`
   - Add this as `bitbucket-pipelines.yml` and replace deployment command with your real deploy step.
+  - The example keeps diagnosis advisory while preserving the deployment exit status.
 
 ## One-time setup (30 seconds)
 

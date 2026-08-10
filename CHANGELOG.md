@@ -13,6 +13,11 @@ All notable changes to SAM Doctor are documented here.
   onboarding recipes retain the deployment log and original exit status, but
   run the advisory diagnosis only when the deploy exits non-zero.
 
+- **Non-GitHub CI starters no longer mask deployment failures.** GitLab,
+  CircleCI, Azure Pipelines, and Bitbucket examples capture the original Bash
+  deploy status, diagnose only after a failed deploy, and return that status
+  while keeping SAM Doctor advisory.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact

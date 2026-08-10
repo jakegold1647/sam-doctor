@@ -10,11 +10,17 @@ steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.11'
-  - script: |
+  - bash: |
       python -m pip install --upgrade pip
       pip install sam-doctor
       # Replace this with your deployment command.
+      set -o pipefail
+      set +e
       sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
-      sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-on-findings
+      deploy_status=${PIPESTATUS[0]}
+      set -e
+      if [ "$deploy_status" -ne 0 ]; then
+        sam-doctor diagnose deployment.log --format json --output diagnosis.json
+      fi
+      exit "$deploy_status"
     displayName: "Deploy and diagnose"
-    continueOnError: true

@@ -10,10 +10,10 @@ Use this matrix to quickly choose the right starting template.
 | `sam sync` | AWS SAM iterative sync | [`examples/github-actions-workflow-sam-sync.yml`](../examples/github-actions-workflow-sam-sync.yml) | Add `2>&1 | tee deployment.log` to the sync command |
 | `aws cloudformation deploy ...` | Direct CloudFormation deployments | [`examples/github-actions-workflow-cf-pipeline.yml`](../examples/github-actions-workflow-cf-pipeline.yml) | Add `2>&1 | tee deployment.log` in your deploy step |
 | `cdk deploy` | AWS CDK deployments | [`examples/github-actions-workflow-cdk.yml`](../examples/github-actions-workflow-cdk.yml) | Add `2>&1 | tee deployment.log` to the deploy command |
-| `sam deploy` in GitLab CI | GitLab pipeline | [`examples/gitlab-ci-sam-doctor.yml`](../examples/gitlab-ci-sam-doctor.yml) | Keep `sam-doctor diagnose deployment.log ... || true` until stable |
-| `sam deploy` in CircleCI | CircleCI pipeline | [`examples/circleci-sam-doctor.yml`](../examples/circleci-sam-doctor.yml) | Add diagnosis in the same step as your deploy command |
-| `sam deploy` in Azure Pipelines | Azure pipeline | [`examples/azure-pipelines-sam-doctor.yml`](../examples/azure-pipelines-sam-doctor.yml) | Keep `continueOnError: true` while you validate |
-| `sam deploy` in Bitbucket Pipelines | Bitbucket pipeline | [`examples/bitbucket-pipelines-sam-doctor.yml`](../examples/bitbucket-pipelines-sam-doctor.yml) | Keep diagnosis non-blocking during early rollout |
+| `sam deploy` in GitLab CI | GitLab pipeline | [`examples/gitlab-ci-sam-doctor.yml`](../examples/gitlab-ci-sam-doctor.yml) | Run diagnosis only after a non-zero deploy and return the captured deploy status |
+| `sam deploy` in CircleCI | CircleCI pipeline | [`examples/circleci-sam-doctor.yml`](../examples/circleci-sam-doctor.yml) | Capture `PIPESTATUS[0]`, diagnose on failure, and return the deploy status |
+| `sam deploy` in Azure Pipelines | Azure pipeline | [`examples/azure-pipelines-sam-doctor.yml`](../examples/azure-pipelines-sam-doctor.yml) | Use the Bash step's captured deploy status; diagnosis stays advisory |
+| `sam deploy` in Bitbucket Pipelines | Bitbucket pipeline | [`examples/bitbucket-pipelines-sam-doctor.yml`](../examples/bitbucket-pipelines-sam-doctor.yml) | Capture the deploy status and diagnose only when it is non-zero |
 | Multiple deployment logs in one GitHub Action run | Batch-mode CI workflows | [`examples/github-actions-workflow-batch-logs.yml`](../examples/github-actions-workflow-batch-logs.yml) | Save logs under `logs/` and set `batch: true` with `log-file` |
 | Any other command (`cdk deploy`, `serverless deploy`, custom scripts) | Non-standard | [`examples/README.md`](../examples/README.md) | Use any starter and replace the deploy line with your command |
 
