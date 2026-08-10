@@ -588,6 +588,9 @@ If you have tried SAM Doctor and want to share a win, a miss, or an unclear
 result, use the [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml).
 It collects no telemetry and accepts only sanitized context.
 
+See the [contributors page](CONTRIBUTORS.md) for the people who have helped
+ship SAM Doctor and the easiest ways to join them.
+
 ## Development
 
 ```bash
