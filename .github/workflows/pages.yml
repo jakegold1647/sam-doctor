@@ -2,6 +2,7 @@ name: Publish site
 
 on:
   push:
+    # Only the release branch publishes. The shared staging lane is verification-only.
     branches: [main]
     paths:
       - site/**

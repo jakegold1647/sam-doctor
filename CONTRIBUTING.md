@@ -133,6 +133,19 @@ checks run before asking for maintainer help.
 
 3. Create a branch: `git switch -c fix/short-description`
 
+### Branch lanes
+
+`staging` is the shared testing ground for maintainer integration work. It runs
+the same verification and commit-metadata checks as `main`, but it never
+publishes the website or a release. Maintainers may combine reviewed community
+changes there, run the full gate, and promote the green result to `main` with a
+reviewed pull request.
+
+Keep working in a focused feature branch and send normal contributor pull
+requests for review. Do not push directly to `main`; use `staging` only when a
+maintainer asks for an integration test or when you are explicitly maintaining
+the shared pre-release lane.
+
 ### Create an isolated environment
 
 macOS or Linux:
