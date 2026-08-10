@@ -206,6 +206,19 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Error: reading STS Caller Identity",
         negative="The caller identity was recorded successfully",
     ),
+    "ec2.network-interface.create-failed": RuleFixture(
+        positive=(
+            "Error: creating EC2 Network Interface: operation error EC2: "
+            "CreateNetworkInterface, https response error StatusCode: 400, "
+            "RequestID: request-id, api error InvalidParameterValue: There "
+            "aren't sufficient free IPv4 addresses in the subnet"
+        ),
+        negative=(
+            "An error occurred (InvalidParameterValue) when calling the "
+            "CreateNetworkInterface operation: there aren't sufficient free "
+            "IPv4 addresses in the subnet"
+        ),
+    ),
     "glue.database.rename-rejected": RuleFixture(
         positive=(
             "An error occurred (InvalidInputException) when calling the "

@@ -678,6 +678,32 @@ def test_sts_caller_identity_rule_does_not_match_unrelated_identity_text() -> No
     }
 
 
+def test_ec2_network_interface_wrapper_routes_to_nested_create_cause_checks() -> None:
+    findings = diagnose(
+        "Error: creating EC2 Network Interface: operation error EC2: "
+        "CreateNetworkInterface, https response error StatusCode: 400, "
+        "RequestID: request-id, api error InvalidParameterValue: There aren't "
+        "sufficient free IPv4 addresses in the subnet"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "ec2.network-interface.create-failed"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_ec2_network_interface_rule_requires_the_provider_wrapper() -> None:
+    findings = diagnose(
+        "An error occurred (InvalidParameterValue) when calling the "
+        "CreateNetworkInterface operation: there aren't sufficient free IPv4 "
+        "addresses in the subnet"
+    )
+
+    assert "ec2.network-interface.create-failed" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_glue_database_rename_routes_to_immutable_name_checks() -> None:
     findings = diagnose(
         "An error occurred (InvalidInputException) when calling the "

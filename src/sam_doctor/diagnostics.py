@@ -313,6 +313,16 @@ _AWS_STS_CALLER_IDENTITY_FAILURE_PATTERNS = (
     r"\boperation error STS:\s*GetCallerIdentity\b.{0,240}\b(?:error|failed|status)\b",
 )
 
+_EC2_NETWORK_INTERFACE_CREATE_FAILURE_PATTERNS = (
+    (
+        r"(?:Error:\s*creating EC2 Network Interface|"
+        r"Failed to (?:CreateNetworkInterface|create network interface)|"
+        r"failed to create (?:an )?network interface|"
+        r"error creating (?:an )?network interface)"
+        r".{0,320}\boperation error EC2:\s*CreateNetworkInterface\b"
+    ),
+)
+
 _GLUE_DATABASE_RENAME_PATTERN = r"Database cannot be renamed\b"
 
 _CLOUDCONTROL_OPERATION_INCOMPLETE_PATTERN = (
@@ -1190,6 +1200,27 @@ _RULES = (
             "Correct the endpoint, Region, signing, network, or credential-source mismatch shown by the nested error; do not add an IAM allow for `sts:GetCallerIdentity`, which does not require permission for this check.",
         ),
         documentation_url="https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html",
+    ),
+    Rule(
+        id="ec2.network-interface.create-failed",
+        title="EC2 could not create a network interface",
+        confidence="low",
+        patterns=_EC2_NETWORK_INTERFACE_CREATE_FAILURE_PATTERNS,
+        explanation=(
+            "The outer provider or deployment wrapper only identifies an EC2 "
+            "CreateNetworkInterface call that failed. The nested HTTP status and "
+            "error code are the useful evidence: common causes include subnet "
+            "address exhaustion, security-group limits, a missing "
+            "ec2:CreateNetworkInterface permission, an invalid IP or tag request, "
+            "or an endpoint or emulator that does not implement the operation."
+        ),
+        verification=(
+            "Preserve the complete nested line, including the HTTP status, request ID, error code, Region, subnet, and security groups; do not diagnose the wrapper without that cause.",
+            "If the nested error names a subnet or address limit, run `aws ec2 describe-subnets --subnet-ids <subnet-id> --region <region>` and check available addresses and subnet sizing before retrying.",
+            "If it names UnauthorizedOperation or AccessDenied, confirm the deployment identity has the least-privilege `ec2:CreateNetworkInterface` grant on the intended subnet and security groups; if it names InvalidParameterValue, correct the request shape or quota named by the message.",
+            "When a custom endpoint or emulator handled the call, verify that it supports the EC2 CreateNetworkInterface operation before changing the infrastructure configuration.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html",
     ),
     Rule(
         id="glue.database.rename-rejected",

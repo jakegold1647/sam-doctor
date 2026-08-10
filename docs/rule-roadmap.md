@@ -1059,6 +1059,46 @@ handler, schema, service-role, or downstream-service cause before retrying.
 
 ---
 
+## 28. EC2 could not create a network interface
+
+**Status:** landed - the catalog now recognizes provider wrappers around the
+EC2 `CreateNetworkInterface` operation and preserves the nested status and
+error code.
+
+**Failure family.** Terraform, a Kubernetes component, or another provider may
+report only that it was creating an EC2 network interface when the API call
+failed. The nested EC2 response distinguishes subnet address exhaustion,
+security-group limits, missing `ec2:CreateNetworkInterface`, invalid request
+parameters, and endpoint or emulator support. The wrapper alone is not a root
+cause.
+
+**Sanitized signal line.**
+
+```text
+Error: creating EC2 Network Interface: operation error EC2: CreateNetworkInterface, https response error StatusCode: 400, RequestID: request-id, api error InvalidParameterValue: There aren't sufficient free IPv4 addresses in the subnet
+```
+
+**Pattern hint.** Match the provider wrapper together with the explicit
+`operation error EC2: CreateNetworkInterface` marker; do not turn every
+`CreateNetworkInterface` API mention or generic EC2 error into this finding.
+
+**Safe verification steps.** Preserve the nested HTTP status, request ID, error
+code, Region, subnet, security groups, and request parameters. When the error
+names subnet capacity, run `aws ec2 describe-subnets --subnet-ids <subnet-id>
+--region <region>` and review `AvailableIpAddressCount`. When it names
+`UnauthorizedOperation` or `AccessDenied`, inspect the least-privilege
+`ec2:CreateNetworkInterface` grant; when it names `InvalidParameterValue`,
+correct the request shape or quota named by the message. For custom endpoints
+or emulators, verify that the operation is implemented before changing the
+infrastructure configuration.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1070,20 +1110,21 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 335 of 373 excerpts (90%), with 38 misses. It included dedicated
+diagnosed 339 of 376 excerpts (90%), with 37 misses after entry 28. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
 managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
-change-set wording.
+change-set wording. Entry 28 adds the EC2 network-interface wrapper family
+from a repeated public Terraform/provider failure shape.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 26 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 28 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:
