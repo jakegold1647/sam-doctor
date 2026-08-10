@@ -29,11 +29,14 @@ Suggested reply:
 | An unrelated line was diagnosed | `diagnostic`, `status: needs-repro` | Capture the non-match, check rule precedence, and ask for the smallest safe reproducer. |
 | The report was unclear or unsafe | `diagnostic` or `documentation` | Identify the evidence gap and propose the smallest wording or verification improvement. |
 | Setup or workflow friction | `area: contributor-experience` or `area: github-action` | Reproduce with the documented command, then turn the fix into a copy-ready example. |
-| The reporter wants to code | `help wanted`, `good first issue`, `mentor available` | Link one scoped issue, explain the first file to edit, and invite a claim comment. |
+| The reporter wants to code | `help wanted`, `good first issue`, `mentor available`, `status: ready` | Link one scoped issue, explain the first file to edit, and invite a claim comment. |
 
 Do not add `good first issue` until the acceptance criteria and test or
-documentation path are clear. Keep the label meaningful so a newcomer can
-trust the queue.
+documentation path are clear. Add `status: ready` only when the issue has a
+concrete first file or command, acceptance criteria, and a maintainer path for
+questions. Pair it with `mentor available` when a newcomer can ask for help;
+remove `status: ready` when the issue is claimed, blocked, or needs more
+reproduction. Keep these labels meaningful so a newcomer can trust the queue.
 
 ## Turn a miss into a contribution
 
