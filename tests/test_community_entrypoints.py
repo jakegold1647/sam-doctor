@@ -23,6 +23,10 @@ def test_public_entry_points_keep_a_ready_issue_path() -> None:
     )
     assert "community welcome discussion" in _read("SUPPORT.md")
     assert "Browse mentored first issues" in _read("site/index.html")
+    assert "Ask in the welcome discussion" in _read("site/index.html")
+    assert "https://github.com/jakegold1647/sam-doctor/discussions/1" in _read(
+        "site/index.html"
+    )
 
 
 def test_public_entry_points_make_early_feedback_welcome() -> None:
