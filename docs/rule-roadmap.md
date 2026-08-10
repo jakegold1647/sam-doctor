@@ -690,6 +690,39 @@ not exist.
 
 ---
 
+## 17. CloudFormation could not resolve a resource dependency
+
+**Status:** landed - the catalog now recognizes the exact template-format error
+and names the logical-ID checks that resolve it.
+
+**Failure family.** A change set references a logical ID that is misspelled,
+missing, or outside the current template scope. The reference may be in
+`Ref`, `Fn::GetAtt`, `DependsOn`, or a substitution, and CloudFormation rejects
+the template before it provisions a resource.
+
+**Sanitized signal line.**
+
+```text
+Template format error: Unresolved resource dependencies [Environment] in the Resources block of the template
+```
+
+**Pattern hint.** Anchor on `Template format error: Unresolved resource
+dependencies`; the bracketed logical IDs vary by template and should remain in
+the redacted evidence rather than in the pattern.
+
+**Safe verification steps.** Compare every bracketed name with the exact
+`Resources` and `Parameters` logical IDs in the submitted or SAM-transformed
+template. Check `Ref`, `Fn::GetAtt`, `DependsOn`, and substitutions for case
+and scope, then run `sam validate --lint` or `cfn-lint` against the exact file
+the deploy submits.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -708,7 +741,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 have all landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 17 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

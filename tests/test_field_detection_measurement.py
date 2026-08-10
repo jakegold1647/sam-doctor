@@ -46,6 +46,7 @@ REAL_FAILURE_LINES = (
     "AssemblyError: Assembly builder failed",
     "[BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed",
     "An error occurred (ResourceNotFoundException) when calling the Invoke operation",
+    "Waiter ChangeSetCreateComplete failed: Template format error: Unresolved resource dependencies [Environment]",
 )
 
 NOT_FAILURE_LINES = (

@@ -410,6 +410,8 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Exports that cannot change because another stack imports them
 - Lambda deployment packages over a per-function size limit, and the regional
   code storage quota (`CodeStorageExceededException`)
+- Lambda invoke target misses (`ResourceNotFoundException` on the `Invoke`
+  operation), with function, qualifier, account, Region, and timing checks
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection
 - ECR push authentication failures from the CI runner (missing login, expired
   token, denied `ecr:GetAuthorizationToken`)
@@ -427,8 +429,9 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Interactive changeset prompts that stall non-interactive CI
 - Template failures: SAM/CloudFormation schema validation
   (`InvalidSamDocumentException`, unsupported properties), invalid properties
-  for a resource type, malformed `Fn::GetAtt` resource/attribute pairs, and
-  templates over a CloudFormation size or count quota
+  for a resource type, malformed `Fn::GetAtt` resource/attribute pairs,
+  unresolved resource dependencies, and templates over a CloudFormation size or
+  count quota
 - S3 naming failures: invalid bucket names and globally taken names
   (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`)
 - S3 lifecycle conflicts where tag filters cannot be combined with multipart-abort

@@ -955,6 +955,20 @@ def test_detects_sam_empty_changeset_failure() -> None:
     )
 
 
+def test_unresolved_resource_dependency_routes_to_template_reference_check() -> None:
+    findings = diagnose(
+        "Failed to create the changeset: Waiter ChangeSetCreateComplete failed: "
+        "Waiter encountered a terminal failure state: Template format error: "
+        "Unresolved resource dependencies [Environment] in the Resources block "
+        "of the template"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.template.unresolved-dependency"
+    ]
+    assert findings[0].confidence == "high"
+
+
 def test_detects_cloudformation_deploy_empty_changeset_failure() -> None:
     findings = diagnose("No changes to deploy. Stack my-service-prod is up to date")
 

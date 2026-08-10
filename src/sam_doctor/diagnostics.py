@@ -266,6 +266,10 @@ _CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN = (
     r"Failed to create/update (?:the )?stack\b"
 )
 
+_CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN = (
+    r"Template format error:\s*Unresolved resource dependencies\b"
+)
+
 _CDK_ASSEMBLY_FAILURE_PATTERN = (
     r"(?:\bAssemblyError:\s*Assembly builder failed\b|"
     r"\[_AssemblyError\]\s*Assembly builder failed\b)"
@@ -792,6 +796,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getatt.html",
     ),
     Rule(
+        id="cloudformation.template.unresolved-dependency",
+        title="The template references an unresolved resource dependency",
+        confidence="high",
+        patterns=(_CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN,),
+        explanation=(
+            "CloudFormation could not resolve one or more logical IDs named in "
+            "the template. The bracketed names are usually misspelled or missing "
+            "resources, parameters, or `DependsOn` targets; the change set fails "
+            "before resource provisioning starts."
+        ),
+        verification=(
+            "Read the names inside `Unresolved resource dependencies <logical-ids>` and compare each one with the exact logical IDs under `Resources` and `Parameters` in the submitted or SAM-transformed template.",
+            "Check `Ref`, `Fn::GetAtt`, `DependsOn`, and substitutions for spelling and case; a logical ID is case-sensitive and must exist in the same template scope.",
+            "Run `sam validate --lint` or `cfn-lint` against the exact template that the deploy submits, then retry the change set only after every referenced ID resolves.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html",
+    ),
+    Rule(
         id="iam.trust-policy.resource-field-invalid",
         title="An IAM role trust policy contains a permissions-only Resource field",
         confidence="high",
@@ -1262,6 +1284,7 @@ _RULES = (
             *_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS,
             *_CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS,
             _CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN,
+            _CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
@@ -1800,6 +1823,7 @@ _RULES = (
         # failure elsewhere in the same log must keep reporting.
         excluded_line_patterns=(
             r"every Fn::GetAtt object requires two non-empty parameters",
+            _CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN,
         ),
     ),
     Rule(

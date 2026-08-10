@@ -31,6 +31,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/docker-image-pull-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/failed-to-create-changeset.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/fn-getatt-parameters.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-unresolved-resource-dependency.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/incorrect-token-audience.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/invalid-bucket-name.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/invalid-sam-document.html</loc></url>

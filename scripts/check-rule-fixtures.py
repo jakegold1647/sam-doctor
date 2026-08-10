@@ -270,6 +270,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="Template validation accepted Fn::GetAtt: [WorkerFunction, Arn]",
     ),
+    "cloudformation.template.unresolved-dependency": RuleFixture(
+        positive=(
+            "Template format error: Unresolved resource dependencies "
+            "[Environment] in the Resources block of the template"
+        ),
+        negative=(
+            "Template format error: Resource dependencies were resolved before "
+            "the change set was created"
+        ),
+    ),
     "iam.trust-policy.resource-field-invalid": RuleFixture(
         positive="Has prohibited field Resource",
         negative="The trust policy passed validation with no prohibited fields",
