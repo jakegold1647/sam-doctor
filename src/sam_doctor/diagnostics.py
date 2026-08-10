@@ -280,6 +280,11 @@ _LAMBDA_INVOKE_NOT_FOUND_PATTERNS = (
     r"\bwhen calling (?:the )?Invoke(?: operation)?\b.{0,160}ResourceNotFoundException\b",
 )
 
+_BEDROCK_MODEL_ACCESS_PATTERNS = (
+    r"ResourceNotFoundException\b.{0,220}\bModel use case details have not been submitted for this account\b",
+    r"Model use case details have not been submitted for this account\b",
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1022,6 +1027,24 @@ _RULES = (
             "Compare the invoke target with the stack output or transformed template; correct a stale function name, alias, Region, or account rather than broadening IAM permissions for a missing target.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html",
+    ),
+    Rule(
+        id="bedrock.model-access.first-use-form-required",
+        title="Bedrock model access has not been submitted",
+        confidence="medium",
+        patterns=_BEDROCK_MODEL_ACCESS_PATTERNS,
+        explanation=(
+            "Amazon Bedrock rejected the model call because the account has not "
+            "submitted the model provider's first-use details. This is an account "
+            "and model-access gate, not evidence that a CloudFormation resource is "
+            "missing; a post-deploy smoke test can surface it alongside a deployment."
+        ),
+        verification=(
+            "Confirm the account, Region, and model ID used by the failing call, then open the Bedrock model-access or first-use form for that provider in the same account.",
+            "For Anthropic models, submit the Anthropic use-case details form requested by Bedrock and wait for the account's access state to update before retrying.",
+            "Retry the same model call after access is granted; do not delete the stack or broaden IAM permissions solely because this ResourceNotFoundException appeared.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

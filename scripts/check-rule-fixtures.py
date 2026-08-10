@@ -144,6 +144,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "GetFunction operation: Function not found"
         ),
     ),
+    "bedrock.model-access.first-use-form-required": RuleFixture(
+        positive=(
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "ConverseStream operation: Model use case details have not been "
+            "submitted for this account."
+        ),
+        negative=(
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "ConverseStream operation: The requested model ID is not found."
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

@@ -762,6 +762,42 @@ Launch a new task after changing the task definition.
 
 ---
 
+## 19. Bedrock model use-case details have not been submitted
+
+**Status:** landed - the catalog now recognizes the Bedrock account-level
+first-use access marker and keeps it separate from a missing model ID.
+
+**Failure family.** A post-deploy smoke test or application call reaches Amazon
+Bedrock, but the account has not submitted the model provider's required
+first-use details. Bedrock may report this as `ResourceNotFoundException` even
+though the model is listed, so treating it as an absent CloudFormation resource
+leads to the wrong fix.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (ResourceNotFoundException) when calling the ConverseStream operation: Model use case details have not been submitted for this account.
+```
+
+**Pattern hint.** Match the exact `Model use case details have not been
+submitted for this account` marker, whether the surrounding client formats it as
+`ResourceNotFoundException`, `API Error: 404`, or a plain Bedrock return line.
+Do not turn every Bedrock `ResourceNotFoundException` into an access-form
+diagnosis; an unknown model ID needs a different check.
+
+**Safe verification steps.** Confirm the caller's account, Region, and model ID,
+then open Bedrock model access in that same account. For Anthropic models,
+complete the Anthropic use-case details form and wait for the access state to
+update before retrying. Do not delete the stack or broaden IAM permissions based
+on this marker alone.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -772,16 +808,17 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 242 of
-269 excerpts (90%), now including dedicated searches for CDK assembly-wrapper
-variants, Lambda `Invoke` target misses, and ECS Exec managed-agent failures,
-plus the broader change-set wrapper wording. That percentage is a moving sample,
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 251 of
+278 excerpts (90%), now including dedicated searches for CDK assembly-wrapper
+variants, Lambda `Invoke` target misses, Bedrock first-use access failures, and
+ECS Exec managed-agent failures, plus the broader change-set wrapper wording.
+That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 18 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 19 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

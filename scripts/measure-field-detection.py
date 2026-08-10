@@ -59,6 +59,7 @@ QUERIES = (
     '"An error occurred" "when calling the" cloudformation in:body',
     '"Resource handler returned message" in:body',
     '"ResourceNotFoundException" "Invoke operation" in:body',
+    '"Model use case details have not been submitted" in:body',
     '"CannotStartManagedAgentError" in:body',
 )
 
@@ -83,6 +84,7 @@ FAILURE_SIGNAL = re.compile(
     r"|\[_AssemblyError\][ \t]*Assembly builder failed"
     r"|ResourceNotFoundException.{0,160}when calling (?:the )?Invoke operation"
     r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
+    r"|Model use case details have not been submitted for this account"
     r"|CannotStartManagedAgentError\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"

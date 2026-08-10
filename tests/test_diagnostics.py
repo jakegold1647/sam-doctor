@@ -506,6 +506,39 @@ def test_lambda_get_function_not_found_does_not_look_like_an_invoke_failure() ->
 @pytest.mark.parametrize(
     "log",
     (
+        (
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "ConverseStream operation: Model use case details have not been "
+            "submitted for this account. Fill out the Anthropic use case details "
+            "form before using the model."
+        ),
+        "API Error: 404 Model use case details have not been submitted for this account.",
+        "AWS-side. Bedrock returns: Model use case details have not been submitted for this account.",
+    ),
+)
+def test_bedrock_model_access_gate_routes_to_first_use_form(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.model-access.first-use-form-required"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_resource_not_found_without_access_phrase_is_not_this_rule() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the "
+        "ConverseStream operation: The requested model ID is not found."
+    )
+
+    assert "bedrock.model-access.first-use-form-required" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
         "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (

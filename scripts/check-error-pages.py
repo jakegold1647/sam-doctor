@@ -80,6 +80,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.deploy.wrapper-failed": "cloudformation-deploy-wrapper-failed.html",
     "cdk.synth.assembly-failed": "cdk-assembly-failed.html",
     "lambda.invoke.function-not-found": "lambda-invoke-function-not-found.html",
+    "bedrock.model-access.first-use-form-required": "bedrock-model-access.html",
     "ecs.execute-command.agent-unavailable": "ecs-execute-command-agent.html",
     "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",
