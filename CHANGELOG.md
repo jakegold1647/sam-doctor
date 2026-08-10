@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **CloudFormation wrapper failures now hand off to stack events.** A low-
+  confidence finding recognizes `Failed to create/update the stack`, makes no
+  unsupported root-cause claim, and points at the read-only event command and
+  the first failed resource.
+
 - **Terminal stack recovery now covers `DELETE_COMPLETE`.** The existing
   terminal-state diagnosis now recognizes both `ROLLBACK_COMPLETE` and
   `DELETE_COMPLETE` update refusals, with separate checks for the original

@@ -120,6 +120,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "operation: Rate exceeded"
         ),
     ),
+    "cloudformation.deploy.wrapper-failed": RuleFixture(
+        positive=(
+            "Failed to create/update the stack. Run the following command to fetch "
+            "the list of events leading up to the failure."
+        ),
+        negative="CloudFormation created and updated the stack successfully.",
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

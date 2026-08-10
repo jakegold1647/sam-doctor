@@ -33,6 +33,7 @@ until the next stable release.
 - [AbortIncompleteMultipartUpload cannot be specified with Tags](https://sam-doctor.jacobgoldstein.dev/errors/s3-lifecycle-abort-tags.html): separate S3 multipart-abort and tag-filtered lifecycle rules.
 - [ImageRecipe already exists](https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html): create a new immutable Image Builder recipe version instead of reusing the existing one.
 - [CloudFormation service unavailable](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-service-unavailable.html): check the regional service state and retry with a stable client request token.
+- [Failed to create/update the stack](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-deploy-wrapper-failed.html): fetch stack events; the wrapper line does not contain the resource-level cause.
 - [Cannot connect to the Docker daemon](https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://sam-doctor.jacobgoldstein.dev/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.

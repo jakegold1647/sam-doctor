@@ -53,6 +53,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/s3-lifecycle-abort-tags.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-service-unavailable.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-deploy-wrapper-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/security-token-invalid.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/ssm-parameter-cannot-be-found.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/tag-action-denied.html</loc></url>

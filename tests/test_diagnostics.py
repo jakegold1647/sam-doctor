@@ -441,6 +441,20 @@ def test_delete_complete_update_refusal_reports_the_terminal_stack_finding() -> 
     ]
 
 
+def test_cloudformation_wrapper_failure_routes_to_stack_events() -> None:
+    log = (
+        "Failed to create/update the stack. Run the following command to fetch "
+        "the list of events leading up to the failure."
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.deploy.wrapper-failed"
+    ]
+    assert findings[0].confidence == "low"
+
+
 def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
     log = "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated."
 

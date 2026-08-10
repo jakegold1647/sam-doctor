@@ -262,6 +262,10 @@ _CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS = (
     ),
 )
 
+_CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN = (
+    r"Failed to create/update (?:the )?stack\b"
+)
+
 
 _RULES = (
     Rule(
@@ -925,6 +929,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
     ),
     Rule(
+        id="cloudformation.deploy.wrapper-failed",
+        title="The CloudFormation deploy wrapper reported a failure without the root cause",
+        confidence="low",
+        patterns=(_CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN,),
+        explanation=(
+            "This is the SAM or CloudFormation deploy wrapper reporting that the "
+            "operation failed; it is not the resource-level cause. The useful status "
+            "reason is in the stack events, often a few lines earlier or only available "
+            "through the read-only events command."
+        ),
+        verification=(
+            "Fetch the failed stack's events with `aws cloudformation describe-stack-events --stack-name <stack>` (read-only).",
+            "Inspect the earliest `CREATE_FAILED` or `UPDATE_FAILED` event and preserve its exact status reason; that is the evidence to run through SAM Doctor.",
+            "If the event stream has no resource failure, keep the operation, Region, timestamp, and request ID and investigate the surrounding API error instead of changing the template based on this wrapper line.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
+    ),
+    Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
@@ -1190,6 +1212,7 @@ _RULES = (
             _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN,
             *_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS,
             *_CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS,
+            _CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,

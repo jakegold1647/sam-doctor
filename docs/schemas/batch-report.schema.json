@@ -65,7 +65,7 @@
         },
         "confidence": {
           "type": "string",
-          "enum": ["high", "medium"]
+          "enum": ["high", "medium", "low"]
         },
         "explanation": {
           "type": "string"
