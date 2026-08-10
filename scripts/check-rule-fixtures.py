@@ -470,6 +470,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="Docker daemon responded and the container build started",
     ),
+    "sam.build.output-permission-denied": RuleFixture(
+        positive=(
+            "sam build --debug failed: Error: [WinError 5] Access is denied: "
+            "'.aws-sam\\build'"
+        ),
+        negative=(
+            "error: unable to unlink old 'infra/.aws-sam/build/template.yaml': "
+            "Permission denied"
+        ),
+    ),
     "lambda.package.size-limit-exceeded": RuleFixture(
         positive=(
             "An error occurred (InvalidParameterValueException) when calling "

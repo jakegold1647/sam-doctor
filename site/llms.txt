@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(80 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(81 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -55,6 +55,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [EC2 CreateNetworkInterface failed](https://sam-doctor.jacobgoldstein.dev/errors/ec2-network-interface-create-failed.html): read the nested status, subnet capacity, permissions, request shape, and endpoint support.
 - [EKS VPC CNI pod sandbox failed](https://sam-doctor.jacobgoldstein.dev/errors/eks-vpc-cni-pod-sandbox-failed.html): inspect the matching `aws-node` or `ipamd` error for IP, ENI, permission, subnet, and add-on checks.
 - [Cannot connect to the Docker daemon](https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
+- [SAM build output permission denied](https://sam-doctor.jacobgoldstein.dev/errors/sam-build-output-permission-denied.html): inspect ownership, locks, and permissions under `.aws-sam/build` before changing AWS settings.
 - [CannotStartManagedAgentError](https://sam-doctor.jacobgoldstein.dev/errors/ecs-execute-command-agent.html): inspect ECS Exec enablement, the managed agent, SSM messaging, network access, and filesystem prerequisites.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://sam-doctor.jacobgoldstein.dev/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.

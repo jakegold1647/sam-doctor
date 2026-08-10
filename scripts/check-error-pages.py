@@ -69,6 +69,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.stack.operation-in-progress": "operation-in-progress.html",
     "cloudformation.template.quota-exceeded": "template-limit-exceeded.html",
     "sam.build.docker-required": "docker-unavailable.html",
+    "sam.build.output-permission-denied": "sam-build-output-permission-denied.html",
     "sam.build.esbuild-missing": "esbuild-not-found.html",
     "sam.template.schema-validation-failed": "invalid-sam-document.html",
     "cloudformation.template.getatt-parameters-invalid": "fn-getatt-parameters.html",

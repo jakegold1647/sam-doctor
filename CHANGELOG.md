@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **SAM build output permission failures now have a focused handoff.** A
+  medium-confidence finding recognizes permission errors under `.aws-sam/build`
+  and points at local ownership, locks, and generated-output cleanup without
+  suggesting Docker or AWS IAM changes.
+
 - **Bedrock end-of-life model failures now have a focused handoff.** A
   high-confidence finding recognizes the model-lifecycle marker and points at
   checking the active catalog and migrating the model ID instead of retrying or

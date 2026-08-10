@@ -54,6 +54,7 @@ QUERIES = (
     '"Requires capabilities" "CAPABILITY_IAM" in:body',
     '"did not stabilize" cloudformation in:body',
     '"sam build" "Docker" error in:body',
+    '"sam build" "PermissionError" ".aws-sam" in:body',
     '"Assembly builder failed" in:body',
     '"Failed to bundle asset" "bundle output is located at" in:body',
     '"AssumeRoleWithWebIdentity" "not authorized" in:body',
@@ -99,6 +100,10 @@ FAILURE_SIGNAL = re.compile(
     r"|is in [A-Z_]+ state and can not be updated"
     r"|\[_AssemblyError\][ \t]*Assembly builder failed"
     r"|Failed to bundle asset\b.{0,2000}\bbundle output is located at\b"
+    r"|^(?!.*unable to unlink old).*(?:PermissionError|Permission denied|Access is denied)"
+    r".{0,180}\.aws-sam[\\/]+build\b"
+    r"|^(?!.*unable to unlink old).*\.aws-sam[\\/]+build\b.{0,180}"
+    r"(?:PermissionError|Permission denied|Access is denied)"
     r"|ResourceNotFoundException.{0,160}when calling (?:the )?Invoke operation"
     r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
     r"|Model use case details have not been submitted for this account"
@@ -123,7 +128,7 @@ FAILURE_SIGNAL = re.compile(
     r"|Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b"
     r"|plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b"
     r"|execute command failed because execute command was not enabled"
-    r"|Error: [A-Z]"
+    r"|^(?!.*unable to unlink old).*Error: [A-Z]"
     r")"
 )
 

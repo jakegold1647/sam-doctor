@@ -362,6 +362,17 @@ _EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS = (
     r"plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b",
 )
 
+_SAM_BUILD_PERMISSION_FAILURE_PATTERNS = (
+    (
+        r"(?:PermissionError|Permission denied|Access is denied)"
+        r".{0,180}\.aws-sam[\\/]+build\b"
+    ),
+    (
+        r"\.aws-sam[\\/]+build\b.{0,180}"
+        r"(?:PermissionError|Permission denied|Access is denied)"
+    ),
+)
+
 _GLUE_DATABASE_RENAME_PATTERN = r"Database cannot be renamed\b"
 
 _CLOUDCONTROL_OPERATION_INCOMPLETE_PATTERN = (
@@ -1449,6 +1460,25 @@ _RULES = (
             "If the artifact uses a customer-managed KMS key, verify the identity also has the required decrypt permission.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-lambda-layerversion-content.html",
+    ),
+    Rule(
+        id="sam.build.output-permission-denied",
+        title="SAM build cannot access its generated build directory",
+        confidence="medium",
+        patterns=_SAM_BUILD_PERMISSION_FAILURE_PATTERNS,
+        explanation=(
+            "SAM CLI could not read, write, or replace a generated file under "
+            "`.aws-sam/build`. This is a local filesystem ownership, permission, "
+            "or file-lock problem before deployment, not an AWS resource or IAM "
+            "failure."
+        ),
+        verification=(
+            "Close editors, file watchers, antivirus scans, and other processes that may hold the generated file, then rerun `sam build --debug` and preserve the first complete permission error.",
+            "Inspect the owner and permissions of `.aws-sam/build` and the named file; on Windows use `icacls .aws-sam\\build`, and on Unix use `ls -ld .aws-sam/build` plus the file path.",
+            "After confirming the source template and function directories are safe, move or remove only the generated `.aws-sam/build` directory and rebuild; do not broaden AWS permissions or delete source artifacts to fix a local lock.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html",
+        excluded_line_patterns=(r"unable to unlink old",),
     ),
     Rule(
         id="sam.build.docker-required",

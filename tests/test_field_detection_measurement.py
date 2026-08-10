@@ -56,6 +56,7 @@ REAL_FAILURE_LINES = (
         "operation error Bedrock Runtime: InvokeModel, ResourceNotFoundException: "
         "This model version has reached the end of its life."
     ),
+    "sam build --debug failed: Error: [WinError 5] Access is denied: '.aws-sam\\build'",
 )
 
 NOT_FAILURE_LINES = (
@@ -63,6 +64,7 @@ NOT_FAILURE_LINES = (
     "Resources:\n  MyFunction:\n    Type: AWS::Serverless::Function",
     "sam deploy --guided --stack-name my-app",
     "Deployment succeeded and the stack is now CREATE_COMPLETE",
+    "error: unable to unlink old 'infra/.aws-sam/build/template.yaml': Permission denied",
 )
 
 

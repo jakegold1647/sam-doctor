@@ -1319,6 +1319,45 @@ request body before retrying. Bedrock does not migrate retired IDs automatically
 
 ---
 
+## 35. SAM build could not access its generated output directory
+
+**Status:** landed - the catalog now recognizes permission errors naming
+`.aws-sam/build` while keeping Git's tracked-file unlink errors unmatched.
+
+**Failure family.** `sam build` writes transformed templates and packaged
+artifacts under `.aws-sam/build`. A previous elevated run, another local user,
+an editor or watcher, or antivirus can leave the generated directory locked or
+owned by a different account. The failure happens before AWS receives a
+deployment request, so IAM changes are unrelated.
+
+**Sanitized signal lines.**
+
+```text
+sam build --debug failed: Error: [WinError 5] Access is denied: '.aws-sam\build'
+```
+
+```text
+PermissionError: [Errno 13] Permission denied: '/workspace/.aws-sam/build'
+```
+
+**Pattern hint.** Match `PermissionError`, `Permission denied`, or `Access is
+denied` with `.aws-sam/build`. Exclude `unable to unlink old` lines: those are
+Git cleanup failures, not evidence that SAM itself could not build.
+
+**Safe verification steps.** Close editors, file watchers, antivirus scans, and
+other SAM processes, then rerun `sam build --debug`. Inspect ownership and
+permissions with `icacls .aws-sam\build` on Windows or `ls -ld .aws-sam/build`
+on Unix. After confirming source files are safe, move or remove only the
+generated build directory and rebuild; do not delete source code or broaden AWS
+permissions.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1330,8 +1369,8 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 410 of 451 excerpts (91%), with 41 misses after entry 34. It included dedicated
-searches for CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
+diagnosed 407 of 424 excerpts (96%), with 17 misses after entry 35. It included dedicated
+searches for SAM build permission markers, CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
@@ -1351,7 +1390,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 34 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 35 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

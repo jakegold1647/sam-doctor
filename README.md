@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (80 diagnostics). Stable
+The public guides follow the current `main` catalog (81 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -447,6 +447,8 @@ see [docs/stability.md](docs/stability.md). The current set:
 - SAM deployment/configuration errors, including conflicting artifact-bucket
   settings and missing `esbuild` dependencies
 - SAM build errors where Docker is unavailable for `sam build --use-container`
+- SAM build output permission failures under `.aws-sam/build`, kept separate
+  from Docker availability and AWS IAM errors
 - Python dependency resolution or validation errors in SAM/Python builds
 - Interactive changeset prompts that stall non-interactive CI
 - Template failures: SAM/CloudFormation schema validation

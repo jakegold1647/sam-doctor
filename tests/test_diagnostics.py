@@ -492,6 +492,43 @@ def test_cdk_asset_bundle_rule_requires_the_temporary_output_marker() -> None:
     }
 
 
+@pytest.mark.parametrize(
+    "log",
+    (
+        "sam build --debug failed: Error: [WinError 5] Access is denied: '.aws-sam\\build'",
+        "PermissionError: [Errno 13] Permission denied: '/workspace/.aws-sam/build'",
+    ),
+)
+def test_sam_build_generated_directory_permission_failures_route_to_local_checks(
+    log: str,
+) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "sam.build.output-permission-denied"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_sam_build_permission_rule_does_not_claim_a_git_unlink_error() -> None:
+    findings = diagnose(
+        "error: unable to unlink old 'infra/.aws-sam/build/template.yaml': "
+        "Permission denied"
+    )
+
+    assert "sam.build.output-permission-denied" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+def test_sam_build_permission_rule_requires_the_generated_directory() -> None:
+    findings = diagnose("sam build failed: Permission denied reading source.py")
+
+    assert "sam.build.output-permission-denied" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_lambda_invoke_missing_target_routes_to_read_only_function_check() -> None:
     findings = diagnose(
         "An error occurred (ResourceNotFoundException) when calling the Invoke "
