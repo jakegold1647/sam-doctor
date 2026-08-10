@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Stable and branch-only CLI features are now labeled in onboarding.** The
+  quickstart, README, homepage, and machine-readable site guide keep PyPI
+  `0.11.0` focused on `diagnose` and show the explicit `main` install for the
+  newer `run` and clipboard workflows until the next stable release. The
+  homepage note uses the same dark-panel styling as the install commands.
+
 - **The homepage coverage count now matches the catalog.** The public proof
   strip and error-guide link both show all 56 documented diagnostics.
 

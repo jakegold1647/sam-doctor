@@ -109,6 +109,12 @@
         <p class="muted">You can also use <code>pipx install sam-doctor</code> or <code>uvx sam-doctor demo</code>.</p>
         <p class="muted">For a one-off diagnosis without installing globally: <code>uvx sam-doctor diagnose deployment.log --format markdown</code></p>
         <p class="muted">
+          The shell-independent <code>run</code> wrapper and clipboard handoff are
+          on the current branch while the next stable PyPI release is prepared.
+          To try those features explicitly, install from <code>main</code>:
+        </p>
+        <pre><code>python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"</code></pre>
+        <p class="muted">
           Optional bootstrap: <code>sam-doctor init</code> writes a starter GitHub Actions
           workflow that captures a deployment failure log and runs SAM Doctor.
         </p>

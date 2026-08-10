@@ -14,6 +14,12 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 For a one-off local diagnosis without a global install, use
 `uvx sam-doctor diagnose deployment.log --format markdown`.
 
+The stable PyPI package is the install path for `diagnose`. The newer
+shell-independent `run` wrapper and native clipboard handoff are currently on
+the `main` branch; try them with
+`python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
+until the next stable release.
+
 ## Exact-error guides
 
 - [Deployment error index](https://sam-doctor.jacobgoldstein.dev/errors/): one page per exact error string with causes, fixes, and the diagnose command.

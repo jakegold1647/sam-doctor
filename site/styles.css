@@ -860,6 +860,21 @@ h3 {
   white-space: nowrap;
 }
 
+.command-stack .install-note {
+  margin: 0;
+  padding: .85rem 1.1rem 1rem;
+  border-top: 1px solid var(--dark-line);
+  color: var(--dark-muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.command-stack .install-note code {
+  color: #c6eadc;
+  font-size: inherit;
+  white-space: normal;
+}
+
 .ci-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(18rem, .82fr);

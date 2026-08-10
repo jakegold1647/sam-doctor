@@ -44,6 +44,14 @@ package directly through `uvx`:
 uvx sam-doctor diagnose deployment.log --format markdown
 ```
 
+The current branch also contains the shell-independent `run` wrapper and the
+native clipboard handoff. Until those features land in the next stable PyPI
+release, try them explicitly from `main`:
+
+```bash
+python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
+```
+
 To install from a tagged source release instead of PyPI, use
 `pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@<tag>"`
 with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/releases).
