@@ -3,6 +3,9 @@ contact_links:
   - name: Support boundaries
     url: https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md
     about: Read what SAM Doctor can and cannot help with before opening an issue.
+  - name: Share usage feedback
+    url: https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml
+    about: Tell us what worked, was missed, or was unclear without sending telemetry.
   - name: Contributing guide
     url: https://github.com/jakegold1647/sam-doctor/blob/main/docs/contributing-a-diagnostic-rule.md
     about: Follow this guide if you want to propose a new diagnostic rule.

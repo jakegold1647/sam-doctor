@@ -3,6 +3,12 @@
 The most useful contributions are reproducible false positives, missed failure
 patterns, and improvements to safe verification steps.
 
+You do not need to write code to help. If SAM Doctor helped, missed a failure,
+or left you unsure what to do next, share a sanitized result through the
+[usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml).
+Those reports give maintainers the context to improve a fixture, rule, or guide,
+and you can ask for help turning one into your first pull request.
+
 ## Before opening an issue
 
 Never post raw production logs, AWS account IDs, ARNs, access keys, session

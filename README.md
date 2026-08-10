@@ -583,6 +583,10 @@ When you report a wrong or unclear diagnosis, include the SAM Doctor version,
 the exact command, a sanitized excerpt, and what you expected. Small
 reproducible reports get fixed fastest.
 
+If you have tried SAM Doctor and want to share a win, a miss, or an unclear
+result, use the [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml).
+It collects no telemetry and accepts only sanitized context.
+
 ## Development
 
 ```bash

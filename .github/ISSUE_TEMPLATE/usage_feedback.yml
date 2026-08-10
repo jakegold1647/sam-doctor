@@ -1,0 +1,87 @@
+name: Share usage feedback
+description: Tell us what worked, was missed, or was unclear when you tried SAM Doctor.
+title: "community: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying SAM Doctor. This form is for a quick usage report, whether
+        the diagnosis helped, missed the failure, or left you unsure what to do next.
+
+        SAM Doctor does not collect telemetry. Never post raw production logs, AWS
+        account IDs, ARNs, access keys, session tokens, customer data, or private
+        repository names. A short, sanitized excerpt is enough.
+
+        Read the [support boundaries](https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md)
+        and [contributor guide](https://github.com/jakegold1647/sam-doctor/blob/main/CONTRIBUTING.md)
+        if you want to turn feedback into a pull request.
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: What happened?
+      description: Choose the result that best describes your run.
+      options:
+        - The diagnosis helped
+        - A failure was missed
+        - An unrelated line was diagnosed
+        - The report was unclear or unsafe
+        - Setup or workflow friction
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: SAM Doctor version (if known)
+      description: Run `sam-doctor --version` when you can.
+      placeholder: sam-doctor 0.x.y
+  - type: input
+    id: workflow
+    attributes:
+      label: Workflow or command family
+      description: Where did you try it?
+      placeholder: sam deploy, CDK deploy, CloudFormation, or GitHub Actions
+    validations:
+      required: true
+  - type: input
+    id: rule_id
+    attributes:
+      label: Rule ID or finding (if shown)
+      description: Include the stable rule ID or a short finding title when available.
+      placeholder: iam.capability-acknowledgement
+  - type: textarea
+    id: context
+    attributes:
+      label: Sanitized context (optional)
+      description: Share only the minimum excerpt or packet details needed to understand the result.
+      placeholder: |
+        First relevant line:
+        sam-doctor command:
+        Reported finding:
+  - type: textarea
+    id: expected
+    attributes:
+      label: What would have made this more useful?
+      description: Tell us what you expected to see or what safe next check would help.
+    validations:
+      required: true
+  - type: dropdown
+    id: follow_up
+    attributes:
+      label: What should happen next?
+      options:
+        - Turn this into a regression fixture or diagnostic rule
+        - Improve the documentation or example
+        - Help me get started with a pull request
+        - I am only sharing feedback for now
+    validations:
+      required: true
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Privacy check
+      description: Please confirm this before submitting.
+      options:
+        - label: I removed credentials, account IDs, ARNs, customer data, and other private identifiers.
+          required: true
