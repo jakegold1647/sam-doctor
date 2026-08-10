@@ -9,6 +9,9 @@ or left you unsure what to do next, share a sanitized result through the
 Those reports give maintainers the context to improve a fixture, rule, or guide,
 and you can ask for help turning one into your first pull request.
 
+Maintainers use the [community triage checklist](docs/community-triage.md) to
+route that feedback into a focused, welcoming next step.
+
 ## Before opening an issue
 
 Never post raw production logs, AWS account IDs, ARNs, access keys, session

@@ -566,6 +566,7 @@ not security, legal, or production-operations advice.
 - [Worked examples (incident-to-action workflows)](docs/worked-examples.md)
 - [Rolling out SAM Doctor on a team (commands by role)](docs/team-rollout.md)
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
+- [Community triage: turn usage feedback into a contribution](docs/community-triage.md)
 
 ## Contributing
 
