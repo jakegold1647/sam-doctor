@@ -195,7 +195,7 @@ sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</
         <h2 id="ci-title">3) Add one diagnostic step in GitHub Actions</h2>
         <pre><code>- name: Deploy and diagnose
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0
+  uses: jakegold1647/sam-doctor@main
   with:
     log-file: deployment.log
     run-command: sam deploy --no-confirm-changeset
@@ -206,6 +206,11 @@ sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</
           Keep authentication and environment setup in earlier steps. This single Action step captures the deploy and keeps its original exit status. Keep it non-blocking initially; when your team is comfortable with the signal quality,
           flip on enforcement with <code>--fail-on-findings: true</code> (or
           run <code>sam-doctor init --fail-on-findings --force</code> to regenerate your workflow).
+        </p>
+        <p class="muted">
+          This one-step example uses <code>@main</code> because the current stable
+          <code>v0</code> tag predates <code>run-command</code>. Move to the next
+          stable tag when it includes this input.
         </p>
         <p class="muted">
           Keep the deployment command unchanged. SAM Doctor only reads the local log and

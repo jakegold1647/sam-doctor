@@ -280,7 +280,7 @@ For a single-step CI integration, let the Action run and capture the deploy:
 ```yaml
 - name: Deploy and diagnose
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0
+  uses: jakegold1647/sam-doctor@main
   with:
     log-file: deployment.log
     run-command: sam deploy --no-confirm-changeset
@@ -289,7 +289,10 @@ For a single-step CI integration, let the Action run and capture the deploy:
 
 It preserves the deployment's original exit status and exposes it as
 `deploy-exit-status`; keep authentication and environment setup in earlier
-steps. Use either `run-command` or `batch`, not both.
+steps. Use either `run-command` or `batch`, not both. This example uses
+`@main` because the current stable `v0` tag predates `run-command`; switch to
+the next stable tag when it includes this input. The log-only examples below
+remain on `@v0`.
 
 `sam-doctor init` generates this workflow for you:
 

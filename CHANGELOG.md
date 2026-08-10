@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The public one-step Action examples now point at a working ref.** The
+  `run-command` input shipped after the current `v0` tag, so the homepage,
+  quickstart, README, and integration guide use `@main` for that mode and say
+  when to move back to the next stable tag. Existing log-only examples remain
+  on `@v0`.
+
 - **CodeBuild CodeConnections failures now identify the project-side access
   check.** A specific `AWSCodeBuild` `OAuthProviderException` no longer falls
   through to generic CloudFormation failure guidance; the report points at the

@@ -340,7 +340,7 @@
         <div class="ci-layout">
           <pre aria-label="GitHub Actions example"><code><span class="code-dim">- name:</span> Deploy and diagnose
   <span class="code-dim">id:</span> sam-doctor
-  <span class="code-dim">uses:</span> jakegold1647/sam-doctor@v0
+  <span class="code-dim">uses:</span> jakegold1647/sam-doctor@main
   <span class="code-dim">with:</span>
     <span class="code-dim">log-file:</span> deployment.log
     <span class="code-dim">run-command:</span> sam deploy --no-confirm-changeset
@@ -349,7 +349,7 @@
     <span class="code-dim"># fail-on-findings: true</span></code></pre>
           <div class="ci-copy">
             <h3>Roll it out at your pace.</h3>
-            <p>Keep the Action advisory while your team measures signal quality, then add <code>--fail-on-findings</code> or a confidence gate when the evidence is stable.</p>
+            <p>Keep the Action advisory while your team measures signal quality, then add <code>--fail-on-findings</code> or a confidence gate when the evidence is stable. This current one-step example uses <code>@main</code> because the stable <code>v0</code> tag predates <code>run-command</code>.</p>
             <a class="text-link" href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml">Download the sam-doctor GitHub Actions starter <span aria-hidden="true">→</span></a>
             <details>
               <summary>More deployment and CI starters</summary>

@@ -40,7 +40,7 @@ authentication steps before the Action and pass `run-command`:
 ```yaml
 - name: Deploy and diagnose
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@v0
+  uses: jakegold1647/sam-doctor@main
   with:
     log-file: deployment.log
     run-command: sam deploy --no-confirm-changeset
@@ -51,7 +51,9 @@ This mode captures combined output, writes the same redacted summary and
 annotations, and returns the deployment's original exit status. The command is
 executed by Bash on the runner, so keep shell quoting and any environment setup
 in the workflow. `deploy-exit-status` is exposed as an output (`0` when
-`run-command` is not used). It cannot be combined with `batch: true`.
+`run-command` is not used). It cannot be combined with `batch: true`. This
+example uses `@main` because the current stable `v0` tag predates
+`run-command`; switch to the next stable tag when it includes this input.
 
 For repositories that collect several deployment logs per run (for example, matrix jobs),
 set `batch: true` and point `log-file` to a directory or glob:
