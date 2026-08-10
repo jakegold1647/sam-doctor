@@ -772,7 +772,7 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 241 of
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 242 of
 269 excerpts (90%), now including dedicated searches for CDK assembly-wrapper
 variants, Lambda `Invoke` target misses, and ECS Exec managed-agent failures,
 plus the broader change-set wrapper wording. That percentage is a moving sample,

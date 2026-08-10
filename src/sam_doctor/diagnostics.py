@@ -282,6 +282,7 @@ _LAMBDA_INVOKE_NOT_FOUND_PATTERNS = (
 
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
+    r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
     r"execute command failed because execute command was not enabled when the task was run or the execute command agent (?:isn't|is not) running",
 )
 

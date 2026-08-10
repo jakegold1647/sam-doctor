@@ -16,9 +16,10 @@ All notable changes to SAM Doctor are documented here.
   new stable release is authorized.
 
 - **ECS Exec managed-agent failures now have a focused handoff.** A
-  medium-confidence finding recognizes `CannotStartManagedAgentError` and the
-  matching `ExecuteCommand` wrapper, then points at task launch enablement,
-  `ssmmessages`, network, and writable-filesystem checks.
+  medium-confidence finding recognizes `CannotStartManagedAgentError`, the
+  matching `ExecuteCommand` wrapper, and its truncated operation-only form,
+  then points at task launch enablement, `ssmmessages`, network, and
+  writable-filesystem checks.
 
 - **Unresolved CloudFormation dependencies now have a focused diagnosis.** A
   high-confidence finding recognizes `Template format error: Unresolved resource

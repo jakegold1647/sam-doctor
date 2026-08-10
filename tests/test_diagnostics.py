@@ -507,6 +507,7 @@ def test_lambda_get_function_not_found_does_not_look_like_an_invoke_failure() ->
     "log",
     (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
+        "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (
             "An error occurred (InvalidParameterException) when calling the ExecuteCommand "
             "operation: The execute command failed because execute command was not enabled "
