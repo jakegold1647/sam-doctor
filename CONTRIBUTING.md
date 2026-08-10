@@ -26,6 +26,10 @@ discussion, or pull request. It sets the project standard for respectful
 feedback and keeps the privacy boundary clear for everyone, including first-
 time contributors.
 
+For the shortest path from zero to a first draft PR, use the
+[contributor quickstart](docs/contributor-quickstart.md). It lists a few
+ready-to-claim tasks and the exact baseline command.
+
 ## Before opening an issue
 
 Never post raw production logs, AWS account IDs, ARNs, access keys, session
