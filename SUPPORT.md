@@ -14,6 +14,9 @@ support next, or [Show and tell](https://github.com/jakegold1647/sam-doctor/disc
 to share a safe workflow that other contributors can build on. Keep all examples
 sanitized there too.
 
+If you are not sure where to start, the pinned [community welcome discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)
+connects safe usage feedback with the mentored first-issue queue and first-PR help.
+
 SAM Doctor can explain supported failure patterns, but it does not provide AWS
 account access, incident response, policy approval, or bespoke infrastructure
 consulting. For production incidents, follow your team's escalation process and
