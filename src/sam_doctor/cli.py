@@ -6,6 +6,7 @@ import argparse
 import codecs
 import glob
 import json
+import subprocess
 import sys
 import textwrap
 from datetime import datetime, timezone
@@ -118,6 +119,8 @@ Command behavior:
             or a met --fail-on-confidence threshold.
   batch: default exit 0 (no enforced failure), 1 with --fail-on-findings
          or a met --fail-on-confidence threshold.
+  run: streams a command, saves its combined output, diagnoses only when the
+       command fails, and returns the command's exit status.
   demo, rules, schemas, packet, request-packet, init: 0 on successful execution.
 
 GitHub Action behavior:
@@ -297,6 +300,34 @@ GitHub Action behavior:
             "threshold."
         ),
     )
+
+    run_parser = subcommands.add_parser(
+        "run",
+        help="Run a deployment command, save its output, and diagnose failures.",
+    )
+    run_parser.add_argument(
+        "--log-file",
+        type=Path,
+        default=Path("deployment.log"),
+        help="Path for the combined command output (default: deployment.log).",
+    )
+    run_parser.add_argument(
+        "--format",
+        choices=("terminal", "markdown", "json", "github", "sarif"),
+        default="terminal",
+        help="Report format when the command fails.",
+    )
+    run_parser.add_argument(
+        "--output",
+        type=Path,
+        help="Write the failure report to this path instead of stdout.",
+    )
+    run_parser.add_argument(
+        "run_command",
+        nargs=argparse.REMAINDER,
+        help="Command and arguments to run; put `--` before the command when needed.",
+    )
+
     init_parser = subcommands.add_parser(
         "init", help="Create a starter GitHub Actions workflow for SAM Doctor."
     )
@@ -433,6 +464,58 @@ def _read_text(path: Path) -> str:
         raise ValueError(f"Could not read {path}: {error}") from error
     _note_slow_input(path, text)
     return text
+
+
+def _run_deployment_command(command: list[str], log_path: Path) -> int:
+    """Stream a command while preserving its combined output and exit status."""
+
+    if not command:
+        raise ValueError("run requires a deployment command after `--`.")
+
+    log_path = log_path.expanduser().resolve()
+    if log_path.exists() and log_path.is_dir():
+        raise ValueError(f"Log target must be a file: {log_path}")
+    if log_path.is_symlink():
+        raise ValueError(f"Log target must not be a symlink: {log_path}")
+    _make_output_dir(log_path.parent)
+    _ensure_output_targets_are_not_hard_links((log_path,))
+
+    try:
+        with log_path.open("w", encoding="utf-8", newline="\n") as log:
+            try:
+                process = subprocess.Popen(
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+            except OSError as error:
+                raise ValueError(f"Could not run {command[0]}: {error}") from error
+
+            try:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+                    log.write(line)
+                return_code = process.wait()
+            except OSError as error:
+                try:
+                    process.kill()
+                except OSError:
+                    pass
+                process.wait()
+                raise ValueError(
+                    f"Could not write command output to {log_path}: {error}"
+                ) from error
+    except OSError as error:
+        raise ValueError(f"Could not write command output to {log_path}: {error}") from error
+
+    # Negative return codes represent signal termination on POSIX. Convert them
+    # to the conventional shell status so `run` remains a valid process exit.
+    return return_code if return_code >= 0 else 128 - return_code
 
 
 # Ordered so a threshold means "this confidence or above". "low" is in the
@@ -983,6 +1066,50 @@ def _request_packet_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_command(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+    command = list(args.run_command)
+    if command and command[0] == "--":
+        command = command[1:]
+    if not command:
+        _print_error(parser, "run requires a deployment command after `--`.")
+        return 2
+
+    log_path = args.log_file.expanduser().resolve()
+    output_path = args.output.expanduser().resolve() if args.output else None
+    try:
+        if output_path is not None:
+            _ensure_input_is_not_output(log_path, (output_path,))
+            _make_output_dir(output_path.parent)
+            _ensure_output_targets_are_not_hard_links((output_path,))
+        deploy_status = _run_deployment_command(command, log_path)
+    except ValueError as error:
+        _print_error(parser, str(error))
+        return 2
+
+    if deploy_status == 0:
+        return 0
+
+    try:
+        text = _read_text(log_path)
+        report = _render_findings(
+            diagnose(text),
+            log_path.name,
+            args.format,
+            input_is_empty=not text.strip(),
+        )
+        if output_path is not None:
+            _write_report(output_path, report)
+            print(f"Wrote {args.format} failure report to {output_path}")
+        else:
+            sys.stdout.write("\n" + report)
+    except ValueError as error:
+        _print_error(parser, str(error))
+
+    # The deploy command owns the exit status. Diagnosis is deliberately
+    # advisory, including when report rendering or writing encounters trouble.
+    return deploy_status
+
+
 def _schemas_command(args: argparse.Namespace) -> int:
     schemas = dict(_SCHEMA_URLS)
     if args.format == "json":
@@ -1063,6 +1190,9 @@ def main(argv: list[object] | None = None) -> int:
         else:
             sys.stdout.write(report)
         return 1 if _should_fail(confidences, args.fail_on_findings, args.fail_on_confidence) else 0
+
+    if args.command == "run":
+        return _run_command(args, parser)
 
     if args.command == "init":
         try:

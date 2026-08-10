@@ -150,6 +150,19 @@ if ($deployStatus -ne 0) {
 exit $deployStatus
 ```
 
+If you prefer one command without shell-specific `tee` or `PIPESTATUS` glue,
+let SAM Doctor wrap the deploy directly:
+
+```bash
+sam-doctor run --log-file deployment.log --format markdown -- \
+  sam deploy --no-confirm-changeset
+```
+
+It streams the deploy output, keeps the combined log, diagnoses only when the
+deploy exits non-zero, and returns the deploy's original exit status. Add
+`--output diagnosis.json --format json` when another tool should consume the
+failure report.
+
 The diagnosis stays advisory in these examples; the deploy still owns the
 process exit code. Add an explicit confidence or findings gate only when your
 team is ready to enforce it.

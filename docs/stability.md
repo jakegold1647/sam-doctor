@@ -19,7 +19,7 @@ commitment v1-milestone item 3 asks for; at 1.0 the README will link here.
   reworded, and the catalog check rejects duplicates. Match on the id, not
   the title.
 - **CLI surface.** The subcommands (`diagnose`, `demo`, `rules`, `schemas`,
-  `packet`, `request-packet`, `batch`, `init`) and their documented flags. Flags
+  `packet`, `request-packet`, `batch`, `run`, `init`) and their documented flags. Flags
   may be added; documented flags will not be removed or change meaning within a
   major version. A test asserts this list matches the subcommands the CLI
   actually registers, so a new one cannot ship without a decision about whether

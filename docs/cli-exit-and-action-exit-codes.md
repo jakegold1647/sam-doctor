@@ -41,6 +41,12 @@ CI and local automation without guessing.
     likely error line was found. Exits `2` on a read/write failure (for example, empty stdin,
     or an output directory that cannot be created).
 
+- `sam-doctor run`
+  - Streams the supplied command, saves its combined output, and diagnoses only when
+    the command exits non-zero. It returns the command's exit status even when the
+    advisory report cannot be written. Exits `2` when the command cannot be started
+    or the deployment log cannot be captured.
+
 - `sam-doctor init`, `demo`, `rules`, `schemas`
   - Exit `0` on successful command execution.
   - `init` exits `2` rather than overwriting an existing workflow file, and names

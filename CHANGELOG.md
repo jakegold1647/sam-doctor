@@ -18,6 +18,10 @@ All notable changes to SAM Doctor are documented here.
   deploy status, diagnose only after a failed deploy, and return that status
   while keeping SAM Doctor advisory.
 
+- **`sam-doctor run` provides a shell-independent deploy wrapper.** It streams
+  and saves combined command output, diagnoses only after a non-zero command
+  exit, and returns that original status even if advisory report writing fails.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact

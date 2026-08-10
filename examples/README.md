@@ -71,6 +71,7 @@ curl -L https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/
 
 ## Optional CLI-only teams
 
+- `sam-doctor run --log-file deployment.log -- sam deploy --no-confirm-changeset`
 - `sam-doctor diagnose deployment.log --format json`
 - `sam-doctor batch logs/*.log --format json --fail-on-findings`
 - `sam-doctor diagnose deployment.log --format github`
