@@ -279,6 +279,10 @@ _CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN = (
     r"Template format error:\s*Unresolved resource dependencies\b"
 )
 
+_CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN = (
+    r"\bNo export named\s+\S+\s+(?:can be found|found)\b"
+)
+
 _CDK_ASSEMBLY_FAILURE_PATTERN = (
     r"(?:\bAssemblyError:\s*Assembly builder failed\b|"
     r"\[_AssemblyError\]\s*Assembly builder failed\b)"
@@ -1845,6 +1849,7 @@ _RULES = (
             # The Lambda VPC execution-role rule explains this exact handler
             # reason; keep generic CREATE_FAILED available for other resources.
             _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,
+            _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),
     ),
     Rule(
@@ -2036,6 +2041,9 @@ _RULES = (
             r"failed to delete.*AWS::IAM::Role",
             r"Unable to delete.*AWS::IAM::Role",
             r"Embedded stack .* was not successfully (?:created|updated)",
+            # A missing export is the root cause behind the rollback state;
+            # the focused cross-stack finding has the useful next check.
+            _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),
     ),
     Rule(
@@ -2124,6 +2132,27 @@ _RULES = (
             "List every consumer with `aws cloudformation list-imports --export-name <name>` and record which stacks pin the export.",
             "Migrate in stages: add a new export alongside the old one, update each consumer stack to import the new name, then remove the old export once `list-imports` shows no consumers.",
             "Do not delete or force-update the consumer stacks as a shortcut - they are load-bearing for whoever owns them; coordinate the migration with those owners instead.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html",
+    ),
+    Rule(
+        id="cloudformation.export.not-found",
+        title="CloudFormation could not find the imported stack export",
+        confidence="high",
+        patterns=(_CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,),
+        explanation=(
+            "The consumer stack references an export name that CloudFormation "
+            "cannot resolve in the target account and Region. The producer "
+            "stack may not have been deployed yet, its output name may have "
+            "changed, or the deployment is pointed at a different account or "
+            "Region. This is a cross-stack dependency problem, not an IAM "
+            "denial or a transient rollback state."
+        ),
+        verification=(
+            "Preserve the exact export name from the error and confirm the consumer's account and Region before changing either stack.",
+            "List exports in that same account and Region with `aws cloudformation list-exports --region <region>` and check whether the name exists.",
+            "Inspect the producer stack's `Outputs` and `Export: Name` value, then deploy or update the producer before the consumer; do not rename or remove an export that other stacks still import.",
+            "If the stacks are intentionally cross-account or cross-Region, replace the `Fn::ImportValue` design with an explicitly supported handoff such as a parameter or `Fn::GetStackOutput` rather than expecting a local export to resolve.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html",
     ),
@@ -2391,6 +2420,9 @@ _RULES = (
             # left out: an upload denial can precede an unrelated change-set
             # problem later in the same log.
             r"S3 error: Access ?Denied",
+            # The missing-export marker is the concrete reason for this generic
+            # change-set failure, so let the cross-stack finding own the log.
+            _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
             # An unresolvable SSM reference is reported by the same
             # CreateChangeSet call this rule reports generically, on its own
             # line, so the two describe one failure. Whole-log suppression is

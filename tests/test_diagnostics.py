@@ -3330,6 +3330,48 @@ def test_export_update_refusal_suppresses_the_generic_update_failure() -> None:
     assert titles == ["A stack export cannot change while another stack imports it"]
 
 
+def test_missing_stack_export_routes_to_cross_stack_dependency_checks() -> None:
+    findings = diagnose(
+        "An error occurred (ValidationError) when calling the CreateChangeSet "
+        "operation: No export named shared-vpc-id found"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.export.not-found"
+    ]
+    assert findings[0].confidence == "high"
+    assert "list-exports" in " ".join(findings[0].verification)
+
+
+def test_missing_stack_export_can_be_found_wording_is_supported() -> None:
+    findings = diagnose("No export named NetworkStack-SubnetId can be found")
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.export.not-found"
+    ]
+
+
+def test_missing_stack_export_rule_ignores_export_prose() -> None:
+    findings = diagnose(
+        "The export named shared-vpc-id was found and imported successfully"
+    )
+
+    assert "cloudformation.export.not-found" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+def test_missing_stack_export_keeps_unrelated_resource_failure() -> None:
+    findings = diagnose(
+        "Consumer UPDATE_FAILED No export named shared-vpc-id found\n"
+        "Bucket UPDATE_FAILED unrelated bucket failure"
+    )
+
+    rule_ids = {finding.rule_id for finding in findings}
+    assert "cloudformation.export.not-found" in rule_ids
+    assert "cloudformation.resource.create-update-failed" in rule_ids
+
+
 def test_lambda_code_storage_limit_exceeded_positive() -> None:
     sample_log = (
         "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "

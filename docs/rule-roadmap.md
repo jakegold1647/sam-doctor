@@ -1495,6 +1495,42 @@ propagation before retrying. Do not broaden the CloudFormation deployer role.
 
 ---
 
+## 40. CloudFormation could not find an imported stack export
+
+**Status:** landed - the catalog recognizes the exact missing-export marker and
+points at the producer stack and account/Region boundary instead of IAM or
+rollback noise.
+
+**Failure family.** A consumer stack uses `Fn::ImportValue`, but the named
+export is absent in the account and Region where CloudFormation resolves the
+template. The producer may not have deployed, its `Outputs` / `Export: Name`
+may have changed, or the consumer is using a different deployment context.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (ValidationError) when calling the CreateChangeSet operation: No export named shared-vpc-id found
+```
+
+**Pattern hint.** Match `No export named <name> found` (and the
+`can be found` wording), while keeping the existing export-in-use rule for the
+case where an export exists but a consumer still pins it.
+
+**Safe verification steps.** Preserve the exact export name, then run
+`aws cloudformation list-exports --region <region>` with the same account and
+profile used by the deployment. Compare the consumer's `Fn::ImportValue` with
+the producer's `Outputs` / `Export: Name`, deploy the producer first, and keep
+export names stable after consumers depend on them. Exports and
+`Fn::ImportValue` are same-account, same-Region references; use an explicit
+cross-boundary handoff when that is intentional.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1506,7 +1542,7 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 459 of 474 excerpts (97%), with 15 misses after entry 39. It included dedicated
+diagnosed 462 of 477 excerpts (97%), with 15 misses after entry 40. It included dedicated
 searches for SAM build permission markers, CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
@@ -1522,7 +1558,9 @@ family from repeated public InvokeModel failures. Entry 32 adds the indexed
 nested message-content field family from repeated Claude image, document, and
 thinking-block validation failures.
 The new Lambda VPC query returned 30 public results; 28 bodies contained the
-exact marker and all 28 were diagnosed by the new rule.
+exact marker and all 28 were diagnosed by the new rule. The missing-export query
+returned 30 public results; 5 bodies contained an exact missing-export marker,
+and all 5 were diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 14 and 15 are mostly other tools' failures

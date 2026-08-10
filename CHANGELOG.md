@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Missing CloudFormation stack exports now have a focused handoff.** A
+  high-confidence finding recognizes `No export named ... found`, points at the
+  producer stack and account/Region boundary, and keeps missing exports
+  distinct from exports that cannot be changed while in use.
+
 - **Lambda VPC execution-role failures now have a focused handoff.** A
   high-confidence finding recognizes `The provided execution role does not have
   permissions to call CreateNetworkInterface on EC2`, points at the function's

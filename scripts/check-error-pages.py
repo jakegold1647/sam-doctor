@@ -66,6 +66,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.deploy.no-changes": "no-changes-to-deploy.html",
     "cloudformation.resource.stabilization-timeout": "resource-did-not-stabilize.html",
     "cloudformation.export.in-use": "export-in-use.html",
+    "cloudformation.export.not-found": "export-not-found.html",
     "cloudformation.stack.operation-in-progress": "operation-in-progress.html",
     "cloudformation.template.quota-exceeded": "template-limit-exceeded.html",
     "sam.build.docker-required": "docker-unavailable.html",

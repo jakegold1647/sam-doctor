@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(86 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(87 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -53,6 +53,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [STS caller identity check failed](https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html): inspect the nested STS endpoint, Region, signing, network, and credential-source error.
 - [AWS Glue database cannot be renamed](https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html): keep the existing catalog name or create a replacement database before migrating consumers.
 - [Cloud Control API operation incomplete](https://sam-doctor.jacobgoldstein.dev/errors/cloudcontrol-operation-incomplete.html): inspect the ProgressEvent, StatusMessage, ErrorCode, resource identity, and request token.
+- [CloudFormation could not find the imported stack export](https://sam-doctor.jacobgoldstein.dev/errors/export-not-found.html): check the exact export name in the producer stack and the consumer's account and Region.
 - [EC2 CreateNetworkInterface failed](https://sam-doctor.jacobgoldstein.dev/errors/ec2-network-interface-create-failed.html): read the nested status, subnet capacity, permissions, request shape, and endpoint support.
 - [EKS network policy agent failed](https://sam-doctor.jacobgoldstein.dev/errors/eks-network-policy-agent-failed.html): inspect the `aws-network-policy-agent` container, CNI prerequisites, node kernel, and `PolicyEndpoint` evidence before changing workloads or IAM.
 - [EKS VPC CNI pod sandbox failed](https://sam-doctor.jacobgoldstein.dev/errors/eks-vpc-cni-pod-sandbox-failed.html): inspect the matching `aws-node` or `ipamd` error for IP, ENI, permission, subnet, and add-on checks.
@@ -82,6 +83,7 @@ until the next stable release. These guides follow the current `main` catalog
 - API Gateway deployment and CORS preflight conflicts.
 - Lambda container-image failures caused by missing ECR image access.
 - Lambda VPC execution-role failures caused by missing elastic network-interface permissions.
+- Missing CloudFormation stack exports referenced by `Fn::ImportValue`.
 
 ## Safe usage
 

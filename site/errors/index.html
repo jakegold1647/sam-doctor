@@ -111,6 +111,7 @@
           <li><a href="./no-changes-to-deploy.html">No changes to deploy / No updates are to be performed</a> — the empty change set that fails CI on purpose.</li>
           <li><a href="./resource-did-not-stabilize.html">Resource did not stabilize (NotStabilized)</a> — the wait-window wrapper around a slower or nested failure.</li>
           <li><a href="./export-in-use.html">Export cannot be updated/deleted as it is in use</a> — cross-stack import pins and the staged migration out of them.</li>
+          <li><a href="./export-not-found.html">No export named ... found</a> — check the producer stack, exact export name, account, and Region before changing IAM.</li>
           <li><a href="./operation-in-progress.html">Stack is in UPDATE_IN_PROGRESS state and can not be updated (OperationInProgressException)</a> — two deployments racing on one stack.</li>
           <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — the artifact bucket rejecting the upload or the readback.</li>
           <li><a href="./bucket-already-exists.html">BucketAlreadyExists / BucketAlreadyOwnedByYou</a> — a globally taken S3 bucket name in the template.</li>

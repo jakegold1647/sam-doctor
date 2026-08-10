@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (86 diagnostics). Stable
+The public guides follow the current `main` catalog (87 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -408,6 +408,7 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Empty change sets (`No changes to deploy` in CI)
 - Resources that fail to stabilize, with the nested handler message surfaced first
 - Exports that cannot change because another stack imports them
+- Missing CloudFormation stack exports referenced by `Fn::ImportValue`
 - Lambda deployment packages over a per-function size limit, and the regional
   code storage quota (`CodeStorageExceededException`)
 - Lambda invoke target misses (`ResourceNotFoundException` on the `Invoke`

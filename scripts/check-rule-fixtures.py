@@ -635,6 +635,10 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Export my-app-api-url cannot be updated as it is in use by consumer-stack",
         negative="The export value changed once no stack imported it",
     ),
+    "cloudformation.export.not-found": RuleFixture(
+        positive="No export named shared-vpc-id found",
+        negative="The export named shared-vpc-id was found and imported successfully",
+    ),
     "cloudformation.capabilities.required": RuleFixture(
         positive="InsufficientCapabilitiesException: Requires capabilities : [CAPABILITY_NAMED_IAM]",
         negative="Change set executed with the acknowledged capabilities",
