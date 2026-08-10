@@ -1382,6 +1382,60 @@ def test_a_missing_parameter_validation_error_is_not_a_schema_validation_failure
     assert "The template failed SAM or CloudFormation schema validation" not in titles
 
 
+def test_sam_lint_summary_reports_the_exact_wrapper() -> None:
+    summary = (
+        "Error: Linting failed. At least one linting rule was matched to the "
+        "provided template."
+    )
+
+    findings = diagnose(summary)
+
+    assert len(findings) == 1
+    assert findings[0].rule_id == "sam.validate.lint-rule-matched"
+    assert findings[0].title == "SAM lint validation found one or more cfn-lint matches"
+    assert findings[0].confidence == "medium"
+    assert findings[0].evidence == (summary,)
+    assert findings[0].line_number == 1
+
+
+def test_sam_lint_summary_keeps_the_summary_as_second_line_evidence() -> None:
+    summary = (
+        "Error: Linting failed. At least one linting rule was matched to the "
+        "provided template."
+    )
+    log = (
+        "[[E1031: ToJsonString validation of parameters] "
+        "(Fn::ToJsonString is not supported without "
+        "'AWS::LanguageExtensions' transform) matched 17]\n"
+        f"{summary}"
+    )
+
+    findings = diagnose(log)
+
+    assert len(findings) == 1
+    assert findings[0].rule_id == "sam.validate.lint-rule-matched"
+    assert findings[0].evidence == (summary,)
+    assert findings[0].line_number == 2
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "SAM template is valid. This is according to basic SAM Validation, "
+            "additional validations are available by running with --lint option."
+        ),
+        "W3005 Obsolete DependsOn on resource (ApiFunction)",
+        "InvalidSamDocumentException: Encountered unsupported property MemorySize",
+        "property StageName: not defined for resource of type AWS::Serverless::Api",
+    ),
+)
+def test_sam_lint_summary_ignores_nearby_non_matches(log: str) -> None:
+    rule_ids = {finding.rule_id for finding in diagnose(log)}
+
+    assert "sam.validate.lint-rule-matched" not in rule_ids
+
+
 def test_colon_variant_property_mismatch_keeps_only_the_specific_finding() -> None:
     log = "property StageName: not defined for resource of type AWS::Serverless::Api"
 
