@@ -21,9 +21,11 @@ Each entry uses this format so the public contributor page can stay in sync:
 
 This is a thank-you list, not an authoritative contributor count. GitHub's
 [contributor graph](https://github.com/jakegold1647/sam-doctor/graphs/contributors)
-is the current source of record. If you contribute, you are welcome to open a
-small PR adding or correcting your entry, or ask a maintainer to do it for you.
-No contributor is required to be listed.
+is the current source of record. The Hall of Fame cards stay human-reviewed,
+while the total shown on the website refreshes from GitHub when a browser can
+reach it. If you contribute, you are welcome to open a small PR adding or
+correcting your entry, or ask a maintainer to do it for you. No contributor is
+required to be listed.
 
 The git history also credits Harshil for Lambda deployment package-size
 diagnostics. That commit author is not linked to a GitHub account, so this

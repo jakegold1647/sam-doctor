@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Keep the public contributor page derived from CONTRIBUTORS.md.
 
-The Markdown record is the human-reviewed source of truth. This script turns
-its structured entries into the Hall of Fame cards, the README callout, and a
-diagnostic count tied to the actual rule catalog. It intentionally does not
-call GitHub's API: a pull request should be deterministic and should not depend
-on a public rate limit or a live network response.
+The Markdown record is the human-reviewed source of truth for Hall of Fame
+cards. This script turns its structured entries into the cards, the README
+callout, and a diagnostic count tied to the actual rule catalog. It intentionally
+does not call GitHub's API at build time: a pull request should be deterministic.
+The shipped page may refresh the contributor total in the browser and keeps the
+generated count as an offline fallback.
 """
 
 from __future__ import annotations
@@ -109,7 +110,7 @@ def _stats_block(contributor_count: int, rule_count: int) -> str:
         (
             "<!-- BEGIN GENERATED CONTRIBUTOR STATS -->",
             '      <section class="hall-stats" aria-label="Community snapshot">',
-            f'        <div class="hall-stat"><strong>{contributor_count}</strong><span>named community contributors</span></div>',
+            f'        <div class="hall-stat"><strong id="github-contributor-count" data-fallback="{contributor_count}" aria-live="polite">{contributor_count}</strong><span id="github-contributor-label">GitHub contributors (live)</span></div>',
             f'        <div class="hall-stat"><strong>{rule_count}</strong><span>documented diagnostics to improve</span></div>',
             '        <div class="hall-stat"><strong>GitHub</strong><span>current issue queue and discussions</span></div>',
             "      </section>",

@@ -33,6 +33,26 @@ def test_real_contributor_page_is_in_sync() -> None:
     assert summary == "7 contributors, 90 diagnostics"
 
 
+def test_hall_stats_use_live_github_count_with_fallback() -> None:
+    module = _load_sync()
+
+    rendered = module._stats_block(7, 90)
+
+    assert 'id="github-contributor-count"' in rendered
+    assert 'data-fallback="7"' in rendered
+    assert "GitHub contributors (live)" in rendered
+
+
+def test_live_count_script_uses_github_with_offline_fallback() -> None:
+    script = (ROOT / "site" / "contributors" / "live-count.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert "api.github.com/repos/jakegold1647/sam-doctor/contributors" in script
+    assert "anon=1&per_page=100" in script
+    assert "offline snapshot" in script
+
+
 def test_entries_render_in_record_order() -> None:
     module = _load_sync()
     entries = module._read_contributors(
