@@ -24,7 +24,7 @@ def test_non_github_starter_preserves_deploy_status(relative_path: str) -> None:
     # The pipeline must be allowed to capture PIPESTATUS before restoring errexit;
     # otherwise a failed deploy exits before SAM Doctor can inspect its log.
     assert "set -o pipefail" in content
-    assert "set +e" in content
+    assert content.count("set +e") >= 2
     assert "deploy_status=${PIPESTATUS[0]}" in content
     assert "set -e" in content
     assert 'if [ "$deploy_status" -ne 0 ]; then' in content

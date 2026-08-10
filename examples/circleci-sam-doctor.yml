@@ -17,7 +17,9 @@ jobs:
             deploy_status=${PIPESTATUS[0]}
             set -e
             if [ "$deploy_status" -ne 0 ]; then
+              set +e
               sam-doctor diagnose deployment.log --format json --output diagnosis.json
+              set -e
             fi
             exit "$deploy_status"
 
