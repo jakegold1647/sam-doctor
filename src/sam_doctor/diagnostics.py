@@ -897,6 +897,26 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-api.html",
     ),
     Rule(
+        id="sam.validate.lint-rule-matched",
+        title="SAM lint validation found one or more cfn-lint matches",
+        confidence="medium",
+        patterns=(
+            r"Linting failed\. At least one linting rule was matched to the provided template\.",
+        ),
+        explanation=(
+            "SAM finished lint validation with at least one cfn-lint match. "
+            "This summary line does not identify the template problem; the "
+            "nearby E- or W-prefixed rule output names the rule and location "
+            "that need review."
+        ),
+        verification=(
+            "Re-run `sam validate --lint` against the exact submitted template and read the E- or W-prefixed rule output immediately before the summary line.",
+            "Use `cfn-lint --list-rules` or the cfn-lint rule catalog to interpret each reported rule code instead of inferring a cause from this summary.",
+            "After reviewing the reported template locations, run `sam validate --lint` again and confirm that no lint matches remain before deploying.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/validate-cfn-lint.html",
+    ),
+    Rule(
         id="sam.template.schema-validation-failed",
         title="The template failed SAM or CloudFormation schema validation",
         confidence="high",

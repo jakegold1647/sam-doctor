@@ -30,7 +30,7 @@ def test_real_contributor_page_is_in_sync() -> None:
     changed, summary = module.sync(write=False)
 
     assert changed is False
-    assert summary == "6 contributors, 89 diagnostics"
+    assert summary == "6 contributors, 90 diagnostics"
 
 
 def test_entries_render_in_record_order() -> None:

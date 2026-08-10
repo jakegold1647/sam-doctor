@@ -42,6 +42,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-circular-dependency.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/incorrect-token-audience.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/invalid-bucket-name.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/sam-lint-rule-matched.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/invalid-sam-document.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/lambda-ecr-image-access.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/lambda-env-vars-kms-key.html</loc></url>

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **SAM lint summaries now point back to the matched cfn-lint rules.** A
+  medium-confidence finding recognizes the exact `sam validate --lint` failure
+  summary and directs the reader to the nearby E/W rule output without
+  claiming that the wrapper identifies a specific template problem.
+
 - **Deprecated Lambda runtimes now have a focused deployment handoff.** A
   high-confidence finding recognizes the exact create/update rejection, points
   at the submitted `Runtime`, and leaves quoted documentation alone. The

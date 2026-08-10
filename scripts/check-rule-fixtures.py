@@ -442,6 +442,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="SAM template property StageName is valid for AWS::Serverless::Api",
     ),
+    "sam.validate.lint-rule-matched": RuleFixture(
+        positive=(
+            "[[E1031: ToJsonString validation of parameters] matched 17]\n"
+            "Error: Linting failed. At least one linting rule was matched to "
+            "the provided template."
+        ),
+        negative="sam validate --lint completed with no errors",
+    ),
     "sam.template.schema-validation-failed": RuleFixture(
         positive="InvalidSamDocumentException: Encountered unsupported property MemorySize",
         negative="sam validate --lint completed with no errors",

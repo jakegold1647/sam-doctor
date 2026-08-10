@@ -72,6 +72,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.build.docker-required": "docker-unavailable.html",
     "sam.build.output-permission-denied": "sam-build-output-permission-denied.html",
     "sam.build.esbuild-missing": "esbuild-not-found.html",
+    "sam.validate.lint-rule-matched": "sam-lint-rule-matched.html",
     "sam.template.schema-validation-failed": "invalid-sam-document.html",
     "cloudformation.template.getatt-parameters-invalid": "fn-getatt-parameters.html",
     "cloudformation.template.unresolved-dependency": "cloudformation-unresolved-resource-dependency.html",
