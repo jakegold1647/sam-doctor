@@ -29,6 +29,17 @@ def test_public_entry_points_make_early_feedback_welcome() -> None:
     assert "Draft PRs are welcome" in _read("site/index.html")
 
 
+def test_contributing_explains_the_claim_to_pr_path() -> None:
+    """Make the maintainer handoff explicit for a first-time contributor."""
+
+    contributing = _read("CONTRIBUTING.md")
+    assert "What happens after you claim" in contributing
+    assert "assign the" in contributing
+    assert "Open a draft PR" in contributing
+    assert "credit preserved" in contributing
+    assert "welcome discussion" in contributing
+
+
 def test_queue_check_runs_when_issue_availability_changes() -> None:
     """Keep claim and label changes from waiting for the weekly sweep."""
 

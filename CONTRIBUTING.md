@@ -59,6 +59,20 @@ is the shortest route to a scoped first pull request. These issues have
 acceptance criteria and a maintainer path for questions; leave a brief claim
 comment before you start so nobody duplicates the work.
 
+### What happens after you claim
+
+1. Comment `I'd like to take this` on the issue and say what you plan to try.
+2. A maintainer will confirm the scope, answer setup questions, and assign the
+   issue or remove `status: ready` so nobody starts duplicate work.
+3. Open a draft PR when you have a test, fixture, documentation sketch, or first
+   working step. Link the issue and the exact command you ran; feedback before
+   the change is finished is welcome.
+4. Keep the change narrow and run the PR gate. Once the checks are green, we
+   review the evidence and merge it with your credit preserved.
+
+If you want help before claiming an issue, ask in the [welcome discussion](https://github.com/jakegold1647/sam-doctor/discussions/1)
+or use the [contributor setup form](https://github.com/jakegold1647/sam-doctor/issues/new?template=setup_problem.yml).
+
 Want a ready-made first PR? The [rule roadmap](docs/rule-roadmap.md) lists
 fully specified diagnostic rules waiting for a contributor — each with sample
 log lines, pattern hints, non-match cases, and verification steps already
