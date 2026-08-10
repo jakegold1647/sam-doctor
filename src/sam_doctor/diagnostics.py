@@ -271,6 +271,11 @@ _CDK_ASSEMBLY_FAILURE_PATTERN = (
     r"\[_AssemblyError\]\s*Assembly builder failed\b)"
 )
 
+_LAMBDA_INVOKE_NOT_FOUND_PATTERNS = (
+    r"ResourceNotFoundException\b.{0,160}\bwhen calling (?:the )?Invoke(?: operation)?\b",
+    r"\bwhen calling (?:the )?Invoke(?: operation)?\b.{0,160}ResourceNotFoundException\b",
+)
+
 
 _RULES = (
     Rule(
@@ -969,6 +974,26 @@ _RULES = (
             "If synthesis succeeds but deployment later fails, keep the CloudFormation resource event and diagnose that more specific status reason instead of this wrapper line.",
         ),
         documentation_url="https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-synth.html",
+    ),
+    Rule(
+        id="lambda.invoke.function-not-found",
+        title="Lambda invoke targeted a function or qualifier that was not found",
+        confidence="medium",
+        patterns=_LAMBDA_INVOKE_NOT_FOUND_PATTERNS,
+        explanation=(
+            "A Lambda `Invoke` call reached AWS, but the requested function, alias, "
+            "or published version was not found in the account and Region used by "
+            "the caller. This is often a post-deploy smoke test running before the "
+            "function or alias is available, or a command using the wrong name, "
+            "qualifier, account, or Region; the message alone does not prove that "
+            "the CloudFormation deployment itself failed."
+        ),
+        verification=(
+            "Confirm the function name, qualifier, account, and Region in the invoke command, then read its presence with `aws lambda get-function --function-name <function-name> --qualifier <alias-or-version>` (omit `--qualifier` when none was requested).",
+            "If the invoke follows a deployment, wait for the stack and any `AutoPublishAlias` or version resource to complete, then read the available aliases and versions before retrying.",
+            "Compare the invoke target with the stack output or transformed template; correct a stale function name, alias, Region, or account rather than broadening IAM permissions for a missing target.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html",
     ),
     Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",

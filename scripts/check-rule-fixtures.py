@@ -134,6 +134,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="CDK synthesized the cloud assembly and wrote it to cdk.out.",
     ),
+    "lambda.invoke.function-not-found": RuleFixture(
+        positive=(
+            "An error occurred (ResourceNotFoundException) when calling the Invoke "
+            "operation: Function not found"
+        ),
+        negative=(
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "GetFunction operation: Function not found"
+        ),
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

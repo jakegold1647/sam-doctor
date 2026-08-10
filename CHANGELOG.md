@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Lambda invoke target misses now have a focused handoff.** A medium-confidence
+  finding recognizes `ResourceNotFoundException` from the Lambda `Invoke`
+  operation and points at the exact function, qualifier, account, Region, and
+  deployment-timing checks before anyone changes permissions.
+
 - **CDK assembly failures now have a safe handoff.** A low-confidence finding
   recognizes `AssemblyError: Assembly builder failed`, points at `cdk synth
   --verbose` with the same app and context, and keeps the missing application

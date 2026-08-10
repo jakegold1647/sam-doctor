@@ -35,6 +35,7 @@ until the next stable release.
 - [CloudFormation service unavailable](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-service-unavailable.html): check the regional service state and retry with a stable client request token.
 - [Failed to create/update the stack](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-deploy-wrapper-failed.html): fetch stack events; the wrapper line does not contain the resource-level cause.
 - [AssemblyError: Assembly builder failed](https://sam-doctor.jacobgoldstein.dev/errors/cdk-assembly-failed.html): rerun `cdk synth --verbose` with the same app and context to reveal the underlying synthesis error.
+- [ResourceNotFoundException when calling the Invoke operation](https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html): verify the Lambda function, qualifier, account, Region, and deployment timing before changing IAM.
 - [Cannot connect to the Docker daemon](https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://sam-doctor.jacobgoldstein.dev/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.

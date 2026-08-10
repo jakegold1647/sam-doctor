@@ -45,6 +45,7 @@ REAL_FAILURE_LINES = (
     "Stack is in ROLLBACK_COMPLETE state and can not be updated",
     "AssemblyError: Assembly builder failed",
     "[BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed",
+    "An error occurred (ResourceNotFoundException) when calling the Invoke operation",
 )
 
 NOT_FAILURE_LINES = (

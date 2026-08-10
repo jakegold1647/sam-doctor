@@ -58,6 +58,7 @@ QUERIES = (
     '"AssumeRoleWithWebIdentity" "not authorized" in:body',
     '"An error occurred" "when calling the" cloudformation in:body',
     '"Resource handler returned message" in:body',
+    '"ResourceNotFoundException" "Invoke operation" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -79,6 +80,8 @@ FAILURE_SIGNAL = re.compile(
     r"|Unable to get (?:ID Token|ACTIONS_ID_TOKEN)"
     r"|is in [A-Z_]+ state and can not be updated"
     r"|\[_AssemblyError\][ \t]*Assembly builder failed"
+    r"|ResourceNotFoundException.{0,160}when calling (?:the )?Invoke operation"
+    r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
     r"|Error: [A-Z]"
     r")"
 )

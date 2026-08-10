@@ -470,6 +470,39 @@ def test_cdk_assembly_failure_routes_to_verbose_synthesis(log: str) -> None:
     assert findings[0].confidence == "low"
 
 
+def test_lambda_invoke_missing_target_routes_to_read_only_function_check() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the Invoke "
+        "operation: Function not found"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "lambda.invoke.function-not-found"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_lambda_invoke_missing_target_is_still_detected_when_the_line_is_truncated() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the Invoke"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "lambda.invoke.function-not-found"
+    ]
+
+
+def test_lambda_get_function_not_found_does_not_look_like_an_invoke_failure() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the GetFunction "
+        "operation: Function not found"
+    )
+
+    assert "lambda.invoke.function-not-found" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
     log = "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated."
 

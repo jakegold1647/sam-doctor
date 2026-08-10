@@ -90,6 +90,10 @@ Use it as a fast local first pass when a SAM, CloudFormation, or GitHub Actions
 deployment fails and the useful error line is buried under rollback noise. It
 works best on logs with explicit error lines and rollback context.
 
+Lambda invoke smoke tests are supported too: a missing function, alias, or
+published version is reported with a read-only target check instead of an IAM
+guess.
+
 Skip it if you need account-state inspection, drift analysis, quota checks, or
 automatic fixes. See [When not to use this](#when-not-to-use-this).
 

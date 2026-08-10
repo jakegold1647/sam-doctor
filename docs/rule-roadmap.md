@@ -656,6 +656,40 @@ nearby rule codes; use the official cfn-lint rule catalog or `cfn-lint
 
 ---
 
+## 16. Lambda invoke targeted a missing function, alias, or version
+
+**Status:** landed - the catalog now recognizes the exact Lambda `Invoke`
+operation wrapper and points at a read-only target check.
+
+**Failure family.** A post-deploy smoke test or integration step invokes a
+function name or qualifier that is absent in the selected account and Region.
+The usual causes are a stale function name, an alias or version that has not
+finished publishing, or a command running against the wrong Region or account.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (ResourceNotFoundException) when calling the Invoke operation: Function not found
+```
+
+**Pattern hint.** Match the `ResourceNotFoundException` and `Invoke operation`
+pair only. A missing resource from another Lambda operation is not enough to
+claim that an invoke target is absent.
+
+**Safe verification steps.** Read the exact function and qualifier with
+`aws lambda get-function --function-name <function-name> --qualifier
+<alias-or-version>` in the same account and Region; compare it with the stack
+output or transformed template; wait for an `AutoPublishAlias` or version to
+finish before retrying. Do not broaden IAM permissions for a target that does
+not exist.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -666,9 +700,10 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 230 of
-256 excerpts (90%), now including a dedicated search for CDK assembly-wrapper
-variants. That percentage is a moving sample, not a release guarantee;
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 239 of
+269 excerpts (89%), now including dedicated searches for CDK assembly-wrapper
+variants and Lambda `Invoke` target misses. That percentage is a moving sample,
+not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
