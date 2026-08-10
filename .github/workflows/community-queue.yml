@@ -24,6 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          set -o pipefail
           python scripts/check-community-queue.py \
             --repo "${{ github.repository }}" \
             --token "$GITHUB_TOKEN" \
