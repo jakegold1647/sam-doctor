@@ -108,6 +108,24 @@ can pipe from other tools:
 kubectl logs deploy/my-api | sam-doctor diagnose -
 ```
 
+If the useful lines are already in your clipboard, send them straight to the
+same local command:
+
+```powershell
+# PowerShell on Windows
+Get-Clipboard | sam-doctor diagnose - --format markdown
+```
+
+```bash
+# macOS, Wayland Linux, or X11 Linux
+pbpaste | sam-doctor diagnose - --format markdown
+wl-paste | sam-doctor diagnose - --format markdown
+xclip -selection clipboard -o | sam-doctor diagnose - --format markdown
+```
+
+Review the excerpt before sharing it. SAM Doctor redacts common identifiers,
+but clipboard contents can still include sensitive text that needs your review.
+
 ### Multiple findings
 
 When several supported patterns appear, findings are ordered by their first

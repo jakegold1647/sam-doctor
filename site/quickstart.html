@@ -143,6 +143,16 @@ EOF</code></pre>
         <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
         <p class="muted">Share one finding and the first safe verification step with your teammate.</p>
 
+        <p class="muted">Already copied the failure? Pipe the clipboard without creating a file:</p>
+        <pre><code># PowerShell on Windows
+Get-Clipboard | sam-doctor diagnose - --format markdown
+
+# macOS / Wayland Linux / X11 Linux
+pbpaste | sam-doctor diagnose - --format markdown
+wl-paste | sam-doctor diagnose - --format markdown
+xclip -selection clipboard -o | sam-doctor diagnose - --format markdown</code></pre>
+        <p class="muted">Review the excerpt before sharing it; redaction is helpful, not a substitute for review.</p>
+
         <p class="muted">Use your command family directly:</p>
         <pre><code># AWS SAM
 sam-doctor diagnose deployment.log --format json --fail-on-findings
