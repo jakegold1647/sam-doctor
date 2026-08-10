@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Lambda VPC execution-role failures now have a focused handoff.** A
+  high-confidence finding recognizes `The provided execution role does not have
+  permissions to call CreateNetworkInterface on EC2`, points at the function's
+  ENI permissions, and keeps the deployer role and lower-level EC2 network
+  failures separate.
+
 - **Non-ASCII resource property rejections now have a focused handoff.** A high-confidence finding recognizes `Character sets beyond ASCII are not supported` and points at locating the hidden character instead of retyping the property value blind. The generic CREATE_FAILED / UPDATE_FAILED finding no longer also reports the same line, but keeps reporting any other resource failure in the same log.
 
 - **API Gateway enhanced security-policy failures now have a focused handoff.**

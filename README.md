@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (85 diagnostics). Stable
+The public guides follow the current `main` catalog (86 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -446,6 +446,7 @@ see [docs/stability.md](docs/stability.md). The current set:
   token, denied `ecr:GetAuthorizationToken`)
 - CloudFormation capability acknowledgement errors (`InsufficientCapabilities`)
 - Lambda container-image failures caused by missing ECR image access
+- Lambda VPC execution-role failures caused by missing elastic network-interface permissions
 - CodeBuild CodeConnections access failures (`OAuthProviderException`) surfaced
   during a CloudFormation deployment
 - EC2 Image Builder recipe-version collisions that require a new immutable version

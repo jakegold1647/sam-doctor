@@ -266,6 +266,18 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "IPv4 addresses in the subnet"
         ),
     ),
+    "lambda.vpc.execution-role-network-interface-permission": RuleFixture(
+        positive=(
+            "MyFunction CREATE_FAILED: Resource handler returned message: "
+            '"The provided execution role does not have permissions to call '
+            "CreateNetworkInterface on EC2 (Service: Lambda, Status Code: 400, "
+            "Error Code: InvalidParameterValueException)"
+        ),
+        negative=(
+            "The provided execution role has permissions to call "
+            "CreateNetworkInterface on EC2"
+        ),
+    ),
     "eks.network-policy.agent-failed": RuleFixture(
         positive=(
             "Failed to setup default network policy for Pod Name <pod> and "

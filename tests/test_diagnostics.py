@@ -788,6 +788,53 @@ def test_apigateway_security_policy_rule_ignores_unrelated_endpoint_text() -> No
     }
 
 
+def test_lambda_vpc_execution_role_requires_network_interface_permissions() -> None:
+    findings = diagnose(
+        'MyFunction CREATE_FAILED: Resource handler returned message: "The provided '
+        'execution role does not have permissions to call CreateNetworkInterface on EC2 '
+        '(Service: Lambda, Status Code: 400, Error Code: InvalidParameterValueException)"'
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "lambda.vpc.execution-role-network-interface-permission"
+    ]
+    assert findings[0].confidence == "high"
+
+
+def test_lambda_vpc_execution_role_rule_accepts_singular_permission_wording() -> None:
+    findings = diagnose(
+        "The provided execution role does not have permission to call "
+        "CreateNetworkInterface on EC2"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "lambda.vpc.execution-role-network-interface-permission"
+    ]
+
+
+def test_lambda_vpc_execution_role_rule_ignores_near_match() -> None:
+    findings = diagnose(
+        "The provided execution role has permissions to call "
+        "CreateNetworkInterface on EC2"
+    )
+
+    assert "lambda.vpc.execution-role-network-interface-permission" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+def test_lambda_vpc_execution_role_rule_keeps_unrelated_resource_failure() -> None:
+    findings = diagnose(
+        'MyFunction CREATE_FAILED: Resource handler returned message: "The provided '
+        'execution role does not have permissions to call CreateNetworkInterface on EC2"\n'
+        "MyBucket CREATE_FAILED: Resource handler returned message: unrelated bucket failure"
+    )
+
+    rule_ids = {finding.rule_id for finding in findings}
+    assert "lambda.vpc.execution-role-network-interface-permission" in rule_ids
+    assert "cloudformation.resource.create-update-failed" in rule_ids
+
+
 def test_eks_vpc_cni_wrapper_yields_to_nested_ec2_cause() -> None:
     findings = diagnose(
         'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" failed (add)\n'

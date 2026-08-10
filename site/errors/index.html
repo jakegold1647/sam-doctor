@@ -64,6 +64,7 @@
           <li><a href="./tag-key-validation-failed.html">Value at 'tags.N.member.key' failed to satisfy constraint</a> — the reserved <code>aws:</code> prefix and the tag character and length limits.</li>
           <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the repository policy gating the Lambda service's own pull.</li>
           <li><a href="./lambda-env-vars-kms-key.html">Lambda was unable to configure access to your environment variables</a> — read the <code>KMS Exception:</code> inside the wrapper: key policy, disabled key, or wrong-Region ARN.</li>
+          <li><a href="./lambda-vpc-execution-role-network-interface-permission.html">The provided execution role cannot call CreateNetworkInterface on EC2</a> — grant the Lambda function's VPC execution role the ENI actions it needs.</li>
           <li><a href="./ssm-parameter-cannot-be-found.html">Parameters: [ssm:/path] cannot be found</a> — dynamic references resolve in the target account and Region, not where you wrote the template.</li>
           <li><a href="./unable-to-get-id-token.html">Unable to get ID Token</a> — the id-token: write permission the OIDC credentials step needs.</li>
           <li><a href="./incorrect-token-audience.html">Incorrect token audience (InvalidIdentityToken)</a> — a token minted for a different consumer than STS expects.</li>

@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(85 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(86 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -39,6 +39,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [AssemblyError: Assembly builder failed](https://sam-doctor.jacobgoldstein.dev/errors/cdk-assembly-failed.html): rerun `cdk synth --verbose` with the same app and context to reveal the underlying synthesis error.
 - [Unresolved resource dependencies](https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-unresolved-resource-dependency.html): check the logical IDs used by `Ref`, `Fn::GetAtt`, `DependsOn`, and substitutions.
 - [ResourceNotFoundException when calling the Invoke operation](https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html): verify the Lambda function, qualifier, account, Region, and deployment timing before changing IAM.
+- [Lambda execution role cannot create VPC network interfaces](https://sam-doctor.jacobgoldstein.dev/errors/lambda-vpc-execution-role-network-interface-permission.html): grant the function execution role the required ENI actions or attach `AWSLambdaVPCAccessExecutionRole` when appropriate.
 - [Bedrock model use case details not submitted](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-access.html): complete the provider's first-use access form in the same account and Region before changing the stack or IAM.
 - [Bedrock model version reached end of life](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-end-of-life.html): migrate the configured model ID to an active version; retries and IAM changes cannot restore a retired version.
 - [Bedrock could not resolve the model identifier](https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-identifier.html): compare the exact model ID, Region, endpoint, and API with the current Bedrock catalog.
@@ -80,6 +81,7 @@ until the next stable release. These guides follow the current `main` catalog
 - AWS SAM configuration, change-set, packaging, S3 artifact, esbuild, and Python dependency/runtime build failures.
 - API Gateway deployment and CORS preflight conflicts.
 - Lambda container-image failures caused by missing ECR image access.
+- Lambda VPC execution-role failures caused by missing elastic network-interface permissions.
 
 ## Safe usage
 

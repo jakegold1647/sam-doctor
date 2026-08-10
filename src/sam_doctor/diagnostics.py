@@ -249,6 +249,11 @@ _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN = (
     r"Endpoint access mode is required for the specified security policy\b"
 )
 
+_LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN = (
+    r"The provided execution role does not have permission(?:s)? to call "
+    r"CreateNetworkInterface on EC2\b"
+)
+
 _IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS = (
     r"(?:following )?resource\s+['\"]?ImageRecipe['\"]?\s+already exists",
     r"ResourceAlreadyExistsException.*(?:ImageRecipe|CreateImageRecipe)",
@@ -1365,6 +1370,26 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html",
     ),
     Rule(
+        id="lambda.vpc.execution-role-network-interface-permission",
+        title="The Lambda execution role cannot create VPC network interfaces",
+        confidence="high",
+        patterns=(_LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,),
+        explanation=(
+            "Lambda is creating or updating a VPC-connected function, but the "
+            "function's execution role cannot create the elastic network "
+            "interfaces Lambda uses for that VPC attachment. This is a role "
+            "permission problem on the function, not a permission missing from "
+            "the CloudFormation or SAM deployer."
+        ),
+        verification=(
+            "Confirm the function has a `VpcConfig` and identify its execution role; do not change the role that runs `sam deploy` or CloudFormation.",
+            "Read the execution role's policies and grant the required ENI actions: `ec2:CreateNetworkInterface`, `ec2:DescribeNetworkInterfaces`, `ec2:DescribeSubnets`, `ec2:DeleteNetworkInterface`, `ec2:AssignPrivateIpAddresses`, and `ec2:UnassignPrivateIpAddresses`.",
+            "For a managed-policy path, verify `AWSLambdaVPCAccessExecutionRole` is attached to the function's execution role. If the policy is created in the same stack, wait for IAM propagation and preserve the dependency before retrying.",
+            "After the role policy is effective, redeploy the function and keep the VPC subnets and security groups unchanged while checking whether the error moves to a separate network or quota failure.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html",
+    ),
+    Rule(
         id="ec2.network-interface.create-failed",
         title="EC2 could not create a network interface",
         confidence="low",
@@ -1817,6 +1842,9 @@ _RULES = (
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
             _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN,
+            # The Lambda VPC execution-role rule explains this exact handler
+            # reason; keep generic CREATE_FAILED available for other resources.
+            _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,
         ),
     ),
     Rule(

@@ -1456,6 +1456,45 @@ template or preserve the equivalent OpenAPI endpoint-access-mode extension.
 
 ---
 
+## 39. Lambda VPC execution role cannot create a network interface
+
+**Status:** landed - the catalog recognizes the exact Lambda VPC execution-role
+marker and points at the function role's ENI permissions instead of the deployer
+role.
+
+**Failure family.** A Lambda function with `VpcConfig` is being created or
+updated, but its execution role cannot create or manage the elastic network
+interfaces Lambda uses for the VPC attachment. The AWS managed
+`AWSLambdaVPCAccessExecutionRole` policy contains the required actions, but a
+custom least-privilege policy can grant them explicitly.
+
+**Sanitized signal line.**
+
+```text
+Resource handler returned message: "The provided execution role does not have permissions to call CreateNetworkInterface on EC2 (Service: Lambda, Status Code: 400, Error Code: InvalidParameterValueException)"
+```
+
+**Pattern hint.** Match the exact execution-role marker and let the broad
+`CREATE_FAILED` / `UPDATE_FAILED` resource wrapper yield on that line. Keep the
+lower-level EC2 `CreateNetworkInterface` provider wrapper separate: it carries a
+different nested status and may indicate subnet capacity, request shape, or
+endpoint support rather than the Lambda role.
+
+**Safe verification steps.** Confirm the function's `VpcConfig` and execution
+role, then compare the role with the current Lambda VPC action list:
+`ec2:CreateNetworkInterface`, `ec2:DescribeNetworkInterfaces`,
+`ec2:DescribeSubnets`, `ec2:DeleteNetworkInterface`,
+`ec2:AssignPrivateIpAddresses`, and `ec2:UnassignPrivateIpAddresses`. If the
+role policy is created in the same stack, preserve its dependency and allow IAM
+propagation before retrying. Do not broaden the CloudFormation deployer role.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1467,13 +1506,13 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 397 of 413 excerpts (96%), with 16 misses after entry 38. It included dedicated
+diagnosed 459 of 474 excerpts (97%), with 15 misses after entry 39. It included dedicated
 searches for SAM build permission markers, CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox and network-policy-agent wrappers, bare Kubernetes pod-sandbox network wrappers, API Gateway endpoint-access-mode validation, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
-rename failures, and Cloud Control operation wrappers, plus the broader
+rename failures, Lambda VPC execution-role ENI permission markers, and Cloud Control operation wrappers, plus the broader
 change-set wording. Entry 28 adds the EC2 network-interface wrapper family
 from a repeated public Terraform/provider failure shape. Entry 30 adds the
 EKS VPC CNI pod-sandbox wrapper family from repeated public EKS and VPC CNI
@@ -1482,13 +1521,15 @@ Entry 31 adds the model-specific Bedrock `messages: Field required` request
 family from repeated public InvokeModel failures. Entry 32 adds the indexed
 nested message-content field family from repeated Claude image, document, and
 thinking-block validation failures.
+The new Lambda VPC query returned 30 public results; 28 bodies contained the
+exact marker and all 28 were diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 14 and 15 are mostly other tools' failures
-(CDK, Terraform, CodeBuild) or the five held contributor requests that this project
+(CDK, Terraform, CodeBuild) or the six open contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 13 and 16 to 38 have landed. A fresh rule request from a real failure is
+Entries 1 to 13 and 16 to 39 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Five requests are ready for first-time contributors:
