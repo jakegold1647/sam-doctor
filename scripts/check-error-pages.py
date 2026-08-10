@@ -88,6 +88,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "aws.api.service-unknown": "aws-service-unknown.html",
     "aws.credentials.caller-identity-unavailable": "sts-caller-identity-unavailable.html",
     "glue.database.rename-rejected": "glue-database-rename-rejected.html",
+    "cloudcontrol.operation.incomplete": "cloudcontrol-operation-incomplete.html",
     "ecs.execute-command.agent-unavailable": "ecs-execute-command-agent.html",
     "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",

@@ -1025,6 +1025,40 @@ before removing the old one. This is a request validation error, not IAM.
 
 ---
 
+## 27. Cloud Control API operation did not complete
+
+**Status:** landed - the catalog now recognizes the AWS SDK Go
+`Service Operation Incomplete` wrapper and directs the handoff to the nested
+Cloud Control `ProgressEvent`.
+
+**Failure family.** Cloud Control API resource operations are asynchronous. An
+SDK or provider waiter can stop with this wrapper while the actual cause lives
+in `OperationStatus`, `StatusMessage`, `ErrorCode`, resource type, identifier,
+or request token. The wrapper is not evidence of an IAM failure by itself.
+
+**Sanitized signal line.**
+
+```text
+Error: AWS SDK Go Service Operation Incomplete
+Waiting for Cloud Control API service CreateResource operation completion returned: waiter state transitioned to FAILED. StatusMessage: the resource handler rejected the request. ErrorCode: InvalidRequest
+```
+
+**Pattern hint.** Match the exact SDK wrapper, then preserve and diagnose the
+nested ProgressEvent; do not infer a root cause from the wrapper alone.
+
+**Safe verification steps.** Keep `OperationStatus`, `ErrorCode`,
+`StatusMessage`, `TypeName`, identifier, Region, and `RequestToken`. When a
+token is present, run `aws cloudcontrol get-resource-request-status
+--request-token <token>` in the same account and Region. Follow the nested
+handler, schema, service-role, or downstream-service cause before retrying.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1036,12 +1070,13 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 309 of 347 excerpts (89%), with 38 misses. It included dedicated
+diagnosed 335 of 373 excerpts (90%), with 38 misses. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
 managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
-API actions, unknown AWS services, STS caller-identity wrappers, and Glue
-database rename failures, plus the broader change-set wording.
+API actions, unknown AWS services, STS caller-identity wrappers, Glue database
+rename failures, and Cloud Control operation wrappers, plus the broader
+change-set wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures

@@ -69,6 +69,7 @@ QUERIES = (
     '"UnknownService" "when calling" in:body',
     '"Error: reading STS Caller Identity" in:body',
     '"Database cannot be renamed" in:body',
+    '"AWS SDK Go Service Operation Incomplete" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -104,6 +105,7 @@ FAILURE_SIGNAL = re.compile(
     r"|\bwhen calling\b.{0,160}\bUnknownService\b"
     r"|Error:\s*reading STS Caller Identity\b"
     r"|Database cannot be renamed\b"
+    r"|AWS SDK Go Service Operation Incomplete\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"
     r")"

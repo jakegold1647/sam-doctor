@@ -40,6 +40,11 @@ All notable changes to SAM Doctor are documented here.
   high-confidence finding points at preserving the catalog name or creating a
   replacement database instead of changing IAM.
 
+- **Cloud Control API operation wrappers now have a focused handoff.** A
+  low-confidence finding points at the nested ProgressEvent, status message,
+  error code, resource identity, and request token before retrying or changing
+  IAM.
+
 - **SAM change-set handoffs now recognize both wrapper wordings.** The existing
   medium-confidence configuration handoff accepts `Failed to create changeset`
   and `Failed to create the changeset`, while sharper template and service
@@ -47,7 +52,7 @@ All notable changes to SAM Doctor are documented here.
 
 - **The stable-versus-current catalog boundary is now explicit.** The public
   homepage, quickstart, machine-readable guide, and README say that the guides
-  follow `main` (72 diagnostics) while stable PyPI `0.11.0` contains the
+  follow `main` (73 diagnostics) while stable PyPI `0.11.0` contains the
   released 48-rule catalog; the branch install remains the opt-in path until a
   new stable release is authorized.
 

@@ -216,6 +216,10 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "UpdateDatabase operation: Description is invalid"
         ),
     ),
+    "cloudcontrol.operation.incomplete": RuleFixture(
+        positive="Error: AWS SDK Go Service Operation Incomplete",
+        negative="AWS SDK Go Service Operation completed successfully",
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

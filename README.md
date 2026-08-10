@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (72 diagnostics). Stable
+The public guides follow the current `main` catalog (73 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -425,6 +425,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   signing, network, and credential-source causes separate from IAM denials
 - AWS Glue catalog database rename failures that point to stable-name updates
   or a replacement database instead of IAM changes
+- Cloud Control API operation wrappers that point to the nested ProgressEvent
+  and request token before retrying or changing IAM
 - ECS Exec managed-agent failures (`CannotStartManagedAgentError` and the
   `ExecuteCommand` wrapper), with task-state and SSM prerequisite checks
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection

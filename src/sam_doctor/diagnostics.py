@@ -315,6 +315,10 @@ _AWS_STS_CALLER_IDENTITY_FAILURE_PATTERNS = (
 
 _GLUE_DATABASE_RENAME_PATTERN = r"Database cannot be renamed\b"
 
+_CLOUDCONTROL_OPERATION_INCOMPLETE_PATTERN = (
+    r"AWS SDK Go Service Operation Incomplete\b"
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1204,6 +1208,25 @@ _RULES = (
             "If a new name is required, create a new database and migrate or recreate its tables and consumers before removing the old database; do not change IAM permissions for this validation error.",
         ),
         documentation_url="https://docs.aws.amazon.com/glue/latest/webapi/API_UpdateDatabase.html",
+    ),
+    Rule(
+        id="cloudcontrol.operation.incomplete",
+        title="The Cloud Control API operation did not complete",
+        confidence="low",
+        patterns=(_CLOUDCONTROL_OPERATION_INCOMPLETE_PATTERN,),
+        explanation=(
+            "The AWS Cloud Control API or its SDK wrapper stopped waiting for a "
+            "resource operation, but this label is not the underlying failure. "
+            "The nested StatusMessage, ErrorCode, resource type, identifier, and "
+            "request token identify whether the handler, schema, service role, "
+            "resource state, or a downstream AWS service failed."
+        ),
+        verification=(
+            "Preserve the complete nested Cloud Control response, including OperationStatus, ErrorCode, StatusMessage, TypeName, Identifier, Region, and RequestToken.",
+            "When a request token is present, run `aws cloudcontrol get-resource-request-status --request-token <token>` in the same account and Region to retrieve the latest ProgressEvent.",
+            "Follow the nested status message to the resource handler, schema, service role, or downstream service before retrying; do not change IAM or retry blindly based only on this SDK wrapper.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

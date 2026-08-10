@@ -66,6 +66,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/aws-service-unknown.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudcontrol-operation-incomplete.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/security-token-invalid.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/ssm-parameter-cannot-be-found.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/tag-action-denied.html</loc></url>

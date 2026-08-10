@@ -701,6 +701,27 @@ def test_glue_database_rule_does_not_match_other_update_input_errors() -> None:
     }
 
 
+def test_cloudcontrol_operation_wrapper_routes_to_progress_status_checks() -> None:
+    findings = diagnose(
+        "Error: AWS SDK Go Service Operation Incomplete\n"
+        "Waiting for Cloud Control API service CreateResource operation completion "
+        "returned: waiter state transitioned to FAILED. StatusMessage: handler failed"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudcontrol.operation.incomplete"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_cloudcontrol_rule_does_not_match_a_successful_sdk_operation() -> None:
+    findings = diagnose("AWS SDK Go Service Operation completed successfully")
+
+    assert "cloudcontrol.operation.incomplete" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (
