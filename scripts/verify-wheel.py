@@ -146,6 +146,32 @@ def verify_wheel(wheel: Path, workdir: Path) -> None:
     # Human-facing output, which renders through a different path than JSON.
     _run([str(python), "-m", "sam_doctor.cli", "demo"], title="demo (text output)")
 
+    # The shell-independent wrapper is the daily workflow advertised by the
+    # README and homepage. Exercise it from the installed wheel as well as the
+    # source-tree tests: a missing subcommand or omitted module can otherwise
+    # leave `sam-doctor diagnose` healthy while the one-command deploy flow is
+    # broken for every installer.
+    run_log = workdir / "run-smoke.log"
+    _run(
+        [
+            str(python),
+            "-m",
+            "sam_doctor.cli",
+            "run",
+            "--log-file",
+            str(run_log),
+            "--",
+            sys.executable,
+            "-c",
+            "print('packaged run smoke')",
+        ],
+        title="python -m sam_doctor.cli run",
+    )
+    if "packaged run smoke" not in run_log.read_text(encoding="utf-8"):
+        raise SystemExit(
+            "FAIL: packaged `run` wrapper did not preserve the child command output"
+        )
+
     # The console script is how the wheel is actually used, and a broken
     # entry point would not show up in any of the checks above.
     console_script = _venv_console_script(venv_dir)
