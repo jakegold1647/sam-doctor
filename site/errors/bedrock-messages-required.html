@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bedrock messages field required | SAM Doctor</title>
+    <meta name="description" content="Fix Bedrock InvokeModel validation failures caused by an omitted messages field in an Anthropic Claude request body." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-messages-required.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Bedrock messages field required | SAM Doctor" />
+    <meta property="og:description" content="Fix Bedrock InvokeModel validation failures caused by an omitted messages field in an Anthropic Claude request body." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-messages-required.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bedrock messages field required | SAM Doctor" />
+    <meta name="twitter:description" content="Fix Bedrock InvokeModel validation failures caused by an omitted messages field in an Anthropic Claude request body." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Bedrock says the messages field is required</h1>
+        <p class="lede">
+          The selected Anthropic Claude request reached Bedrock, but its
+          model-specific body omitted the required <code>messages</code> field.
+          Correct the request shape before changing model access or IAM.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The model body does not match the Messages API</h2>
+        <pre><code>operation error Bedrock Runtime: InvokeModel, https response error StatusCode: 400, ValidationException: messages: Field required</code></pre>
+        <p>
+          Bedrock model invocation bodies are model-specific. For the Anthropic
+          Claude Messages API, <code>messages</code> is a required array of
+          conversation turns; the field is separate from the top-level
+          <code>modelId</code> request member.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Send the body format the selected model expects</h2>
+        <ol>
+          <li>
+            <strong>Confirm the model and operation.</strong> Check that the
+            selected model supports the Anthropic Claude Messages API and that
+            the code is calling <code>InvokeModel</code> with its native body
+            format rather than an OpenAI-style <code>prompt</code>.
+          </li>
+          <li>
+            <strong>Add the required fields.</strong> For Claude Messages,
+            include <code>anthropic_version: "bedrock-2023-05-31"</code>, a
+            positive <code>max_tokens</code>, and a <code>messages</code> array
+            whose turns contain <code>role</code> and <code>content</code>.
+          </li>
+          <li>
+            <strong>Check the serialized payload.</strong> Log only the request
+            keys and sanitized values, then verify that middleware or an
+            adapter did not rename or drop <code>messages</code> before sending.
+          </li>
+          <li>
+            <strong>Retry the same call.</strong> Investigate model access or
+            IAM only after the request body passes the model's schema.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the check in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes the Bedrock <code>messages: Field required</code>
+          marker with medium confidence and points at the model-specific request
+          body. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./bedrock-empty-model-id.html">Bedrock empty modelId</a> - pass the required model identifier before validating the body.</li>
+          <li><a href="./bedrock-empty-system-prompt.html">Bedrock empty system prompt</a> - omit an empty Converse system content block.</li>
+          <li><a href="./bedrock-model-identifier.html">Bedrock model identifier unresolved</a> - compare the exact ID, Region, endpoint, and API after the request shape is valid.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="docs-title">
+        <p class="eyebrow">OFFICIAL REFERENCE</p>
+        <h2 id="docs-title">Anthropic Claude Messages API</h2>
+        <p><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html">Request and response parameters</a> - AWS lists <code>messages</code> as required for a Claude Messages request.</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

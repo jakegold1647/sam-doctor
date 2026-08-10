@@ -186,6 +186,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "operation: The provided model identifier is invalid."
         ),
     ),
+    "bedrock.request.messages-required": RuleFixture(
+        positive=(
+            "operation error Bedrock Runtime: InvokeModel, https response error "
+            "StatusCode: 400, ValidationException: messages: Field required"
+        ),
+        negative=(
+            "operation error Bedrock Runtime: InvokeModel, ValidationException: "
+            "content: Field required"
+        ),
+    ),
     "aws.api.action-invalid": RuleFixture(
         positive=(
             "An error occurred (UnknownAction) when calling the "

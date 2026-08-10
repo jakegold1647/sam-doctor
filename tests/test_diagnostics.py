@@ -663,6 +663,40 @@ def test_eks_vpc_cni_wrapper_does_not_match_another_plugin() -> None:
     }
 
 
+def test_bedrock_messages_required_routes_to_request_body_check() -> None:
+    findings = diagnose(
+        "failed to generate embedding: operation error Bedrock Runtime: InvokeModel, "
+        "https response error StatusCode: 400, ValidationException: messages: Field required"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.request.messages-required"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_messages_required_does_not_match_other_validation_fields() -> None:
+    findings = diagnose(
+        "operation error Bedrock Runtime: InvokeModel, ValidationException: "
+        "content: Field required"
+    )
+
+    assert "bedrock.request.messages-required" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+def test_messages_validation_without_bedrock_context_is_not_this_rule() -> None:
+    findings = diagnose(
+        "An error occurred (ValidationException) when calling the GetThing operation: "
+        "messages: Field required"
+    )
+
+    assert "bedrock.request.messages-required" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

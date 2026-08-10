@@ -301,6 +301,14 @@ _BEDROCK_EMPTY_MODEL_ID_PATTERN = (
     r")?\binput member modelId must not be empty\b"
 )
 
+_BEDROCK_MESSAGES_REQUIRED_PATTERN = (
+    r"(?:"
+    r"operation error Bedrock Runtime:\s*InvokeModel(?:WithResponseStream)?|"
+    r"when calling (?:the )?InvokeModel(?:WithResponseStream)? operation|"
+    r"Bedrock\b.{0,120}\bValidationException\b"
+    r").{0,260}\bmessages:\s*Field required\b"
+)
+
 _AWS_INVALID_ACTION_PATTERNS = (
     r"(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b",
     r"\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b",
@@ -1156,6 +1164,25 @@ _RULES = (
             "If the application supports both InvokeModel and Converse, verify that the selected backend passes the model identifier to the operation it actually calls; do not change IAM or model access until a non-empty identifier reaches the SDK.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html",
+    ),
+    Rule(
+        id="bedrock.request.messages-required",
+        title="The Bedrock request omitted the required messages field",
+        confidence="medium",
+        patterns=(_BEDROCK_MESSAGES_REQUIRED_PATTERN,),
+        explanation=(
+            "Bedrock rejected the model-specific request body because the "
+            "required `messages` field was missing. This is a request-shape or "
+            "model/API compatibility problem, not evidence that the model is "
+            "unavailable or that IAM denied the invocation."
+        ),
+        verification=(
+            "Confirm the selected model supports the Anthropic Claude Messages API, then inspect the serialized `InvokeModel` body for the required `messages` array; log only field names and sanitized values.",
+            "For the Claude Messages API, include `anthropic_version` set to `bedrock-2023-05-31`, a positive `max_tokens`, and at least the required user or assistant message shape with role and content.",
+            "Do not send an OpenAI-style `prompt` body to a model expecting Messages API fields; if the model supports Converse, use its `messages` and `system` shape instead and verify the selected operation matches the body format.",
+            "Retry after correcting the request body, then investigate model access or IAM only if Bedrock reports a separate service-side error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html",
     ),
     Rule(
         id="aws.api.action-invalid",

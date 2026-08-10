@@ -63,6 +63,7 @@ QUERIES = (
     '"Could not resolve the foundation model from the provided model identifier" in:body',
     '"Invalid length for parameter system[0].text" in:body',
     '"input member modelId must not be empty" in:body',
+    '"ValidationException: messages: Field required" "InvokeModel" in:body',
     '"CannotStartManagedAgentError" in:body',
     '"UnknownAction" "when calling" in:body',
     '"InvalidAction" "when calling" in:body',
@@ -100,6 +101,7 @@ FAILURE_SIGNAL = re.compile(
     r"|Could not resolve the foundation model from the provided model identifier"
     r"|Invalid length for parameter system\[\d+\]\.text"
     r"|input member modelId must not be empty\b"
+    r"|(?:operation error Bedrock Runtime:\s*InvokeModel(?:WithResponseStream)?|ValidationException).{0,260}\bmessages:\s*Field required\b"
     r"|CannotStartManagedAgentError\b"
     r"|(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b"
     r"|\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b"

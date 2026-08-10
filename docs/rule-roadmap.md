@@ -1174,6 +1174,44 @@ DaemonSet, add-on version, and node readiness before changing workloads.
 
 ---
 
+## 31. Bedrock rejected a Claude request without `messages`
+
+**Status:** landed - the catalog now recognizes Bedrock's model-specific
+`ValidationException: messages: Field required` marker when it is tied to an
+InvokeModel or Bedrock Runtime request.
+
+**Failure family.** A caller selected an Anthropic Claude Messages API body but
+omitted the required `messages` array, often because an OpenAI-style `prompt`
+shape or an adapter for a different model was sent to `InvokeModel`. The error
+is a request-shape or model/API compatibility problem, not a model-access or IAM
+failure.
+
+**Sanitized signal line.**
+
+```text
+failed to generate embedding: operation error Bedrock Runtime: InvokeModel, https response error StatusCode: 400, ValidationException: messages: Field required
+```
+
+**Pattern hint.** Match `messages: Field required` with an InvokeModel or
+Bedrock `ValidationException` context. Do not turn a generic AWS
+`ValidationException` or a different required field into this Claude body
+diagnosis.
+
+**Safe verification steps.** Confirm the selected model supports the Anthropic
+Claude Messages API and inspect the serialized InvokeModel body. For Claude
+Messages, include `anthropic_version` set to `bedrock-2023-05-31`, a positive
+`max_tokens`, and a `messages` array whose turns contain `role` and `content`.
+Do not send an OpenAI-style `prompt` body to a model expecting Messages fields;
+if the model supports Converse, use its `messages` and `system` shape with the
+matching operation. Log only sanitized field names and values before retrying.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1185,10 +1223,10 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 369 of 409 excerpts (90%), with 40 misses after entry 30. It included dedicated
+diagnosed 370 of 413 excerpts (90%), with 43 misses after entry 31. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
-Bedrock first-use, model-identifier, empty-system-prompt, and empty-model-id
-request-shape failures, ECS Exec
+Bedrock first-use, model-identifier, empty-system-prompt, empty-model-id, and
+missing-messages request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
@@ -1196,13 +1234,15 @@ change-set wording. Entry 28 adds the EC2 network-interface wrapper family
 from a repeated public Terraform/provider failure shape. Entry 30 adds the
 EKS VPC CNI pod-sandbox wrapper family from repeated public EKS and VPC CNI
 failure reports, while yielding to the nested EC2 cause when it is present.
+Entry 31 adds the model-specific Bedrock `messages: Field required` request
+family from repeated public InvokeModel failures.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 30 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 31 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

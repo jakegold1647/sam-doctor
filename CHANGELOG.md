@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Bedrock missing-messages failures now have a focused handoff.** A
+  medium-confidence finding recognizes the model-specific `messages: Field
+  required` validation marker and points at the Claude Messages API body before
+  changing model access or IAM.
+
 - **EKS VPC CNI pod-sandbox failures now have a focused handoff.** A
   low-confidence finding recognizes the `aws-cni` wrapper, points at the
   matching `aws-node` or `ipamd` error, and yields to a nested EC2 cause when
