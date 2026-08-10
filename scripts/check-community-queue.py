@@ -22,6 +22,7 @@ DEFAULT_REPOSITORY = "jakegold1647/sam-doctor"
 READY_LABEL = "status: ready"
 REQUIRED_LABELS = ("good first issue", "mentor available")
 CLAIM_MARKERS = ("take this", "claim this", "claim it")
+MAINTAINER_ASSOCIATIONS = frozenset(("OWNER", "MEMBER", "COLLABORATOR"))
 ACTIVE_CLAIM_MARKERS = (
     "i'd like to take this",
     "i would like to take this",
@@ -42,6 +43,15 @@ SCOPE_MARKERS = (
     "sample log excerpts to test against",
 )
 API_ROOT = "https://api.github.com"
+
+
+def _is_maintainer_comment(comment: dict[str, Any], owner_login: str) -> bool:
+    """Return whether a comment author is trusted to invite a claim."""
+
+    user = comment.get("user") or {}
+    login = str(user.get("login") or "").lower()
+    association = str(comment.get("author_association") or "").upper()
+    return login == owner_login or association in MAINTAINER_ASSOCIATIONS
 
 
 def _get_json(url: str, token: str) -> Any:
@@ -108,7 +118,7 @@ def validate_ready_issue(issue: dict[str, Any], comments: list[dict[str, Any]]) 
 
     owner_login = str((issue.get("user") or {}).get("login") or "").lower()
     has_active_claim = any(
-        str((comment.get("user") or {}).get("login") or "").lower() != owner_login
+        not _is_maintainer_comment(comment, owner_login)
         and any(
             marker in str(comment.get("body") or "").lower().replace("’", "'")
             for marker in ACTIVE_CLAIM_MARKERS

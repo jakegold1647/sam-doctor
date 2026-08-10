@@ -105,3 +105,23 @@ def test_maintainer_invitation_is_not_an_active_claim() -> None:
     )
 
     assert "unassigned work has a contributor claim in comments" not in problems
+
+
+def test_collaborator_invitation_is_not_an_active_claim() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(
+        issue,
+        [
+            {
+                "user": {"login": "another-maintainer"},
+                "author_association": "COLLABORATOR",
+                "body": "Comment `I'd like to take this` if you want it.",
+            },
+        ],
+    )
+
+    assert "unassigned work has a contributor claim in comments" not in problems
