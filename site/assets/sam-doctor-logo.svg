@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-labelledby="title desc">
   <title id="title">SAM Doctor logo</title>
   <desc id="desc">A deployment cloud with a diagnostic reticle and terminal prompt.</desc>
+  <g transform="translate(2.4 0)">
   <path
     d="M14.2 48.5h32.4c10.2 0 18.4-8.2 18.4-18.4 0-8.3-5.5-15.4-13.1-17.7C48.9 6.6 41.1 2.7 32.4 2.7c-10.4 0-19.2 6.5-22.7 15.6C4 19.7.4 24.5.4 30.3c0 10.1 6.1 18.2 13.8 18.2Z"
     fill="none"
@@ -33,4 +34,5 @@
     stroke-linecap="round"
     stroke-width="5.8"
   />
+  </g>
 </svg>
