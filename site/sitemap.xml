@@ -32,6 +32,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/confirm-changeset-prompt.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cors-options-conflict.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/create-failed.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/lambda-runtime-deprecated.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/property-non-ascii-character.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/docker-image-pull-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/failed-to-create-changeset.html</loc></url>

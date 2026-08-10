@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Deprecated Lambda runtimes now have a focused deployment handoff.** A
+  high-confidence finding recognizes the exact create/update rejection, points
+  at the submitted `Runtime`, and leaves quoted documentation alone. The
+  generic CREATE_FAILED / UPDATE_FAILED finding still reports unrelated failed
+  resources from the same log.
+
 - **Missing CloudFormation stack exports now have a focused handoff.** A
   high-confidence finding recognizes `No export named ... found`, points at the
   producer stack and account/Region boundary, and keeps missing exports

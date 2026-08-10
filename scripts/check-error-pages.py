@@ -128,6 +128,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.build.python-dependency-validation-failed": "binary-validation-failed.html",
     "cloudformation.rollback.iam-role-delete-failed": "rollback-role-delete-failed.html",
     "cloudformation.resource.create-update-failed": "create-failed.html",
+    "lambda.runtime.deprecated": "lambda-runtime-deprecated.html",
     "cloudformation.resource.property-non-ascii": "property-non-ascii-character.html",
     "cloudformation.nested-stack.propagation-failed": "nested-stack-failed.html",
     "cloudformation.stack.rollback-complete": "rollback-in-progress.html",

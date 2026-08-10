@@ -3459,6 +3459,36 @@ def test_code_storage_wording_alone_is_not_a_quota_finding() -> None:
     assert diagnose("Code storage cleanup finished; usage is well below the limit.") == []
 
 
+@pytest.mark.parametrize(
+    "log",
+    [
+        (
+            "CREATE_FAILED AWS::Lambda::Function HelloWorldFunction Resource "
+            "handler returned message: The runtime parameter of python3.8 is no "
+            "longer supported for creating or updating AWS Lambda functions"
+        ),
+        (
+            "An error occurred (InvalidParameterValueException) when calling the "
+            "CreateFunction operation: The runtime parameter of nodejs14.x is no "
+            "longer supported for creating or updating AWS Lambda functions"
+        ),
+    ],
+)
+def test_lambda_deprecated_runtime_is_reported_without_generic_noise(log: str) -> None:
+    assert [finding.rule_id for finding in diagnose(log)] == [
+        "lambda.runtime.deprecated"
+    ]
+
+
+def test_lambda_deprecated_runtime_does_not_match_quoted_documentation() -> None:
+    log = (
+        "The migration guide quotes: The runtime parameter of python3.8 is no "
+        "longer supported for creating or updating AWS Lambda functions"
+    )
+
+    assert diagnose(log) == []
+
+
 def test_reserved_concurrency_below_minimum_positive() -> None:
     log = (
         "CREATE_FAILED  AWS::Lambda::Function  ApiFunction  Specified "
@@ -3625,6 +3655,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyBucket UPDATE_FAILED Resource handler returned message: \"AbortIncompleteMultipartUpload cannot be specified with Tags.\"",
     "ImageRecipe CREATE_FAILED Resource handler returned message: \"The following resource 'ImageRecipe' already exists: 'recipe/1.1.0' (HandlerErrorCode: AlreadyExists)\"",
     "MyStack CREATE_FAILED An error occurred (ServiceNotAvailable) when calling the CreateStack operation: CloudFormation is temporarily unavailable",
+    "MyFn CREATE_FAILED The runtime parameter of python3.8 is no longer supported for creating or updating AWS Lambda functions",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (

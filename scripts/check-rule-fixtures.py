@@ -533,6 +533,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "the UpdateFunctionCode operation: Code storage limit exceeded."
         ),
     ),
+    "lambda.runtime.deprecated": RuleFixture(
+        positive=(
+            "CREATE_FAILED AWS::Lambda::Function Worker Resource handler returned "
+            "message: The runtime parameter of python3.8 is no longer supported "
+            "for creating or updating AWS Lambda functions"
+        ),
+        negative=(
+            "The migration guide quotes: The runtime parameter of python3.8 is no "
+            "longer supported for creating or updating AWS Lambda functions"
+        ),
+    ),
     "apigateway.deployment.no-methods": RuleFixture(
         positive="The REST API doesn't contain any methods",
         negative="The REST API contains three methods and deployed cleanly",
