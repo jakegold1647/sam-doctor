@@ -583,6 +583,38 @@ def test_bedrock_empty_system_prompt_does_not_match_empty_tool_description() -> 
     }
 
 
+def test_bedrock_empty_model_id_routes_to_request_shape_check() -> None:
+    findings = diagnose(
+        "failed while calling AI provider amazonbedrock: operation error "
+        "Bedrock Runtime: InvokeModel, serialization failed: serialization failed: "
+        "input member modelId must not be empty"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.request.empty-model-id"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_empty_model_id_accepts_a_shortened_provider_wrapper() -> None:
+    findings = diagnose("skipped: bedrock converse (): ... input member modelId must not be empty")
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.request.empty-model-id"
+    ]
+
+
+def test_bedrock_empty_model_id_does_not_match_generic_invoke_model_failure() -> None:
+    findings = diagnose(
+        "An error occurred (ValidationException) when calling the InvokeModel "
+        "operation: The provided model identifier is invalid."
+    )
+
+    assert "bedrock.request.empty-model-id" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

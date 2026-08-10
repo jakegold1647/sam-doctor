@@ -176,6 +176,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "toolConfig.tools[0].toolSpec.description, value: 0, valid min length: 1"
         ),
     ),
+    "bedrock.request.empty-model-id": RuleFixture(
+        positive=(
+            "operation error Bedrock Runtime: InvokeModel, serialization failed: "
+            "serialization failed: input member modelId must not be empty"
+        ),
+        negative=(
+            "An error occurred (ValidationException) when calling the InvokeModel "
+            "operation: The provided model identifier is invalid."
+        ),
+    ),
     "aws.api.action-invalid": RuleFixture(
         positive=(
             "An error occurred (UnknownAction) when calling the "

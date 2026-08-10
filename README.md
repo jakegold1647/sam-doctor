@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (74 diagnostics). Stable
+The public guides follow the current `main` catalog (75 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -412,9 +412,9 @@ see [docs/stability.md](docs/stability.md). The current set:
   code storage quota (`CodeStorageExceededException`)
 - Lambda invoke target misses (`ResourceNotFoundException` on the `Invoke`
   operation), with function, qualifier, account, Region, and timing checks
-- Amazon Bedrock first-use access, unresolved model-identifier, and empty
-  Converse system-prompt failures, with account, Region, model catalog,
-  endpoint, API, and request-shape checks
+- Amazon Bedrock first-use access, unresolved model-identifier, empty Converse
+  system-prompt, and empty `InvokeModel` `modelId` failures, with account,
+  Region, model catalog, endpoint, API, and request-shape checks
 - AWS `UnknownAction` and `InvalidAction` handoffs that keep endpoint and API
   compatibility failures separate from IAM denials
 - AWS `NotImplemented` operation handoffs that keep endpoint and emulator

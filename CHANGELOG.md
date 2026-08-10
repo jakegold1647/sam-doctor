@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Bedrock empty-model-id failures now have a focused handoff.** A
+  medium-confidence finding recognizes the runtime client's exact serialization
+  marker and points at the model configuration and request shape before model
+  access or IAM changes.
+
 - **EC2 network-interface creation wrappers now have a focused handoff.** A
   low-confidence finding preserves the nested `CreateNetworkInterface` status,
   error code, subnet capacity, permission, request-shape, and endpoint checks

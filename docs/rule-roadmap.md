@@ -1099,6 +1099,40 @@ infrastructure configuration.
 
 ---
 
+## 29. Bedrock rejected an empty `modelId`
+
+**Status:** landed - the catalog now recognizes the runtime client's exact
+serialization marker for an omitted InvokeModel identifier.
+
+**Failure family.** An application selects the Bedrock model from an environment
+variable, config file, or backend default, but the value reaches the SDK as an
+empty string. The client rejects the request before inference, so this is a
+request-shape problem rather than evidence of missing model access or IAM.
+
+**Sanitized signal line.**
+
+```text
+operation error Bedrock Runtime: InvokeModel, serialization failed: serialization failed: input member modelId must not be empty
+```
+
+**Pattern hint.** Match the `InvokeModel` or `InvokeModelWithResponseStream`
+operation together with `input member modelId must not be empty`; do not turn
+generic model-not-found or validation errors into this request-builder finding.
+
+**Safe verification steps.** Trace the environment variable, config key, and
+backend selection that supplies `modelId`; correct missing names and empty
+defaults. Set the exact base-model ID, inference-profile ID, provisioned-model
+ARN, or custom-model ID supported in the target Region, then log only a
+sanitized request shape before retrying. Investigate model access or IAM only
+after a non-empty identifier reaches the SDK.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1110,9 +1144,10 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 339 of 376 excerpts (90%), with 37 misses after entry 28. It included dedicated
+diagnosed 342 of 381 excerpts (90%), with 39 misses after entry 29. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
-Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
+Bedrock first-use, model-identifier, empty-system-prompt, and empty-model-id
+request-shape failures, ECS Exec
 managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
@@ -1124,7 +1159,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 28 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 29 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

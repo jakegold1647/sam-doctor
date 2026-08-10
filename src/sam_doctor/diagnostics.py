@@ -293,6 +293,14 @@ _BEDROCK_EMPTY_SYSTEM_PROMPT_PATTERN = (
     r"Invalid length for parameter system\[\d+\]\.text\b"
 )
 
+_BEDROCK_EMPTY_MODEL_ID_PATTERN = (
+    r"(?:"
+    r"(?:operation error Bedrock Runtime:\s*InvokeModel(?:WithResponseStream)?|"
+    r"when calling (?:the )?InvokeModel(?:WithResponseStream)? operation)"
+    r".{0,260}"
+    r")?\binput member modelId must not be empty\b"
+)
+
 _AWS_INVALID_ACTION_PATTERNS = (
     r"(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b",
     r"\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b",
@@ -1125,6 +1133,24 @@ _RULES = (
             "Retry the same model call after removing the empty block; only then investigate separate model-access or identifier errors.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_SystemContentBlock.html",
+    ),
+    Rule(
+        id="bedrock.request.empty-model-id",
+        title="The Bedrock InvokeModel request omitted modelId",
+        confidence="medium",
+        patterns=(_BEDROCK_EMPTY_MODEL_ID_PATTERN,),
+        explanation=(
+            "The Bedrock Runtime client rejected the request before inference "
+            "because the required `modelId` value was empty. This is a request "
+            "configuration or serialization problem, not evidence that the model "
+            "is unavailable or that IAM denied `bedrock:InvokeModel`."
+        ),
+        verification=(
+            "Inspect the code or configuration that selects the model and find why the value became an empty string; check environment-variable names, backend selection, and default values first.",
+            "Set `modelId` to the exact model ID, inference-profile ID, or supported ARN for the target Region, then log only the non-sensitive request shape before retrying.",
+            "If the application supports both InvokeModel and Converse, verify that the selected backend passes the model identifier to the operation it actually calls; do not change IAM or model access until a non-empty identifier reaches the SDK.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html",
     ),
     Rule(
         id="aws.api.action-invalid",
