@@ -1602,22 +1602,26 @@ diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 14 and 15 are mostly other tools' failures
-(CDK, Terraform, CodeBuild) or the six open contributor requests that this project
-leaves open for first-time contributors.
+(CDK, Terraform, CodeBuild) or the five open rule requests that this project
+leaves available for first-time contributors.
 
 Entries 1 to 13 and 16 to 41 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. Five requests are ready for first-time contributors:
+is the available-work list. Four requests are ready for first-time contributors:
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
 attachment quotas), [#25](https://github.com/jakegold1647/sam-doctor/issues/25)
 (API Gateway `TooManyRequestsException`), and
 [#64](https://github.com/jakegold1647/sam-doctor/issues/64)
-(`sam validate --lint`),
-[#65](https://github.com/jakegold1647/sam-doctor/issues/65) (deprecated Lambda
-runtimes), and [#66](https://github.com/jakegold1647/sam-doctor/issues/66)
+(`sam validate --lint`), and [#66](https://github.com/jakegold1647/sam-doctor/issues/66)
 (CloudFormation stack-name collisions). They are labelled `good first issue`,
 `status: ready`, and `mentor available`; please leave them for new contributors.
+
+The deprecated-runtime request in #65 is already shipped and closed by PR #68;
+it is not available work. Adoption and documentation work is tracked separately
+in [#69](https://github.com/jakegold1647/sam-doctor/issues/69),
+[#71](https://github.com/jakegold1647/sam-doctor/issues/71), and
+[#72](https://github.com/jakegold1647/sam-doctor/issues/72).
 
 [#63](https://github.com/jakegold1647/sam-doctor/issues/63) is intentionally
 `status: needs-repro`, so contribute a complete sanitized example there before
