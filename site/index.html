@@ -177,7 +177,7 @@
             <span class="window-status"><i aria-hidden="true"></i> local</span>
           </div>
           <div class="window-body">
-            <p class="command"><span>$</span> sam-doctor diagnose deployment.log</p>
+            <p class="command"><span>$</span> sam-doctor run --log-file deployment.log -- sam deploy</p>
             <div class="finding-meta">
               <span class="finding-number">Finding 01</span>
               <span class="confidence">high confidence</span>
@@ -221,9 +221,9 @@
         <ol class="process-grid">
           <li>
             <span class="step-number">01</span>
-            <h3>Give it the log.</h3>
-            <p>Point the CLI at a file, a sanitized excerpt, or stdin. The input stays on the machine running the command.</p>
-            <code>sam-doctor diagnose deployment.log</code>
+            <h3>Capture the failure.</h3>
+            <p>Wrap the deploy or point the CLI at a file, a sanitized excerpt, or stdin. The input stays on the machine running the command.</p>
+            <code>sam-doctor run --log-file deployment.log -- sam deploy</code>
           </li>
           <li>
             <span class="step-number">02</span>
