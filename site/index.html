@@ -338,17 +338,18 @@
           <p>Run after the deployment step with <code>if: always()</code>. Start non-blocking, then opt into confidence-based or strict gating after the signal is proven.</p>
         </div>
         <div class="ci-layout">
-          <pre aria-label="GitHub Actions example"><code><span class="code-dim">- name:</span> Diagnose deployment log
-  <span class="code-dim">if:</span> always()
+          <pre aria-label="GitHub Actions example"><code><span class="code-dim">- name:</span> Deploy and diagnose
+  <span class="code-dim">id:</span> sam-doctor
   <span class="code-dim">uses:</span> jakegold1647/sam-doctor@v0
   <span class="code-dim">with:</span>
     <span class="code-dim">log-file:</span> deployment.log
+    <span class="code-dim">run-command:</span> sam deploy --no-confirm-changeset
     <span class="code-dim">summary:</span> true
     <span class="code-dim">annotations:</span> true
-    <span class="code-dim">fail-on-findings: true</span></code></pre>
+    <span class="code-dim"># fail-on-findings: true</span></code></pre>
           <div class="ci-copy">
             <h3>Roll it out at your pace.</h3>
-            <p>Use <code>--fail-on-findings</code> for shell-based CI, or keep the composite action advisory while your team measures signal quality.</p>
+            <p>Keep the Action advisory while your team measures signal quality, then add <code>--fail-on-findings</code> or a confidence gate when the evidence is stable.</p>
             <a class="text-link" href="https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/examples/github-actions-workflow.yml">Download the sam-doctor GitHub Actions starter <span aria-hidden="true">→</span></a>
             <details>
               <summary>More deployment and CI starters</summary>

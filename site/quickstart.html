@@ -193,22 +193,17 @@ sam-doctor diagnose cloudformation-deploy.log --format json --fail-on-findings</
       <section class="steps" id="workflow" aria-labelledby="ci-title">
         <p class="eyebrow">CI INTEGRATION</p>
         <h2 id="ci-title">3) Add one diagnostic step in GitHub Actions</h2>
-        <pre><code>- name: Deploy
-  shell: bash
-  run: |
-    set -o pipefail
-    sam deploy --no-confirm-changeset 2>&amp;1 | tee deployment.log
-
-- name: Diagnose deployment log
-  if: always()
+        <pre><code>- name: Deploy and diagnose
+  id: sam-doctor
   uses: jakegold1647/sam-doctor@v0
   with:
     log-file: deployment.log
+    run-command: sam deploy --no-confirm-changeset
     summary: true
     annotations: true
     fail-on-findings: false</code></pre>
         <p class="muted">
-          Keep this non-blocking initially. When your team is comfortable with the signal quality,
+          Keep authentication and environment setup in earlier steps. This single Action step captures the deploy and keeps its original exit status. Keep it non-blocking initially; when your team is comfortable with the signal quality,
           flip on enforcement with <code>--fail-on-findings: true</code> (or
           run <code>sam-doctor init --fail-on-findings --force</code> to regenerate your workflow).
         </p>
