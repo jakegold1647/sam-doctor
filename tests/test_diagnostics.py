@@ -2755,6 +2755,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyDeployment CREATE_FAILED The REST API doesn't contain any methods",
     "MyRole CREATE_FAILED Has prohibited field Resource",
     "MyBucket UPDATE_FAILED Resource handler returned message: \"AbortIncompleteMultipartUpload cannot be specified with Tags.\"",
+    "ImageRecipe CREATE_FAILED Resource handler returned message: \"The following resource 'ImageRecipe' already exists: 'recipe/1.1.0' (HandlerErrorCode: AlreadyExists)\"",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (

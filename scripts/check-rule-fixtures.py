@@ -99,6 +99,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "filter was accepted"
         ),
     ),
+    "imagebuilder.recipe.version-already-exists": RuleFixture(
+        positive=(
+            "ImageRecipe CREATE_FAILED Resource handler returned message: "
+            '"The following resource \'ImageRecipe\' already exists: \'recipe/1.1.0\' '
+            '(HandlerErrorCode: AlreadyExists)"'
+        ),
+        negative=(
+            "ImageRecipe version 1.1.1 was created successfully after the recipe "
+            "content changed"
+        ),
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

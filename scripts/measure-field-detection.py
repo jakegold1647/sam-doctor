@@ -84,6 +84,21 @@ FAILURE_SIGNAL = re.compile(
 FENCED_BLOCK = re.compile(r"```[a-zA-Z]*\n(.*?)```", re.DOTALL)
 
 
+def _configure_utf8_output() -> None:
+    """Keep redacted field signatures printable on Windows code pages."""
+
+    reconfigure = getattr(sys.stdout, "reconfigure", None)
+    if not callable(reconfigure):
+        return
+    try:
+        reconfigure(encoding="utf-8", errors="replace")
+    except (OSError, ValueError):
+        # Test capture streams and embedded runners may expose a partial stream
+        # API. The measurement remains useful even when the stream cannot be
+        # reconfigured; callers can still redirect it with PYTHONIOENCODING.
+        return
+
+
 def _search(query: str, token: str | None) -> list[dict]:
     url = "https://api.github.com/search/issues?" + urllib.parse.urlencode(
         {"q": query, "per_page": 30, "sort": "created", "order": "desc"}
@@ -163,6 +178,7 @@ def measure(samples: list[tuple[str, str]]) -> tuple[int, dict[str, int]]:
 
 
 def main() -> int:
+    _configure_utf8_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--token", default="", help="GitHub token; raises the search rate limit")
     parser.add_argument(

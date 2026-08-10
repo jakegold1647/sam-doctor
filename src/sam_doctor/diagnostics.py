@@ -245,6 +245,12 @@ _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN = (
     r"AbortIncompleteMultipartUpload cannot be specified with Tags"
 )
 
+_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS = (
+    r"(?:following )?resource\s+['\"]?ImageRecipe['\"]?\s+already exists",
+    r"ResourceAlreadyExistsException.*(?:ImageRecipe|CreateImageRecipe)",
+    r"(?:ImageRecipe|CreateImageRecipe).*ResourceAlreadyExistsException",
+)
+
 
 _RULES = (
     Rule(
@@ -873,6 +879,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-configuration-examples.html",
     ),
     Rule(
+        id="imagebuilder.recipe.version-already-exists",
+        title="An EC2 Image Builder recipe version already exists",
+        confidence="high",
+        patterns=_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS,
+        explanation=(
+            "EC2 Image Builder recipes are immutable after creation. The deployment "
+            "is trying to create an image recipe with a name and semantic version "
+            "that already exists, often because the recipe changed without a version "
+            "bump or a previous stack left that version behind."
+        ),
+        verification=(
+            "Read the image recipe ARN, name, and semantic version from the failed event, then inspect it with `aws imagebuilder get-image-recipe --image-recipe-arn <recipe-arn>` (read-only).",
+            "If the recipe content changed, create a new semantic version instead of reusing the existing one; Image Builder also supports an `x` wildcard for automatic version increments.",
+            "Check the CloudFormation stack's replacement behavior and any image pipeline or distribution that still references the old recipe before removing or retiring it.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/imagebuilder/latest/userguide/manage-recipes.html",
+    ),
+    Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
@@ -1136,6 +1160,7 @@ _RULES = (
             r"Embedded stack .* was not successfully (?:created|updated)",
             _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,
             _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN,
+            *_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **EC2 Image Builder recipe collisions now have a focused diagnosis.** The
+  catalog recognizes an `ImageRecipe` version that already exists, separates
+  it from generic CloudFormation failures, and points at the read-only recipe
+  check plus the new-version fix.
+
 - **S3 lifecycle tag conflicts now have a focused diagnosis.** The catalog
   recognizes `AbortIncompleteMultipartUpload cannot be specified with Tags`,
   separates it from generic CloudFormation failures, and links to the safe

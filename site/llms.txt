@@ -31,6 +31,7 @@ until the next stable release.
 - [An error occurred (Throttling): Rate exceeded](https://sam-doctor.jacobgoldstein.dev/errors/rate-exceeded.html): CloudFormation API rate limits from CI fan-out.
 - [DELETE_FAILED](https://sam-doctor.jacobgoldstein.dev/errors/delete-failed.html): blocked stack deletion and --retain-resources.
 - [AbortIncompleteMultipartUpload cannot be specified with Tags](https://sam-doctor.jacobgoldstein.dev/errors/s3-lifecycle-abort-tags.html): separate S3 multipart-abort and tag-filtered lifecycle rules.
+- [ImageRecipe already exists](https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html): create a new immutable Image Builder recipe version instead of reusing the existing one.
 - [Cannot connect to the Docker daemon](https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://sam-doctor.jacobgoldstein.dev/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.

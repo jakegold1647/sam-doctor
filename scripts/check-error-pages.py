@@ -74,6 +74,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.template.getatt-parameters-invalid": "fn-getatt-parameters.html",
     "s3.bucket-name.already-taken": "bucket-already-exists.html",
     "s3.lifecycle.abort-multipart-tag-filter": "s3-lifecycle-abort-tags.html",
+    "imagebuilder.recipe.version-already-exists": "imagebuilder-recipe-already-exists.html",
     "s3.artifact-bucket.access-denied": "s3-access-denied-changeset.html",
     "apigateway.deployment.no-methods": "rest-api-no-methods.html",
     "lambda.package.size-limit-exceeded": "lambda-package-size-limit.html",
