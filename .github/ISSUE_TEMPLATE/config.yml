@@ -15,6 +15,6 @@ contact_links:
   - name: Show and tell
     url: https://github.com/jakegold1647/sam-doctor/discussions/categories/show-and-tell
     about: Share a safe result or integration that other contributors can build on.
-  - name: Contributing guide
-    url: https://github.com/jakegold1647/sam-doctor/blob/main/docs/contributing-a-diagnostic-rule.md
-    about: Follow this guide if you want to propose a new diagnostic rule.
+  - name: Contributor guide
+    url: https://github.com/jakegold1647/sam-doctor/blob/main/CONTRIBUTING.md
+    about: Set up your fork, choose a first contribution, and run the local PR gate.
