@@ -3372,6 +3372,62 @@ def test_missing_stack_export_keeps_unrelated_resource_failure() -> None:
     assert "cloudformation.resource.create-update-failed" in rule_ids
 
 
+def test_circular_cloudformation_dependency_routes_to_template_graph_checks() -> None:
+    findings = diagnose(
+        "ValidationError: Circular dependency between resources: "
+        "[ApiFunction, ApiPermission, Api]"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.template.circular-dependency"
+    ]
+    assert findings[0].confidence == "high"
+    verification = " ".join(findings[0].verification)
+    assert "Fn::GetAtt" in verification
+    assert "DependsOn" in verification
+
+
+def test_circular_dependency_without_resource_list_is_supported() -> None:
+    findings = diagnose("ValidationError: Circular dependency between resources")
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.template.circular-dependency"
+    ]
+
+
+def test_circular_dependency_rule_ignores_prose() -> None:
+    findings = diagnose(
+        "The template change removed the circular dependency between resources."
+    )
+
+    assert "cloudformation.template.circular-dependency" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+def test_circular_dependency_keeps_unrelated_resource_failure() -> None:
+    findings = diagnose(
+        "ApiFunction CREATE_FAILED Circular dependency between resources: [Api, ApiFunction]\n"
+        "Bucket CREATE_FAILED unrelated bucket failure"
+    )
+
+    rule_ids = {finding.rule_id for finding in findings}
+    assert "cloudformation.template.circular-dependency" in rule_ids
+    assert "cloudformation.resource.create-update-failed" in rule_ids
+
+
+def test_circular_dependency_owns_rollback_and_changeset_wrappers() -> None:
+    findings = diagnose(
+        "ROLLBACK_IN_PROGRESS\n"
+        "Error: Failed to create changeset\n"
+        "ValidationError: Circular dependency between resources: [A, B]"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.template.circular-dependency"
+    ]
+
+
 def test_lambda_code_storage_limit_exceeded_positive() -> None:
     sample_log = (
         "CREATE_FAILED AWS::Lambda::Version ApiFunctionVersion Code storage limit exceeded. "

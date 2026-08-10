@@ -463,6 +463,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "the change set was created"
         ),
     ),
+    "cloudformation.template.circular-dependency": RuleFixture(
+        positive=(
+            "ValidationError: Circular dependency between resources: "
+            "[ApiFunction, ApiPermission, Api]"
+        ),
+        negative=(
+            "The template change removed the circular dependency between "
+            "resources."
+        ),
+    ),
     "iam.trust-policy.resource-field-invalid": RuleFixture(
         positive="Has prohibited field Resource",
         negative="The trust policy passed validation with no prohibited fields",

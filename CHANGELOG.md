@@ -9,6 +9,11 @@ All notable changes to SAM Doctor are documented here.
   producer stack and account/Region boundary, and keeps missing exports
   distinct from exports that cannot be changed while in use.
 
+- **CloudFormation circular dependencies now have a focused handoff.** A
+  high-confidence finding recognizes `Circular dependency between resources`,
+  points at the transformed dependency graph, and keeps the cycle distinct from
+  generic resource, rollback, and change-set wrappers.
+
 - **Lambda VPC execution-role failures now have a focused handoff.** A
   high-confidence finding recognizes `The provided execution role does not have
   permissions to call CreateNetworkInterface on EC2`, points at the function's

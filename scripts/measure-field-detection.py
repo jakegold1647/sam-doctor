@@ -82,6 +82,7 @@ QUERIES = (
     '"FailedCreatePodSandBox" "failed to setup network for sandbox" in:body',
     '"Endpoint access mode is required for the specified security policy" in:body',
     '"provided execution role" "CreateNetworkInterface" in:body',
+    '"Circular dependency between resources" CloudFormation in:body',
     '"No export named" CloudFormation in:body',
 )
 
@@ -137,6 +138,7 @@ FAILURE_SIGNAL = re.compile(
     r"|(?:FailedCreatePodSandBox|Failed to create pod sandbox)\b.{0,500}\bfailed to set ?up network for sandbox\b"
     r"|Endpoint access mode is required for the specified security policy\b"
     r"|The provided execution role does not have permission(?:s)? to call CreateNetworkInterface on EC2\b"
+    r"|Circular dependency between resources(?:\s*:|(?=\r?\n|$))"
     r"|No export named\s+\S+\s+(?:can be found|found)\b"
     r"|execute command failed because execute command was not enabled"
     r"|^(?!.*unable to unlink old).*Error: [A-Z]"

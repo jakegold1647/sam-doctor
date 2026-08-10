@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (87 diagnostics). Stable
+The public guides follow the current `main` catalog (88 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -409,6 +409,7 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Resources that fail to stabilize, with the nested handler message surfaced first
 - Exports that cannot change because another stack imports them
 - Missing CloudFormation stack exports referenced by `Fn::ImportValue`
+- CloudFormation circular dependency cycles between resources
 - Lambda deployment packages over a per-function size limit, and the regional
   code storage quota (`CodeStorageExceededException`)
 - Lambda invoke target misses (`ResourceNotFoundException` on the `Invoke`
@@ -463,7 +464,7 @@ see [docs/stability.md](docs/stability.md). The current set:
 - Template failures: SAM/CloudFormation schema validation
   (`InvalidSamDocumentException`, unsupported properties), invalid properties
   for a resource type, malformed `Fn::GetAtt` resource/attribute pairs,
-  unresolved resource dependencies, and templates over a CloudFormation size or
+  unresolved resource dependencies, circular resource dependency cycles, and templates over a CloudFormation size or
   count quota
 - S3 naming failures: invalid bucket names and globally taken names
   (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`)

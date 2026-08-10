@@ -75,6 +75,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "sam.template.schema-validation-failed": "invalid-sam-document.html",
     "cloudformation.template.getatt-parameters-invalid": "fn-getatt-parameters.html",
     "cloudformation.template.unresolved-dependency": "cloudformation-unresolved-resource-dependency.html",
+    "cloudformation.template.circular-dependency": "cloudformation-circular-dependency.html",
     "s3.bucket-name.already-taken": "bucket-already-exists.html",
     "s3.lifecycle.abort-multipart-tag-filter": "s3-lifecycle-abort-tags.html",
     "imagebuilder.recipe.version-already-exists": "imagebuilder-recipe-already-exists.html",

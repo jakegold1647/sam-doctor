@@ -1531,6 +1531,42 @@ cross-boundary handoff when that is intentional.
 
 ---
 
+## 41. CloudFormation found a circular resource dependency
+
+**Status:** landed - the catalog recognizes the CloudFormation dependency-cycle
+marker and points at the transformed resource graph instead of IAM, retry, or
+rollback noise.
+
+**Failure family.** CloudFormation cannot create or update the template because
+implicit `Ref`, `Fn::GetAtt`, or `Fn::Sub` edges, or an explicit `DependsOn`,
+form a cycle among resources. SAM and CDK can introduce the cycle during
+transform or synthesis, so the generated artifact is the authority to inspect.
+
+**Sanitized signal line.**
+
+```text
+ValidationError: Circular dependency between resources: [ApiFunction, ApiPermission, Api]
+```
+
+**Pattern hint.** Match the AWS marker when it ends the line or introduces the
+listed resource IDs. Do not match prose that merely says a circular dependency
+was fixed; the rule is for the deployment failure emitted by CloudFormation.
+
+**Safe verification steps.** Copy the listed logical IDs from the error, find
+them in the SAM-transformed or CDK-synthesized template, and trace every
+`Ref`, `Fn::GetAtt`, `Fn::Sub`, and `DependsOn` edge in both directions until
+the loop is visible. Break an unnecessary edge or pass the value through a
+parameter or separate stack; use `DependsOn` only for a one-way ordering need.
+Run `sam validate --lint` or `cfn-lint` against the exact submitted artifact
+before retrying.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html>
+
+**Suggested confidence.** high.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1542,7 +1578,7 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 462 of 477 excerpts (97%), with 15 misses after entry 40. It included dedicated
+diagnosed 477 of 492 excerpts (97%), with 15 misses after entry 41. It included dedicated
 searches for SAM build permission markers, CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
@@ -1560,14 +1596,16 @@ thinking-block validation failures.
 The new Lambda VPC query returned 30 public results; 28 bodies contained the
 exact marker and all 28 were diagnosed by the new rule. The missing-export query
 returned 30 public results; 5 bodies contained an exact missing-export marker,
-and all 5 were diagnosed by the new rule.
+and all 5 were diagnosed by the new rule. The circular-dependency query returned
+30 public results; 17 bodies contained a log-shaped marker, and all 17 were
+diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 14 and 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six open contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 13 and 16 to 39 have landed. A fresh rule request from a real failure is
+Entries 1 to 13 and 16 to 41 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Five requests are ready for first-time contributors:

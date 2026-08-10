@@ -279,6 +279,10 @@ _CLOUDFORMATION_UNRESOLVED_DEPENDENCIES_PATTERN = (
     r"Template format error:\s*Unresolved resource dependencies\b"
 )
 
+_CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN = (
+    r"\bCircular dependency between resources\b(?::|$)"
+)
+
 _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN = (
     r"\bNo export named\s+\S+\s+(?:can be found|found)\b"
 )
@@ -946,6 +950,27 @@ _RULES = (
             "Run `sam validate --lint` or `cfn-lint` against the exact template that the deploy submits, then retry the change set only after every referenced ID resolves.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-anatomy.html",
+    ),
+    Rule(
+        id="cloudformation.template.circular-dependency",
+        title="CloudFormation found a circular resource dependency",
+        confidence="high",
+        patterns=(_CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,),
+        explanation=(
+            "CloudFormation found a cycle in the template's resource dependency "
+            "graph and cannot choose an order that creates or updates the "
+            "resources. The cycle is usually introduced by implicit `Ref`, "
+            "`Fn::GetAtt`, or `Fn::Sub` references, or by an explicit `DependsOn`; "
+            "it fails before resource provisioning and is not an IAM or retry "
+            "problem."
+        ),
+        verification=(
+            "Capture the logical IDs listed after `Circular dependency between resources` and compare them with the exact SAM-transformed or CDK-synthesized template.",
+            "Trace every `Ref`, `Fn::GetAtt`, `Fn::Sub`, and `DependsOn` edge among those resources in both directions until the cycle is visible.",
+            "Break the cycle by removing an unnecessary reference, passing the value through a parameter or separate stack, or moving the dependent resource; add `DependsOn` only for a real one-way ordering requirement, never to a cycle.",
+            "Run `sam validate --lint` or `cfn-lint` against the exact artifact the deployment submits, then synthesize again before retrying the change set.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
     ),
     Rule(
         id="iam.trust-policy.resource-field-invalid",
@@ -1849,6 +1874,7 @@ _RULES = (
             # The Lambda VPC execution-role rule explains this exact handler
             # reason; keep generic CREATE_FAILED available for other resources.
             _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,
+            _CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,
             _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),
     ),
@@ -2043,6 +2069,7 @@ _RULES = (
             r"Embedded stack .* was not successfully (?:created|updated)",
             # A missing export is the root cause behind the rollback state;
             # the focused cross-stack finding has the useful next check.
+            _CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,
             _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),
     ),
@@ -2422,6 +2449,7 @@ _RULES = (
             r"S3 error: Access ?Denied",
             # The missing-export marker is the concrete reason for this generic
             # change-set failure, so let the cross-stack finding own the log.
+            _CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,
             _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
             # An unresolvable SSM reference is reported by the same
             # CreateChangeSet call this rule reports generically, on its own
