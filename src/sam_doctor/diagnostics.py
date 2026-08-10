@@ -1291,23 +1291,25 @@ _RULES = (
     ),
     Rule(
         id="cloudformation.stack.failed-recreate-required",
-        title="A failed initial stack must be recreated before it can be deployed again",
+        title="A terminal CloudFormation stack must be recreated before deployment",
         confidence="high",
         patterns=(
-            r"ROLLBACK_COMPLETE.*(?:can not|cannot) be updated",
-            r"is in ROLLBACK_COMPLETE state.*(?:can not|cannot) be updated",
+            r"(?:ROLLBACK_COMPLETE|DELETE_COMPLETE).*(?:can not|cannot) be updated",
+            r"is in (?:ROLLBACK_COMPLETE|DELETE_COMPLETE) state.*(?:can not|cannot) be updated",
         ),
         explanation=(
-            "CloudFormation cannot update a stack that finished rolling back after an "
-            "initial create failure. The original failed resource must be understood and "
-            "fixed before a new stack operation can succeed."
+            "CloudFormation cannot update a stack in the terminal `ROLLBACK_COMPLETE` "
+            "or `DELETE_COMPLETE` state. A rollback-complete stack needs its original "
+            "create failure fixed before recreation; a delete-complete stack needs a "
+            "new create operation after deletion and any retained resources are checked."
         ),
         verification=(
-            "Find the first earlier `CREATE_FAILED` resource event and fix that underlying cause first.",
-            "For an initial deployment with no stable prior stack, delete the failed stack after reviewing its resources, then deploy again with the same name.",
+            "Confirm the terminal state and inspect the stack events with `aws cloudformation describe-stack-events --stack-name <stack>` (read-only).",
+            "For `ROLLBACK_COMPLETE`, find the first earlier `CREATE_FAILED` resource event and fix that underlying cause before recreating the stack.",
+            "For `DELETE_COMPLETE`, wait for deletion to finish, check any retained resources and custom names, then create the stack again instead of sending an update.",
             "Do not delete or retain resources blindly; confirm the stack state and intended cleanup path in CloudFormation first.",
         ),
-        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-continueupdaterollback.html",
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
     ),
     Rule(
         id="cloudformation.stack.update-rollback-failed",

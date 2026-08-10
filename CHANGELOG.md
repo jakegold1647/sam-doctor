@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Terminal stack recovery now covers `DELETE_COMPLETE`.** The existing
+  terminal-state diagnosis now recognizes both `ROLLBACK_COMPLETE` and
+  `DELETE_COMPLETE` update refusals, with separate checks for the original
+  failed create, deletion completion, and retained resources.
+
 - **CloudFormation service interruptions now have a focused diagnosis.** The
   catalog recognizes `ServiceNotAvailable` and `ServiceUnavailable` responses
   on stack operations, separates them from throttling, and points at a safe

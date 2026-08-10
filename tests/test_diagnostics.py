@@ -227,7 +227,7 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
         ),
         (
             "Stack: example is in ROLLBACK_COMPLETE state and can not be updated.",
-            "failed initial stack",
+            "terminal CloudFormation stack",
         ),
         (
             "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated.",
@@ -423,9 +423,22 @@ def test_rollback_complete_as_a_bare_status_event_does_not_trigger_the_recreate_
 
     titles = [finding.title for finding in diagnose(log)]
     assert (
-        "A failed initial stack must be recreated before it can be deployed again"
+        "A terminal CloudFormation stack must be recreated before deployment"
         not in titles
     )
+
+
+def test_delete_complete_update_refusal_reports_the_terminal_stack_finding() -> None:
+    log = (
+        "ValidationError: Stack:arn:aws:cloudformation:us-east-1:123456789012:"
+        "stack/my-app/example is in DELETE_COMPLETE state and can not be updated."
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.stack.failed-recreate-required"
+    ]
 
 
 def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
@@ -823,7 +836,7 @@ def test_findings_follow_the_order_of_the_supporting_log_lines() -> None:
         ),
         (
             "ROLLBACK_COMPLETE\nStack is in ROLLBACK_COMPLETE state and can not be updated.",
-            "failed initial stack",
+            "terminal CloudFormation stack",
         ),
         (
             "MyFunction CREATE_FAILED\nCode signing is not supported for functions created with container images.",

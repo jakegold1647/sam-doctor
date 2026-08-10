@@ -24,7 +24,7 @@ until the next stable release.
 
 - [Deployment error index](https://sam-doctor.jacobgoldstein.dev/errors/): one page per exact error string with causes, fixes, and the diagnose command.
 - [Not authorized to perform: sts:AssumeRoleWithWebIdentity](https://sam-doctor.jacobgoldstein.dev/errors/assume-role-with-web-identity.html): GitHub Actions OIDC trust-policy rejection.
-- [Stack is in ROLLBACK_COMPLETE state and can not be updated](https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html): recover from a failed initial stack create.
+- [A terminal CloudFormation stack must be recreated before deployment](https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html): recover from ROLLBACK_COMPLETE or DELETE_COMPLETE instead of sending an update.
 - [InsufficientCapabilitiesException](https://sam-doctor.jacobgoldstein.dev/errors/insufficient-capabilities.html): when to pass CAPABILITY_IAM, CAPABILITY_NAMED_IAM, or CAPABILITY_AUTO_EXPAND.
 - [The security token included in the request is expired](https://sam-doctor.jacobgoldstein.dev/errors/expired-token.html): expired sessions, OIDC session duration, and clock skew.
 - [no basic auth credentials](https://sam-doctor.jacobgoldstein.dev/errors/no-basic-auth-credentials.html): unauthenticated Docker push to Amazon ECR.
