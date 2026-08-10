@@ -10,6 +10,11 @@ All notable changes to SAM Doctor are documented here.
   missing model resource, and points at the provider form in the same account
   and Region.
 
+- **Bedrock model lookup failures now have a focused handoff.** A
+  medium-confidence finding recognizes the runtime's exact unresolved-model
+  marker and points at the current model ID, Region, endpoint, and API instead
+  of suggesting an IAM change.
+
 - **SAM change-set handoffs now recognize both wrapper wordings.** The existing
   medium-confidence configuration handoff accepts `Failed to create changeset`
   and `Failed to create the changeset`, while sharper template and service
@@ -17,7 +22,7 @@ All notable changes to SAM Doctor are documented here.
 
 - **The stable-versus-current catalog boundary is now explicit.** The public
   homepage, quickstart, machine-readable guide, and README say that the guides
-  follow `main` (65 diagnostics) while stable PyPI `0.11.0` contains the
+  follow `main` (66 diagnostics) while stable PyPI `0.11.0` contains the
   released 48-rule catalog; the branch install remains the opt-in path until a
   new stable release is authorized.
 

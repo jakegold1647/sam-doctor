@@ -798,6 +798,40 @@ on this marker alone.
 
 ---
 
+## 20. Bedrock could not resolve the foundation model identifier
+
+**Status:** landed - the catalog now recognizes Bedrock's exact unresolved-model
+marker and points at the current catalog, Region, endpoint, and API checks.
+
+**Failure family.** A Bedrock runtime call reaches the service, but the supplied
+model identifier cannot be resolved at that endpoint. A retired model version,
+wrong Region, missing inference-profile prefix, or unsupported API can all look
+like a generic `ResourceNotFoundException` until the full message is read.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (ResourceNotFoundException) when calling the InvokeModelWithResponseStream operation: Could not resolve the foundation model from the provided model identifier.
+```
+
+**Pattern hint.** Anchor on the exact `Could not resolve the foundation model
+from the provided model identifier` marker. Do not turn every Bedrock
+`ResourceNotFoundException` into a model-ID diagnosis; the account first-use
+form and other missing-resource messages need different checks.
+
+**Safe verification steps.** Record the exact model ID and Region, compare them
+with the current Bedrock catalog and the model's supported API, then use the
+correct base-model ID, inference-profile ID, provisioned-model ARN, or custom
+model identifier for that hosting mode. Check the model lifecycle page if the
+configured version has been retired.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/userguide/models.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -808,17 +842,18 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 251 of
-278 excerpts (90%), now including dedicated searches for CDK assembly-wrapper
-variants, Lambda `Invoke` target misses, Bedrock first-use access failures, and
-ECS Exec managed-agent failures, plus the broader change-set wrapper wording.
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 257 of
+283 excerpts (91%), now including dedicated searches for CDK assembly-wrapper
+variants, Lambda `Invoke` target misses, Bedrock first-use and model-identifier
+failures, and ECS Exec managed-agent failures, plus the broader change-set wrapper
+wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 19 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 20 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

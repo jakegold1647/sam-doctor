@@ -155,6 +155,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "ConverseStream operation: The requested model ID is not found."
         ),
     ),
+    "bedrock.model-identifier.unresolved": RuleFixture(
+        positive=(
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "InvokeModelWithResponseStream operation: Could not resolve the "
+            "foundation model from the provided model identifier."
+        ),
+        negative=(
+            "An error occurred (ResourceNotFoundException) when calling the "
+            "InvokeModel operation: The requested model ID is not found."
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

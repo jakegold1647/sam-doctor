@@ -536,6 +536,30 @@ def test_bedrock_resource_not_found_without_access_phrase_is_not_this_rule() -> 
     }
 
 
+def test_bedrock_unresolved_model_identifier_routes_to_catalog_check() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the "
+        "InvokeModelWithResponseStream operation: Could not resolve the foundation "
+        "model from the provided model identifier."
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.model-identifier.unresolved"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_unresolved_model_identifier_does_not_match_other_model_not_found() -> None:
+    findings = diagnose(
+        "An error occurred (ResourceNotFoundException) when calling the "
+        "InvokeModel operation: The requested model ID is not found."
+    )
+
+    assert "bedrock.model-identifier.unresolved" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

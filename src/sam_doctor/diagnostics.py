@@ -285,6 +285,10 @@ _BEDROCK_MODEL_ACCESS_PATTERNS = (
     r"Model use case details have not been submitted for this account\b",
 )
 
+_BEDROCK_MODEL_IDENTIFIER_PATTERN = (
+    r"Could not resolve the foundation model from the provided model identifier\b"
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1045,6 +1049,24 @@ _RULES = (
             "Retry the same model call after access is granted; do not delete the stack or broaden IAM permissions solely because this ResourceNotFoundException appeared.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html",
+    ),
+    Rule(
+        id="bedrock.model-identifier.unresolved",
+        title="Bedrock could not resolve the model identifier",
+        confidence="medium",
+        patterns=(_BEDROCK_MODEL_IDENTIFIER_PATTERN,),
+        explanation=(
+            "Amazon Bedrock could not resolve the model identifier at the runtime "
+            "endpoint. The identifier may be retired, unavailable in the selected "
+            "Region, for a different API, or missing the inference-profile prefix; "
+            "this message is a model lookup failure, not an IAM denial."
+        ),
+        verification=(
+            "Record the exact model ID and Region from the failing request, then compare them with the current Bedrock model catalog and the model's supported API and Region.",
+            "Use the current base-model ID, inference-profile ID, provisioned-model ARN, or custom-model identifier for the way the model is hosted; do not substitute a display name.",
+            "Retry after correcting the identifier or Region, and check the model lifecycle page if the configured version was retired.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/models.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",
