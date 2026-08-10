@@ -1,0 +1,52 @@
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+
+SCRIPT = Path(__file__).parents[1] / "scripts" / "check-community-queue.py"
+SPEC = importlib.util.spec_from_file_location("check_community_queue", SCRIPT)
+assert SPEC and SPEC.loader
+QUEUE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(QUEUE)
+
+
+def _issue(*, labels: tuple[str, ...], body: str, assigned: bool = False) -> dict:
+    assignee = {"login": "someone"} if assigned else None
+    return {
+        "labels": [{"name": label} for label in labels],
+        "body": body,
+        "assignee": assignee,
+        "assignees": [assignee] if assignee else [],
+    }
+
+
+def test_ready_issue_accepts_rule_issue_shape_and_claim_prompt() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="## Where to add it\n## Sample log excerpts to test against",
+    )
+
+    assert QUEUE.validate_ready_issue(issue, [{"body": "I'd like to take this"}]) == []
+
+
+def test_ready_issue_reports_missing_labels_and_claim_prompt() -> None:
+    issue = _issue(labels=("status: ready",), body="## Acceptance criteria")
+
+    problems = QUEUE.validate_ready_issue(issue, [])
+
+    assert "missing `good first issue` label" in problems
+    assert "missing `mentor available` label" in problems
+    assert "missing maintainer claim prompt" in problems
+
+
+def test_ready_issue_reports_assignment_and_missing_scope() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="A short issue with no implementation details.",
+        assigned=True,
+    )
+
+    problems = QUEUE.validate_ready_issue(issue, [{"body": "Claim it when ready"}])
+
+    assert "assigned work still carries `status: ready`" in problems
+    assert "missing scoped acceptance or implementation details" in problems

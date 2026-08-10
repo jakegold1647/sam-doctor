@@ -38,6 +38,12 @@ questions. Pair it with `mentor available` when a newcomer can ask for help;
 remove `status: ready` when the issue is claimed, blocked, or needs more
 reproduction. Keep these labels meaningful so a newcomer can trust the queue.
 
+The scheduled [community queue check](../.github/workflows/community-queue.yml)
+checks this contract against GitHub's public issue data. It is intentionally
+outside the pull-request gate because it needs the network; a failure is a
+maintainer signal to repair labels, acceptance criteria, or the welcome prompt
+before pointing a newcomer at the issue.
+
 ## Turn a miss into a contribution
 
 1. Open or link one focused issue for one signal or one documentation gap.
