@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AssemblyError: Assembly builder failed | SAM Doctor</title>
+    <meta name="description" content="The AWS CDK assembly wrapper is not the underlying error. Rerun synthesis with the same context and inspect the first real exception." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/cdk-assembly-failed.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="AssemblyError: Assembly builder failed | SAM Doctor" />
+    <meta property="og:description" content="The AWS CDK assembly wrapper is not the underlying error. Rerun synthesis with the same context and inspect the first real exception." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/cdk-assembly-failed.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AssemblyError: Assembly builder failed | SAM Doctor" />
+    <meta name="twitter:description" content="The AWS CDK assembly wrapper is not the underlying error. Rerun synthesis with the same context and inspect the first real exception." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span aria-hidden="true">SD</span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">The CDK assembly builder reported a failure</h1>
+        <p class="lede">
+          <code>AssemblyError: Assembly builder failed</code> only says that CDK
+          synthesis stopped. It does not name the app error, dependency, or
+          validation rule. Re-run synthesis with the same project context before
+          changing the generated CloudFormation template.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this message means</h2>
+        <pre><code>300 | 14:42:23.544 | error | toolkit | AssemblyError: Assembly builder failed</code></pre>
+        <p>
+          This is a low-confidence handoff, not a root-cause diagnosis. The CDK
+          Toolkit is reporting a failed cloud-assembly build; the useful exception
+          is usually earlier in the log or is exposed by a verbose synthesis run.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Recover the underlying error</h2>
+        <ol>
+          <li>
+            <strong>Re-run synthesis with the same inputs:</strong>
+            <pre><code>cdk synth --verbose</code></pre>
+            Use the same project directory, app command, context values, credentials,
+            and environment variables as the failed deployment.
+          </li>
+          <li>
+            <strong>Find the first preceding exception or error.</strong>
+            Preserve its complete message and check the app dependencies and CDK
+            context before editing the generated template.
+          </li>
+          <li>
+            <strong>If synthesis succeeds, inspect the deployment event instead.</strong>
+            A later CloudFormation resource failure has a more specific status
+            reason than this assembly wrapper.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the handoff in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes this wrapper with low confidence and points at a
+          reproducible synthesis check. It does not invent the missing app error.
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> &mdash; the CloudFormation resource event that contains a deployment cause.</li>
+          <li><a href="./cloudformation-deploy-wrapper-failed.html">Failed to create/update the stack</a> &mdash; a similar wrapper handoff when the stack event is the missing evidence.</li>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException</a> &mdash; a template validation failure with a more specific signal.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

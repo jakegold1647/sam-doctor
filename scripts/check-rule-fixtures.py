@@ -127,6 +127,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="CloudFormation created and updated the stack successfully.",
     ),
+    "cdk.synth.assembly-failed": RuleFixture(
+        positive=(
+            "300 | 14:42:23.544 | error | toolkit | "
+            "AssemblyError: Assembly builder failed"
+        ),
+        negative="CDK synthesized the cloud assembly and wrote it to cdk.out.",
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

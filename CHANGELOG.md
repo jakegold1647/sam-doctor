@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **CDK assembly failures now have a safe handoff.** A low-confidence finding
+  recognizes `AssemblyError: Assembly builder failed`, points at `cdk synth
+  --verbose` with the same app and context, and keeps the missing application
+  error separate from any later CloudFormation failure.
+
 - **CloudFormation wrapper failures now hand off to stack events.** A low-
   confidence finding recognizes `Failed to create/update the stack`, makes no
   unsupported root-cause claim, and points at the read-only event command and

@@ -455,6 +455,15 @@ def test_cloudformation_wrapper_failure_routes_to_stack_events() -> None:
     assert findings[0].confidence == "low"
 
 
+def test_cdk_assembly_failure_routes_to_verbose_synthesis() -> None:
+    log = "300 | 14:42:23.544 | error | toolkit | AssemblyError: Assembly builder failed"
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == ["cdk.synth.assembly-failed"]
+    assert findings[0].confidence == "low"
+
+
 def test_update_rollback_failed_suppresses_the_generic_rollback_finding() -> None:
     log = "Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated."
 

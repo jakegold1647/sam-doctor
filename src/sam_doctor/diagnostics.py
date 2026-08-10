@@ -266,6 +266,8 @@ _CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN = (
     r"Failed to create/update (?:the )?stack\b"
 )
 
+_CDK_ASSEMBLY_FAILURE_PATTERN = r"AssemblyError:\s*Assembly builder failed\b"
+
 
 _RULES = (
     Rule(
@@ -945,6 +947,25 @@ _RULES = (
             "If the event stream has no resource failure, keep the operation, Region, timestamp, and request ID and investigate the surrounding API error instead of changing the template based on this wrapper line.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
+    ),
+    Rule(
+        id="cdk.synth.assembly-failed",
+        title="AWS CDK reported an assembly failure without the underlying error",
+        confidence="low",
+        patterns=(_CDK_ASSEMBLY_FAILURE_PATTERN,),
+        explanation=(
+            "The CDK Toolkit reported that its assembly builder failed, but this "
+            "wrapper line does not identify the application, dependency, or "
+            "validation error that stopped synthesis. The useful error is usually "
+            "earlier in the log or appears when synthesis is rerun with the same "
+            "app and context."
+        ),
+        verification=(
+            "Rerun `cdk synth --verbose` from the same project directory with the same app, context, and environment as the failed deploy.",
+            "Inspect the first preceding error or exception and preserve its complete message; check the app's dependencies and CDK context before changing the generated template.",
+            "If synthesis succeeds but deployment later fails, keep the CloudFormation resource event and diagnose that more specific status reason instead of this wrapper line.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-synth.html",
     ),
     Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",
