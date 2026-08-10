@@ -4,6 +4,9 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The homepage coverage count now matches the catalog.** The public proof
+  strip and error-guide link both show all 56 documented diagnostics.
+
 - **The public one-step Action examples now point at a working ref.** The
   `run-command` input shipped after the current `v0` tag, so the homepage,
   quickstart, README, and integration guide use `@main` for that mode and say
