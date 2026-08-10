@@ -154,16 +154,12 @@ footer {
   text-decoration: none;
 }
 
-.brand > span:first-child {
-  display: inline-grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 1px solid var(--accent);
-  border-radius: 50%;
-  color: var(--accent);
-  font: 700 .67rem/1 var(--mono);
-  letter-spacing: .08em;
+.brand-mark {
+  display: inline-block;
+  width: 2.55rem;
+  height: 2.55rem;
+  flex: 0 0 auto;
+  background: url("assets/sam-doctor-logo.svg") center / contain no-repeat;
 }
 
 .brand-name {

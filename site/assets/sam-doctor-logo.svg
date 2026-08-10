@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-labelledby="title desc">
+  <title id="title">SAM Doctor logo</title>
+  <desc id="desc">A deployment cloud with a diagnostic reticle and terminal prompt.</desc>
+  <path
+    d="M14.2 48.5h32.4c10.2 0 18.4-8.2 18.4-18.4 0-8.3-5.5-15.4-13.1-17.7C48.9 6.6 41.1 2.7 32.4 2.7c-10.4 0-19.2 6.5-22.7 15.6C4 19.7.4 24.5.4 30.3c0 10.1 6.1 18.2 13.8 18.2Z"
+    fill="none"
+    stroke="#0f5c4e"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="5.4"
+  />
+  <path
+    d="m10.8 29.2 5.5 5.4-5.5 5.4m10.7 0h6.7"
+    fill="none"
+    stroke="#171914"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="4.2"
+  />
+  <circle cx="42.2" cy="34.1" r="12.8" fill="#faf8f4" stroke="#171914" stroke-width="4.4" />
+  <path
+    d="M42.2 16.5v7.1m0 21v7.1m17.6-17.6h-7.1m-21 0h-7.1"
+    fill="none"
+    stroke="#171914"
+    stroke-linecap="round"
+    stroke-width="4.2"
+  />
+  <circle cx="42.2" cy="34.1" r="4.6" fill="#b7662d" />
+  <path
+    d="m50.9 43.2 11.4 11.4"
+    fill="none"
+    stroke="#0f5c4e"
+    stroke-linecap="round"
+    stroke-width="5.8"
+  />
+</svg>
