@@ -2179,8 +2179,8 @@ def json_report(findings: list[Finding], source_name: str) -> str:
     return json.dumps(payload, indent=2) + "\n"
 
 
-# SARIF has three result levels; "low" exists in the confidence vocabulary
-# even though no shipped rule uses it yet.
+# SARIF has three result levels; low-confidence handoff findings map to its
+# informational `note` level and remain visible without claiming a root cause.
 _SARIF_LEVELS = {"high": "error", "medium": "warning", "low": "note"}
 
 

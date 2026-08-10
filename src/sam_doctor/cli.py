@@ -529,8 +529,9 @@ def _run_deployment_command(command: list[str], log_path: Path) -> int:
     return return_code if return_code >= 0 else 128 - return_code
 
 
-# Ordered so a threshold means "this confidence or above". "low" is in the
-# rule vocabulary even though no shipped rule uses it yet.
+# Ordered so a threshold means "this confidence or above". Low-confidence
+# findings are advisory handoffs: they remain in reports, but the CLI exposes
+# only high/medium thresholds so a wrapper line cannot fail a deploy by itself.
 _CONFIDENCE_RANK = {"low": 0, "medium": 1, "high": 2}
 
 
