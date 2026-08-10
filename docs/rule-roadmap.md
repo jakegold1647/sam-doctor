@@ -666,9 +666,11 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. Detection currently sits at 88%; the misses
-that remain after entries 13 to 15 are mostly other tools' failures (CDK, Terraform,
-CodeBuild) that this project does not claim to cover.
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 226 of
+250 excerpts (90%). That percentage is a moving sample, not a release guarantee;
+the misses that remain after entries 13 to 15 are mostly other tools' failures
+(CDK, Terraform, CodeBuild) or the six held contributor requests that this project
+leaves open for first-time contributors.
 
 Entries 1 to 12 have all landed. A fresh rule request from a real failure is
 always welcome, and the
