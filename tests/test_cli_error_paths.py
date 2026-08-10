@@ -224,6 +224,7 @@ def test_unmatched_but_non_empty_log_keeps_the_rule_request_prompt(
     out = capsys.readouterr().out
     assert "No supported diagnostic pattern" in out
     assert "rule_request" in out
+    assert "sam-doctor request-packet deployment.log" in out
 
 
 def test_empty_log_leaves_the_json_contract_alone(tmp_path: Path, capsys) -> None:

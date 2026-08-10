@@ -27,6 +27,23 @@ EMPTY_INPUT_NOTE = (
 )
 
 
+def _request_packet_command(source_name: str) -> str:
+    """Suggest the safe follow-up command without echoing sensitive names."""
+
+    if source_name == "<stdin>":
+        input_name = "-"
+    else:
+        safe_source = redact(source_name)
+        # A simple filename/path is useful as a copy-paste hint. If redaction or
+        # shell-significant characters make that unsafe, keep the prompt generic.
+        input_name = (
+            safe_source
+            if re.fullmatch(r"[A-Za-z0-9._/\\-]+", safe_source)
+            else "<path-to-log>"
+        )
+    return f"sam-doctor request-packet {input_name}"
+
+
 @dataclass(frozen=True)
 class Finding:
     """A matched failure pattern and safe next actions."""
@@ -1918,7 +1935,8 @@ def markdown_report(
                 "### What to do next",
                 "",
                 "Run `sam-doctor rules` to review current coverage. If this was a real "
-                + f"failure, share a short, sanitized excerpt in a [diagnostic rule request]({RULE_REQUEST_URL}).",
+                + f"failure, run `{_request_packet_command(source_name)}` to write a short, "
+                + f"sanitized excerpt, review it, then share it in a [diagnostic rule request]({RULE_REQUEST_URL}).",
             ]
         )
         return "\n".join(lines) + "\n"
@@ -1962,7 +1980,8 @@ def terminal_report(
             f"No supported diagnostic pattern found in {redact(source_name)}.\n"
             "Keep the first failure event and inspect the relevant AWS documentation.\n"
             "Run `sam-doctor rules` for current coverage; if this was a real failure, "
-            f"share a short, sanitized excerpt at {RULE_REQUEST_URL}."
+            f"run `{_request_packet_command(source_name)}` to write a short, sanitized "
+            f"excerpt, review it, then share it at {RULE_REQUEST_URL}."
         )
 
     blocks = [

@@ -156,8 +156,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
     assert "sam-doctor rules" in markdown
     assert "diagnostic rule request" in markdown
     assert "template=rule_request.yml" in markdown
+    assert "sam-doctor request-packet unknown.log" in markdown
     assert "sam-doctor rules" in terminal
     assert "template=rule_request.yml" in terminal
+    assert "sam-doctor request-packet unknown.log" in terminal
 
 
 @pytest.mark.parametrize(
