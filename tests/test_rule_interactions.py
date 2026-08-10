@@ -100,6 +100,10 @@ EXPECTED_HIDING = {
     # Network-policy setup is a more specific EKS VPC CNI stage than the generic
     # pod-sandbox wrapper, so the generic handoff yields when it is present.
     ("eks.vpc-cni.pod-sandbox-network-failed", "eks.network-policy.agent-failed"),
+    # A bare Kubernetes sandbox wrapper is the last-resort fallback; the EKS
+    # rules remain more specific when their plugin or policy stage is named.
+    ("kubernetes.pod-sandbox.network-setup-failed", "eks.vpc-cni.pod-sandbox-network-failed"),
+    ("kubernetes.pod-sandbox.network-setup-failed", "eks.network-policy.agent-failed"),
     # The asset wrapper names the concrete CDK build stage. When it appears with
     # the broad AssemblyError wrapper, the asset finding is the more useful
     # handoff and the generic synthesis finding yields.

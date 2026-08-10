@@ -283,6 +283,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "failed (add): network unavailable"
         ),
     ),
+    "kubernetes.pod-sandbox.network-setup-failed": RuleFixture(
+        positive=(
+            "Warning FailedCreatePodSandBox: Failed to create pod sandbox: "
+            "rpc error: code = Unknown desc = failed to setup network for sandbox "
+            '"sandbox-id": plugin type="calico" name="calico" failed (add): '
+            "network unavailable"
+        ),
+        negative=(
+            "The pod sandbox was created successfully and the CNI network is ready"
+        ),
+    ),
     "glue.database.rename-rejected": RuleFixture(
         positive=(
             "An error occurred (InvalidInputException) when calling the "

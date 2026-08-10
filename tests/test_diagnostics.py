@@ -741,6 +741,31 @@ def test_eks_network_policy_rule_does_not_match_an_unrelated_network_failure() -
     }
 
 
+def test_kubernetes_pod_sandbox_network_fallback_covers_bare_cni_wrapper() -> None:
+    findings = diagnose(
+        "Warning FailedCreatePodSandBox: Failed to create pod sandbox: "
+        'rpc error: code = Unknown desc = failed to setup network for sandbox "id": '
+        'plugin type="calico" name="calico" failed (add): network unavailable'
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "kubernetes.pod-sandbox.network-setup-failed"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_kubernetes_pod_sandbox_fallback_yields_to_aws_cni_finding() -> None:
+    findings = diagnose(
+        "Failed to create pod sandbox: rpc error: code = Unknown desc = "
+        'failed to setup network for sandbox "id": plugin type="aws-cni" '
+        'name="aws-cni" failed (add): failed to assign an IP address to container'
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "eks.vpc-cni.pod-sandbox-network-failed"
+    ]
+
+
 def test_eks_vpc_cni_wrapper_yields_to_nested_ec2_cause() -> None:
     findings = diagnose(
         'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" failed (add)\n'

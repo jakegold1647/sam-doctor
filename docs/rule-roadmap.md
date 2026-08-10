@@ -690,6 +690,39 @@ not exist.
 
 ---
 
+## 37. Kubernetes could not set up a pod sandbox network
+
+**Status:** landed - the catalog recognizes the `FailedCreatePodSandBox` /
+`failed to setup network for sandbox` wrapper when no more specific EKS plugin
+or nested cause is named.
+
+**Failure family.** The kubelet reached the CNI network setup stage but the
+plugin could not create the pod's network namespace. The wrapper is deliberately
+low confidence: the useful cause is in the named plugin's node-level log, and a
+bare sandbox event is not evidence of an AWS IAM problem.
+
+**Sanitized signal line.**
+
+```text
+Warning FailedCreatePodSandBox: Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "<sandbox-id>": plugin type="<cni-plugin>" failed (add): <nested cause>
+```
+
+**Pattern hint.** Match the kubelet sandbox/network stage, but let the existing
+EKS `aws-cni`, network-policy-agent, EC2, and other nested-cause rules own a
+more specific marker.
+
+**Safe verification steps.** Preserve the pod, namespace, node, timestamp,
+`plugin type`, and nested message. Inspect that CNI plugin's DaemonSet or host
+log at the same time; on EKS, start with `aws-node` and `ipamd`. Only change IAM
+when the nested evidence explicitly names a denied AWS action.
+
+**Documentation link.**
+<https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/>
+
+**Suggested confidence.** low.
+
+---
+
 ## 17. CloudFormation could not resolve a resource dependency
 
 **Status:** landed - the catalog now recognizes the exact template-format error
@@ -1402,11 +1435,11 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 334 of 347 excerpts (96%), with 13 misses after entry 36. It included dedicated
+diagnosed 430 of 446 excerpts (96%), with 16 misses after entry 37. It included dedicated
 searches for SAM build permission markers, CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, end-of-life, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
-managed-agent failures, EKS VPC CNI pod-sandbox and network-policy-agent wrappers, unknown or invalid AWS API actions, unimplemented AWS
+managed-agent failures, EKS VPC CNI pod-sandbox and network-policy-agent wrappers, bare Kubernetes pod-sandbox network wrappers, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
 change-set wording. Entry 28 adds the EC2 network-interface wrapper family
@@ -1423,7 +1456,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 36 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 37 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

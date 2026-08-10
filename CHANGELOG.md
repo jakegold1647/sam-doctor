@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Bare Kubernetes pod-sandbox network failures now have a focused handoff.**
+  A low-confidence fallback preserves the CNI plugin and node-level evidence,
+  while specific EKS VPC CNI and network-policy findings continue to take
+  precedence when their markers are present.
+
 - **EKS network-policy-agent failures now have a focused handoff.** A
   medium-confidence finding recognizes the policy setup markers, points at the
   `aws-network-policy-agent` logs and EKS prerequisites, and yields to that

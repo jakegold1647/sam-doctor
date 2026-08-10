@@ -367,6 +367,17 @@ _EKS_NETWORK_POLICY_FAILURE_PATTERNS = (
     r"Network policy agent returned\b",
 )
 
+_KUBERNETES_POD_SANDBOX_NETWORK_FAILURE_PATTERNS = (
+    (
+        r"(?:FailedCreatePodSandBox|Failed to create pod sandbox)\b"
+        r".{0,500}\bfailed to set ?up network for sandbox\b"
+    ),
+    (
+        r"failed to set up sandbox container\b.{0,500}"
+        r"\bnetworkPlugin cni failed to set up Pod\b"
+    ),
+)
+
 _SAM_BUILD_PERMISSION_FAILURE_PATTERNS = (
     (
         r"(?:PermissionError|Permission denied|Access is denied)"
@@ -1409,6 +1420,28 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html",
         suppressed_by=(
             r"\boperation error EC2:\s*CreateNetworkInterface\b",
+            *_EKS_NETWORK_POLICY_FAILURE_PATTERNS,
+        ),
+    ),
+    Rule(
+        id="kubernetes.pod-sandbox.network-setup-failed",
+        title="Kubernetes could not set up a pod sandbox network",
+        confidence="low",
+        patterns=_KUBERNETES_POD_SANDBOX_NETWORK_FAILURE_PATTERNS,
+        explanation=(
+            "The kubelet could not create a pod sandbox because the CNI network "
+            "setup stage failed. This wrapper does not identify the plugin's root "
+            "cause, so inspect the plugin and node evidence before changing the "
+            "workload or granting AWS permissions."
+        ),
+        verification=(
+            "Capture the pod, namespace, node, and timestamp with the complete `FailedCreatePodSandBox` event, including the `plugin type` and nested error when present.",
+            "Identify the CNI plugin from the event, then inspect its node DaemonSet or host log at the same timestamp; for EKS, check `aws-node` and `ipamd` before changing the workload.",
+            "If the nested message names an AWS API denial, subnet or ENI limit, or network-policy agent failure, use that specific finding and verify the named cause; do not broaden IAM for the sandbox wrapper alone.",
+        ),
+        documentation_url="https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/",
+        suppressed_by=(
+            *_EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS,
             *_EKS_NETWORK_POLICY_FAILURE_PATTERNS,
         ),
     ),
