@@ -11,6 +11,9 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 - [GitHub repository](https://github.com/jakegold1647/sam-doctor): source, tests, issues, and contribution guide.
 - [GitHub Marketplace Action](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics): diagnose saved deployment logs in CI.
 
+For a one-off local diagnosis without a global install, use
+`uvx sam-doctor diagnose deployment.log --format markdown`.
+
 ## Exact-error guides
 
 - [Deployment error index](https://sam-doctor.jacobgoldstein.dev/errors/): one page per exact error string with causes, fixes, and the diagnose command.

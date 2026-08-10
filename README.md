@@ -37,6 +37,13 @@ pipx install sam-doctor      # isolated global CLI
 uvx sam-doctor demo          # run without installing
 ```
 
+For a one-off diagnosis without changing the environment, run the stable
+package directly through `uvx`:
+
+```bash
+uvx sam-doctor diagnose deployment.log --format markdown
+```
+
 To install from a tagged source release instead of PyPI, use
 `pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@<tag>"`
 with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/releases).

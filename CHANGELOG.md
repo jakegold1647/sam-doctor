@@ -27,6 +27,10 @@ All notable changes to SAM Doctor are documented here.
   tools without adding a Python dependency; stdout remains unchanged for pipes
   and machine-readable formats.
 
+- **The stable install path now has a one-shot example.** README, quickstart,
+  and the machine-readable site guide show `uvx sam-doctor diagnose ...` for
+  trying a diagnosis without installing a global CLI.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact
