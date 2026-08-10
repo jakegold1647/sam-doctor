@@ -195,6 +195,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "The deployment status is NotImplemented in the report"
         ),
     ),
+    "aws.api.service-unknown": RuleFixture(
+        positive=(
+            "An error occurred (UnknownService) when calling the "
+            "PutMetricData operation: Unknown service target"
+        ),
+        negative="OpenTelemetry exported aws.local.service=UnknownService",
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

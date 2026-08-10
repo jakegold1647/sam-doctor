@@ -635,6 +635,28 @@ def test_unimplemented_aws_action_does_not_match_generic_not_implemented_text() 
 @pytest.mark.parametrize(
     "log",
     (
+        "An error occurred (UnknownService) when calling the PutMetricData operation: Unknown service target",
+        "Unknown service target when calling the PutMetricData operation: UnknownService",
+    ),
+)
+def test_unknown_aws_service_routes_to_endpoint_routing_checks(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == ["aws.api.service-unknown"]
+    assert findings[0].confidence == "low"
+
+
+def test_unknown_aws_service_does_not_match_telemetry_label() -> None:
+    findings = diagnose("OpenTelemetry exported aws.local.service=UnknownService")
+
+    assert "aws.api.service-unknown" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
         "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (

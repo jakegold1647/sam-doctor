@@ -303,6 +303,11 @@ _AWS_ACTION_NOT_IMPLEMENTED_PATTERNS = (
     r"\bwhen calling\b.{0,120}\bNotImplemented\b",
 )
 
+_AWS_UNKNOWN_SERVICE_PATTERNS = (
+    r"UnknownService\b.{0,160}\bwhen calling\b",
+    r"\bwhen calling\b.{0,160}\bUnknownService\b",
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1136,6 +1141,25 @@ _RULES = (
             "Retry against the intended AWS Region and endpoint after correcting the compatibility issue; do not grant broader permissions for an operation the endpoint cannot implement.",
         ),
         documentation_url="https://docs.aws.amazon.com/scheduler/latest/APIReference/API_ListSchedules.html",
+    ),
+    Rule(
+        id="aws.api.service-unknown",
+        title="The endpoint could not route the request to a known AWS service",
+        confidence="low",
+        patterns=_AWS_UNKNOWN_SERVICE_PATTERNS,
+        explanation=(
+            "The request reported an UnknownService marker while calling an AWS "
+            "operation. A custom endpoint, proxy, emulator, service target, or "
+            "client protocol may not be registered or may not match the operation; "
+            "the line does not establish an IAM problem or prove that AWS lacks "
+            "the service."
+        ),
+        verification=(
+            "Preserve the service, operation, endpoint URL, Region, SDK or CLI version, and protocol target from the same evidence line.",
+            "Confirm that the endpoint is intended for that AWS service and that any proxy or emulator registers the service and wire protocol used by the client.",
+            "Retry against the intended AWS endpoint or update the client or emulator after correcting the routing mismatch; do not grant broader permissions for an endpoint that cannot identify the service.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

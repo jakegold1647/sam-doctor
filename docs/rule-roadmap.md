@@ -926,6 +926,38 @@ against the intended endpoint after correcting compatibility before changing IAM
 
 ---
 
+## 24. AWS could not identify the service for an operation
+
+**Status:** landed - the catalog now recognizes `UnknownService` paired with
+`when calling` an AWS operation.
+
+**Failure family.** A custom endpoint, proxy, emulator, or client protocol sends
+an operation to a service target that is not registered at that endpoint. A stale
+service model or wrong endpoint can produce the same AWS-shaped response; this
+does not establish an IAM denial or prove that AWS lacks the service.
+
+**Sanitized signal line.**
+
+```text
+An error occurred (UnknownService) when calling the PutMetricData operation: Unknown service target
+```
+
+**Pattern hint.** Require both `UnknownService` and `when calling` on the same
+line; do not match telemetry labels such as `aws.local.service=UnknownService`.
+
+**Safe verification steps.** Preserve the service, operation, endpoint URL,
+Region, SDK or CLI version, protocol target, and HTTP status. Confirm that the
+endpoint is intended for the service and that any proxy or emulator registers
+the service and wire protocol. Retry against the intended AWS endpoint or update
+the client/emulator before changing IAM.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -937,18 +969,18 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 294 of 333 excerpts (88%), with 39 misses. It included dedicated
+diagnosed 297 of 335 excerpts (89%), with 38 misses. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, and request-shape failures, ECS Exec
-managed-agent failures, unknown or invalid AWS API actions, and unimplemented
-AWS API actions, plus the broader change-set wording.
+managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
+API actions, and unknown AWS services, plus the broader change-set wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 23 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 24 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:
