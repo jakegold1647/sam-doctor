@@ -4,7 +4,8 @@
 This is a scheduled maintainer check, not part of the offline pull-request
 gate. It reads the public GitHub issue queue and reports drift when a ready
 issue loses its newcomer labels, is assigned without being re-triaged, or no
-longer has enough context for a first contribution.
+longer has enough context for a first contribution. It also reports an
+unassigned ready issue when a non-maintainer explicitly claims it in a comment.
 """
 
 from __future__ import annotations
@@ -21,6 +22,18 @@ DEFAULT_REPOSITORY = "jakegold1647/sam-doctor"
 READY_LABEL = "status: ready"
 REQUIRED_LABELS = ("good first issue", "mentor available")
 CLAIM_MARKERS = ("take this", "claim this", "claim it")
+ACTIVE_CLAIM_MARKERS = (
+    "i'd like to take this",
+    "i would like to take this",
+    "i'll take this",
+    "i will take this",
+    "i'm taking this",
+    "i am taking this",
+    "claiming this",
+    "i claim this",
+    "i'll take it",
+    "i will take it",
+)
 SCOPE_MARKERS = (
     "acceptance criteria",
     "proposed behavior",
@@ -92,6 +105,19 @@ def validate_ready_issue(issue: dict[str, Any], comments: list[dict[str, Any]]) 
     )
     if not has_claim_prompt:
         problems.append("missing maintainer claim prompt")
+
+    owner_login = str((issue.get("user") or {}).get("login") or "").lower()
+    has_active_claim = any(
+        str((comment.get("user") or {}).get("login") or "").lower() != owner_login
+        and any(
+            marker in str(comment.get("body") or "").lower().replace("’", "'")
+            for marker in ACTIVE_CLAIM_MARKERS
+        )
+        for comment in comments
+        if owner_login and (comment.get("user") or {}).get("login")
+    )
+    if has_active_claim and not (issue.get("assignee") or issue.get("assignees")):
+        problems.append("unassigned work has a contributor claim in comments")
     return problems
 
 

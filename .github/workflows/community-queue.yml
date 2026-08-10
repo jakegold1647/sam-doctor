@@ -2,15 +2,17 @@ name: Community queue check
 
 # This is a networked maintainer signal, not part of the offline PR gate. It
 # catches queue drift before a newcomer lands on an issue that is not actually
-# ready or no longer has a clear person to ask for help. Issue events make the
-# check immediate when labels, assignment, state, or scope changes; the weekly
-# run remains a backstop.
+# ready or no longer has a clear person to ask for help. Issue events and
+# comments make the check immediate when labels, assignment, state, scope, or
+# a contributor claim changes; the weekly run remains a backstop.
 on:
   schedule:
     - cron: "0 9 * * 1"
   workflow_dispatch:
   issues:
     types: [assigned, unassigned, labeled, unlabeled, edited, closed, reopened]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   contents: read

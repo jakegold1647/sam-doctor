@@ -36,7 +36,9 @@ documentation path are clear. Add `status: ready` only when the issue has a
 concrete first file or command, acceptance criteria, and a maintainer path for
 questions. Pair it with `mentor available` when a newcomer can ask for help;
 remove `status: ready` when the issue is claimed, blocked, or needs more
-reproduction. Keep these labels meaningful so a newcomer can trust the queue.
+reproduction. When a newcomer explicitly claims an issue in a comment, assign
+it or remove `status: ready` promptly so nobody else starts duplicate work.
+Keep these labels meaningful so a newcomer can trust the queue.
 
 The scheduled [community queue check](../.github/workflows/community-queue.yml)
 checks this contract against GitHub's public issue data. It is intentionally

@@ -13,6 +13,7 @@ SPEC.loader.exec_module(QUEUE)
 def _issue(*, labels: tuple[str, ...], body: str, assigned: bool = False) -> dict:
     assignee = {"login": "someone"} if assigned else None
     return {
+        "user": {"login": "jakegold1647"},
         "labels": [{"name": label} for label in labels],
         "body": body,
         "assignee": assignee,
@@ -50,3 +51,57 @@ def test_ready_issue_reports_assignment_and_missing_scope() -> None:
 
     assert "assigned work still carries `status: ready`" in problems
     assert "missing scoped acceptance or implementation details" in problems
+
+
+def test_ready_issue_reports_unassigned_contributor_claim() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(
+        issue,
+        [
+            {"user": {"login": "newcomer"}, "body": "I'd like to take this"},
+        ],
+    )
+
+    assert "unassigned work has a contributor claim in comments" in problems
+
+
+def test_ready_issue_reports_curly_apostrophe_contributor_claim() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(
+        issue,
+        [
+            {
+                "user": {"login": "newcomer"},
+                "body": "I\u2019d like to take this",
+            },
+        ],
+    )
+
+    assert "unassigned work has a contributor claim in comments" in problems
+
+
+def test_maintainer_invitation_is_not_an_active_claim() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available"),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(
+        issue,
+        [
+            {
+                "user": {"login": "jakegold1647"},
+                "body": "Comment `I'd like to take this` if you want it.",
+            },
+        ],
+    )
+
+    assert "unassigned work has a contributor claim in comments" not in problems
