@@ -27,3 +27,13 @@ def test_public_entry_points_make_early_feedback_welcome() -> None:
         ".github/pull_request_template.md"
     )
     assert "Draft PRs are welcome" in _read("site/index.html")
+
+
+def test_queue_check_runs_when_issue_availability_changes() -> None:
+    """Keep claim and label changes from waiting for the weekly sweep."""
+
+    workflow = _read(".github/workflows/community-queue.yml")
+    assert (
+        "types: [assigned, unassigned, labeled, unlabeled, edited, closed, reopened]"
+        in workflow
+    )
