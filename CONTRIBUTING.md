@@ -32,12 +32,19 @@ For tooling improvements, use the feature request template and include:
 
 ## First contribution path
 
-If this is your first contribution, start with this three-step flow:
+If this is your first contribution, choose the smallest path that fits:
 
-1. Open a small diagnostic issue with the built-in template.
-2. Add one focused regression test in `tests/test_diagnostics.py` (or a fixture for
-   `src/sam_doctor/data` if needed).
-3. Open a PR using the template and include the exact command that reproduced the issue.
+1. **Docs or community:** pick a `good first issue`, correct a guide, or share a
+   safe result through the [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml),
+   [Ideas](https://github.com/jakegold1647/sam-doctor/discussions/categories/ideas),
+   or [Show and tell](https://github.com/jakegold1647/sam-doctor/discussions/categories/show-and-tell).
+   No code is required.
+2. **Diagnostic or fixture:** claim a scoped rule issue and follow the
+   [diagnostic-rule guide](docs/contributing-a-diagnostic-rule.md). Add one
+   positive case and one nearby non-match when behavior changes.
+3. **Any path:** keep the change narrow, run `python scripts/check-pr.py`, and
+   open a PR using the template. Include the command, example, or documentation
+   page that lets a reviewer reproduce what changed.
 
 To lower contributor friction, labels to look for:
 
