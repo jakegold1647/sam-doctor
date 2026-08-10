@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(83 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(85 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -61,6 +61,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [CannotStartManagedAgentError](https://sam-doctor.jacobgoldstein.dev/errors/ecs-execute-command-agent.html): inspect ECS Exec enablement, the managed agent, SSM messaging, network access, and filesystem prerequisites.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.
 - [The REST API doesn't contain any methods](https://sam-doctor.jacobgoldstein.dev/errors/rest-api-no-methods.html): API Gateway deployment/method ordering.
+- [API Gateway endpoint access mode required](https://sam-doctor.jacobgoldstein.dev/errors/apigateway-security-policy-endpoint-access-required.html): set `EndpointAccessMode` alongside an enhanced `SecurityPolicy_*` before changing IAM.
 - [No changes to deploy / No updates are to be performed](https://sam-doctor.jacobgoldstein.dev/errors/no-changes-to-deploy.html): the empty change set and --no-fail-on-empty-changeset.
 - [Access denied with an explicit deny](https://sam-doctor.jacobgoldstein.dev/errors/access-denied-explicit-deny.html): SCP and Deny-statement failures that Allow policies cannot fix.
 - [Denied because no policy allows it](https://sam-doctor.jacobgoldstein.dev/errors/access-denied-no-policy-allows.html): implicit denies and the policy layer the error names.

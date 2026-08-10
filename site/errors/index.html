@@ -128,6 +128,7 @@
         <h2 id="build-title">Build and template errors</h2>
         <p class="muted"><a href="./codebuild-codeconnections-access.html">User is not authorized to access connection (AWSCodeBuild / OAuthProviderException)</a> - the CodeBuild project role or connection is not usable yet.</p>
         <ul>
+          <li><a href="./apigateway-security-policy-endpoint-access-required.html">Endpoint access mode is required for the specified security policy</a> - set <code>EndpointAccessMode</code> alongside an enhanced <code>SecurityPolicy_*</code>.</li>
           <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — container builds without a reachable Docker daemon.</li>
           <li><a href="./sam-build-output-permission-denied.html">SAM build output permission denied</a> — inspect ownership, locks, and permissions under <code>.aws-sam/build</code> before changing AWS settings.</li>
           <li><a href="./ecs-execute-command-agent.html">CannotStartManagedAgentError / ECS Exec agent not running</a> — check task launch enablement, SSM messaging, and writable filesystem prerequisites.</li>

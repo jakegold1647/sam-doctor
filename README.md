@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (83 diagnostics). Stable
+The public guides follow the current `main` catalog (85 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -437,6 +437,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   workloads or IAM
 - Kubernetes pod-sandbox network setup wrappers that preserve the named CNI
   plugin and node-level evidence before changing the workload or IAM
+- API Gateway enhanced security-policy failures that point at the missing
+  `EndpointAccessMode` property before changing IAM
 - ECS Exec managed-agent failures (`CannotStartManagedAgentError` and the
   `ExecuteCommand` wrapper), with task-state and SSM prerequisite checks
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection

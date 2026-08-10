@@ -245,6 +245,10 @@ _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN = (
     r"AbortIncompleteMultipartUpload cannot be specified with Tags"
 )
 
+_APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN = (
+    r"Endpoint access mode is required for the specified security policy\b"
+)
+
 _IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS = (
     r"(?:following )?resource\s+['\"]?ImageRecipe['\"]?\s+already exists",
     r"ResourceAlreadyExistsException.*(?:ImageRecipe|CreateImageRecipe)",
@@ -1663,6 +1667,23 @@ _RULES = (
         ),
     ),
     Rule(
+        id="apigateway.security-policy.endpoint-access-required",
+        title="API Gateway needs an endpoint access mode for its security policy",
+        confidence="high",
+        patterns=(_APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN,),
+        explanation=(
+            "API Gateway rejected an enhanced `SecurityPolicy_*` because the "
+            "REST API or custom domain did not declare an endpoint access mode. "
+            "This is a resource-property mismatch, not an IAM failure."
+        ),
+        verification=(
+            "Read the API or custom-domain resource and confirm whether its `SecurityPolicy` starts with `SecurityPolicy_`; enhanced policies require an explicit endpoint access mode.",
+            "Set `EndpointAccessMode` to the mode that matches the intended traffic (`BASIC` or `STRICT`) on `AWS::Serverless::Api`, `AWS::ApiGateway::RestApi`, or the relevant domain resource, then verify the transformed template.",
+            "If the API is defined through OpenAPI, keep the equivalent `x-amazon-apigateway-endpoint-access-mode` extension in the generated definition and retry; do not change IAM for this validation error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-security-policies.html",
+    ),
+    Rule(
         id="apigateway.deployment.no-methods",
         title="API Gateway deployment started before the API had any methods",
         confidence="high",
@@ -1795,6 +1816,7 @@ _RULES = (
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
+            _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN,
         ),
     ),
     Rule(

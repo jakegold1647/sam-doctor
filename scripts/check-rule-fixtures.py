@@ -515,6 +515,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="The REST API doesn't contain any methods",
         negative="The REST API contains three methods and deployed cleanly",
     ),
+    "apigateway.security-policy.endpoint-access-required": RuleFixture(
+        positive=(
+            'MyApi CREATE_FAILED: Resource handler returned message: "Endpoint '
+            'access mode is required for the specified security policy (Service: '
+            'ApiGateway, Status Code: 400)"'
+        ),
+        negative="API Gateway accepted the enhanced security policy with STRICT endpoint access mode",
+    ),
     "cloudformation.resource.stabilization-timeout": RuleFixture(
         positive="Resource handler returned message: Exceeded attempts to wait",
         negative="The resource reached CREATE_COMPLETE within the expected window",

@@ -80,6 +80,7 @@ QUERIES = (
     '"Failed to create pod sandbox" "plugin type=aws-cni" in:body',
     '"failed to setup network policy" "aws-cni" in:body',
     '"FailedCreatePodSandBox" "failed to setup network for sandbox" in:body',
+    '"Endpoint access mode is required for the specified security policy" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -132,6 +133,7 @@ FAILURE_SIGNAL = re.compile(
     r"|failed to setup (?:default )?network policy\b"
     r"|Network policy agent returned\b"
     r"|(?:FailedCreatePodSandBox|Failed to create pod sandbox)\b.{0,500}\bfailed to set ?up network for sandbox\b"
+    r"|Endpoint access mode is required for the specified security policy\b"
     r"|execute command failed because execute command was not enabled"
     r"|^(?!.*unable to unlink old).*Error: [A-Z]"
     r")"

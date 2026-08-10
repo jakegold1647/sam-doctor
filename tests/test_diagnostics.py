@@ -766,6 +766,28 @@ def test_kubernetes_pod_sandbox_fallback_yields_to_aws_cni_finding() -> None:
     ]
 
 
+def test_apigateway_security_policy_requires_endpoint_access_mode() -> None:
+    findings = diagnose(
+        'MyApi CREATE_FAILED: Resource handler returned message: "Endpoint access mode is required for '
+        'the specified security policy (Service: ApiGateway, Status Code: 400)"'
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "apigateway.security-policy.endpoint-access-required"
+    ]
+    assert findings[0].confidence == "high"
+
+
+def test_apigateway_security_policy_rule_ignores_unrelated_endpoint_text() -> None:
+    findings = diagnose(
+        "API Gateway endpoint access mode is configured and the security policy is valid"
+    )
+
+    assert "apigateway.security-policy.endpoint-access-required" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_eks_vpc_cni_wrapper_yields_to_nested_ec2_cause() -> None:
     findings = diagnose(
         'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" failed (add)\n'
