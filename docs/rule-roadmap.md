@@ -1133,6 +1133,47 @@ after a non-empty identifier reaches the SDK.
 
 ---
 
+## 30. EKS could not create a pod sandbox through the VPC CNI
+
+**Status:** landed - the catalog now recognizes the Kubernetes wrapper that
+reports an `aws-cni` add failure while leaving the nested cause to the node's
+`aws-node` or `ipamd` log.
+
+**Failure family.** A Pod is stuck in `Pending` or `ContainerCreating` because
+the Amazon VPC CNI could not set up its network namespace. The kubelet line does
+not distinguish subnet or prefix exhaustion, ENI or instance limits, CNI IAM,
+subnet selection, or an unhealthy add-on, so the safe handoff is to the matching
+CNI log rather than a guessed infrastructure fix.
+
+**Sanitized signal line.**
+
+```text
+Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "pod-sandbox": plugin type="aws-cni" name="aws-cni" failed (add): add cmd: failed to assign an IP address to container
+```
+
+**Pattern hint.** Match `Failed to create pod sandbox` with `aws-cni` and a
+following `failed` marker, or the specific `plugin type="aws-cni" ... failed`
+line when a log formatter split the wrapper across lines. If the same log contains a complete
+`operation error EC2: CreateNetworkInterface` response, the more specific EC2
+network-interface rule should own that evidence instead.
+
+**Safe verification steps.** Record the Pod, node, Availability Zone, and
+timestamp, then inspect the matching `aws-node` DaemonSet or `ipamd` log. If the
+nested message names unavailable IPs or prefixes, inspect the node subnet and
+instance ENI/IP limits and review the VPC CNI prefix or secondary-IP mode. If it
+names `UnauthorizedOperation` or `AccessDenied`, verify the VPC CNI or node
+role's least-privilege EC2 actions; if `aws-node` is unhealthy, check the
+DaemonSet, add-on version, and node readiness before changing workloads.
+
+**Documentation links.**
+<https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html>
+
+<https://docs.aws.amazon.com/eks/latest/userguide/cni-increase-ip-addresses.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1144,22 +1185,24 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 342 of 381 excerpts (90%), with 39 misses after entry 29. It included dedicated
+diagnosed 369 of 409 excerpts (90%), with 40 misses after entry 30. It included dedicated
 searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, empty-system-prompt, and empty-model-id
 request-shape failures, ECS Exec
-managed-agent failures, unknown or invalid AWS API actions, unimplemented AWS
+managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
 API actions, unknown AWS services, STS caller-identity wrappers, Glue database
 rename failures, and Cloud Control operation wrappers, plus the broader
 change-set wording. Entry 28 adds the EC2 network-interface wrapper family
-from a repeated public Terraform/provider failure shape.
+from a repeated public Terraform/provider failure shape. Entry 30 adds the
+EKS VPC CNI pod-sandbox wrapper family from repeated public EKS and VPC CNI
+failure reports, while yielding to the nested EC2 cause when it is present.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 29 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 30 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

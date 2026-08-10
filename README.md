@@ -52,7 +52,7 @@ release, try them explicitly from `main`:
 python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
 ```
 
-The public guides follow the current `main` catalog (75 diagnostics). Stable
+The public guides follow the current `main` catalog (76 diagnostics). Stable
 PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
 `main` install above when you need newer rule coverage as well as `run` or
 clipboard support.
@@ -429,6 +429,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   and request token before retrying or changing IAM
 - EC2 `CreateNetworkInterface` provider wrappers that preserve the nested
   status, subnet capacity, permission, request-shape, and endpoint checks
+- EKS Amazon VPC CNI pod-sandbox failures that point at the nested `aws-node`
+  or `ipamd` error before changing workloads
 - ECS Exec managed-agent failures (`CannotStartManagedAgentError` and the
   `ExecuteCommand` wrapper), with task-state and SSM prerequisite checks
 - Blocked stack deletion: `DELETE_FAILED` blockers and termination protection

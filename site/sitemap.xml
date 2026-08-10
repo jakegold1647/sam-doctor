@@ -69,6 +69,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cloudcontrol-operation-incomplete.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/ec2-network-interface-create-failed.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/eks-vpc-cni-pod-sandbox-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/security-token-invalid.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/ssm-parameter-cannot-be-found.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/tag-action-denied.html</loc></url>

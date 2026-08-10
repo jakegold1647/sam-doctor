@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **EKS VPC CNI pod-sandbox failures now have a focused handoff.** A
+  low-confidence finding recognizes the `aws-cni` wrapper, points at the
+  matching `aws-node` or `ipamd` error, and yields to a nested EC2 cause when
+  one is present.
+
 - **Bedrock empty-model-id failures now have a focused handoff.** A
   medium-confidence finding recognizes the runtime client's exact serialization
   marker and points at the model configuration and request shape before model

@@ -89,6 +89,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "aws.api.service-unknown": "aws-service-unknown.html",
     "aws.credentials.caller-identity-unavailable": "sts-caller-identity-unavailable.html",
     "ec2.network-interface.create-failed": "ec2-network-interface-create-failed.html",
+    "eks.vpc-cni.pod-sandbox-network-failed": "eks-vpc-cni-pod-sandbox-failed.html",
     "glue.database.rename-rejected": "glue-database-rename-rejected.html",
     "cloudcontrol.operation.incomplete": "cloudcontrol-operation-incomplete.html",
     "ecs.execute-command.agent-unavailable": "ecs-execute-command-agent.html",

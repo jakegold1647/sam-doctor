@@ -93,6 +93,10 @@ EXPECTED_HIDING = {
     # reasons above.
     ("sam.deploy.configuration-resolution-failed", "ssm.parameter.resolution-failed"),
     ("sam.template.schema-validation-failed", "sam.template.invalid-property"),
+    # The VPC CNI wrapper is only a fallback. When the same log includes the
+    # nested CreateNetworkInterface response, the EC2 rule has the actionable
+    # status and error code, so the wrapper must yield for the whole event.
+    ("eks.vpc-cni.pod-sandbox-network-failed", "ec2.network-interface.create-failed"),
 }
 
 

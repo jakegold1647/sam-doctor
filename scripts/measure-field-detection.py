@@ -72,6 +72,7 @@ QUERIES = (
     '"Database cannot be renamed" in:body',
     '"AWS SDK Go Service Operation Incomplete" in:body',
     '"operation error EC2: CreateNetworkInterface" in:body',
+    '"Failed to create pod sandbox" "plugin type=aws-cni" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -110,6 +111,8 @@ FAILURE_SIGNAL = re.compile(
     r"|Database cannot be renamed\b"
     r"|AWS SDK Go Service Operation Incomplete\b"
     r"|(?:Error:\s*creating EC2 Network Interface|Failed to (?:CreateNetworkInterface|create network interface)|failed to create (?:an )?network interface|error creating (?:an )?network interface).{0,320}\boperation error EC2:\s*CreateNetworkInterface\b"
+    r"|Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b"
+    r"|plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"
     r")"

@@ -19,7 +19,7 @@ shell-independent `run` wrapper and native clipboard handoff are currently on
 the `main` branch; try them with
 `python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
 until the next stable release. These guides follow the current `main` catalog
-(75 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+(76 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
 
 ## Exact-error guides
 
@@ -49,6 +49,7 @@ until the next stable release. These guides follow the current `main` catalog
 - [AWS Glue database cannot be renamed](https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html): keep the existing catalog name or create a replacement database before migrating consumers.
 - [Cloud Control API operation incomplete](https://sam-doctor.jacobgoldstein.dev/errors/cloudcontrol-operation-incomplete.html): inspect the ProgressEvent, StatusMessage, ErrorCode, resource identity, and request token.
 - [EC2 CreateNetworkInterface failed](https://sam-doctor.jacobgoldstein.dev/errors/ec2-network-interface-create-failed.html): read the nested status, subnet capacity, permissions, request shape, and endpoint support.
+- [EKS VPC CNI pod sandbox failed](https://sam-doctor.jacobgoldstein.dev/errors/eks-vpc-cni-pod-sandbox-failed.html): inspect the matching `aws-node` or `ipamd` error for IP, ENI, permission, subnet, and add-on checks.
 - [Cannot connect to the Docker daemon](https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html): sam build --use-container without a reachable Docker daemon.
 - [CannotStartManagedAgentError](https://sam-doctor.jacobgoldstein.dev/errors/ecs-execute-command-agent.html): inspect ECS Exec enablement, the managed agent, SSM messaging, network access, and filesystem prerequisites.
 - [Esbuild Failed: Cannot find esbuild](https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html): missing esbuild devDependency in the function project.

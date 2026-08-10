@@ -615,6 +615,54 @@ def test_bedrock_empty_model_id_does_not_match_generic_invoke_model_failure() ->
     }
 
 
+def test_eks_vpc_cni_pod_sandbox_wrapper_routes_to_cni_logs() -> None:
+    findings = diagnose(
+        'Failed to create pod sandbox: rpc error: code = Unknown desc = '
+        'failed to setup network for sandbox "pod-sandbox": plugin type="aws-cni" '
+        'name="aws-cni" failed (add): add cmd: failed to assign an IP address to container'
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "eks.vpc-cni.pod-sandbox-network-failed"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_eks_vpc_cni_wrapper_yields_to_nested_ec2_cause() -> None:
+    findings = diagnose(
+        'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" failed (add)\n'
+        "Failed to CreateNetworkInterface operation error EC2: CreateNetworkInterface, "
+        "https response error StatusCode: 400, api error InvalidParameterValue: "
+        "There aren't sufficient free IPv4 addresses in the subnet"
+    )
+
+    rule_ids = {finding.rule_id for finding in findings}
+    assert "eks.vpc-cni.pod-sandbox-network-failed" not in rule_ids
+    assert "ec2.network-interface.create-failed" in rule_ids
+
+
+def test_eks_vpc_cni_plugin_line_is_enough_when_wrapper_is_split() -> None:
+    findings = diagnose(
+        'plugin type="aws-cni" name="aws-cni" failed (add): '
+        "failed to assign an IP address to container"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "eks.vpc-cni.pod-sandbox-network-failed"
+    ]
+
+
+def test_eks_vpc_cni_wrapper_does_not_match_another_plugin() -> None:
+    findings = diagnose(
+        'Failed to create pod sandbox: plugin type="calico" name="calico" '
+        "failed (add): network unavailable"
+    )
+
+    assert "eks.vpc-cni.pod-sandbox-network-failed" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (

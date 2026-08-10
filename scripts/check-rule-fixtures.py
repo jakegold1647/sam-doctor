@@ -229,6 +229,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "IPv4 addresses in the subnet"
         ),
     ),
+    "eks.vpc-cni.pod-sandbox-network-failed": RuleFixture(
+        positive=(
+            'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" '
+            "failed (add): failed to assign an IP address to container"
+        ),
+        negative=(
+            'Failed to create pod sandbox: plugin type="calico" name="calico" '
+            "failed (add): network unavailable"
+        ),
+    ),
     "glue.database.rename-rejected": RuleFixture(
         positive=(
             "An error occurred (InvalidInputException) when calling the "

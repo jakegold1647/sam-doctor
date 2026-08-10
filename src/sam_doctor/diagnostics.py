@@ -331,6 +331,11 @@ _EC2_NETWORK_INTERFACE_CREATE_FAILURE_PATTERNS = (
     ),
 )
 
+_EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS = (
+    r"Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b",
+    r"plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b",
+)
+
 _GLUE_DATABASE_RENAME_PATTERN = r"Database cannot be renamed\b"
 
 _CLOUDCONTROL_OPERATION_INCOMPLETE_PATTERN = (
@@ -1247,6 +1252,27 @@ _RULES = (
             "When a custom endpoint or emulator handled the call, verify that it supports the EC2 CreateNetworkInterface operation before changing the infrastructure configuration.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html",
+    ),
+    Rule(
+        id="eks.vpc-cni.pod-sandbox-network-failed",
+        title="The EKS VPC CNI could not set up pod networking",
+        confidence="low",
+        patterns=_EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS,
+        explanation=(
+            "The Kubernetes runtime could not create a pod sandbox through the "
+            "Amazon VPC CNI. This wrapper does not contain the root cause; the "
+            "aws-node or ipamd log usually names subnet or prefix exhaustion, "
+            "ENI or instance limits, CNI permissions, subnet selection, or an "
+            "unhealthy add-on."
+        ),
+        verification=(
+            "Record the pod, node, Availability Zone, and timestamp, then inspect the matching aws-node DaemonSet or ipamd log for the nested EC2 status and error code; do not stop at the kubelet wrapper.",
+            "If the nested message names unavailable IPs or prefixes, check the node's subnet and the instance ENI/IP limits with `aws ec2 describe-subnets --subnet-ids <subnet-id> --region <region>` and review the VPC CNI prefix or secondary-IP configuration.",
+            "If it names UnauthorizedOperation or AccessDenied, verify the node or VPC CNI IAM role includes the least-privilege EC2 network-interface actions; if the add-on is unhealthy, check the aws-node DaemonSet status and version before changing workloads.",
+            "Retry only after the nested CNI or EC2 cause is corrected; when a complete `CreateNetworkInterface` response is present, use that more specific finding instead of this wrapper handoff.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html",
+        suppressed_by=(r"\boperation error EC2:\s*CreateNetworkInterface\b",),
     ),
     Rule(
         id="glue.database.rename-rejected",
