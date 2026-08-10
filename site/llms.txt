@@ -48,4 +48,5 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 1. Save the smallest sanitized error excerpt you are authorized to inspect.
 2. Run `sam-doctor diagnose deployment.log` or `sam-doctor demo`.
 3. Treat the finding as a focused starting point; verify it against AWS or GitHub documentation before changing anything.
-4. Never share account IDs, ARNs, credentials, tokens, customer data, or complete production logs.
+4. If no supported pattern matches, run `sam-doctor request-packet deployment.log`, review the redacted excerpt, and use it for a rule request.
+5. Never share account IDs, ARNs, credentials, tokens, customer data, or complete production logs.
