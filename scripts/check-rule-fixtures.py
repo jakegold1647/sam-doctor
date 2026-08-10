@@ -110,6 +110,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "content changed"
         ),
     ),
+    "cloudformation.api.service-unavailable": RuleFixture(
+        positive=(
+            "An error occurred (ServiceNotAvailable) when calling the CreateStack "
+            "operation: CloudFormation is temporarily unavailable"
+        ),
+        negative=(
+            "An error occurred (Throttling) when calling the DescribeStacks "
+            "operation: Rate exceeded"
+        ),
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

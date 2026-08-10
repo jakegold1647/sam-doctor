@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **CloudFormation service interruptions now have a focused diagnosis.** The
+  catalog recognizes `ServiceNotAvailable` and `ServiceUnavailable` responses
+  on stack operations, separates them from throttling, and points at a safe
+  retry with a stable client request token.
+
 - **EC2 Image Builder recipe collisions now have a focused diagnosis.** The
   catalog recognizes an `ImageRecipe` version that already exists, separates
   it from generic CloudFormation failures, and points at the read-only recipe

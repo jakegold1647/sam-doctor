@@ -251,6 +251,17 @@ _IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS = (
     r"(?:ImageRecipe|CreateImageRecipe).*ResourceAlreadyExistsException",
 )
 
+_CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS = (
+    (
+        r"An error occurred \((?:ServiceNotAvailable|ServiceUnavailable)\) when calling the "
+        r"(?:CreateStack|UpdateStack|CreateChangeSet|ExecuteChangeSet) operation"
+    ),
+    (
+        r"(?:ServiceUnavailableException|ServiceNotAvailable).{0,160}"
+        r"(?:CloudFormation|CreateStack|UpdateStack|CreateChangeSet|ExecuteChangeSet)"
+    ),
+)
+
 
 _RULES = (
     Rule(
@@ -897,6 +908,23 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/imagebuilder/latest/userguide/manage-recipes.html",
     ),
     Rule(
+        id="cloudformation.api.service-unavailable",
+        title="CloudFormation was temporarily unavailable",
+        confidence="high",
+        patterns=_CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS,
+        explanation=(
+            "CloudFormation returned a temporary service-unavailable response before "
+            "the stack operation could complete. This is an AWS control-plane outage "
+            "or interruption, not evidence that the template or IAM policy is wrong."
+        ),
+        verification=(
+            "Check AWS Health or the regional CloudFormation service status for an active interruption.",
+            "Wait briefly and retry with exponential backoff. For a new stack, keep a stable `--client-request-token` so a retry is not mistaken for a second create if AWS received the first request.",
+            "If the error repeats after the service recovers, preserve the exact operation, Region, timestamp, and request ID before opening an AWS support case; do not change the template based on this response alone.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html",
+    ),
+    Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
@@ -1161,6 +1189,7 @@ _RULES = (
             _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,
             _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN,
             *_IMAGEBUILDER_RECIPE_ALREADY_EXISTS_PATTERNS,
+            *_CLOUDFORMATION_SERVICE_UNAVAILABLE_PATTERNS,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
