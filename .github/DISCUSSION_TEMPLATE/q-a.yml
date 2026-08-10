@@ -1,0 +1,45 @@
+title: "[Help] "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You do not need a perfect bug report to ask for help. Share the smallest
+        safe version of the problem and someone can help you find the next check.
+
+        Please keep examples sanitized. Do not post credentials, AWS account IDs,
+        ARNs, customer data, private repository names, or raw production logs.
+        SAM Doctor does not collect telemetry.
+  - type: input
+    id: workflow
+    attributes:
+      label: What were you deploying?
+      description: Name the workflow without sharing private repository details.
+      placeholder: SAM through GitHub Actions, CDK from a local shell, or CloudFormation
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: What happened?
+      description: Include the command shape, the first useful error line, and what you expected.
+      placeholder: |
+        Command:
+        First useful error line:
+        Expected:
+        Actual:
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried? (optional)
+      description: A short diagnosis excerpt, docs link, or question is enough.
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Privacy check
+      description: Please confirm this before submitting.
+      options:
+        - label: I removed credentials, account IDs, ARNs, customer data, and other private identifiers.
+          required: true

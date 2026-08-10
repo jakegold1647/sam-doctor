@@ -18,6 +18,8 @@ authoritative root cause. It matches known patterns in text you provide. When
 nothing matches, it says so instead of guessing.
 
 [Project page](https://sam-doctor.jacobgoldstein.dev/) |
+[Community discussions](https://github.com/jakegold1647/sam-doctor/discussions) |
+[Contributor hall of fame](https://sam-doctor.jacobgoldstein.dev/contributors/) |
 [GitHub Marketplace](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics) |
 [Find a mentored first issue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22) |
 [Contributor guide](CONTRIBUTING.md) |
@@ -91,6 +93,26 @@ SAM Doctor found 1 possible issue(s) in oidc-assume-role-failure.txt.
 The description line is truncated here; the CLI prints it in full, along with a
 third trust-policy `sub` check. Output is deterministic for the same input, and
 evidence is redacted before display.
+
+## If a deployment just failed
+
+Start with the smallest safe excerpt, not the whole 400-line log:
+
+```bash
+sam-doctor diagnose deployment.log --format markdown
+```
+
+If the report says no supported pattern matched, write a short packet you can
+review before sharing:
+
+```bash
+sam-doctor request-packet deployment.log
+```
+
+Then bring the sanitized result to [Discussions](https://github.com/jakegold1647/sam-doctor/discussions/categories/q-a),
+open a [usage report](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml),
+or turn a missing pattern into a [rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml).
+You do not need to know the fix before asking.
 
 ## Who this is for
 

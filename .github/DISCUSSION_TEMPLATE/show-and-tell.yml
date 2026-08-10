@@ -7,6 +7,9 @@ body:
         Showing a real, reproducible path gives the next contributor something
         concrete to build on.
 
+        It does not need to be polished. A short story about what you tried and
+        what you learned is a useful contribution.
+
         Keep examples sanitized. Do not post credentials, AWS account IDs, ARNs,
         customer data, private repository names, or raw production logs. SAM Doctor
         does not collect telemetry.
