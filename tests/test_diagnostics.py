@@ -470,6 +470,28 @@ def test_cdk_assembly_failure_routes_to_verbose_synthesis(log: str) -> None:
     assert findings[0].confidence == "low"
 
 
+def test_cdk_asset_bundle_failure_routes_to_asset_build_output() -> None:
+    log = (
+        "Failed to bundle asset amplify-app/function/Api/Code/Stage, "
+        "bundle output is located at /tmp/cdk.out/bundling-temp-error: "
+        "Error: esbuild exited with status 1\n"
+        "[BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed"
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == ["cdk.asset.bundling-failed"]
+    assert findings[0].confidence == "low"
+
+
+def test_cdk_asset_bundle_rule_requires_the_temporary_output_marker() -> None:
+    findings = diagnose("Failed to bundle asset ApiFunction")
+
+    assert "cdk.asset.bundling-failed" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_lambda_invoke_missing_target_routes_to_read_only_function_check() -> None:
     findings = diagnose(
         "An error occurred (ResourceNotFoundException) when calling the Invoke "

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **CDK asset-bundling failures now have a focused handoff.** A low-confidence
+  finding recognizes the asset and temporary output wrapper, then points at the
+  underlying compiler, dependency, permission, or Docker error without guessing
+  which one occurred.
+
 - **Bedrock nested message-content validation failures now have a focused
   handoff.** A medium-confidence finding surfaces the indexed missing field
   path, including text, thinking, image, and document content blocks, before

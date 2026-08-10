@@ -1248,6 +1248,43 @@ or renamed field, then retry before changing access or IAM.
 
 ---
 
+## 33. AWS CDK could not bundle an asset before deployment
+
+**Status:** landed - the catalog now recognizes the CDK asset wrapper that names
+the failed asset and its temporary bundle output directory.
+
+**Failure family.** CDK builds local assets such as Lambda code before it can
+finish synthesis or deploy the stack. Package-manager, compiler, permission, or
+Docker failures are often wrapped in `Failed to bundle asset`, leaving the
+underlying command as the useful evidence. Amplify Gen 2 and other CDK-backed
+wrappers can surface the same asset-staging line.
+
+**Sanitized signal line.**
+
+```text
+Failed to bundle asset amplify-app/function/Api/Code/Stage, bundle output is located at /tmp/cdk.out/bundling-temp-error: Error: esbuild exited with status 1
+```
+
+**Pattern hint.** Match `Failed to bundle asset` together with `bundle output is
+located at`. The asset name alone is not enough, and the rule deliberately does
+not guess whether the underlying failure is a dependency, compiler, permission,
+or Docker problem. When the same log also contains `AssemblyError: Assembly
+builder failed`, the asset finding owns the wrapper because it names the concrete
+build stage.
+
+**Safe verification steps.** Re-run `cdk synth --verbose` with the same app,
+context, working directory, credentials, environment, and tool versions. Inspect
+the first compiler or dependency error after the temporary `-error` path. For
+Docker bundling, reproduce the exact image and command and verify that the runner
+can read the asset input and write the output directory.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/cdk/v2/guide/assets.html>
+
+**Suggested confidence.** low.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -1259,8 +1296,8 @@ log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
-diagnosed 377 of 418 excerpts (90%), with 41 misses after entry 32. It included dedicated
-searches for CDK assembly-wrapper variants, Lambda `Invoke` target misses,
+diagnosed 403 of 444 excerpts (91%), with 41 misses after entry 33. It included dedicated
+searches for CDK assembly-wrapper and asset-bundling variants, Lambda `Invoke` target misses,
 Bedrock first-use, model-identifier, empty-system-prompt, empty-model-id, and
 missing-messages and nested message-content request-shape failures, ECS Exec
 managed-agent failures, EKS VPC CNI pod-sandbox wrappers, unknown or invalid AWS API actions, unimplemented AWS
@@ -1280,7 +1317,7 @@ the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 32 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 33 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

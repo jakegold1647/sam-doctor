@@ -48,6 +48,10 @@ REAL_FAILURE_LINES = (
     "An error occurred (ResourceNotFoundException) when calling the Invoke operation",
     "Waiter ChangeSetCreateComplete failed: Template format error: Unresolved resource dependencies [Environment]",
     "CannotStartManagedAgentError: failed to start managed agent inside container",
+    (
+        "Failed to bundle asset app/function/Api/Code/Stage, bundle output is "
+        "located at /tmp/cdk.out/bundling-temp-error: Error: esbuild exited with status 1"
+    ),
 )
 
 NOT_FAILURE_LINES = (

@@ -134,6 +134,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="CDK synthesized the cloud assembly and wrote it to cdk.out.",
     ),
+    "cdk.asset.bundling-failed": RuleFixture(
+        positive=(
+            "Failed to bundle asset amplify-app/function/Api/Code/Stage, "
+            "bundle output is located at /tmp/cdk.out/bundling-temp-error: "
+            "Error: esbuild exited with status 1"
+        ),
+        negative="CDK bundled the Lambda asset and wrote it to cdk.out.",
+    ),
     "lambda.invoke.function-not-found": RuleFixture(
         positive=(
             "An error occurred (ResourceNotFoundException) when calling the Invoke "

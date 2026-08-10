@@ -55,6 +55,7 @@ QUERIES = (
     '"did not stabilize" cloudformation in:body',
     '"sam build" "Docker" error in:body',
     '"Assembly builder failed" in:body',
+    '"Failed to bundle asset" "bundle output is located at" in:body',
     '"AssumeRoleWithWebIdentity" "not authorized" in:body',
     '"An error occurred" "when calling the" cloudformation in:body',
     '"Resource handler returned message" in:body',
@@ -96,6 +97,7 @@ FAILURE_SIGNAL = re.compile(
     r"|Unable to get (?:ID Token|ACTIONS_ID_TOKEN)"
     r"|is in [A-Z_]+ state and can not be updated"
     r"|\[_AssemblyError\][ \t]*Assembly builder failed"
+    r"|Failed to bundle asset\b.{0,2000}\bbundle output is located at\b"
     r"|ResourceNotFoundException.{0,160}when calling (?:the )?Invoke operation"
     r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
     r"|Model use case details have not been submitted for this account"

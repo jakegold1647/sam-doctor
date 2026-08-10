@@ -78,6 +78,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "imagebuilder.recipe.version-already-exists": "imagebuilder-recipe-already-exists.html",
     "cloudformation.api.service-unavailable": "cloudformation-service-unavailable.html",
     "cloudformation.deploy.wrapper-failed": "cloudformation-deploy-wrapper-failed.html",
+    "cdk.asset.bundling-failed": "cdk-asset-bundling-failed.html",
     "cdk.synth.assembly-failed": "cdk-assembly-failed.html",
     "lambda.invoke.function-not-found": "lambda-invoke-function-not-found.html",
     "bedrock.model-access.first-use-form-required": "bedrock-model-access.html",

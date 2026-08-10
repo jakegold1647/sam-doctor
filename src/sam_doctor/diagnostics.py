@@ -275,6 +275,10 @@ _CDK_ASSEMBLY_FAILURE_PATTERN = (
     r"\[_AssemblyError\]\s*Assembly builder failed\b)"
 )
 
+_CDK_ASSET_BUNDLING_FAILURE_PATTERN = (
+    r"Failed to bundle asset\b.{0,2000}\bbundle output is located at\b"
+)
+
 _LAMBDA_INVOKE_NOT_FOUND_PATTERNS = (
     r"ResourceNotFoundException\b.{0,160}\bwhen calling (?:the )?Invoke(?: operation)?\b",
     r"\bwhen calling (?:the )?Invoke(?: operation)?\b.{0,160}ResourceNotFoundException\b",
@@ -1060,6 +1064,25 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/view-stack-events.html",
     ),
     Rule(
+        id="cdk.asset.bundling-failed",
+        title="AWS CDK could not bundle an asset before deployment",
+        confidence="low",
+        patterns=(_CDK_ASSET_BUNDLING_FAILURE_PATTERN,),
+        explanation=(
+            "AWS CDK could not build a local asset such as Lambda code before it "
+            "could synthesize or deploy the stack. The bundle wrapper names the "
+            "asset and temporary output directory, but the useful compiler, "
+            "dependency, permission, or Docker error is usually in the text after "
+            "the `-error` suffix or in the preceding command output."
+        ),
+        verification=(
+            "Rerun `cdk synth --verbose` from the same project directory with the same app, context, and environment, then inspect the first bundler error for the named asset.",
+            "Check the asset's package manager dependencies and build command in the failing directory; for Docker bundling, confirm the runner can execute the exact image and command before changing the generated template.",
+            "If this came from an Amplify or another CDK-backed wrapper, preserve the complete underlying bundler error and fix the source or build environment before retrying the backend deployment.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/cdk/v2/guide/assets.html",
+    ),
+    Rule(
         id="cdk.synth.assembly-failed",
         title="AWS CDK reported an assembly failure without the underlying error",
         confidence="low",
@@ -1077,6 +1100,7 @@ _RULES = (
             "If synthesis succeeds but deployment later fails, keep the CloudFormation resource event and diagnose that more specific status reason instead of this wrapper line.",
         ),
         documentation_url="https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-synth.html",
+        suppressed_by=(_CDK_ASSET_BUNDLING_FAILURE_PATTERN,),
     ),
     Rule(
         id="lambda.invoke.function-not-found",
