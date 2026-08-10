@@ -391,6 +391,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   policies) distinguished from missing-policy denials
 - Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
 - CloudFormation API throttling (`Rate exceeded`)
+- CloudFormation service interruptions and deploy-wrapper handoffs that need
+  stack-event evidence (`ServiceNotAvailable`, `Failed to create/update the stack`)
 - CloudFormation failed-resource events and rollback states
 - Another operation already in progress on the stack
   (`OperationInProgressException`, `*_IN_PROGRESS state and can not be updated`)
@@ -404,6 +406,9 @@ see [docs/stability.md](docs/stability.md). The current set:
   token, denied `ecr:GetAuthorizationToken`)
 - CloudFormation capability acknowledgement errors (`InsufficientCapabilities`)
 - Lambda container-image failures caused by missing ECR image access
+- CodeBuild CodeConnections access failures (`OAuthProviderException`) surfaced
+  during a CloudFormation deployment
+- EC2 Image Builder recipe-version collisions that require a new immutable version
 - API Gateway deployments created before methods exist
 - API Gateway CORS preflight conflicts
 - SAM deployment/configuration errors, including conflicting artifact-bucket
@@ -417,6 +422,10 @@ see [docs/stability.md](docs/stability.md). The current set:
   templates over a CloudFormation size or count quota
 - S3 naming failures: invalid bucket names and globally taken names
   (`BucketAlreadyExists`, `BucketAlreadyOwnedByYou`)
+- S3 lifecycle conflicts where tag filters cannot be combined with multipart-abort
+  actions
+- AWS CDK synthesis handoffs (`AssemblyError: Assembly builder failed`) that point
+  at a reproducible `cdk synth --verbose` check without inventing the app error
 - Artifact-path failures: a `CodeUri` that was never built, a deployment
   bucket that denies access to the packaged artifacts, and Lambda layer
   artifacts CloudFormation cannot read back
