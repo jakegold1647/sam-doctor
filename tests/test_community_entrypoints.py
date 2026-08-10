@@ -1,0 +1,29 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+ROOT = Path(__file__).parents[1]
+
+
+def _read(relative_path: str) -> str:
+    return (ROOT / relative_path).read_text(encoding="utf-8")
+
+
+def test_public_entry_points_keep_a_ready_issue_path() -> None:
+    """Keep the first-contribution queue discoverable from every public surface."""
+
+    assert "Find a mentored first issue" in _read("README.md")
+    assert "ready newcomer queue" in _read("CONTRIBUTING.md")
+    assert "ready newcomer queue" in _read("CONTRIBUTORS.md")
+    assert "Find a mentored first issue" in _read(".github/ISSUE_TEMPLATE/config.yml")
+    assert "Browse mentored first issues" in _read("site/index.html")
+
+
+def test_public_entry_points_make_early_feedback_welcome() -> None:
+    """Keep draft work visibly welcome before a newcomer has a finished PR."""
+
+    assert "Draft PRs are welcome" in _read("CONTRIBUTING.md")
+    assert "Draft PRs and partial work are welcome" in _read(
+        ".github/pull_request_template.md"
+    )
+    assert "Draft PRs are welcome" in _read("site/index.html")
