@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **S3 lifecycle tag conflicts now have a focused diagnosis.** The catalog
+  recognizes `AbortIncompleteMultipartUpload cannot be specified with Tags`,
+  separates it from generic CloudFormation failures, and links to the safe
+  split between an unfiltered abort rule and tag-based object rules.
+
 - **Stable and branch-only CLI features are now labeled in onboarding.** The
   quickstart, README, homepage, and machine-readable site guide keep PyPI
   `0.11.0` focused on `diagnose` and show the explicit `main` install for the

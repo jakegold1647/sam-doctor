@@ -50,6 +50,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/rollback-in-progress.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/rollback-role-delete-failed.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/s3-access-denied-changeset.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/s3-lifecycle-abort-tags.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/security-token-invalid.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/ssm-parameter-cannot-be-found.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/tag-action-denied.html</loc></url>

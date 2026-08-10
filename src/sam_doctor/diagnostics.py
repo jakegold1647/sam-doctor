@@ -241,6 +241,10 @@ _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN = (
     r"Error Code:\s*OAuthProviderException\b"
 )
 
+_S3_ABORT_MULTIPART_TAG_FILTER_PATTERN = (
+    r"AbortIncompleteMultipartUpload cannot be specified with Tags"
+)
+
 
 _RULES = (
     Rule(
@@ -851,6 +855,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html",
     ),
     Rule(
+        id="s3.lifecycle.abort-multipart-tag-filter",
+        title="An S3 lifecycle abort rule cannot use a tag filter",
+        confidence="high",
+        patterns=(_S3_ABORT_MULTIPART_TAG_FILTER_PATTERN,),
+        explanation=(
+            "S3 rejected a lifecycle rule because `AbortIncompleteMultipartUpload` "
+            "cannot be combined with a tag-based filter. Incomplete multipart uploads "
+            "do not carry object tags yet, so S3 cannot evaluate that filter for the "
+            "abort action."
+        ),
+        verification=(
+            "Find the lifecycle rule on the affected bucket and separate the multipart-abort action from any tag-filtered expiration or transition rule.",
+            "Keep the abort rule unfiltered or scope it with an object-key prefix; use a separate rule for tag-based object actions.",
+            "Read the current configuration before editing it with `aws s3api get-bucket-lifecycle-configuration --bucket <bucket>` (read-only).",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-configuration-examples.html",
+    ),
+    Rule(
         id="cloudformation.lambda-layer.artifact-unreadable",
         title="CloudFormation cannot read a Lambda layer artifact from S3",
         confidence="high",
@@ -1113,6 +1135,7 @@ _RULES = (
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
             r"Embedded stack .* was not successfully (?:created|updated)",
             _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,
+            _S3_ABORT_MULTIPART_TAG_FILTER_PATTERN,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,

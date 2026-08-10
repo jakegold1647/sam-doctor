@@ -2754,6 +2754,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyFn CREATE_FAILED Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
     "MyDeployment CREATE_FAILED The REST API doesn't contain any methods",
     "MyRole CREATE_FAILED Has prohibited field Resource",
+    "MyBucket UPDATE_FAILED Resource handler returned message: \"AbortIncompleteMultipartUpload cannot be specified with Tags.\"",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (

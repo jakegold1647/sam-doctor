@@ -88,6 +88,17 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "entered CREATE_COMPLETE"
         ),
     ),
+    "s3.lifecycle.abort-multipart-tag-filter": RuleFixture(
+        positive=(
+            "MyBucket UPDATE_FAILED Resource handler returned message: "
+            '"AbortIncompleteMultipartUpload cannot be specified with Tags. '
+            '(Service: S3, Status Code: 400, Error Code: InvalidRequest)"'
+        ),
+        negative=(
+            "S3 lifecycle rule with AbortIncompleteMultipartUpload and a key-prefix "
+            "filter was accepted"
+        ),
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'
