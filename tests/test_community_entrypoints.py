@@ -13,7 +13,9 @@ def test_public_entry_points_keep_a_ready_issue_path() -> None:
     """Keep the first-contribution queue discoverable from every public surface."""
 
     assert "Find a mentored first issue" in _read("README.md")
+    assert "[Code of Conduct](CODE_OF_CONDUCT.md)" in _read("README.md")
     assert "ready newcomer queue" in _read("CONTRIBUTING.md")
+    assert "[Code of Conduct](CODE_OF_CONDUCT.md)" in _read("CONTRIBUTING.md")
     assert "ready newcomer queue" in _read("CONTRIBUTORS.md")
     assert "Find a mentored first issue" in _read(".github/ISSUE_TEMPLATE/config.yml")
     assert "https://github.com/jakegold1647/sam-doctor/discussions/1" in _read(

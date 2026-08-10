@@ -12,6 +12,11 @@ and you can ask for help turning one into your first pull request.
 Maintainers use the [community triage checklist](docs/community-triage.md) to
 route that feedback into a focused, welcoming next step.
 
+Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before opening an issue,
+discussion, or pull request. It sets the project standard for respectful
+feedback and keeps the privacy boundary clear for everyone, including first-
+time contributors.
+
 ## Before opening an issue
 
 Never post raw production logs, AWS account IDs, ARNs, access keys, session
