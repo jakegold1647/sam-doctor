@@ -22,6 +22,11 @@ All notable changes to SAM Doctor are documented here.
   and saves combined command output, diagnoses only after a non-zero command
   exit, and returns that original status even if advisory report writing fails.
 
+- **Reports can be copied without leaving the terminal workflow.** `diagnose`
+  and failed `run` commands accept `--copy`, using the host's native clipboard
+  tools without adding a Python dependency; stdout remains unchanged for pipes
+  and machine-readable formats.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact

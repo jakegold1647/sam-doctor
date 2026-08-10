@@ -6,6 +6,7 @@ import argparse
 import codecs
 import glob
 import json
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -152,6 +153,11 @@ GitHub Action behavior:
         help="Report format for stdout or --output.",
     )
     diagnose_parser.add_argument("--output", type=Path, help="Write the report to this path instead of stdout.")
+    diagnose_parser.add_argument(
+        "--copy",
+        action="store_true",
+        help="Copy the rendered report to the native system clipboard.",
+    )
     diagnose_parser.add_argument(
         "--fail-on-findings",
         action="store_true",
@@ -321,6 +327,11 @@ GitHub Action behavior:
         "--output",
         type=Path,
         help="Write the failure report to this path instead of stdout.",
+    )
+    run_parser.add_argument(
+        "--copy",
+        action="store_true",
+        help="Copy the rendered failure report to the native system clipboard.",
     )
     run_parser.add_argument(
         "run_command",
@@ -811,6 +822,48 @@ def _write_report(path: Path, report: str) -> None:
         raise ValueError(f"Could not write {path}: {error}") from error
 
 
+def _clipboard_command() -> list[str] | None:
+    """Return the first native clipboard command available on this host."""
+
+    if sys.platform.startswith("win"):
+        candidates = (("clip.exe",),)
+    elif sys.platform == "darwin":
+        candidates = (("pbcopy",),)
+    else:
+        candidates = (
+            ("wl-copy",),
+            ("xclip", "-selection", "clipboard"),
+            ("xsel", "--clipboard", "--input"),
+        )
+
+    for candidate in candidates:
+        if shutil.which(candidate[0]):
+            return list(candidate)
+    return None
+
+
+def _copy_report(report: str) -> None:
+    """Copy a rendered report without adding a third-party clipboard dependency."""
+
+    command = _clipboard_command()
+    if command is None:
+        raise ValueError(
+            "No native clipboard command is available; install clip.exe, "
+            "pbcopy, wl-copy, xclip, or xsel, or omit --copy."
+        )
+    try:
+        subprocess.run(
+            command,
+            input=report,
+            text=True,
+            encoding="utf-8",
+            check=True,
+            capture_output=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise ValueError(f"Could not copy the report to the clipboard: {error}") from error
+
+
 def _artifact_path(output_dir: Path, name: str, option_name: str) -> Path:
     """Resolve an artifact name without letting it escape its output directory."""
 
@@ -1102,6 +1155,13 @@ def _run_command(args: argparse.Namespace, parser: argparse.ArgumentParser) -> i
             print(f"Wrote {args.format} failure report to {output_path}")
         else:
             sys.stdout.write("\n" + report)
+        if args.copy:
+            try:
+                _copy_report(report)
+            except ValueError as error:
+                _print_error(parser, str(error))
+            else:
+                print("Copied the failure report to the clipboard.", file=sys.stderr)
     except ValueError as error:
         _print_error(parser, str(error))
 
@@ -1243,6 +1303,13 @@ def main(argv: list[object] | None = None) -> int:
     report = _render_findings(
         findings, source_name, args.format, input_is_empty=not text.strip()
     )
+    if args.copy:
+        try:
+            _copy_report(report)
+        except ValueError as error:
+            _print_error(parser, str(error))
+            return 2
+        print("Copied the report to the clipboard.", file=sys.stderr)
     if args.output:
         try:
             _write_report(args.output, report)

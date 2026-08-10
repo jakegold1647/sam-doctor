@@ -142,6 +142,8 @@ Error: status is not authorized
 EOF</code></pre>
         <pre><code>sam-doctor diagnose deployment-failure.log --format markdown</code></pre>
         <p class="muted">Share one finding and the first safe verification step with your teammate.</p>
+        <p class="muted">For a reviewed report you can paste into a ticket or chat, copy it directly:</p>
+        <pre><code>sam-doctor diagnose deployment-failure.log --format markdown --copy</code></pre>
 
         <p class="muted">Already copied the failure? Pipe the clipboard without creating a file:</p>
         <pre><code># PowerShell on Windows

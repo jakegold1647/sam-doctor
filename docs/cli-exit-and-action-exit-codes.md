@@ -20,6 +20,9 @@ CI and local automation without guessing.
     that confidence or above is detected. Reports still show every finding;
     when given, the threshold is the gate even if `--fail-on-findings` is also
     set.
+  - `--copy` sends the rendered report to the host's native clipboard while
+    leaving stdout unchanged. It exits `2` if no supported clipboard command is
+    available or the copy fails.
 
 - `sam-doctor batch`
   - Scans all provided inputs and reports all matches.
@@ -45,7 +48,9 @@ CI and local automation without guessing.
   - Streams the supplied command, saves its combined output, and diagnoses only when
     the command exits non-zero. It returns the command's exit status even when the
     advisory report cannot be written. Exits `2` when the command cannot be started
-    or the deployment log cannot be captured.
+    or the deployment log cannot be captured. `--copy` is advisory here: a
+    clipboard failure is reported, but the deployment's original status remains
+    authoritative.
 
 - `sam-doctor init`, `demo`, `rules`, `schemas`
   - Exit `0` on successful command execution.

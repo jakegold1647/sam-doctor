@@ -94,6 +94,7 @@ Pick the output format for where the report is going:
 | Machine-readable output for CI | `sam-doctor diagnose deployment.log --format json --output diagnosis.json` |
 | GitHub workflow annotations | `sam-doctor diagnose deployment.log --format github` |
 | Code scanning / SARIF consumers | `sam-doctor diagnose deployment.log --format sarif --output sam-doctor.sarif` |
+| Share a reviewed report from the clipboard | `sam-doctor diagnose deployment.log --format markdown --copy` |
 | Pasted excerpt, no file | `printf '%s\n' "...error excerpt..." \| sam-doctor diagnose -` |
 | A workflow that saves a log | The [GitHub Action](#github-actions) below |
 
@@ -125,6 +126,10 @@ xclip -selection clipboard -o | sam-doctor diagnose - --format markdown
 
 Review the excerpt before sharing it. SAM Doctor redacts common identifiers,
 but clipboard contents can still include sensitive text that needs your review.
+When you use `--copy`, the report is sent to the host's native clipboard
+(`clip.exe`, `pbcopy`, `wl-copy`, `xclip`, or `xsel`) without adding a Python
+clipboard dependency. Standard output stays unchanged, so the same command is
+safe to use in a script.
 
 To make diagnosis part of every local deploy, capture the deploy output and
 keep the deploy command's exit status:
@@ -161,7 +166,8 @@ sam-doctor run --log-file deployment.log --format markdown -- \
 It streams the deploy output, keeps the combined log, diagnoses only when the
 deploy exits non-zero, and returns the deploy's original exit status. Add
 `--output diagnosis.json --format json` when another tool should consume the
-failure report.
+failure report, or `--copy --format markdown` when you want to review and paste
+the failure report from your clipboard.
 
 The diagnosis stays advisory in these examples; the deploy still owns the
 process exit code. Add an explicit confidence or findings gate only when your
