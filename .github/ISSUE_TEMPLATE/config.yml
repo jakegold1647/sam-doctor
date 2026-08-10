@@ -21,3 +21,6 @@ contact_links:
   - name: Contributor guide
     url: https://github.com/jakegold1647/sam-doctor/blob/main/CONTRIBUTING.md
     about: Set up your fork, choose a first contribution, and run the local PR gate.
+  - name: Maintainer path
+    url: https://github.com/jakegold1647/sam-doctor/blob/main/MAINTAINERS.md
+    about: Learn how community members can grow into shared maintenance.
