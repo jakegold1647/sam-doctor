@@ -61,6 +61,7 @@ QUERIES = (
     '"ResourceNotFoundException" "Invoke operation" in:body',
     '"Model use case details have not been submitted" in:body',
     '"Could not resolve the foundation model from the provided model identifier" in:body',
+    '"Invalid length for parameter system[0].text" in:body',
     '"CannotStartManagedAgentError" in:body',
 )
 
@@ -87,6 +88,7 @@ FAILURE_SIGNAL = re.compile(
     r"|when calling (?:the )?Invoke operation.{0,160}ResourceNotFoundException"
     r"|Model use case details have not been submitted for this account"
     r"|Could not resolve the foundation model from the provided model identifier"
+    r"|Invalid length for parameter system\[\d+\]\.text"
     r"|CannotStartManagedAgentError\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"

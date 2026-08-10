@@ -832,6 +832,38 @@ configured version has been retired.
 
 ---
 
+## 21. Bedrock rejected an empty system prompt
+
+**Status:** landed - the catalog now recognizes Botocore's minimum-length
+marker for an empty Converse system content block.
+
+**Failure family.** An integration or post-deploy smoke test builds a Converse
+request with `system: [{"text": ""}]`. Botocore rejects it before the request
+reaches Bedrock because `SystemContentBlock.text` has a minimum length of one;
+the right fix is to omit the field when there is no system instruction.
+
+**Sanitized signal line.**
+
+```text
+ParamValidationError: Invalid length for parameter system[0].text, value: 0, valid min length: 1
+```
+
+**Pattern hint.** Anchor on `Invalid length for parameter system[N].text`, not
+on every `ParamValidationError`: tool descriptions and other request fields can
+have different fixes.
+
+**Safe verification steps.** Inspect the request builder and omit the entire
+`system` field when the generated prompt is empty or whitespace-only. Preserve
+non-empty system instructions, validate the serialized payload, and retry before
+investigating model access or IAM.
+
+**Documentation link.**
+<https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_SystemContentBlock.html>
+
+**Suggested confidence.** medium.
+
+---
+
 ## What is still open
 
 **Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
@@ -842,18 +874,18 @@ it to meet. Entry 14 in particular is worth reading before claiming — the samp
 log was truncated, so the first job is collecting a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
-to find work that is definitely real. The latest run on 2026-08-10 diagnosed 257 of
-283 excerpts (91%), now including dedicated searches for CDK assembly-wrapper
-variants, Lambda `Invoke` target misses, Bedrock first-use and model-identifier
-failures, and ECS Exec managed-agent failures, plus the broader change-set wrapper
-wording.
+to find work that is definitely real. The latest run on 2026-08-10 diagnosed 263 of
+288 excerpts (91%), now including dedicated searches for CDK assembly-wrapper
+variants, Lambda `Invoke` target misses, Bedrock first-use, model-identifier, and
+request-shape failures, and ECS Exec managed-agent failures, plus the broader
+change-set wrapper wording.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 13 to 15 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the six held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 20 have landed. A fresh rule request from a real failure is
+Entries 1 to 12 and 16 to 21 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Six requests are ready for first-time contributors:

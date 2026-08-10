@@ -289,6 +289,10 @@ _BEDROCK_MODEL_IDENTIFIER_PATTERN = (
     r"Could not resolve the foundation model from the provided model identifier\b"
 )
 
+_BEDROCK_EMPTY_SYSTEM_PROMPT_PATTERN = (
+    r"Invalid length for parameter system\[\d+\]\.text\b"
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1067,6 +1071,24 @@ _RULES = (
             "Retry after correcting the identifier or Region, and check the model lifecycle page if the configured version was retired.",
         ),
         documentation_url="https://docs.aws.amazon.com/bedrock/latest/userguide/models.html",
+    ),
+    Rule(
+        id="bedrock.request.empty-system-prompt",
+        title="Bedrock received an empty system prompt",
+        confidence="medium",
+        patterns=(_BEDROCK_EMPTY_SYSTEM_PROMPT_PATTERN,),
+        explanation=(
+            "The Bedrock Converse request was rejected during client-side parameter "
+            "validation because a system content block has empty text. Bedrock's "
+            "system block requires at least one character, so this is a request "
+            "shape problem before model access or IAM is evaluated."
+        ),
+        verification=(
+            "Inspect the request builder that creates the Converse or ConverseStream payload and omit the system field when the generated prompt is empty or whitespace-only.",
+            "Keep non-empty system instructions as text blocks, then log or test the serialized request shape without recording credentials or user content.",
+            "Retry the same model call after removing the empty block; only then investigate separate model-access or identifier errors.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_SystemContentBlock.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

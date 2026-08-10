@@ -15,6 +15,11 @@ All notable changes to SAM Doctor are documented here.
   marker and points at the current model ID, Region, endpoint, and API instead
   of suggesting an IAM change.
 
+- **Bedrock empty-system-prompt failures now have a focused handoff.** A
+  medium-confidence finding recognizes the Botocore minimum-length marker and
+  points at omitting an empty Converse system block before changing model access
+  or IAM.
+
 - **SAM change-set handoffs now recognize both wrapper wordings.** The existing
   medium-confidence configuration handoff accepts `Failed to create changeset`
   and `Failed to create the changeset`, while sharper template and service
@@ -22,7 +27,7 @@ All notable changes to SAM Doctor are documented here.
 
 - **The stable-versus-current catalog boundary is now explicit.** The public
   homepage, quickstart, machine-readable guide, and README say that the guides
-  follow `main` (66 diagnostics) while stable PyPI `0.11.0` contains the
+  follow `main` (67 diagnostics) while stable PyPI `0.11.0` contains the
   released 48-rule catalog; the branch install remains the opt-in path until a
   new stable release is authorized.
 

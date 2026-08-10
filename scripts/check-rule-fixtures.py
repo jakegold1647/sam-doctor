@@ -166,6 +166,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "InvokeModel operation: The requested model ID is not found."
         ),
     ),
+    "bedrock.request.empty-system-prompt": RuleFixture(
+        positive=(
+            "ParamValidationError: Invalid length for parameter system[0].text, "
+            "value: 0, valid min length: 1"
+        ),
+        negative=(
+            "Parameter validation failed: Invalid length for parameter "
+            "toolConfig.tools[0].toolSpec.description, value: 0, valid min length: 1"
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

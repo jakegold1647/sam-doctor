@@ -560,6 +560,29 @@ def test_bedrock_unresolved_model_identifier_does_not_match_other_model_not_foun
     }
 
 
+def test_bedrock_empty_system_prompt_routes_to_request_builder_check() -> None:
+    findings = diagnose(
+        "ParamValidationError: Invalid length for parameter system[0].text,\n"
+        "value: 0, valid min length: 1"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "bedrock.request.empty-system-prompt"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_bedrock_empty_system_prompt_does_not_match_empty_tool_description() -> None:
+    findings = diagnose(
+        "Parameter validation failed: Invalid length for parameter "
+        "toolConfig.tools[0].toolSpec.description, value: 0, valid min length: 1"
+    )
+
+    assert "bedrock.request.empty-system-prompt" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 @pytest.mark.parametrize(
     "log",
     (
