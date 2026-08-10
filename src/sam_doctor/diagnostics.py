@@ -235,6 +235,12 @@ _SSM_RESOLUTION_FAILURE_PATTERNS = (
     r"SSM parameter[ \t]+\S{1,200}[ \t]+not found\b",
 )
 
+_CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN = (
+    r"User is not authorized to access connection\b.*"
+    r"Service:\s*AWSCodeBuild\b.*"
+    r"Error Code:\s*OAuthProviderException\b"
+)
+
 
 _RULES = (
     Rule(
@@ -349,6 +355,27 @@ _RULES = (
             "For cross-account images, verify both the consuming account's identity policy and the owning account's repository policy allow the required image retrieval actions.",
         ),
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/images-create.html",
+    ),
+    Rule(
+        id="codebuild.codeconnections.access-denied",
+        title="CodeBuild cannot use the configured CodeConnections connection",
+        confidence="high",
+        patterns=(_CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,),
+        explanation=(
+            "CloudFormation reached AWS CodeBuild, but CodeBuild rejected the "
+            "configured CodeConnections source connection while creating the project. "
+            "The usual causes are a project service role missing the connection-read "
+            "actions, a connection that is not available to this account or Region, "
+            "or an IAM policy attachment that was not in effect before the project "
+            "was created."
+        ),
+        verification=(
+            "Identify the CodeBuild project service role and the connection ARN in the transformed template or project source settings.",
+            "Read the service role's inline and attached policies and confirm the source mode is allowed: CodeConnections sources commonly need `codeconnections:GetConnection` and `codeconnections:GetConnectionToken`; add `codeconnections:UseConnection` when the configured service path requires it.",
+            "Check the connection status and provider in the target account and Region with `aws codeconnections get-connection --connection-arn <connection-arn>` (read-only).",
+            "If the role policy and CodeBuild project are created in one stack, make the project depend on the policy attachment and retry after IAM propagation; do not widen the deployment role as a substitute for the project role.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/codebuild/latest/userguide/connections-github-app.html",
     ),
     Rule(
         id="ecr.auth.login-failed",
@@ -1085,6 +1112,7 @@ _RULES = (
             r"Code storage limit exceeded",
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
             r"Embedded stack .* was not successfully (?:created|updated)",
+            _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,
             # The KMS env-var rule explains the same event and names the key
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,

@@ -82,6 +82,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.stack.termination-protection": "termination-protection.html",
     "sam.deploy.artifact-upload-failed": "unable-to-upload-artifact.html",
     "lambda.ecr-image.access-denied": "lambda-ecr-image-access.html",
+    "codebuild.codeconnections.access-denied": "codebuild-codeconnections-access.html",
     "apigateway.cors.preflight-conflict": "cors-options-conflict.html",
     "sam.build.python-dependency-resolution-failed": "pip-dependency-resolution.html",
     "sam.build.python-runtime-mismatch": "python-runtime-mismatch.html",

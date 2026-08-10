@@ -76,6 +76,18 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="Lambda pulled the ECR image and started the container runtime.",
     ),
+    "codebuild.codeconnections.access-denied": RuleFixture(
+        positive=(
+            'SourceProject CREATE_FAILED AWS::CodeBuild::Project '
+            'Resource handler returned message: "User is not authorized to '
+            'access connection [REDACTED_ARN] (Service: AWSCodeBuild; Status Code: '
+            '400; Error Code: OAuthProviderException; Request ID: request-id)"'
+        ),
+        negative=(
+            "CodeBuild used the configured CodeConnections source and the project "
+            "entered CREATE_COMPLETE"
+        ),
+    ),
     "ecr.auth.login-failed": RuleFixture(
         positive=(
             'Error response from daemon: Head "https://registry.example.test/'

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **CodeBuild CodeConnections failures now identify the project-side access
+  check.** A specific `AWSCodeBuild` `OAuthProviderException` no longer falls
+  through to generic CloudFormation failure guidance; the report points at the
+  CodeBuild service role, connection status, and IAM attachment ordering.
+
 - **Unmatched failures now have a direct sharing path.** Terminal and Markdown
   reports show the sanitized `sam-doctor request-packet` follow-up, including
   stdin; the homepage and machine-readable site summary point to the same

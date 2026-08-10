@@ -24,6 +24,7 @@
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/build-host-disk-full.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/code-signing-container-image.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/code-storage-limit-exceeded.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/codebuild-codeconnections-access.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/confirm-changeset-prompt.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/cors-options-conflict.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/create-failed.html</loc></url>
