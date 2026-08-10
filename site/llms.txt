@@ -7,6 +7,7 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 ## Start here
 
 - [Project homepage](https://sam-doctor.jacobgoldstein.dev/): install, demo, supported categories, and GitHub Actions usage.
+- [Contributor hall of fame](https://sam-doctor.jacobgoldstein.dev/contributors/): the people who have helped ship rules, fixtures, CI, docs, and tests.
 - [PyPI package](https://pypi.org/project/sam-doctor/): install the stable CLI with `python -m pip install sam-doctor`.
 - [GitHub repository](https://github.com/jakegold1647/sam-doctor): source, tests, issues, and contribution guide.
 - [GitHub Marketplace Action](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics): diagnose saved deployment logs in CI.

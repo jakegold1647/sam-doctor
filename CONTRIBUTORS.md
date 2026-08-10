@@ -4,6 +4,8 @@ SAM Doctor is better because people outside the maintainer team have taken the
 time to report failures, write rules, improve tests, and review the edges.
 Thank you to everyone who has helped, whether or not your name is listed here.
 
+The public version of this list is the [SAM Doctor contributor hall of fame](https://sam-doctor.jacobgoldstein.dev/contributors/). This file remains the detailed source record for corrections and additions.
+
 ## People who have shipped changes
 
 - [waterlemonnn](https://github.com/waterlemonnn) — diagnostic rules, CI, fixtures, and contributor tooling

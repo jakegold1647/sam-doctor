@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://sam-doctor.jacobgoldstein.dev/</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/quickstart.html</loc></url>
+  <url><loc>https://sam-doctor.jacobgoldstein.dev/contributors/</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/assume-role-with-web-identity.html</loc></url>
   <url><loc>https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html</loc></url>
