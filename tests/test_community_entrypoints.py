@@ -44,6 +44,14 @@ def test_contributing_explains_the_claim_to_pr_path() -> None:
     assert "welcome discussion" in contributing
 
 
+def test_pull_request_template_keeps_issue_handoff_explicit() -> None:
+    """Keep first PRs connected to the issue a maintainer prepared."""
+
+    template = _read(".github/pull_request_template.md")
+    assert 'Fixes #123' in template
+    assert 'Related to #123' in template
+
+
 def test_queue_check_runs_when_issue_availability_changes() -> None:
     """Keep claim and label changes from waiting for the weekly sweep."""
 

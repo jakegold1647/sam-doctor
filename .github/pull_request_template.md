@@ -4,7 +4,8 @@
 
 ## Diagnostic or documentation gap
 
-<!-- Link an issue or describe the gap. -->
+<!-- Link an issue or describe the gap. Use "Fixes #123" when this PR closes
+     the issue, or "Related to #123" for draft or partial work. -->
 
 ## Help wanted (optional)
 
