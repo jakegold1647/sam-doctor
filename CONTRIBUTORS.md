@@ -19,6 +19,11 @@ is the current source of record. If you contribute, you are welcome to open a
 small PR adding or correcting your entry, or ask a maintainer to do it for you.
 No contributor is required to be listed.
 
+The git history also credits Harshil for Lambda deployment package-size
+diagnostics. That commit author is not linked to a GitHub account, so this
+thank-you is intentionally unlinked rather than counted as a separate graph
+account.
+
 Want to join them? Start with the [ready newcomer queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor+available%22),
 share a sanitized result through the [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml),
 share an idea in [Discussions](https://github.com/jakegold1647/sam-doctor/discussions/categories/ideas),
