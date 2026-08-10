@@ -54,6 +54,7 @@ QUERIES = (
     '"Requires capabilities" "CAPABILITY_IAM" in:body',
     '"did not stabilize" cloudformation in:body',
     '"sam build" "Docker" error in:body',
+    '"Assembly builder failed" in:body',
     '"AssumeRoleWithWebIdentity" "not authorized" in:body',
     '"An error occurred" "when calling the" cloudformation in:body',
     '"Resource handler returned message" in:body',
@@ -77,6 +78,7 @@ FAILURE_SIGNAL = re.compile(
     r"|did not stabilize"
     r"|Unable to get (?:ID Token|ACTIONS_ID_TOKEN)"
     r"|is in [A-Z_]+ state and can not be updated"
+    r"|\[_AssemblyError\][ \t]*Assembly builder failed"
     r"|Error: [A-Z]"
     r")"
 )

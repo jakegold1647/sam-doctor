@@ -43,6 +43,8 @@ REAL_FAILURE_LINES = (
     "Waiter ChangeSetCreateComplete failed: terminal failure",
     "Error: Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable",
     "Stack is in ROLLBACK_COMPLETE state and can not be updated",
+    "AssemblyError: Assembly builder failed",
+    "[BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed",
 )
 
 NOT_FAILURE_LINES = (

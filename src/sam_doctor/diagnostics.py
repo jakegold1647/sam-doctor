@@ -266,7 +266,10 @@ _CLOUDFORMATION_DEPLOY_WRAPPER_FAILURE_PATTERN = (
     r"Failed to create/update (?:the )?stack\b"
 )
 
-_CDK_ASSEMBLY_FAILURE_PATTERN = r"AssemblyError:\s*Assembly builder failed\b"
+_CDK_ASSEMBLY_FAILURE_PATTERN = (
+    r"(?:\bAssemblyError:\s*Assembly builder failed\b|"
+    r"\[_AssemblyError\]\s*Assembly builder failed\b)"
+)
 
 
 _RULES = (
