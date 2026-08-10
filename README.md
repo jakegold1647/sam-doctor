@@ -275,6 +275,22 @@ deployment fails. The Markdown job summary is opt-in and contains only matched,
 redacted evidence. The action also adds redacted workflow annotations for each
 finding by default; set `annotations: "false"` to disable them.
 
+For a single-step CI integration, let the Action run and capture the deploy:
+
+```yaml
+- name: Deploy and diagnose
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    run-command: sam deploy --no-confirm-changeset
+    summary: true
+```
+
+It preserves the deployment's original exit status and exposes it as
+`deploy-exit-status`; keep authentication and environment setup in earlier
+steps. Use either `run-command` or `batch`, not both.
+
 `sam-doctor init` generates this workflow for you:
 
 ```bash
@@ -304,8 +320,8 @@ stays non-blocking by default and enforces only on a manual
 - `1`: findings present and `fail-on-findings: true`.
 - `2`: runtime or precondition failure (invalid boolean inputs, missing Python).
 
-The action exposes `finding-count` and `has-findings` outputs for non-blocking
-routing:
+The action exposes `finding-count`, `has-findings`, and `deploy-exit-status`
+outputs for routing:
 
 ```yaml
 - name: Route to dedicated triage when action reports findings

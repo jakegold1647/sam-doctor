@@ -1,10 +1,14 @@
 name: SAM Doctor AWS Deployment Diagnostics
 author: Jake Goldstein
-description: Diagnose AWS SAM, CDK, CloudFormation, and GitHub Actions deployment logs; can add a redacted report to the job summary.
+description: Diagnose AWS SAM, CDK, CloudFormation, and GitHub Actions deployment logs, or run and capture a deployment; can add a redacted report to the job summary.
 inputs:
   log-file:
     description: Path to the deployment log to diagnose.
     required: true
+    type: string
+  run-command:
+    description: Optional Bash command to run, capture, and diagnose in this step.
+    required: false
     type: string
   summary:
     description: Add the redacted Markdown report to the GitHub Actions job summary.
@@ -50,6 +54,9 @@ outputs:
   sam-doctor-version:
     description: Version string reported by the executed sam-doctor package.
     value: ${{ steps.diagnose.outputs.sam-doctor-version }}
+  deploy-exit-status:
+    description: Exit status of the optional run-command (0 when run-command is not used).
+    value: ${{ steps.diagnose.outputs.deploy-exit-status }}
 branding:
   icon: activity
   color: yellow
@@ -62,6 +69,7 @@ runs:
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
         SAM_DOCTOR_LOG_FILE: ${{ inputs.log-file }}
+        SAM_DOCTOR_RUN_COMMAND: ${{ inputs.run-command }}
         SAM_DOCTOR_SUMMARY: ${{ inputs.summary }}
         SAM_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
         SAM_DOCTOR_BATCH: ${{ inputs.batch }}

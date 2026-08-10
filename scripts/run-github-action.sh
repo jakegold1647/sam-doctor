@@ -12,6 +12,7 @@ else
 fi
 
 : "${SAM_DOCTOR_LOG_FILE:?SAM_DOCTOR_LOG_FILE is required.}"
+: "${SAM_DOCTOR_RUN_COMMAND:=}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
 : "${SAM_DOCTOR_ANNOTATIONS:=true}"
 : "${SAM_DOCTOR_BATCH:=false}"
@@ -42,6 +43,11 @@ fi
 
 if [[ "$SAM_DOCTOR_BATCH" != "true" && "$SAM_DOCTOR_BATCH" != "false" ]]; then
   echo "SAM_DOCTOR_BATCH must be 'true' or 'false'." >&2
+  exit 2
+fi
+
+if [[ -n "${SAM_DOCTOR_RUN_COMMAND//[[:space:]]/}" && "$SAM_DOCTOR_BATCH" == "true" ]]; then
+  echo "SAM_DOCTOR_RUN_COMMAND cannot be combined with SAM_DOCTOR_BATCH=true." >&2
   exit 2
 fi
 
@@ -76,7 +82,37 @@ if ! "$PYTHON_BIN" -c "import sam_doctor.cli" >/dev/null 2>&1; then
   fi
 fi
 
-if [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
+deploy_status=0
+if [[ -n "${SAM_DOCTOR_RUN_COMMAND//[[:space:]]/}" ]]; then
+  # The CLI owns capture safety and streams the command's combined output. The
+  # command is workflow-authored input, so run it through the runner's Bash
+  # exactly as a normal `run:` block would be executed.
+  set +e
+  "$PYTHON_BIN" -m sam_doctor.cli run \
+    --log-file "$SAM_DOCTOR_LOG_FILE" \
+    --format json \
+    --output "$report_path" \
+    -- bash -lc "$SAM_DOCTOR_RUN_COMMAND"
+  deploy_status=$?
+  set -e
+
+  # Successful commands intentionally produce no failure report. Diagnose the
+  # captured log once so the action still exposes a stable zero-finding payload.
+  if [[ ! -s "$report_path" ]]; then
+    set +e
+    "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" \
+      --format json --output "$report_path"
+    diagnose_status=$?
+    set -e
+    if [[ "$diagnose_status" -ne 0 ]]; then
+      echo "Could not create the Action report after running the deployment command." >&2
+      if [[ "$deploy_status" -ne 0 ]]; then
+        exit "$deploy_status"
+      fi
+      exit 2
+    fi
+  fi
+elif [[ "$SAM_DOCTOR_BATCH" == "true" ]]; then
   "$PYTHON_BIN" -m sam_doctor.cli batch "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
 else
   "$PYTHON_BIN" -m sam_doctor.cli diagnose "$SAM_DOCTOR_LOG_FILE" --format json --output "$report_path"
@@ -101,6 +137,7 @@ fi
 
 echo "finding-count=${finding_count}" >> "$GITHUB_OUTPUT"
 echo "sam-doctor-version=${report_version}" >> "$GITHUB_OUTPUT"
+echo "deploy-exit-status=${deploy_status}" >> "$GITHUB_OUTPUT"
 if [[ "$finding_count" -gt 0 ]]; then
   echo "has-findings=true" >> "$GITHUB_OUTPUT"
 else
@@ -191,6 +228,13 @@ notices = github_notices_from_payload(payload, is_batch)
 if notices:
     print(notices, end="")
 PY
+fi
+
+# A wrapped deployment owns the workflow status. The report, summary, and
+# annotations above are still emitted, but an advisory gate must not replace a
+# real deploy failure with status 1 or 2.
+if [[ -n "${SAM_DOCTOR_RUN_COMMAND//[[:space:]]/}" && "$deploy_status" -ne 0 ]]; then
+  exit "$deploy_status"
 fi
 
 if [[ -n "$SAM_DOCTOR_FAIL_ON_CONFIDENCE" ]]; then

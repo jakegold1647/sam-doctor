@@ -34,6 +34,25 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
 
 The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds redacted GitHub Actions notices for each finding, so issues are visible in the run UI. Set `annotations: "false"` if your workflow should not create annotations. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
 
+If you want one Action step to run the deployment and diagnose it, keep your
+authentication steps before the Action and pass `run-command`:
+
+```yaml
+- name: Deploy and diagnose
+  id: sam-doctor
+  uses: jakegold1647/sam-doctor@v0
+  with:
+    log-file: deployment.log
+    run-command: sam deploy --no-confirm-changeset
+    summary: true
+```
+
+This mode captures combined output, writes the same redacted summary and
+annotations, and returns the deployment's original exit status. The command is
+executed by Bash on the runner, so keep shell quoting and any environment setup
+in the workflow. `deploy-exit-status` is exposed as an output (`0` when
+`run-command` is not used). It cannot be combined with `batch: true`.
+
 For repositories that collect several deployment logs per run (for example, matrix jobs),
 set `batch: true` and point `log-file` to a directory or glob:
 
@@ -182,6 +201,8 @@ The action step exit status is:
 - `1`: `fail-on-findings: true` and one or more findings are present.
 - `2`: action precondition / runtime error (for example, missing `GITHUB_OUTPUT`,
   unsupported boolean input values, missing Python, or an invalid generated report).
+- `deploy-exit-status`: the wrapped deployment status, or `0` when `run-command`
+  is not set.
 - `finding-count`: total supported findings (stringified integer output).
 - `has-findings`: `true` when findings were detected, otherwise `false`.
 

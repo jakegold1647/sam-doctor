@@ -195,6 +195,71 @@ def test_action_wrapper_can_run_batch_mode(tmp_path: Path):
 
 
 @requires_wsl_bash
+def test_action_wrapper_can_run_a_deploy_and_preserve_its_status(tmp_path: Path):
+    root = ROOT
+    output_path = tmp_path / "github-output.txt"
+    summary_path = tmp_path / "github-summary.md"
+    command = (
+        "python3 -c "
+        + shlex.quote(
+            "print('Error: Not authorized to perform: "
+            "sts:AssumeRoleWithWebIdentity'); raise SystemExit(7)"
+        )
+    )
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(output_path),
+            "GITHUB_STEP_SUMMARY": _bash_path(summary_path),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(tmp_path / "deployment.log"),
+            "SAM_DOCTOR_RUN_COMMAND": command,
+            "SAM_DOCTOR_SUMMARY": "true",
+            "SAM_DOCTOR_ANNOTATIONS": "true",
+        },
+    )
+
+    assert result.returncode == 7, result.stderr
+    output = output_path.read_text(encoding="utf-8")
+    assert "finding-count=1\n" in output
+    assert "deploy-exit-status=7\n" in output
+    assert "has-findings=true\n" in output
+    assert "GitHub Actions cannot assume" in summary_path.read_text(encoding="utf-8")
+    assert "::notice file=deployment.log,line=" in result.stdout
+
+
+@requires_wsl_bash
+def test_action_wrapper_keeps_a_successful_deploy_successful(tmp_path: Path):
+    root = ROOT
+    output_path = tmp_path / "github-output.txt"
+    command = (
+        "python3 -c "
+        + shlex.quote(
+            "print('Error: Not authorized to perform: "
+            "sts:AssumeRoleWithWebIdentity')"
+        )
+    )
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(output_path),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(tmp_path / "deployment.log"),
+            "SAM_DOCTOR_RUN_COMMAND": command,
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    output = output_path.read_text(encoding="utf-8")
+    assert "finding-count=1" in output
+    assert "deploy-exit-status=0" in output
+
+
+@requires_wsl_bash
 def test_action_wrapper_gates_on_confidence_threshold(tmp_path: Path):
     root = ROOT
     data = root / "src" / "sam_doctor" / "data"

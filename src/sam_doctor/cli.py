@@ -897,7 +897,9 @@ def _ensure_input_is_not_output(
     if not aliases_output:
         try:
             aliases_output = any(
-                output_path.exists() and input_path.samefile(output_path)
+                output_path.exists()
+                and input_path.exists()
+                and input_path.samefile(output_path)
                 for output_path in output_paths
             )
         except OSError as error:

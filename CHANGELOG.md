@@ -31,6 +31,11 @@ All notable changes to SAM Doctor are documented here.
   and the machine-readable site guide show `uvx sam-doctor diagnose ...` for
   trying a diagnosis without installing a global CLI.
 
+- **The GitHub Action can own the capture step.** Optional `run-command` mode
+  runs the deployment through the existing safe wrapper, emits the same report,
+  summary, and annotations, and returns the deployment's original status in the
+  new `deploy-exit-status` output. Existing log-only and batch modes are unchanged.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact

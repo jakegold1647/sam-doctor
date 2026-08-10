@@ -67,11 +67,13 @@ sam-doctor diagnose deployment.log --format json --output diagnosis.json --fail-
 
 ## GitHub Action behavior
 
-The Action wraps the CLI and exposes three stable outputs:
+The Action wraps the CLI and exposes stable outputs:
 
 - `finding-count`: total supported findings for all scanned inputs.
 - `has-findings`: `true` if `finding-count` is greater than `0`.
 - `sam-doctor-version`: version string used by the action run.
+- `deploy-exit-status`: the wrapped deployment status, or `0` when
+  `run-command` is not set.
 
 Action exit behavior:
 
@@ -80,6 +82,10 @@ Action exit behavior:
 | `0` | Action run succeeded and no enforced action-level failure occurred. |
 | `1` | `fail-on-findings: true` and findings were detected, or a finding met the `fail-on-confidence` threshold. |
 | `2` | Runtime/precondition failure (invalid inputs, missing Python, or internal CLI command failure). |
+
+When `run-command` is set, a non-zero deployment status is returned after the
+report, summary, and annotations are emitted. The deployment status remains
+authoritative and is not replaced by an advisory finding gate.
 
 Example non-blocking routing:
 

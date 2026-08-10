@@ -80,6 +80,35 @@ def test_run_can_write_the_failure_report_separately(
     assert "Wrote markdown failure report" in capsys.readouterr().out
 
 
+def test_run_can_create_a_missing_log_when_report_target_already_exists(
+    tmp_path: Path, capsys
+) -> None:
+    log = tmp_path / "deployment.log"
+    report = tmp_path / "diagnosis.json"
+    report.write_text("stale report", encoding="utf-8")
+
+    status = main(
+        [
+            "run",
+            "--log-file",
+            str(log),
+            "--format",
+            "json",
+            "--output",
+            str(report),
+            "--",
+            *_child(
+                "print('Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity'); raise SystemExit(4)"
+            ),
+        ]
+    )
+
+    assert status == 4
+    assert log.exists()
+    assert '"finding_count": 1' in report.read_text(encoding="utf-8")
+    assert "Wrote json failure report" in capsys.readouterr().out
+
+
 def test_run_requires_a_command(capsys) -> None:
     assert main(["run"]) == 2
     assert "requires a deployment command" in capsys.readouterr().err

@@ -7,6 +7,8 @@ Use these templates to onboard quickly.
 - `github-actions-workflow.yml`
   - Works for classic `sam deploy` command.
   - Drop this at `.github/workflows/sam-doctor.yml` and fill in your deployment step.
+  - For a single Action step that owns capture and diagnosis, use `run-command` as
+    documented in `docs/github-actions-integration.md`.
 
 - `github-actions-workflow-two-phase-gating.yml`
   - Lets teams start non-blocking (`pilot`) and switch to strict enforcement
