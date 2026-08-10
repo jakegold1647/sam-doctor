@@ -37,8 +37,43 @@ def test_ready_issue_reports_missing_labels_and_claim_prompt() -> None:
 
     assert "missing `good first issue` label" in problems
     assert "missing `mentor available` label" in problems
-    assert "missing `effort:*` label" in problems
+    assert (
+        "missing one of `effort: small`, `effort: medium`, or `effort: large`"
+        in problems
+    )
     assert "missing maintainer claim prompt" in problems
+
+
+def test_ready_issue_reports_invalid_effort_label() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available", "effort: tiny"),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(issue, [{"body": "Claim it when ready"}])
+
+    assert "invalid effort label(s): effort: tiny" in problems
+    assert (
+        "missing one of `effort: small`, `effort: medium`, or `effort: large`"
+        in problems
+    )
+
+
+def test_ready_issue_reports_multiple_effort_labels() -> None:
+    issue = _issue(
+        labels=(
+            "status: ready",
+            "good first issue",
+            "mentor available",
+            "effort: small",
+            "effort: medium",
+        ),
+        body="## Acceptance criteria",
+    )
+
+    problems = QUEUE.validate_ready_issue(issue, [{"body": "Claim it when ready"}])
+
+    assert "multiple `effort:*` labels" in problems
 
 
 def test_ready_issue_reports_assignment_and_missing_scope() -> None:

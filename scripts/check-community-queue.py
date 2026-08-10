@@ -23,6 +23,9 @@ DEFAULT_REPOSITORY = "jakegold1647/sam-doctor"
 READY_LABEL = "status: ready"
 REQUIRED_LABELS = ("good first issue", "mentor available")
 EFFORT_LABEL_PREFIX = "effort:"
+VALID_EFFORT_LABELS = frozenset(
+    ("effort: small", "effort: medium", "effort: large")
+)
 CLAIM_MARKERS = ("take this", "claim this", "claim it")
 MAINTAINER_ASSOCIATIONS = frozenset(("OWNER", "MEMBER", "COLLABORATOR"))
 ACTIVE_CLAIM_MARKERS = (
@@ -103,8 +106,22 @@ def validate_ready_issue(issue: dict[str, Any], comments: list[dict[str, Any]]) 
         if required not in labels:
             problems.append(f"missing `{required}` label")
 
-    if not any(label.startswith(EFFORT_LABEL_PREFIX) for label in labels):
-        problems.append("missing `effort:*` label")
+    effort_labels = {
+        label for label in labels if label.startswith(EFFORT_LABEL_PREFIX)
+    }
+    invalid_effort_labels = effort_labels - VALID_EFFORT_LABELS
+    if invalid_effort_labels:
+        problems.append(
+            "invalid effort label(s): "
+            + ", ".join(sorted(invalid_effort_labels))
+        )
+    valid_effort_labels = effort_labels & VALID_EFFORT_LABELS
+    if not valid_effort_labels:
+        problems.append(
+            "missing one of `effort: small`, `effort: medium`, or `effort: large`"
+        )
+    elif len(valid_effort_labels) > 1:
+        problems.append("multiple `effort:*` labels")
 
     if issue.get("assignee") or issue.get("assignees"):
         problems.append("assigned work still carries `status: ready`")
