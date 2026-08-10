@@ -611,6 +611,30 @@ def test_invalid_aws_action_does_not_match_an_iam_denial() -> None:
 @pytest.mark.parametrize(
     "log",
     (
+        "An error occurred (NotImplemented) when calling the ListSchedules operation: operation is not implemented",
+        "HTTP 501 NotImplemented when calling the ListSchedules operation",
+    ),
+)
+def test_unimplemented_aws_action_routes_to_endpoint_compatibility_checks(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "aws.api.action-not-implemented"
+    ]
+    assert findings[0].confidence == "low"
+
+
+def test_unimplemented_aws_action_does_not_match_generic_not_implemented_text() -> None:
+    findings = diagnose("The deployment status is NotImplemented in the report")
+
+    assert "aws.api.action-not-implemented" not in {
+        finding.rule_id for finding in findings
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
         "CannotStartManagedAgentError: failed to start managed agent inside container",
         "An error occurred (InvalidParameterException) when calling the ExecuteCommand operation:",
         (

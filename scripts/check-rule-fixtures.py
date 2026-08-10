@@ -186,6 +186,15 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "DescribeStacks operation: User is not authorized to perform this action"
         ),
     ),
+    "aws.api.action-not-implemented": RuleFixture(
+        positive=(
+            "An error occurred (NotImplemented) when calling the "
+            "ListSchedules operation: operation is not implemented"
+        ),
+        negative=(
+            "The deployment status is NotImplemented in the report"
+        ),
+    ),
     "ecs.execute-command.agent-unavailable": RuleFixture(
         positive=(
             "CannotStartManagedAgentError: failed to start managed agent inside "

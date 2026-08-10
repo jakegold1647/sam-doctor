@@ -298,6 +298,11 @@ _AWS_INVALID_ACTION_PATTERNS = (
     r"\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b",
 )
 
+_AWS_ACTION_NOT_IMPLEMENTED_PATTERNS = (
+    r"NotImplemented\b.{0,120}\bwhen calling\b",
+    r"\bwhen calling\b.{0,120}\bNotImplemented\b",
+)
+
 _ECS_EXEC_AGENT_FAILURE_PATTERNS = (
     r"CannotStartManagedAgentError\b",
     r"InvalidParameterException\b.{0,120}\bwhen calling (?:the )?ExecuteCommand operation\b",
@@ -1112,6 +1117,25 @@ _RULES = (
             "Retry the same call after the operation is supported; do not grant broader permissions for an action the endpoint does not recognize.",
         ),
         documentation_url="https://docs.aws.amazon.com/ec2/latest/devguide/errors-overview.html",
+    ),
+    Rule(
+        id="aws.api.action-not-implemented",
+        title="The endpoint does not implement the requested API action",
+        confidence="low",
+        patterns=_AWS_ACTION_NOT_IMPLEMENTED_PATTERNS,
+        explanation=(
+            "The endpoint returned a NotImplemented response for the requested "
+            "operation. The selected service endpoint, API version, proxy, or "
+            "local emulator may not support that operation or request shape; the "
+            "line does not establish an IAM problem or prove that AWS lacks the "
+            "operation everywhere."
+        ),
+        verification=(
+            "Read the operation, service, endpoint, and HTTP status from the exact evidence line, then compare the operation with the current service API reference.",
+            "Check whether a custom endpoint, proxy, emulator, or stale SDK is handling the request; update the client or use a supported API operation when appropriate.",
+            "Retry against the intended AWS Region and endpoint after correcting the compatibility issue; do not grant broader permissions for an operation the endpoint cannot implement.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/scheduler/latest/APIReference/API_ListSchedules.html",
     ),
     Rule(
         id="ecs.execute-command.agent-unavailable",

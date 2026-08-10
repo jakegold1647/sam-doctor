@@ -65,6 +65,7 @@ QUERIES = (
     '"CannotStartManagedAgentError" in:body',
     '"UnknownAction" "when calling" in:body',
     '"InvalidAction" "when calling" in:body',
+    '"NotImplemented" "when calling" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -94,6 +95,8 @@ FAILURE_SIGNAL = re.compile(
     r"|CannotStartManagedAgentError\b"
     r"|(?:UnknownAction|InvalidAction)\b.{0,120}\bwhen calling\b"
     r"|\bwhen calling\b.{0,120}\b(?:UnknownAction|InvalidAction)\b"
+    r"|NotImplemented\b.{0,120}\bwhen calling\b"
+    r"|\bwhen calling\b.{0,120}\bNotImplemented\b"
     r"|execute command failed because execute command was not enabled"
     r"|Error: [A-Z]"
     r")"
