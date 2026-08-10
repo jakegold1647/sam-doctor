@@ -523,6 +523,18 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="MyFunction CREATE_FAILED Resource handler returned message: denied",
         negative="MyFunction CREATE_COMPLETE AWS::Lambda::Function",
     ),
+    "cloudformation.resource.property-non-ascii": RuleFixture(
+        positive=(
+            "AppSecurityGroup CREATE_FAILED AWS::EC2::SecurityGroup Resource "
+            "handler returned message: Value for parameter GroupDescription "
+            "is invalid. Character sets beyond ASCII are not supported"
+        ),
+        negative=(
+            "AppSecurityGroup CREATE_FAILED AWS::EC2::SecurityGroup Resource "
+            "handler returned message: Value for parameter GroupDescription "
+            "is invalid because it exceeds the maximum length"
+        ),
+    ),
     "cloudformation.nested-stack.propagation-failed": RuleFixture(
         positive=(
             "CREATE_FAILED AWS::CloudFormation::Stack DatabaseStack Embedded "

@@ -533,9 +533,10 @@ cause.
 
 ## 13. A resource property was rejected for non-ASCII characters
 
-**Status:** open, from the field measurement. Tracked in
-[issue #62](https://github.com/jakegold1647/sam-doctor/issues/62) - claim it
-there.
+**Status:** landed — shipped as "A resource property was rejected for
+non-ASCII characters" (see the Unreleased changelog). Closes
+[issue #62](https://github.com/jakegold1647/sam-doctor/issues/62). Kept here
+so the numbering of the other candidates stays stable.
 
 **Failure family.** A resource handler refuses a property value because it
 contains characters outside ASCII - an em dash or an arrow pasted from a design
@@ -1452,19 +1453,18 @@ nested message-content field family from repeated Claude image, document, and
 thinking-block validation failures.
 That percentage is a moving sample,
 not a release guarantee;
-the misses that remain after entries 13 to 15 are mostly other tools' failures
-(CDK, Terraform, CodeBuild) or the six held contributor requests that this project
+the misses that remain after entries 14 and 15 are mostly other tools' failures
+(CDK, Terraform, CodeBuild) or the five held contributor requests that this project
 leaves open for first-time contributors.
 
-Entries 1 to 12 and 16 to 37 have landed. A fresh rule request from a real failure is
+Entries 1 to 13 and 16 to 37 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. Six requests are ready for first-time contributors:
+is the available-work list. Five requests are ready for first-time contributors:
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
 attachment quotas), [#25](https://github.com/jakegold1647/sam-doctor/issues/25)
-(API Gateway `TooManyRequestsException`),
-[#62](https://github.com/jakegold1647/sam-doctor/issues/62) (non-ASCII resource
-properties), and [#64](https://github.com/jakegold1647/sam-doctor/issues/64)
+(API Gateway `TooManyRequestsException`), and
+[#64](https://github.com/jakegold1647/sam-doctor/issues/64)
 (`sam validate --lint`),
 [#65](https://github.com/jakegold1647/sam-doctor/issues/65) (deprecated Lambda
 runtimes), and [#66](https://github.com/jakegold1647/sam-doctor/issues/66)

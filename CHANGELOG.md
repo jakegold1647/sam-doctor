@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Non-ASCII resource property rejections now have a focused handoff.** A high-confidence finding recognizes `Character sets beyond ASCII are not supported` and points at locating the hidden character instead of retyping the property value blind. The generic CREATE_FAILED / UPDATE_FAILED finding no longer also reports the same line, but keeps reporting any other resource failure in the same log.
+
 - **Bare Kubernetes pod-sandbox network failures now have a focused handoff.**
   A low-confidence fallback preserves the CNI plugin and node-level evidence,
   while specific EKS VPC CNI and network-policy findings continue to take
