@@ -134,7 +134,9 @@ keep the deploy command's exit status:
 set -o pipefail
 sam deploy --no-confirm-changeset 2>&1 | tee deployment.log
 deploy_status=${PIPESTATUS[0]}
-sam-doctor diagnose deployment.log --format markdown
+if [ "$deploy_status" -ne 0 ]; then
+  sam-doctor diagnose deployment.log --format markdown
+fi
 exit "$deploy_status"
 ```
 
@@ -142,7 +144,9 @@ exit "$deploy_status"
 # PowerShell
 sam deploy --no-confirm-changeset 2>&1 | Tee-Object deployment.log
 $deployStatus = $LASTEXITCODE
-sam-doctor diagnose deployment.log --format markdown
+if ($deployStatus -ne 0) {
+  sam-doctor diagnose deployment.log --format markdown
+}
 exit $deployStatus
 ```
 

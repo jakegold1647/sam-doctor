@@ -158,13 +158,17 @@ xclip -selection clipboard -o | sam-doctor diagnose - --format markdown</code></
 set -o pipefail
 sam deploy --no-confirm-changeset 2>&amp;1 | tee deployment.log
 deploy_status=${PIPESTATUS[0]}
-sam-doctor diagnose deployment.log --format markdown
+if [ "$deploy_status" -ne 0 ]; then
+  sam-doctor diagnose deployment.log --format markdown
+fi
 exit "$deploy_status"
 
 # PowerShell
 sam deploy --no-confirm-changeset 2&gt;&amp;1 | Tee-Object deployment.log
 $deployStatus = $LASTEXITCODE
-sam-doctor diagnose deployment.log --format markdown
+if ($deployStatus -ne 0) {
+  sam-doctor diagnose deployment.log --format markdown
+}
 exit $deployStatus</code></pre>
         <p class="muted">These examples keep diagnosis advisory; add a confidence or findings gate only when you are ready.</p>
 
