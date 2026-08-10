@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Unmatched failures now have a direct sharing path.** Terminal and Markdown
+  reports show the sanitized `sam-doctor request-packet` follow-up, including
+  stdin; the homepage and machine-readable site summary point to the same
+  reviewed excerpt workflow.
+
+- **Successful local deploys stay quiet.** The Bash, zsh, and PowerShell
+  onboarding recipes retain the deployment log and original exit status, but
+  run the advisory diagnosis only when the deploy exits non-zero.
+
 - **Report outputs can no longer overwrite their source logs.** `diagnose` and
   `batch` reject literal, normalized-path, symlink, and hard-link aliases before
   writing, while packet commands also reject pre-existing hard-linked artifact
