@@ -6,6 +6,11 @@
 
 <!-- Link an issue or describe the gap. -->
 
+## Help wanted (optional)
+
+<!-- If this is your first PR here or you want an early maintainer check, say
+     what you are unsure about. Draft PRs and partial work are welcome. -->
+
 ## Validation
 
 Tip: `python scripts/check-pr.py` runs every required check in one command.

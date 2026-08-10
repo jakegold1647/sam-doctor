@@ -77,6 +77,14 @@ request.
 For rule proposals, use `docs/contributing-a-diagnostic-rule.md` and keep the
 change scope to one signal and one fixture pair.
 
+## If you get stuck
+
+Open a draft PR as soon as you have a failing test, partial fixture, or
+documentation sketch. In the description, link the issue, include the command
+you ran, and name the exact question; a maintainer can review the direction
+before the change is finished. Draft PRs are welcome, and you do not need to
+solve the remaining problem before asking for help.
+
 ## Development setup
 
 SAM Doctor supports Python 3.10 through 3.13 on Linux, macOS, and Windows.
