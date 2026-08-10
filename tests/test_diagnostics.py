@@ -1254,6 +1254,54 @@ def test_handler_wording_collision_keeps_unrelated_resource_failures_visible() -
     assert "CloudFormation resource creation or update failed" in titles
 
 
+def test_non_ascii_property_rejection_suppresses_the_generic_resource_failure() -> None:
+    log = (
+        "AppSecurityGroup CREATE_FAILED AWS::EC2::SecurityGroup Resource "
+        'handler returned message: "Value (Pre-deploy Lambda -> RDS plus '
+        'VPC endpoints) for parameter GroupDescription is invalid. '
+        'Character sets beyond ASCII are not supported"'
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "A resource property was rejected for non-ASCII characters" in titles
+    assert "CloudFormation resource creation or update failed" not in titles
+
+
+def test_a_different_invalid_value_keeps_the_generic_resource_failure() -> None:
+    log = (
+        "AppSecurityGroup CREATE_FAILED AWS::EC2::SecurityGroup Resource "
+        'handler returned message: "Value for parameter GroupDescription is '
+        'invalid because it exceeds the maximum length"'
+    )
+
+    titles = [finding.title for finding in diagnose(log)]
+    assert "A resource property was rejected for non-ASCII characters" not in titles
+    assert "CloudFormation resource creation or update failed" in titles
+
+
+def test_non_ascii_rejection_keeps_unrelated_resource_failures_visible() -> None:
+    log = (
+        "AppSecurityGroup CREATE_FAILED AWS::EC2::SecurityGroup Resource "
+        'handler returned message: "Value for parameter GroupDescription is '
+        'invalid. Character sets beyond ASCII are not supported"\n'
+        "WorkQueue CREATE_FAILED AWS::SQS::Queue Resource handler returned "
+        'message: "The specified queue does not exist."'
+    )
+
+    findings = diagnose(log)
+    titles = [finding.title for finding in findings]
+    assert "A resource property was rejected for non-ASCII characters" in titles
+    assert "CloudFormation resource creation or update failed" in titles
+
+    generic_finding = next(
+        f
+        for f in findings
+        if f.title == "CloudFormation resource creation or update failed"
+    )
+    assert not any("AppSecurityGroup" in line for line in generic_finding.evidence)
+    assert any("WorkQueue" in line for line in generic_finding.evidence)
+
+
 def test_a_missing_parameter_validation_error_is_not_a_schema_validation_failure() -> None:
     log = (
         "Error: Failed to create changeset for the stack: my-app\n"

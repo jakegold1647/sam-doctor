@@ -1773,6 +1773,11 @@ _RULES = (
             r"BucketAlreadyExists",
             r"BucketAlreadyOwnedByYou",
             r"The REST API does(?:n't| not) contain any methods",
+            # The non-ASCII property rule explains the same event more
+            # specifically; this line still names the failed resource, so
+            # excluding just it lets an unrelated failure in the same log
+            # keep reporting.
+            r"Character sets beyond ASCII are not supported",
             r"did not stabilize",
             r"HandlerErrorCode:\s*NotStabilized",
             r"Exceeded attempts to wait",
@@ -1791,6 +1796,27 @@ _RULES = (
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
         ),
+    ),
+    Rule(
+        id="cloudformation.resource.property-non-ascii",
+        title="A resource property was rejected for non-ASCII characters",
+        confidence="high",
+        patterns=(r"Character sets beyond ASCII are not supported",),
+        explanation=(
+            "A resource handler rejected a property value because it contains a "
+            "character outside ASCII - commonly an em dash, a smart quote, or an "
+            "arrow pasted in from a design document or word processor. The "
+            "rejected parameter or property is named earlier in the evidence "
+            "line; the handler does not identify every offending code point or "
+            "rule out other constraints on the same value."
+        ),
+        verification=(
+            "Identify the rejected parameter or property named in the evidence line.",
+            "Inspect the exact submitted or generated template, and any parameter or `Fn::Sub` source that produced the value; check `.aws-sam/build/template.yaml` too if a SAM build artifact was deployed.",
+            "Find non-ASCII characters locally: `python -c \"from pathlib import Path; p=Path('template.yaml'); print([n for n,s in enumerate(p.read_text(encoding='utf-8').splitlines(),1) if not s.isascii()])\"`.",
+            "Replace the character with wording allowed by the property's documented character set, rather than deleting the value.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-ec2-securitygroup.html",
     ),
     Rule(
         id="lambda.env-vars.kms-key-inaccessible",
