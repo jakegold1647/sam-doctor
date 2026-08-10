@@ -128,18 +128,25 @@ def test_mobile_brand_links_keep_their_accessible_names() -> None:
     assert declarations.get("display") != "none"
     assert declarations.get("visibility") != "hidden"
     expected = {
-        "position": "absolute",
-        "width": "1px",
-        "height": "1px",
-        "padding": "0",
-        "margin": "-1px",
-        "overflow": "hidden",
-        "clip": "rect(0, 0, 0, 0)",
-        "clip-path": "inset(50%)",
+        "position": "static",
+        "width": "auto",
+        "height": "auto",
+        "margin": "0",
+        "overflow": "visible",
+        "clip": "auto",
+        "clip-path": "none",
         "white-space": "nowrap",
-        "border": "0",
     }
     assert declarations.items() >= expected.items()
+
+    github_link = _css_block(mobile, ".topbar .nav-github")
+    github_declarations = {
+        name.strip(): value.strip()
+        for declaration in github_link.split(";")
+        if ":" in declaration
+        for name, value in [declaration.split(":", 1)]
+    }
+    assert github_declarations.get("display") == "none"
 
 
 def test_mobile_header_does_not_cover_anchor_targets() -> None:
