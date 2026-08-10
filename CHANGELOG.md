@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **EKS network-policy-agent failures now have a focused handoff.** A
+  medium-confidence finding recognizes the policy setup markers, points at the
+  `aws-network-policy-agent` logs and EKS prerequisites, and yields to that
+  stage instead of repeating the generic pod-sandbox wrapper.
+
 - **SAM build output permission failures now have a focused handoff.** A
   medium-confidence finding recognizes permission errors under `.aws-sam/build`
   and points at local ownership, locks, and generated-output cleanup without

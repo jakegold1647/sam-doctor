@@ -719,6 +719,28 @@ def test_eks_vpc_cni_pod_sandbox_wrapper_routes_to_cni_logs() -> None:
     assert findings[0].confidence == "low"
 
 
+def test_eks_network_policy_agent_failure_routes_to_agent_checks() -> None:
+    findings = diagnose(
+        'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" '
+        "failed (add): failed to setup network policy\n"
+        "Failed to setup default network policy for Pod Name <pod> and NameSpace <ns>: "
+        "Network policy agent returned - <nil>"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "eks.network-policy.agent-failed"
+    ]
+    assert findings[0].confidence == "medium"
+
+
+def test_eks_network_policy_rule_does_not_match_an_unrelated_network_failure() -> None:
+    findings = diagnose("failed to setup network for sandbox: interface unavailable")
+
+    assert "eks.network-policy.agent-failed" not in {
+        finding.rule_id for finding in findings
+    }
+
+
 def test_eks_vpc_cni_wrapper_yields_to_nested_ec2_cause() -> None:
     findings = diagnose(
         'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" failed (add)\n'

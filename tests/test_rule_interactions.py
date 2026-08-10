@@ -97,6 +97,9 @@ EXPECTED_HIDING = {
     # nested CreateNetworkInterface response, the EC2 rule has the actionable
     # status and error code, so the wrapper must yield for the whole event.
     ("eks.vpc-cni.pod-sandbox-network-failed", "ec2.network-interface.create-failed"),
+    # Network-policy setup is a more specific EKS VPC CNI stage than the generic
+    # pod-sandbox wrapper, so the generic handoff yields when it is present.
+    ("eks.vpc-cni.pod-sandbox-network-failed", "eks.network-policy.agent-failed"),
     # The asset wrapper names the concrete CDK build stage. When it appears with
     # the broad AssemblyError wrapper, the asset finding is the more useful
     # handoff and the generic synthesis finding yields.

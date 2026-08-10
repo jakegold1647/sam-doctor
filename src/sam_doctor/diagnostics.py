@@ -362,6 +362,11 @@ _EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS = (
     r"plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b",
 )
 
+_EKS_NETWORK_POLICY_FAILURE_PATTERNS = (
+    r"failed to setup (?:default )?network policy\b",
+    r"Network policy agent returned\b",
+)
+
 _SAM_BUILD_PERMISSION_FAILURE_PATTERNS = (
     (
         r"(?:PermissionError|Permission denied|Access is denied)"
@@ -1366,6 +1371,24 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html",
     ),
     Rule(
+        id="eks.network-policy.agent-failed",
+        title="The EKS VPC CNI network policy agent could not set up policy",
+        confidence="medium",
+        patterns=_EKS_NETWORK_POLICY_FAILURE_PATTERNS,
+        explanation=(
+            "The Amazon VPC CNI network-policy agent failed while setting up a "
+            "pod's policy at sandbox creation. This is an EKS add-on or node-level "
+            "network-policy problem; the application workload and IAM policy are "
+            "not the first things to change."
+        ),
+        verification=(
+            "Record the pod, node, namespace, and timestamp, then inspect the `aws-network-policy-agent` container in the `aws-node` DaemonSet for the nested eBPF, veth, or PolicyEndpoint error.",
+            "Confirm the VPC CNI add-on version and network-policy configuration meet the current EKS prerequisites, and check that the node kernel and architecture support the enabled policy mode.",
+            "If the failure is transient and a kubelet retry succeeds, preserve both events and check the network-policy-agent and VPC CNI versions before changing policies; do not broaden application IAM for this node-level error.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/eks/latest/userguide/network-policies-troubleshooting.html",
+    ),
+    Rule(
         id="eks.vpc-cni.pod-sandbox-network-failed",
         title="The EKS VPC CNI could not set up pod networking",
         confidence="low",
@@ -1384,7 +1407,10 @@ _RULES = (
             "Retry only after the nested CNI or EC2 cause is corrected; when a complete `CreateNetworkInterface` response is present, use that more specific finding instead of this wrapper handoff.",
         ),
         documentation_url="https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html",
-        suppressed_by=(r"\boperation error EC2:\s*CreateNetworkInterface\b",),
+        suppressed_by=(
+            r"\boperation error EC2:\s*CreateNetworkInterface\b",
+            *_EKS_NETWORK_POLICY_FAILURE_PATTERNS,
+        ),
     ),
     Rule(
         id="glue.database.rename-rejected",

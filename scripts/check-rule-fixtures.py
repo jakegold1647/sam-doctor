@@ -266,6 +266,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "IPv4 addresses in the subnet"
         ),
     ),
+    "eks.network-policy.agent-failed": RuleFixture(
+        positive=(
+            "Failed to setup default network policy for Pod Name <pod> and "
+            "NameSpace <ns>: GRPC returned - Network policy agent returned - <nil>"
+        ),
+        negative="The network policy agent completed setup for the pod successfully",
+    ),
     "eks.vpc-cni.pod-sandbox-network-failed": RuleFixture(
         positive=(
             'Failed to create pod sandbox: plugin type="aws-cni" name="aws-cni" '
