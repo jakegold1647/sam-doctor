@@ -19,7 +19,7 @@ is the current source of record. If you contribute, you are welcome to open a
 small PR adding or correcting your entry, or ask a maintainer to do it for you.
 No contributor is required to be listed.
 
-Want to join them? Start with a [good first issue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
+Want to join them? Start with the [ready newcomer queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor+available%22),
 share a sanitized result through the [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml),
 share an idea in [Discussions](https://github.com/jakegold1647/sam-doctor/discussions/categories/ideas),
 or follow the [contributor guide](CONTRIBUTING.md).
