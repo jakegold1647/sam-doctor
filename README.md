@@ -603,6 +603,7 @@ not security, legal, or production-operations advice.
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
 - [Community triage: turn usage feedback into a contribution](docs/community-triage.md)
 - [Community outreach plan: put the tool in real hands](docs/community-outreach-plan.md)
+- [Maintainer path: grow the project beyond one person](docs/maintainer-path.md)
 
 ## Contributing
 

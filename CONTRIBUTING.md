@@ -16,6 +16,11 @@ The [community outreach plan](docs/community-outreach-plan.md) describes the
 help-first usage and contribution loop. It is intentionally conversation-first:
 no mass messages, star exchanges, or pressure to join another platform.
 
+If you want to help the project become easier to run for someone with a busy
+schedule, read the [maintainer path](docs/maintainer-path.md). It describes how
+people can grow from contributor to reviewer, triage collaborator, and eventual
+co-maintainer without needing to take on the whole project at once.
+
 Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before opening an issue,
 discussion, or pull request. It sets the project standard for respectful
 feedback and keeps the privacy boundary clear for everyone, including first-
