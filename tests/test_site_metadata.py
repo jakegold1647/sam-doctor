@@ -145,7 +145,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
 
     assert '<link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/"' in page
-    assert 'name="author" content="Jake Goldstein"' in page
+    assert 'name="author" content="Jacob Goldstein"' in page
     assert 'name="geo.region" content="US"' in page
     assert 'name="geo.placename" content="United States"' in page
     assert 'https://jacobgoldstein.dev' in page
@@ -166,7 +166,7 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["name"] == "SAM Doctor"
     assert schema["softwareVersion"] == _current_version()
     assert schema["offers"]["price"] == "0"
-    assert schema["publisher"]["name"] == "Jake Goldstein"
+    assert schema["publisher"]["name"] == "Jacob Goldstein"
     assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"
 
 

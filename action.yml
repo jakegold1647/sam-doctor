@@ -1,5 +1,5 @@
 name: SAM Doctor AWS Deployment Diagnostics
-author: Jake Goldstein
+author: Jacob Goldstein
 description: Diagnose AWS SAM, CDK, CloudFormation, and GitHub Actions deployment failures with redacted reports.
 inputs:
   log-file:
