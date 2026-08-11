@@ -15,6 +15,11 @@ jobs:
           python-version: "3.12"
       - name: Run website QA checks
         run: python scripts/check-site-qa.py
+      # llms.txt is the machine-readable index assistants read. A title change on
+      # an error page used to leave its label here silently stale, so the drift
+      # fails the build instead.
+      - name: Verify llms.txt labels match their error pages
+        run: python scripts/sync-llms-txt.py --check
 
   verify:
     runs-on: ubuntu-latest

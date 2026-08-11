@@ -6,16 +6,17 @@ discovers failures locally instead of after pushing:
 
 1. site metadata is in sync        (scripts/sync-site-metadata.py --check)
 2. contributor page is in sync     (scripts/sync-contributor-page.py --check)
-3. website QA                      (scripts/check-site-qa.py)
-4. lint                            (ruff check src tests scripts)
-5. rule catalog quality gate       (scripts/check-rule-catalog.py)
-6. rule fixture registry gate      (scripts/check-rule-fixtures.py)
-7. site rule catalog drift gate    (scripts/build-site-rule-catalog.py --check)
-8. error page mapping gate         (scripts/check-error-pages.py)
-9. test suite + coverage floor     (pytest -q --cov)
-10. package build                  (python -m build)
-11. built wheel in a clean env     (scripts/verify-wheel.py)
-12. onboarding smoke check         (scripts/run-smoke.py)
+3. llms.txt labels are in sync     (scripts/sync-llms-txt.py --check)
+4. website QA                      (scripts/check-site-qa.py)
+5. lint                            (ruff check src tests scripts)
+6. rule catalog quality gate       (scripts/check-rule-catalog.py)
+7. rule fixture registry gate      (scripts/check-rule-fixtures.py)
+8. site rule catalog drift gate    (scripts/build-site-rule-catalog.py --check)
+9. error page mapping gate         (scripts/check-error-pages.py)
+10. test suite + coverage floor    (pytest -q --cov)
+11. package build                  (python -m build)
+12. built wheel in a clean env     (scripts/verify-wheel.py)
+13. onboarding smoke check         (scripts/run-smoke.py)
 
 All steps run even when an early one fails, then a summary reports every
 failure at once. Exit code 0 only when everything passed.
@@ -43,6 +44,7 @@ def _steps(fast: bool) -> list[tuple[str, list[str]]]:
             "contributor page in sync",
             [python, "scripts/sync-contributor-page.py", "--check"],
         ),
+        ("llms.txt labels in sync", [python, "scripts/sync-llms-txt.py", "--check"]),
         ("website QA", [python, "scripts/check-site-qa.py"]),
         ("ruff lint", [python, "-m", "ruff", "check", "src", "tests", "scripts"]),
         ("rule catalog quality", [python, "scripts/check-rule-catalog.py"]),
