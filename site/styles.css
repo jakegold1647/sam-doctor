@@ -1591,6 +1591,16 @@ body:not(.landing) .faq h2,
   color: white;
 }
 
+/* Same fix as `.diagnostic-window` and `.command-stack`: the global
+ * `:not(pre) > code` background is meant for light prose, and on this dark
+ * panel it put white text on #f0ede7 - a 1.17:1 contrast ratio, which is
+ * effectively invisible. Setting the colour alone never cleared it, because
+ * the background came from a different rule. */
+.terminal :not(pre) > code {
+  background: transparent;
+  padding: 0;
+}
+
 .terminal .muted {
   color: var(--dark-muted);
 }
