@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report an unmatched AWS deployment error safely | SAM Doctor</title>
+    <meta name="description" content="Create a small, reviewed report for an AWS SAM, CloudFormation, CDK, IAM, or GitHub Actions deployment error SAM Doctor does not yet recognize." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/report-missed-error.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Report an unmatched AWS deployment error safely | SAM Doctor" />
+    <meta property="og:description" content="Create a small, reviewed report for an AWS SAM, CloudFormation, CDK, IAM, or GitHub Actions deployment error SAM Doctor does not yet recognize." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/report-missed-error.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Report an unmatched AWS deployment error safely | SAM Doctor" />
+    <meta name="twitter:description" content="Create a small, reviewed report for an AWS SAM, CloudFormation, CDK, IAM, or GitHub Actions deployment error SAM Doctor does not yet recognize." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/svg+xml" href="./assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#missed-error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="./">Home</a>
+        <a href="./quickstart.html">Quickstart</a>
+        <a href="./errors/">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="missed-error-content">
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">MISSED DEPLOYMENT ERROR</p>
+        <h1 id="page-title">Help cover an error without sharing the whole log</h1>
+        <p class="lede">
+          If SAM Doctor says no supported pattern matched, a small, reviewed
+          excerpt is enough to investigate a new rule. Never paste a complete
+          production log, credentials, account IDs, ARNs, tokens, customer data,
+          or private repository names into a public issue.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="capture-title">
+        <p class="eyebrow">1. CAPTURE</p>
+        <h2 id="capture-title">Create a short request packet locally</h2>
+        <p>
+          Run the command against the log that produced no finding. It writes a
+          5–15 line window around the first likely error, with the same common
+          redactions SAM Doctor uses in reports.
+        </p>
+        <pre><code>sam-doctor request-packet deployment.log --output-dir artifacts</code></pre>
+        <p>
+          This is a starting point, not a guarantee that every sensitive value
+          was removed. The source log stays local; only the generated excerpt is
+          intended for review.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="review-title">
+        <p class="eyebrow">2. REVIEW</p>
+        <h2 id="review-title">Keep only the evidence needed to understand the failure</h2>
+        <ul>
+          <li>Keep the first error and a few lines of surrounding context.</li>
+          <li>Remove account IDs, ARNs, hostnames, customer data, repository names, credentials, and tokens.</li>
+          <li>Record the deployment command and the AWS or CI service involved.</li>
+          <li>If you do not know the right next check, say so; that uncertainty is useful context.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="submit-title">
+        <p class="eyebrow">3. SUBMIT</p>
+        <h2 id="submit-title">Open a focused rule request</h2>
+        <p>
+          Paste the reviewed excerpt into the rule-request form. The form asks
+          for the service, the command that failed, and the safest next check to
+          investigate. If you are unsure about the last one, write: <code>Not
+          sure — please suggest the safest first check.</code>
+        </p>
+        <p>
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">Open a diagnostic rule request</a>
+          or <a href="./errors/">check the exact-error index first</a> in case
+          the failure already has a guide.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

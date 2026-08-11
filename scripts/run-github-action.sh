@@ -20,6 +20,13 @@ fi
 : "${SAM_DOCTOR_FAIL_ON_CONFIDENCE:=}"
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required.}"
 
+# A runner can inherit TMPDIR from a parent shell even when that directory is
+# not mounted in the action environment. Let mktemp use its platform default
+# instead of failing before SAM Doctor can read the supplied log.
+if [ -n "${TMPDIR:-}" ] && [ ! -d "$TMPDIR" ]; then
+  unset TMPDIR
+fi
+
 if [ -z "${GITHUB_ACTION_PATH:-}" ]; then
   GITHUB_ACTION_PATH="$(cd "$(dirname "$0")/.." && pwd)"
 fi

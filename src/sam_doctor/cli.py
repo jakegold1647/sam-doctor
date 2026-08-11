@@ -1116,6 +1116,21 @@ def _request_packet_command(args: argparse.Namespace) -> int:
             "yourself."
         )
     lines.extend(["", f"Open a rule request: {RULE_REQUEST_URL}"])
+    lines.extend(
+        [
+            "",
+            "## Complete the request form",
+            "",
+            "Paste only the excerpt above, then fill in these three fields:",
+            "",
+            "- **AWS or CI service:** <fill in>",
+            "- **Deployment command:** <fill in the command that failed>",
+            "- **Useful next check:** If you are unsure, write `Not sure — please suggest the safest first check.`",
+            "",
+            "Before submitting, review the excerpt again and select the privacy confirmation in the form.",
+            "For a short walkthrough, see https://sam-doctor.jacobgoldstein.dev/report-missed-error.html.",
+        ]
+    )
 
     _write_report(notes_path, "\n".join(lines) + "\n")
     print(f"Rule request excerpt written to {notes_path}")

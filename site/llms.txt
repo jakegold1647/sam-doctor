@@ -9,18 +9,16 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 - [Project homepage](https://sam-doctor.jacobgoldstein.dev/): install, demo, supported categories, and GitHub Actions usage.
 - [Contributor hall of fame](https://sam-doctor.jacobgoldstein.dev/contributors/): the people who have helped ship rules, fixtures, CI, docs, and tests.
 - [PyPI package](https://pypi.org/project/sam-doctor/): install the stable CLI with `python -m pip install sam-doctor`.
+- [Report an unmatched deployment error safely](https://sam-doctor.jacobgoldstein.dev/report-missed-error.html): create a small, reviewed rule-request excerpt without posting a full deployment log.
 - [GitHub repository](https://github.com/jakegold1647/sam-doctor): source, tests, issues, and contribution guide.
 - [GitHub Marketplace Action](https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics): diagnose saved deployment logs in CI.
 
 For a one-off local diagnosis without a global install, use
 `uvx sam-doctor diagnose deployment.log --format markdown`.
 
-The stable PyPI package is the install path for `diagnose`. The newer
-shell-independent `run` wrapper and native clipboard handoff are currently on
-the `main` branch; try them with
-`python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"`
-until the next stable release. These guides follow the current `main` catalog
-(89 diagnostics); stable PyPI `0.11.0` contains the released 48-rule catalog.
+The stable PyPI package is the install path for the current 90-diagnostic
+catalog, including the shell-independent `run` wrapper and native clipboard
+handoff. These guides describe stable PyPI `0.12.0`.
 
 ## Exact-error guides
 

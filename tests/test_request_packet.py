@@ -80,6 +80,9 @@ def test_cli_request_packet_writes_excerpt_for_unmatched_log(tmp_path: Path) -> 
     assert "noise line 0" not in content
     assert "more noise 4" not in content
     assert "rule request" in content.lower()
+    assert "Complete the request form" in content
+    assert "AWS or CI service" in content
+    assert "report-missed-error.html" in content
 
 
 @pytest.mark.parametrize("escape_kind", ("traversal", "absolute"))
