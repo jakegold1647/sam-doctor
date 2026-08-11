@@ -1886,6 +1886,157 @@ body:not(.landing) footer p {
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Phone type scale and touch targets.
+ *
+ * The desktop scale leans on small mono labels, which works at a reading
+ * distance on a large screen and stops working on a phone: 35 of 49 controls
+ * were under the 44px WCAG 2.5.5 target at 390px, and 89 of 193 text elements
+ * were under 13px, bottoming out at 9.92px. Uppercase mono is the worst of it,
+ * because the tracking that makes a label read as a label also removes the
+ * descender cues the eye uses at small sizes.
+ *
+ * This block only ever grows things, and only below 700px, so the desktop
+ * composition at 1280 is untouched. Floors: 14px for labels and meta, 16px for
+ * navigation and anything interactive, 44px minimum height for controls.
+ * It sits after the 470px block deliberately - equal specificity, so the later
+ * rule wins on the narrow screens both blocks match.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 700px) {
+  /* Labels, meta, and captions: 14px floor. */
+  .command-stack span,
+  .coverage-tag,
+  .finding-meta,
+  .finding-details dt,
+  .report-body strong,
+  .report-label,
+  .report-foot,
+  .report-kicker,
+  .trust-icon,
+  .window-bar,
+  .window-footer,
+  .signal-band p,
+  .hall-number,
+  .hall-badge,
+  .hall-stat span,
+  .hall-note,
+  .demo-status,
+  .demo-line,
+  .demo-evidence,
+  .demo-rule-id,
+  .demo-privacy,
+  .demo-docs,
+  .step-number,
+  .eyebrow,
+  .resource-list,
+  .hero-proof span,
+  .hero-proof strong,
+  .fine-print,
+  .legal,
+  footer,
+  .command,
+  .command-stack .install-note {
+    font-size: .875rem;
+  }
+
+  /* Monospace samples: the same floor, applied where the size is set rather
+     than inherited, so `code` inside them cannot shrink back below it. */
+  pre,
+  .process-grid code,
+  .command-stack code {
+    font-size: .875rem;
+  }
+
+  /* The diagnosis body is what the demo exists to show; it should not be the
+     smallest prose on the page. */
+  .finding-details dd,
+  .demo-explanation p,
+  .demo-note-block p {
+    font-size: .875rem;
+  }
+
+  /* The base rule carries !important, so matching it is the only way to raise
+     this off the 12.48px floor on a phone. */
+  .fine-print {
+    font-size: .875rem !important;
+  }
+
+  /* The global `code { font-size: .88em }` compounds: inside a 14px block it
+     lands at 12.32px, and `.code-dim` spans inherit that again. On a phone the
+     mono face is already the hardest thing to read, so it matches its
+     container here instead of shrinking against it. */
+  code {
+    font-size: 1em;
+  }
+
+  /* A readable nav cannot share a row with the wordmark on a phone: the three
+     links need about 265px beside a 137px brand inside 353px, and they overrun
+     even at 13px. So the bar becomes two deliberate rows - brand, then nav
+     left-aligned beneath it - rather than leaving one link to wrap onto a line
+     of its own against the right edge. */
+  .topbar {
+    flex-wrap: wrap;
+    row-gap: .1rem;
+    min-height: 0;
+  }
+
+  .topbar nav {
+    flex: 1 0 100%;
+    justify-content: flex-start;
+    gap: 0 1.15rem;
+  }
+
+  /* Navigation and interactive controls: 16px floor. 16px on the textarea also
+     stops iOS Safari zooming the page when the field takes focus. */
+  .topbar nav a,
+  footer nav a,
+  .demo-button,
+  .hall-link,
+  .text-link,
+  .card-link,
+  summary,
+  #hero-demo-input {
+    font-size: 1rem;
+  }
+
+  /* 44px minimum touch target. `nav a` already carries this; the footer opts
+     out of it at desktop width, and the demo controls never had it. */
+  footer nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .demo-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: .6rem 1.25rem;
+  }
+
+  .hall-link,
+  .text-link,
+  .card-link {
+    min-height: 2.75rem;
+  }
+
+  summary {
+    display: list-item;
+    padding-block: .6rem;
+  }
+
+  /* The demo buttons are the primary interaction on the page: let them take the
+     full width rather than sit as two short pills on a narrow screen. */
+  .demo-actions {
+    gap: .65rem;
+  }
+
+  .demo-actions .demo-button {
+    flex: 1 1 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
