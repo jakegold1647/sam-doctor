@@ -1,0 +1,19 @@
+name: Preview an OIDC deployment diagnosis
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-sanitized-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Explain a GitHub Actions OIDC failure
+        uses: jakegold1647/sam-doctor@v0
+        with:
+          log-file: examples/oidc-assume-role-failure.txt
+          summary: true

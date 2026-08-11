@@ -4,6 +4,12 @@ Use these templates to onboard quickly.
 
 ## GitHub Actions starters
 
+- `github-actions-oidc-diagnostic-demo.yml`
+  - Runs against the bundled, sanitized OIDC failure excerpt: no AWS account,
+    AWS credentials, or deployment required.
+  - Use it as a one-minute preview of the Action's job summary and annotations
+    before adding SAM Doctor to a live deployment workflow.
+
 - `github-actions-workflow.yml`
   - Works for classic `sam deploy` command.
   - Drop this at `.github/workflows/sam-doctor.yml` and fill in your deployment step.

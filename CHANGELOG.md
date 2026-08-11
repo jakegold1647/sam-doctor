@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.12.0 - 2026-08-10
+
+- **The GitHub Marketplace Action can now publish current release metadata.**
+  Its short description now meets the Marketplace limit, so the listing can
+  advance with this stable release instead of staying on an older version.
+
 - **SAM lint summaries now point back to the matched cfn-lint rules.** A
   medium-confidence finding recognizes the exact `sam validate --lint` failure
   summary and directs the reader to the nearby E/W rule output without
