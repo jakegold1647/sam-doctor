@@ -27,3 +27,6 @@ launch/outreach-log-template.csv
 launch/DISTRIBUTION-TRACKING.md
 launch/LAUNCH-PLAN.md
 launch/OUTREACH.md
+
+# backups written by scripts/samdoctor_seo_rewrite tooling
+.seo-backup/
