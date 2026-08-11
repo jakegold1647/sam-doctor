@@ -61,20 +61,11 @@ package directly through `uvx`:
 uvx sam-doctor diagnose deployment.log --format markdown
 ```
 
-The current branch also contains the shell-independent `run` wrapper and the
-native clipboard handoff. Until those features land in the next stable PyPI
-release, try them explicitly from `main`:
+The stable PyPI release contains the full 90-diagnostic catalog, the
+shell-independent `run` wrapper, and the native clipboard handoff. The public
+guides follow that release, so `pip install sam-doctor` is all you need.
 
-```bash
-python -m pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@main"
-```
-
-The public guides follow the current `main` catalog (89 diagnostics). Stable
-PyPI `0.11.0` contains the released 48-rule catalog, so use the explicit
-`main` install above when you need newer rule coverage as well as `run` or
-clipboard support.
-
-To install from a tagged source release instead of PyPI, use
+To install from a specific tagged source release instead, use
 `pip install "sam-doctor @ git+https://github.com/jakegold1647/sam-doctor.git@<tag>"`
 with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/releases).
 If your shell cannot find `sam-doctor` after installing, use
@@ -334,7 +325,7 @@ For a single-step CI integration, let the Action run and capture the deploy:
 ```yaml
 - name: Deploy and diagnose
   id: sam-doctor
-  uses: jakegold1647/sam-doctor@main
+  uses: jakegold1647/sam-doctor@v0
   with:
     log-file: deployment.log
     run-command: sam deploy --no-confirm-changeset
@@ -343,10 +334,8 @@ For a single-step CI integration, let the Action run and capture the deploy:
 
 It preserves the deployment's original exit status and exposes it as
 `deploy-exit-status`; keep authentication and environment setup in earlier
-steps. Use either `run-command` or `batch`, not both. This example uses
-`@main` because the current stable `v0` tag predates `run-command`; switch to
-the next stable tag when it includes this input. The log-only examples below
-remain on `@v0`.
+steps. Use either `run-command` or `batch`, not both. The `@v0` tag follows
+stable releases; pin a specific release tag when reproducibility requires it.
 
 `sam-doctor init` generates this workflow for you:
 

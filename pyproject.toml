@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sam-doctor"
-version = "0.12.0"
+version = "0.12.1"
 description = "Local, evidence-first diagnostics for AWS SAM, AWS CDK, CloudFormation, and GitHub Actions deployment failures."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -53,8 +53,8 @@ Repository = "https://github.com/jakegold1647/sam-doctor"
 Documentation = "https://github.com/jakegold1647/sam-doctor/tree/main/docs"
 Issues = "https://github.com/jakegold1647/sam-doctor/issues"
 Changelog = "https://github.com/jakegold1647/sam-doctor/blob/main/CHANGELOG.md"
-GitHub_Actions = "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
-Researcher_Overview = "https://github.com/jakegold1647/sam-doctor/blob/main/RESEARCHER_OVERVIEW.md"
+"GitHub Actions" = "https://github.com/marketplace/actions/sam-doctor-aws-deployment-diagnostics"
+"Researcher Overview" = "https://github.com/jakegold1647/sam-doctor/blob/main/RESEARCHER_OVERVIEW.md"
 
 [project.scripts]
 sam-doctor = "sam_doctor.cli:main"

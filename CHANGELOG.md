@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.12.1 - 2026-08-11
+
+- **Corrected public install guidance and catalog counts.** The README and
+  package page now direct users to the stable PyPI release, which already
+  includes all 90 documented diagnostics, the `run` wrapper, and clipboard
+  handoff. No functional changes.
+
 ## v0.12.0 - 2026-08-10
 
 - **The GitHub Marketplace Action can now publish current release metadata.**

@@ -18,7 +18,7 @@ For a one-off local diagnosis without a global install, use
 
 The stable PyPI package is the install path for the current 90-diagnostic
 catalog, including the shell-independent `run` wrapper and native clipboard
-handoff. These guides describe stable PyPI `0.12.0`.
+handoff.
 
 ## Exact-error guides
 
