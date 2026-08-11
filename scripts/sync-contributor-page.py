@@ -22,9 +22,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONTRIBUTORS_PATH = PROJECT_ROOT / "CONTRIBUTORS.md"
 PAGE_PATH = PROJECT_ROOT / "site" / "contributors" / "index.html"
 README_PATH = PROJECT_ROOT / "README.md"
+# The link is optional. A contributor who deletes their GitHub account still
+# shipped the work, so the entry keeps its badge and summary and simply drops
+# the profile link rather than the person - a 404 is not a way to say thank you.
 ENTRY_PATTERN = re.compile(
-    r"^- \[(?P<name>[^\]]+)\]\((?P<url>https://github\.com/[^)]+)\)"
+    r"^- (?:\[(?P<name>[^\]]+)\]\((?P<url>https://github\.com/[^)]+)\)"
+    r"|(?P<plain_name>[A-Za-z0-9][A-Za-z0-9._-]*))"
     r" — (?P<badge>[^—]+) — (?P<summary>.+?)\s*$"
+)
+# Shown instead of the profile link when an entry has no reachable profile. This
+# matches how the page already credits Harshil, whose commits carry no profile.
+NO_PROFILE_NOTE = (
+    "Intentionally unlinked because this GitHub account no longer exists. "
+    "The contribution record stands."
 )
 SECTION_PATTERN = re.compile(
     r"^## People who have shipped changes\s*$", re.MULTILINE
@@ -50,7 +60,7 @@ GENERATED_CALLOUT_PATTERN = re.compile(
 @dataclass(frozen=True)
 class Contributor:
     name: str
-    url: str
+    url: str | None
     badge: str
     summary: str
 
@@ -68,20 +78,27 @@ def _read_contributors(text: str) -> list[Contributor]:
     entries: list[Contributor] = []
     for line in remainder.splitlines():
         stripped = line.strip()
-        if not stripped or stripped.startswith(("Each entry uses", "`")):
+        if not stripped:
+            continue
+        if not stripped.startswith("- "):
+            # Prose: the format guidance above the list, or the notes below it.
+            # Anything after the first entry ends the list.
+            if entries:
+                break
             continue
         match = ENTRY_PATTERN.fullmatch(stripped)
         if match is None:
-            if entries:
-                break
             raise ValueError(
                 "Every shipped contributor must use "
-                "`- [handle](https://github.com/handle) — badge — summary`"
+                "`- [handle](https://github.com/handle) — badge — summary`, or "
+                "`- handle — badge — summary` when the profile no longer exists"
             )
+        linked_name = match.group("name")
+        url = match.group("url")
         entries.append(
             Contributor(
-                name=match.group("name").strip(),
-                url=match.group("url").strip(),
+                name=(linked_name or match.group("plain_name")).strip(),
+                url=url.strip() if url else None,
                 badge=match.group("badge").strip(),
                 summary=match.group("summary").strip(),
             )
@@ -90,7 +107,7 @@ def _read_contributors(text: str) -> list[Contributor]:
     if not entries:
         raise ValueError("CONTRIBUTORS.md has no shipped contributors")
     names = [entry.name.casefold() for entry in entries]
-    urls = [entry.url.casefold() for entry in entries]
+    urls = [entry.url.casefold() for entry in entries if entry.url]
     if len(names) != len(set(names)):
         raise ValueError("CONTRIBUTORS.md contains duplicate contributor names")
     if len(urls) != len(set(urls)):
@@ -122,16 +139,30 @@ def _stats_block(contributor_count: int, rule_count: int) -> str:
 def _card(entry: Contributor, number: int, *, featured: bool) -> str:
     card_class = ' class="hall-card hall-card-featured"' if featured else ' class="hall-card"'
     name = html.escape(entry.name, quote=True)
-    url = html.escape(entry.url, quote=True)
     badge = html.escape(entry.badge, quote=True)
     summary = html.escape(entry.summary, quote=True)
+    if entry.url:
+        url = html.escape(entry.url, quote=True)
+        heading = f'            <h3><a href="{url}">{name}</a></h3>'
+        footer = (
+            f'            <a class="hall-link" href="{url}">View profile '
+            '<span aria-hidden="true">↗</span></a>'
+        )
+    else:
+        # The card keeps its number, badge, and summary: the credit is the point,
+        # and linking a deleted account would only send readers to a 404.
+        heading = f"            <h3>{name}</h3>"
+        footer = (
+            '            <p class="hall-note"><span aria-hidden="true">—</span> '
+            f"{html.escape(NO_PROFILE_NOTE)}</p>"
+        )
     return "\n".join(
         (
             f"          <article{card_class}>",
             f'            <div class="hall-card-top"><span class="hall-number">{number:02d}</span><span class="hall-badge">{badge}</span></div>',
-            f'            <h3><a href="{url}">{name}</a></h3>',
+            heading,
             f"            <p>{summary}</p>",
-            f'            <a class="hall-link" href="{url}">View profile <span aria-hidden="true">↗</span></a>',
+            footer,
             "          </article>",
         )
     )
@@ -151,7 +182,7 @@ def _cards_block(entries: list[Contributor]) -> str:
 
 def _callout_block(entries: list[Contributor]) -> str:
     names = " · ".join(
-        f"[{entry.name}]({entry.url})"
+        f"[{entry.name}]({entry.url})" if entry.url else entry.name
         for entry in entries
     )
     return (

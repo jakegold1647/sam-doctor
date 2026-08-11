@@ -118,6 +118,62 @@ def test_malformed_entry_fails_closed() -> None:
         )
 
 
+def test_contributor_without_a_profile_keeps_credit_and_drops_the_link() -> None:
+    """A deleted GitHub account must not cost someone their credit or add a 404."""
+
+    module = _load_sync()
+
+    entries = module._read_contributors(
+        """# Contributors
+
+## People who have shipped changes
+
+Each entry uses this format so the public contributor page can stay in sync:
+`- [handle](https://github.com/handle) — short badge — contribution summary`.
+If a contributor's GitHub account no longer exists, drop the link.
+
+- [linked](https://github.com/linked) — docs — A documented change.
+- gone — rules + tooling — Rules and tooling that made the project extensible.
+"""
+    )
+
+    assert [(entry.name, entry.url) for entry in entries] == [
+        ("linked", "https://github.com/linked"),
+        ("gone", None),
+    ]
+
+    card = module._card(entries[1], 2, featured=False)
+    assert "<h3>gone</h3>" in card
+    assert "github.com/gone" not in card
+    assert "View profile" not in card
+    assert "Rules and tooling that made the project extensible." in card
+    assert module.NO_PROFILE_NOTE in card
+
+    callout = module._callout_block(entries)
+    assert "[linked](https://github.com/linked)" in callout
+    assert "· gone" in callout
+    assert "[gone]" not in callout
+
+
+def test_prose_around_the_list_is_not_mistaken_for_an_entry() -> None:
+    module = _load_sync()
+
+    entries = module._read_contributors(
+        """# Contributors
+
+## People who have shipped changes
+
+Guidance prose sits above the list and must be skipped.
+
+- [only](https://github.com/only) — docs — A documented change.
+
+This is a thank-you list, not an authoritative contributor count.
+"""
+    )
+
+    assert [entry.name for entry in entries] == ["only"]
+
+
 def test_page_without_markers_fails_closed() -> None:
     module = _load_sync()
     entry = module.Contributor(

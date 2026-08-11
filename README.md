@@ -34,7 +34,7 @@ nothing matches, it says so instead of guessing.
 
 The Hall of Fame is where shipped work gets remembered. If a diagnostic rule, fixture, docs fix, or thoughtful report makes SAM Doctor better, there is room for your name next to the people who helped build it.
 
-**Currently recognized:** [floze-the-genius](https://github.com/floze-the-genius) · [waterlemonnn](https://github.com/waterlemonnn) · [pui1ya](https://github.com/pui1ya) · [alloutflo](https://github.com/alloutflo) · [rasmalai25](https://github.com/rasmalai25) · [JasonColapietro](https://github.com/JasonColapietro) · [agu2347](https://github.com/agu2347)
+**Currently recognized:** [floze-the-genius](https://github.com/floze-the-genius) · waterlemonnn · [pui1ya](https://github.com/pui1ya) · [alloutflo](https://github.com/alloutflo) · [rasmalai25](https://github.com/rasmalai25) · [JasonColapietro](https://github.com/JasonColapietro) · [agu2347](https://github.com/agu2347)
 
 [Meet the contributors](https://sam-doctor.jacobgoldstein.dev/contributors/) · [Find a mentored first issue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22)
 <!-- END GENERATED CONTRIBUTOR CALLOUT -->

@@ -10,9 +10,12 @@ The public version of this list is the [SAM Doctor contributor hall of fame](htt
 
 Each entry uses this format so the public contributor page can stay in sync:
 `- [handle](https://github.com/handle) — short badge — contribution summary`.
+If a contributor's GitHub account no longer exists, drop the link and keep the
+handle as plain text — `- handle — short badge — contribution summary`. The work
+still shipped, and a card that links to a 404 helps nobody.
 
 - [floze-the-genius](https://github.com/floze-the-genius) — template diagnostics — SAM lint summary diagnostics with focused evidence, fixtures, and a clear next step.
-- [waterlemonnn](https://github.com/waterlemonnn) — rules + tooling — Diagnostic rules, CI, fixtures, and contributor tooling that made the project easier to extend.
+- waterlemonnn — rules + tooling — Diagnostic rules, CI, fixtures, and contributor tooling that made the project easier to extend.
 - [pui1ya](https://github.com/pui1ya) — Lambda — Lambda package-size diagnostics that turn a confusing deployment ceiling into a focused next check.
 - [alloutflo](https://github.com/alloutflo) — runtime support — Deprecated Lambda-runtime diagnostics that help teams see the migration path before retrying a deploy.
 - [rasmalai25](https://github.com/rasmalai25) — deployment rules — Lambda deployment diagnostics that make a noisy failure easier to investigate locally.
