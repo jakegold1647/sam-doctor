@@ -170,6 +170,16 @@ def test_site_has_canonical_social_metadata_and_application_schema() -> None:
     assert schema["publisher"]["url"] == "https://jacobgoldstein.dev"
 
 
+def test_readme_images_use_absolute_urls_for_pypi() -> None:
+    """PyPI cannot resolve repository-relative image paths in long descriptions."""
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    image_urls = re.findall(r"!\[[^]]*\]\(([^)]+)\)", readme)
+
+    assert image_urls
+    assert all(urlparse(url).scheme == "https" for url in image_urls)
+
+
 def test_homepage_faq_schema_matches_visible_faq_in_order() -> None:
     page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
 

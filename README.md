@@ -71,7 +71,7 @@ with a tag from the [releases page](https://github.com/jakegold1647/sam-doctor/r
 If your shell cannot find `sam-doctor` after installing, use
 `python -m sam_doctor` instead.
 
-![SAM Doctor turns a failed deployment log into a concise diagnosis](docs/assets/sam-doctor-demo.svg)
+![SAM Doctor turns a failed deployment log into a concise diagnosis](https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/assets/sam-doctor-demo.svg)
 
 The demo diagnoses a bundled GitHub Actions OIDC failure:
 

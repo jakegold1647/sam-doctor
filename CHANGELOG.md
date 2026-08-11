@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.12.2 - 2026-08-11
+
+- **Fixed the PyPI package-page demo image.** The README now uses an absolute
+  public asset URL, so PyPI can proxy and render the image instead of emitting
+  a bad URL-scheme error. No functional changes.
+
 ## v0.12.1 - 2026-08-11
 
 - **Corrected public install guidance and catalog counts.** The README and
