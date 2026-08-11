@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lambda Invoke function not found | SAM Doctor</title>
+    <meta name="description" content="Fix a Lambda Invoke ResourceNotFoundException by checking the function name, qualifier, account, Region, and deployment timing." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Lambda Invoke function not found | SAM Doctor" />
+    <meta property="og:description" content="Fix a Lambda Invoke ResourceNotFoundException by checking the function name, qualifier, account, Region, and deployment timing." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/lambda-invoke-function-not-found.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Lambda Invoke function not found | SAM Doctor" />
+    <meta name="twitter:description" content="Fix a Lambda Invoke ResourceNotFoundException by checking the function name, qualifier, account, Region, and deployment timing." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Lambda could not find the invoke target</h1>
+        <p class="lede">
+          The Lambda <code>Invoke</code> call reached AWS, but the requested
+          function, alias, or published version was not present in the account
+          and Region used by the caller. Check the target before changing IAM.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>An error occurred (ResourceNotFoundException) when calling the Invoke operation</code></pre>
+        <p>
+          This is often a post-deploy smoke test using a stale function name,
+          alias, Region, or account. It can also run before an alias or version
+          finishes becoming available. The line alone does not prove that the
+          CloudFormation deployment itself failed.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Verify the exact target</h2>
+        <ol>
+          <li>
+            <strong>Read the function directly in the same account and Region:</strong>
+            <pre><code>aws lambda get-function --function-name &lt;function-name&gt; --qualifier &lt;alias-or-version&gt;</code></pre>
+            Omit <code>--qualifier</code> when the invoke did not specify one.
+          </li>
+          <li>
+            <strong>Compare the name and qualifier with the deploy output.</strong>
+            Check the stack output or transformed template, especially when SAM
+            created an <code>AutoPublishAlias</code> or a new version.
+          </li>
+          <li>
+            <strong>Check deployment timing.</strong> Wait for the stack and alias
+            resources to complete before the smoke test retries. If the target
+            still does not exist, correct the Region, account, function name, or
+            qualifier rather than broadening permissions for a missing resource.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the check in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes the Lambda <code>Invoke</code> operation with
+          medium confidence and points at a read-only function and qualifier
+          check. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./lambda-package-size-limit.html">Lambda deployment package too large</a> - the function exists, but its artifact exceeds the upload limit.</li>
+          <li><a href="./create-failed.html">CloudFormation resource creation or update failed</a> - the resource-level fallback when the deployment itself reports a failed event.</li>
+          <li><a href="./cloudformation-deploy-wrapper-failed.html">Failed to create/update the stack</a> - a wrapper handoff when the missing evidence is in stack events.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

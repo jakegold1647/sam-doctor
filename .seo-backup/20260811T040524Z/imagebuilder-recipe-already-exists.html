@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ImageRecipe already exists | SAM Doctor</title>
+    <meta name="description" content="Fix an EC2 Image Builder ImageRecipe already exists deployment failure by creating a new immutable recipe version." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="ImageRecipe already exists | SAM Doctor" />
+    <meta property="og:description" content="Fix an EC2 Image Builder ImageRecipe already exists deployment failure by creating a new immutable recipe version." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ImageRecipe already exists | SAM Doctor" />
+    <meta name="twitter:description" content="Fix an EC2 Image Builder ImageRecipe already exists deployment failure by creating a new immutable recipe version." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">An EC2 Image Builder recipe version already exists</h1>
+        <p class="lede">
+          Image Builder cannot create a recipe with the same name and semantic
+          version twice. A changed recipe needs a new version, even when the
+          CloudFormation logical resource has not changed.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>Resource handler returned message: "The following resource 'ImageRecipe' already exists: 'recipe/1.1.0' (HandlerErrorCode: AlreadyExists)"</code></pre>
+        <p>
+          Image Builder recipes are immutable after creation. Reusing a version
+          after changing its parent image, components, or user data makes
+          CloudFormation attempt a duplicate create instead of an in-place edit.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Inspect the existing recipe</strong> (read-only). Use the
+            ARN from the failed event:
+            <pre><code>aws imagebuilder get-image-recipe --image-recipe-arn &lt;recipe-arn&gt;</code></pre>
+          </li>
+          <li>
+            <strong>Create a new semantic version.</strong> Bump the recipe
+            version when its contents change; do not overwrite the existing
+            version. Image Builder also supports an <code>x</code> wildcard for
+            automatic version increments.
+          </li>
+          <li>
+            <strong>Check dependents before retirement.</strong> Confirm which
+            image pipeline or distribution configuration uses the old recipe
+            before removing or replacing it.
+          </li>
+          <li>
+            Re-run the deployment after checking the synthesized
+            <code>AWS::ImageBuilder::ImageRecipe</code> properties. See the AWS
+            guides for <a href="https://docs.aws.amazon.com/imagebuilder/latest/userguide/manage-recipes.html">recipe management</a>
+            and <a href="https://docs.aws.amazon.com/imagebuilder/latest/userguide/create-image-recipes.html">recipe versioning</a>.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the Image Builder collision (high confidence),
+          keeps it separate from generic CloudFormation resource failures, and
+          points at the read-only recipe check. Runs locally; no AWS access, no
+          log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./create-failed.html">CloudFormation resource creation or update failed</a> - the generic fallback for other resource-handler failures.</li>
+          <li><a href="./rollback-complete-cannot-be-updated.html">ROLLBACK_COMPLETE</a> - the stack state that can obscure the original resource failure.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

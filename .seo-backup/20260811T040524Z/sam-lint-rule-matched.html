@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAM lint validation found cfn-lint matches | SAM Doctor</title>
+    <meta name="description" content="Use the cfn-lint rule codes above the SAM lint failure summary to find the template locations that need review." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/sam-lint-rule-matched.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="SAM lint validation found cfn-lint matches | SAM Doctor" />
+    <meta property="og:description" content="Use the cfn-lint rule codes above the SAM lint failure summary to find the template locations that need review." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/sam-lint-rule-matched.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SAM lint validation found cfn-lint matches | SAM Doctor" />
+    <meta name="twitter:description" content="Use the cfn-lint rule codes above the SAM lint failure summary to find the template locations that need review." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">SAM lint validation found one or more cfn-lint matches</h1>
+        <p class="lede">
+          <code>sam validate --lint</code> finished with at least one cfn-lint
+          match. The summary confirms that validation failed, but the rule code
+          and template location in the preceding output are the useful evidence.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The summary is not the root cause</h2>
+        <pre><code>[[E1031: ToJsonString validation of parameters] (...) matched 17]
+Error: Linting failed. At least one linting rule was matched to the provided template.</code></pre>
+        <p>
+          SAM Doctor treats this as a medium-confidence handoff: the exact
+          summary says a lint rule matched, but it does not say which rule or
+          which part of the template needs attention. The nearby
+          <code>E####</code> or <code>W####</code> output carries that detail.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Read the matched rules</h2>
+        <ol>
+          <li>
+            <strong>Validate the exact submitted template again:</strong>
+            <pre><code>sam validate --lint --template-file template.yaml</code></pre>
+          </li>
+          <li>
+            <strong>Read every rule code above the summary.</strong> Keep the
+            reported resource, property path, and line number with each code;
+            do not infer a template problem from the summary alone.
+          </li>
+          <li>
+            <strong>Look up the rule rather than guessing:</strong>
+            <pre><code>cfn-lint --list-rules</code></pre>
+            The <a href="https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/validate-cfn-lint.html">SAM lint validation guide</a>
+            explains how SAM runs cfn-lint and reports its results.
+          </li>
+          <li>
+            <strong>Re-run validation after reviewing the reported locations.</strong>
+            Confirm that no lint matches remain before deploying.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Preserve the lint handoff automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes this exact summary with medium confidence and
+          points back to the nearby cfn-lint output. It does not turn a bare
+          rule code or an unrelated validation failure into this finding. Runs
+          locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./invalid-sam-document.html">InvalidSamDocumentException</a> &mdash; SAM or CloudFormation rejected the template schema itself.</li>
+          <li><a href="./property-not-defined.html">Property not defined for resource type</a> &mdash; the output names a specific invalid SAM property.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

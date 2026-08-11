@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Glue database cannot be renamed | SAM Doctor</title>
+    <meta name="description" content="Fix AWS Glue Database cannot be renamed errors by preserving the catalog name or creating a replacement database." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="AWS Glue database cannot be renamed | SAM Doctor" />
+    <meta property="og:description" content="Fix AWS Glue Database cannot be renamed errors by preserving the catalog name or creating a replacement database." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/glue-database-rename-rejected.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AWS Glue database cannot be renamed | SAM Doctor" />
+    <meta name="twitter:description" content="Fix AWS Glue Database cannot be renamed errors by preserving the catalog name or creating a replacement database." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1>AWS Glue cannot rename an existing catalog database</h1>
+        <p class="lede">
+          Glue rejected an <code>UpdateDatabase</code> request because the
+          catalog name is immutable. Preserve the current name or create a
+          replacement before changing permissions.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The database name is not an updateable field</h2>
+        <pre><code>An error occurred (InvalidInputException) when calling the UpdateDatabase operation: Database cannot be renamed</code></pre>
+        <p>
+          The <code>DatabaseInput.Name</code> in the update must stay equal to
+          the existing Glue catalog database name. Description, location,
+          parameters, and other supported fields can be updated without
+          changing that identity. This is a request validation error, not an
+          IAM denial.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Keep the catalog identity stable</h2>
+        <ol>
+          <li>
+            <strong>Read the current definition.</strong> Run
+            <code>aws glue get-database --name &lt;database-name&gt;</code> in the
+            same Region and CatalogId as the failed update.
+          </li>
+          <li>
+            <strong>Remove the rename.</strong> Keep
+            <code>DatabaseInput.Name</code> equal to the existing name while
+            updating the description, location, parameters, or other intended
+            fields, then retry.
+          </li>
+          <li>
+            <strong>Use a replacement for a real rename.</strong> Create a new
+            database, migrate or recreate its tables and consumers, and remove
+            the old database only after dependencies are moved.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the check in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes the exact Glue rename marker with high
+          confidence. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./aws-invalid-action.html">Unknown or invalid API action</a> - the endpoint rejects the operation itself.</li>
+          <li><a href="./aws-action-not-implemented.html">API action not implemented</a> - the endpoint cannot serve the operation.</li>
+          <li><a href="./access-denied.html">Access denied</a> - a separate path when the request is valid but the caller lacks permission.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

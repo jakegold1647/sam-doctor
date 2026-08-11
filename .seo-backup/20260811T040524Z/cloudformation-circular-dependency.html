@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CloudFormation found a circular resource dependency | SAM Doctor</title>
+    <meta name="description" content="Fix CloudFormation's Circular dependency between resources error by tracing Ref, Fn::GetAtt, Fn::Sub, and DependsOn edges in the transformed template." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-circular-dependency.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="CloudFormation found a circular resource dependency | SAM Doctor" />
+    <meta property="og:description" content="Fix CloudFormation&#x27;s Circular dependency between resources error by tracing Ref, Fn::GetAtt, Fn::Sub, and DependsOn edges in the transformed template." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/cloudformation-circular-dependency.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CloudFormation found a circular resource dependency | SAM Doctor" />
+    <meta name="twitter:description" content="Fix CloudFormation&#x27;s Circular dependency between resources error by tracing Ref, Fn::GetAtt, Fn::Sub, and DependsOn edges in the transformed template." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">CloudFormation found a circular resource dependency</h1>
+        <p class="lede">
+          The submitted template contains a dependency cycle, so CloudFormation
+          cannot choose an order that creates or updates the named resources.
+          This fails before provisioning and is not an IAM or retry problem.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The resource graph loops back on itself</h2>
+        <pre><code>ValidationError: Circular dependency between resources: [ApiFunction, ApiPermission, Api]</code></pre>
+        <p>
+          CloudFormation builds edges from implicit references such as
+          <code>Ref</code>, <code>Fn::GetAtt</code>, and <code>Fn::Sub</code>, as
+          well as explicit <code>DependsOn</code> declarations. If those edges
+          form a loop, the change set cannot start. SAM and CDK can add edges in
+          the transformed or synthesized template that are not obvious in the
+          source file.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Trace the cycle in the submitted template</h2>
+        <ol>
+          <li>
+            <strong>Copy the logical IDs.</strong> Preserve every name listed
+            after <code>Circular dependency between resources</code> and find
+            those exact resources in the SAM-transformed or CDK-synthesized
+            template.
+          </li>
+          <li>
+            <strong>Draw both directions.</strong> Search those resources for
+            <code>Ref</code>, <code>Fn::GetAtt</code>, <code>Fn::Sub</code>, and
+            <code>DependsOn</code>. Follow each edge until it returns to the
+            starting resource; the loop is the dependency to remove.
+          </li>
+          <li>
+            <strong>Break the edge, not the deployment.</strong> Remove an
+            unnecessary reference, pass the value through a parameter or a
+            separate stack, or move the dependent resource. Use
+            <code>DependsOn</code> only for a genuine one-way ordering
+            requirement; adding it to a cycle cannot fix the cycle.
+          </li>
+          <li>
+            <strong>Validate the exact artifact:</strong>
+            <pre><code>sam validate --lint --template &lt;template&gt;
+cfn-lint &lt;template&gt;</code></pre>
+            Synthesize or transform again after the change, then retry the
+            change set with the generated file that the deploy actually submits.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the check in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes this high-confidence CloudFormation marker and
+          points at the dependency graph instead of sending you to IAM or
+          leaving you with rollback noise. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./cloudformation-unresolved-resource-dependency.html">Unresolved resource dependencies</a> - a reference names a logical ID that does not exist.</li>
+          <li><a href="./fn-getatt-parameters.html">Malformed Fn::GetAtt parameters</a> - the intrinsic function has the wrong shape.</li>
+          <li><a href="./failed-to-create-changeset.html">Failed to create changeset</a> - the broad wrapper when no more specific template error is present.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

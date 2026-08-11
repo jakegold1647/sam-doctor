@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException) | SAM Doctor</title>
+    <meta name="description" content="Fix 'Requires capabilities : [CAPABILITY_IAM]' / InsufficientCapabilitiesException: when to pass CAPABILITY_IAM, CAPABILITY_NAMED_IAM, or CAPABILITY_AUTO_EXPAND, and why." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/insufficient-capabilities.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException) | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;Requires capabilities : [CAPABILITY_IAM]&#x27; / InsufficientCapabilitiesException: when to pass CAPABILITY_IAM, CAPABILITY_NAMED_IAM, or CAPABILITY_AUTO_EXPAND, and why." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/insufficient-capabilities.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException) | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;Requires capabilities : [CAPABILITY_IAM]&#x27; / InsufficientCapabilitiesException: when to pass CAPABILITY_IAM, CAPABILITY_NAMED_IAM, or CAPABILITY_AUTO_EXPAND, and why." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</h1>
+        <p class="lede">
+          CloudFormation refused the change set because your template creates or
+          modifies IAM resources and the deployment did not explicitly acknowledge
+          that. It is a consent check, not a permissions failure.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Templates that can change security posture — IAM roles, policies, users —
+          require the caller to opt in with a capability flag. SAM templates hit this
+          constantly because <code>AWS::Serverless::Function</code> generates an
+          execution role behind the scenes. The error names exactly which
+          acknowledgement is missing:
+        </p>
+        <ul>
+          <li><strong><code>CAPABILITY_IAM</code></strong> — the template creates or modifies IAM resources with generated names.</li>
+          <li><strong><code>CAPABILITY_NAMED_IAM</code></strong> — the template gives IAM resources explicit names (<code>RoleName</code>, <code>PolicyName</code>, ...). This is a superset concern: named IAM resources need this flag, and <code>CAPABILITY_IAM</code> alone is not enough.</li>
+          <li><strong><code>CAPABILITY_AUTO_EXPAND</code></strong> — the template uses macros or nested applications (<code>AWS::Serverless</code> transform in nested apps, <code>AWS::Include</code>) that expand before deployment.</li>
+        </ul>
+        <p>
+          Note this failure is not IAM denying you anything. If the deploy identity
+          actually lacked IAM permissions, you would see an
+          <code>AccessDenied</code> error instead.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Read which capability the error names</strong> and look at the IAM
+            resources in the template first. The flag exists so someone confirms the
+            IAM change is intended — do that confirmation, especially in shared
+            accounts.
+          </li>
+          <li>
+            <strong>Pass the smallest required capability</strong> for your tool:
+            <pre><code># SAM CLI
+sam deploy --capabilities CAPABILITY_IAM
+
+# samconfig.toml
+capabilities = "CAPABILITY_IAM"
+
+# AWS CLI
+aws cloudformation deploy --capabilities CAPABILITY_IAM
+
+# CDK bootstrap-managed deployments rarely hit this; raw cfn deploys do</code></pre>
+            Use <code>CAPABILITY_NAMED_IAM</code> only when the template names IAM
+            resources; both flags can be passed together when needed.
+          </li>
+          <li>
+            <strong>For nested serverless applications</strong>, add
+            <code>CAPABILITY_AUTO_EXPAND</code> and review the transformed template
+            (<code>aws cloudformation get-template --template-stage Processed</code>)
+            so you know what actually deploys.
+          </li>
+          <li>
+            <strong>Re-run the deployment.</strong> If it now fails with a different
+            IAM error, that is a real permissions problem, not a capability one.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes <code>InsufficientCapabilitiesException</code> and the
+          <code>Requires capabilities</code> phrasing (high confidence) and
+          distinguishes it from generic change-set failures. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — a real identity failure, before CloudFormation is even reached.</li>
+          <li><a href="./rollback-complete-cannot-be-updated.html">ROLLBACK_COMPLETE state and can not be updated</a> — what a failed first deploy leaves behind.</li>
+          <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — another change-set-time template failure.</li>
+        </ul>
+        <p class="muted">
+          Longer walkthrough:
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/capability-acknowledgement.md">the capability acknowledgement guide</a>.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

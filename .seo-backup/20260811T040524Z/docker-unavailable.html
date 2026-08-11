@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cannot connect to the Docker daemon | SAM Doctor</title>
+    <meta name="description" content="Fix 'Cannot connect to the Docker daemon' and 'Docker is unavailable or not running' during sam build --use-container: start the daemon, fix docker.sock permissions, or drop the container build." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Cannot connect to the Docker daemon | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;Cannot connect to the Docker daemon&#x27; and &#x27;Docker is unavailable or not running&#x27; during sam build --use-container: start the daemon, fix docker.sock permissions, or drop the container build." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/docker-unavailable.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cannot connect to the Docker daemon | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;Cannot connect to the Docker daemon&#x27; and &#x27;Docker is unavailable or not running&#x27; during sam build --use-container: start the daemon, fix docker.sock permissions, or drop the container build." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Cannot connect to the Docker daemon</h1>
+        <p class="lede">
+          A SAM build reached a containerized step — <code>sam build
+          --use-container</code> or an image-packaged function — and no usable
+          Docker daemon answered. Sibling messages: <code>Error: Docker is
+          unavailable or not running</code>, <code>is the docker daemon
+          running?</code>, <code>sh: docker: not found</code>.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Container builds require Docker even for transient validation steps. The
+          message tells you which layer is missing:
+        </p>
+        <ul>
+          <li><strong><code>docker: not found</code> / <code>is not recognized</code></strong> — the Docker CLI is not installed on the machine or runner at all.</li>
+          <li><strong><code>Cannot connect to the Docker daemon</code> / <code>docker.sock: No such file or directory</code></strong> — the CLI exists but the daemon is not running, or the current user cannot reach the socket.</li>
+          <li><strong><code>Error response from daemon</code></strong> — the daemon is up but rejected the operation (disk full, image platform mismatch, network restriction).</li>
+        </ul>
+        <p>
+          Common environments where this bites: macOS/Windows machines where Docker
+          Desktop is installed but not started; Linux users not in the
+          <code>docker</code> group; CI containers running <em>inside</em> Docker
+          without the socket mounted; minimal self-hosted runners; and
+          GitHub-hosted <code>macos-*</code> runners, which do not ship a working
+          Docker daemon.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Confirm the state on the failing machine:</strong>
+            <pre><code>docker version</code></pre>
+            If the client prints but the server section errors, it is a daemon or
+            socket problem, not an installation problem.
+          </li>
+          <li>
+            <strong>Local machine:</strong> start Docker Desktop (macOS/Windows) or
+            the service (Linux: <code>sudo systemctl start docker</code>). On Linux,
+            add yourself to the <code>docker</code> group and re-login if plain
+            <code>docker ps</code> is denied.
+          </li>
+          <li>
+            <strong>Self-hosted runner:</strong> check that the Docker service is
+            enabled and the runner user can access <code>/var/run/docker.sock</code>.
+            If the runner itself is a container, mount the socket or run a
+            docker-in-docker sidecar deliberately.
+          </li>
+          <li>
+            <strong>GitHub-hosted runners:</strong> <code>ubuntu-*</code> runners have
+            Docker ready; <code>macos-*</code> runners do not. Move container builds
+            to an Ubuntu job.
+          </li>
+          <li>
+            <strong>Or remove the Docker requirement.</strong> If the function is
+            ZIP-packaged and has no native dependencies, build without the container:
+            <pre><code>sam build            # instead of: sam build --use-container</code></pre>
+            Keep <code>--use-container</code> when you need native wheels compiled
+            for the Lambda runtime — in that case Docker is genuinely required.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the full family of Docker-unavailable messages
+          (high confidence) and separates them from ECR authentication and image
+          permission failures that also mention Docker. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — Docker works, but the push to ECR is unauthenticated.</li>
+          <li><a href="./esbuild-not-found.html">Esbuild Failed: Cannot find esbuild</a> — the Node.js build-time neighbor of this failure.</li>
+          <li><a href="./insufficient-capabilities.html">InsufficientCapabilitiesException</a> — the next stop once the build finally succeeds.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

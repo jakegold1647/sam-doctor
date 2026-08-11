@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Value 'aws:...' at 'tags.N.member.key' failed to satisfy constraint | SAM Doctor</title>
+    <meta name="description" content="Fix 'validation error detected: Value at tags.N.member.key failed to satisfy constraint' during AWS deployments: the reserved aws: tag prefix and the tag character and length limits." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/tag-key-validation-failed.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Value &#x27;aws:...&#x27; at &#x27;tags.N.member.key&#x27; failed to satisfy constraint | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;validation error detected: Value at tags.N.member.key failed to satisfy constraint&#x27; during AWS deployments: the reserved aws: tag prefix and the tag character and length limits." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/tag-key-validation-failed.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Value &#x27;aws:...&#x27; at &#x27;tags.N.member.key&#x27; failed to satisfy constraint | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;validation error detected: Value at tags.N.member.key failed to satisfy constraint&#x27; during AWS deployments: the reserved aws: tag prefix and the tag character and length limits." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">A tag key or value was rejected by validation</h1>
+        <p class="lede">
+          The tag set was rejected before the resource was touched. This is a
+          template problem, not a permissions one — which is good news, because
+          it is fixed entirely in your own files with no policy change.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          The API validated the submitted tags and refused one of them:
+        </p>
+        <pre><code>1 validation error detected: Value 'aws:team' at 'tags.1.member.key'
+failed to satisfy constraint: Member must satisfy regular expression pattern</code></pre>
+        <p>
+          The useful part is the path, <code>tags.1.member.key</code>. The index
+          tells you <em>which</em> tag in the set failed and whether the problem
+          is the key or the value, which is usually faster than re-reading the
+          whole template. Two causes account for nearly all of these:
+        </p>
+        <ul>
+          <li><strong>The reserved <code>aws:</code> prefix.</strong> Keys beginning <code>aws:</code> are reserved for AWS-generated tags. They cannot be set, changed, or deleted by a deployment, and the rejection is unconditional — no permission grants the ability to write one.</li>
+          <li><strong>A character or length violation.</strong> Tag keys and values have a maximum length and an allowed character set; values assembled from build metadata, branch names, or commit subjects are the usual way an illegal character arrives.</li>
+        </ul>
+        <p>
+          Because validation happens before any resource work, nothing was
+          partially created — re-running after the fix is safe.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Read the index in the error</strong> —
+            <code>tags.N.member.key</code> or <code>.value</code> — and find
+            that tag in the template's <code>Tags</code> block, the
+            <code>Globals</code> section, or the tag list in
+            <code>samconfig.toml</code>. Remember tags can be inherited from
+            more than one of those places.
+          </li>
+          <li>
+            <strong>Rename any key using the reserved <code>aws:</code>
+            prefix.</strong> If the intent was to mirror an AWS-generated tag,
+            use a distinct prefix of your own instead.
+          </li>
+          <li>
+            <strong>Check the key and value against the tag restrictions</strong>
+            — length limits and the allowed character set. Where a value is
+            interpolated from build metadata, constrain or sanitize it rather
+            than passing a branch name or commit subject through unchanged.
+          </li>
+          <li>
+            <strong>Re-run the deployment.</strong> Validation runs before any
+            resource is created, so no cleanup or stack repair is needed first.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognises a rejected tag key or value and points at the
+          index in the error (medium confidence), separating it from the
+          permission failure it superficially resembles. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./tag-action-denied.html">Access denied on a tagging action</a> — the same tag set refused for permissions rather than contents.</li>
+          <li><a href="./property-not-defined.html">Property is not defined for resource type</a> — another template-shape failure caught before deployment.</li>
+          <li><a href="./invalid-sam-document.html">Template failed SAM or CloudFormation schema validation</a> — the broader validation family this belongs to.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

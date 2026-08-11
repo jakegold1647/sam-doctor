@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>A terminal CloudFormation stack must be recreated before deployment | SAM Doctor</title>
+    <title>Stack is in ROLLBACK_COMPLETE state and can not be updated | SAM Doctor</title>
     <meta name="description" content="Fix ROLLBACK_COMPLETE or DELETE_COMPLETE update refusals: inspect the terminal stack state, then recreate it safely." />
     <meta name="author" content="Jacob Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html" />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="A terminal CloudFormation stack must be recreated before deployment | SAM Doctor" />
+    <meta property="og:title" content="Stack is in ROLLBACK_COMPLETE state and can not be updated | SAM Doctor" />
     <meta property="og:description" content="Fix ROLLBACK_COMPLETE or DELETE_COMPLETE update refusals: inspect the terminal stack state, then recreate it safely." />
     <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html" />
     <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
@@ -19,7 +19,7 @@
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="A terminal CloudFormation stack must be recreated before deployment | SAM Doctor" />
+    <meta name="twitter:title" content="Stack is in ROLLBACK_COMPLETE state and can not be updated | SAM Doctor" />
     <meta name="twitter:description" content="Fix ROLLBACK_COMPLETE or DELETE_COMPLETE update refusals: inspect the terminal stack state, then recreate it safely." />
     <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
@@ -27,6 +27,44 @@
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Stack is in ROLLBACK_COMPLETE state and can not be updated",
+      "name": "Stack is in ROLLBACK_COMPLETE state and can not be updated | SAM Doctor",
+      "description": "Fix ROLLBACK_COMPLETE or DELETE_COMPLETE update refusals: inspect the terminal stack state, then recreate it safely.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/rollback-complete-cannot-be-updated.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Stack is in ROLLBACK_COMPLETE state and can not be updated"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "Stack is in ROLLBACK_COMPLETE state and can not be updated, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-10",
+      "dateModified": "2026-08-10"
+    }
+  </script>
   </head>
   <body>
     <a class="skip-link" href="#error-content">Skip to content</a>
@@ -43,7 +81,8 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">A terminal CloudFormation stack must be recreated before deployment</h1>
+        <h1 id="error-title">Stack is in ROLLBACK_COMPLETE state and can not be updated</h1>
+        <p class="hero-subtitle">A terminal CloudFormation stack must be recreated before deployment</p>
         <p class="lede">
           CloudFormation refuses an update when the stack is in
           <code>ROLLBACK_COMPLETE</code> after a failed first create or

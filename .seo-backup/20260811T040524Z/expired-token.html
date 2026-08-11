@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The security token included in the request is expired (ExpiredToken) | SAM Doctor</title>
+    <meta name="description" content="Fix 'The security token included in the request is expired' and ExpiredTokenException during AWS deployments: refresh SSO/OIDC sessions, check session duration, and rule out clock skew." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/expired-token.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="The security token included in the request is expired (ExpiredToken) | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;The security token included in the request is expired&#x27; and ExpiredTokenException during AWS deployments: refresh SSO/OIDC sessions, check session duration, and rule out clock skew." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/expired-token.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The security token included in the request is expired (ExpiredToken) | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;The security token included in the request is expired&#x27; and ExpiredTokenException during AWS deployments: refresh SSO/OIDC sessions, check session duration, and rule out clock skew." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">The security token included in the request is expired (ExpiredToken)</h1>
+        <p class="lede">
+          AWS rejected the request because the temporary credentials were no longer
+          valid when it arrived. This is a credential-lifetime or clock problem —
+          not a permissions problem and not a template problem.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Temporary AWS credentials — SSO sessions, assumed roles, OIDC sessions in
+          CI — carry an expiry. When a request signed with expired credentials
+          reaches AWS, you get <code>ExpiredToken</code> or
+          <code>ExpiredTokenException</code>. The common shapes:
+        </p>
+        <ul>
+          <li><strong>A stale local session.</strong> An <code>aws sso login</code> from this morning, a long-lived shell exporting old <code>AWS_SESSION_TOKEN</code> values, or a cached named-profile session.</li>
+          <li><strong>A long CI job outliving its session.</strong> OIDC-assumed roles default to a 1-hour session; a build+deploy job that runs longer fails at whatever AWS call lands after expiry.</li>
+          <li><strong>Rotated or copy-pasted credentials in CI secrets</strong> that included a session token from a temporary session.</li>
+          <li><strong>Clock skew.</strong> A variant message — <code>Signature expired: ... is now earlier than ...</code> — means the machine's clock is off far enough that AWS treats the signature as stale. No credential rotation will fix a wrong clock.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Identify which environment failed</strong> — local shell, laptop
+            SSO session, or CI runner. The fix is different for each.
+          </li>
+          <li>
+            <strong>Local:</strong> refresh the session and clear stale variables:
+            <pre><code>aws sso login --profile YOUR_PROFILE
+# or, if credentials were exported by hand:
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+aws sts get-caller-identity   # confirm the refreshed identity</code></pre>
+          </li>
+          <li>
+            <strong>CI with OIDC:</strong> check how long the job runs before the
+            failing call. If it exceeds the session, raise the role's maximum session
+            duration and pass a matching <code>role-duration-seconds</code> to
+            <code>aws-actions/configure-aws-credentials</code>, or re-invoke the
+            credentials action right before the deploy step.
+          </li>
+          <li>
+            <strong>CI with static secrets:</strong> if the stored secret includes an
+            <code>AWS_SESSION_TOKEN</code>, it came from a temporary session and will
+            keep expiring. Replace it with OIDC or a proper long-lived mechanism.
+          </li>
+          <li>
+            <strong>For <code>Signature expired ... is now earlier than ...</code>:</strong>
+            compare the two timestamps in the message. A gap of more than a few
+            minutes means the runner's clock is skewed — sync it with NTP
+            (self-hosted runners and containers with a frozen clock are the usual
+            offenders) instead of touching credentials.
+          </li>
+          <li>
+            <strong>Confirm the deployment actually picks up the fresh credentials</strong>
+            (no stale <code>AWS_*</code> environment variables shadowing the profile)
+            before retrying.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes <code>ExpiredToken</code>, the expired-security-token
+          phrasing, and the clock-skew variant (high confidence), and separates them
+          from real permission denials. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — the session never existed, rather than expiring.</li>
+          <li><a href="./no-basic-auth-credentials.html">no basic auth credentials</a> — the ECR variant: a 12-hour registry token that expired mid-job.</li>
+          <li><a href="./rate-exceeded.html">Rate exceeded (Throttling)</a> — another transient failure that retries can mask.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

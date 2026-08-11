@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Access denied by S3 for Lambda layer artifact (GetObject) | SAM Doctor</title>
+    <meta name="description" content="Fix 'Your access has been denied by S3 ... GetObject' on Lambda layer content: cross-account layer buckets, KMS keys, and stale ContentUri references CloudFormation cannot read." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/layer-artifact-access-denied.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Access denied by S3 for Lambda layer artifact (GetObject) | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;Your access has been denied by S3 ... GetObject&#x27; on Lambda layer content: cross-account layer buckets, KMS keys, and stale ContentUri references CloudFormation cannot read." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/layer-artifact-access-denied.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Access denied by S3 for Lambda layer artifact (GetObject) | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;Your access has been denied by S3 ... GetObject&#x27; on Lambda layer content: cross-account layer buckets, KMS keys, and stale ContentUri references CloudFormation cannot read." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">CloudFormation cannot read a Lambda layer artifact from S3</h1>
+        <p class="lede">
+          The layer's <code>ContentUri</code> points at an S3 object the
+          creating service cannot <code>GetObject</code>. The layer zip
+          exists — probably — but the read back out of S3 is denied.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          Layer content is fetched from S3 at create time. The denial comes
+          from one of: a bucket in another account without a bucket policy
+          granting the read, SSE-KMS encryption whose key the reading identity
+          cannot use, or a hardcoded <code>ContentUri</code> pointing at an
+          object that was rotated away while the reference stayed.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Confirm the object exists and you can read it</strong>
+            (read-only):
+            <pre><code>aws s3api head-object --bucket layer-bucket --key path/to/layer.zip</code></pre>
+            A 404 here means the reference is stale, not the permissions.
+          </li>
+          <li>
+            <strong>For cross-account layer buckets,</strong> the bucket owner
+            grants <code>s3:GetObject</code> on the artifact prefix via bucket
+            policy; check any SSE-KMS key policy alongside it.
+          </li>
+          <li>
+            <strong>Prefer letting <code>sam build</code> + deploy manage the
+            artifact:</strong> a local <code>ContentUri</code> path uploads to
+            the deployment bucket with permissions that already work,
+            eliminating the hand-managed reference.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the layer-read denial (high confidence) and
+          keeps it apart from deployment-bucket denials, which have a
+          different fix. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./s3-access-denied-changeset.html">S3 error: Access Denied (deployment bucket)</a> — the same shape of failure on the main artifact path.</li>
+          <li><a href="./unable-to-upload-artifact.html">Unable to upload artifact referenced by CodeUri</a> — when the referenced path never existed at all.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bedrock model identifier unresolved | SAM Doctor</title>
+    <meta name="description" content="Fix Amazon Bedrock errors that say it could not resolve the foundation model from the provided model identifier." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-identifier.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Bedrock model identifier unresolved | SAM Doctor" />
+    <meta property="og:description" content="Fix Amazon Bedrock errors that say it could not resolve the foundation model from the provided model identifier." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-identifier.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bedrock model identifier unresolved | SAM Doctor" />
+    <meta name="twitter:description" content="Fix Amazon Bedrock errors that say it could not resolve the foundation model from the provided model identifier." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Bedrock could not resolve the model identifier</h1>
+        <p class="lede">
+          The Bedrock runtime received a model identifier it cannot resolve at
+          this endpoint. Check the exact ID, Region, and API before changing IAM
+          or the deployment template.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The runtime lookup did not find that model</h2>
+        <pre><code>An error occurred (ResourceNotFoundException) when calling the InvokeModelWithResponseStream operation: Could not resolve the foundation model from the provided model identifier.</code></pre>
+        <p>
+          This is a model lookup failure. Common causes are a retired model
+          version, a base-model ID used in the wrong Region, an inference profile
+          that needs its routing prefix, or an API that the model does not support.
+          It is different from the account-level first-use form error and from an
+          IAM access denial.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Compare the ID with the current model catalog</h2>
+        <ol>
+          <li>
+            <strong>Capture the exact model ID and Region.</strong> Copy the
+            value sent to the Bedrock runtime, not the display name shown in a
+            console or application setting.
+          </li>
+          <li>
+            <strong>Check availability and API compatibility.</strong> Compare
+            the ID with the current Bedrock model catalog for that Region. If you
+            are using an inference profile, use its profile ID; if you use
+            provisioned throughput or a custom model, use the returned ARN.
+          </li>
+          <li>
+            <strong>Update the caller and retry.</strong> Replace a retired or
+            region-incompatible ID, or use the API supported by that model. Do
+            not broaden IAM permissions for a value the runtime cannot resolve.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the check in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes Bedrock's exact model-resolution marker with
+          medium confidence and points at the current model and Region catalog.
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./bedrock-model-access.html">Bedrock model use-case details not submitted</a> - complete the provider's first-use form in the same account.</li>
+          <li><a href="./lambda-invoke-function-not-found.html">Lambda invoke target not found</a> - a post-deploy check aimed at the wrong function or qualifier.</li>
+          <li><a href="./create-failed.html">CloudFormation resource creation or update failed</a> - the resource-level fallback when the deployment itself reports a failed event.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

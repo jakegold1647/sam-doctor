@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bedrock model version reached end of life | SAM Doctor</title>
+    <meta name="description" content="Amazon Bedrock rejected an invocation because the requested model version reached end of life. Check the lifecycle status and migrate." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-end-of-life.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Bedrock model version reached end of life | SAM Doctor" />
+    <meta property="og:description" content="Amazon Bedrock rejected an invocation because the requested model version reached end of life. Check the lifecycle status and migrate." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/bedrock-model-end-of-life.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bedrock model version reached end of life | SAM Doctor" />
+    <meta name="twitter:description" content="Amazon Bedrock rejected an invocation because the requested model version reached end of life. Check the lifecycle status and migrate." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">The Bedrock model version is no longer available</h1>
+        <p class="lede">
+          <code>This model version has reached the end of its life</code> is a
+          model-lifecycle signal. Bedrock will not make the retired version
+          available again through a retry or an IAM change; update the model
+          configuration to an active version.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The model ID must be migrated</h2>
+        <pre><code>operation error Bedrock Runtime: InvokeModel, https response error StatusCode: 404, ResourceNotFoundException: This model version has reached the end of its life.</code></pre>
+        <p>
+          Bedrock model versions move through Active, Legacy, and End-of-Life
+          states. After the end-of-life date, requests to that version fail and
+          migration does not happen automatically.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Find the replacement before retrying</h2>
+        <ol>
+          <li>
+            <strong>Read the configured model ID and Region.</strong> Keep the
+            exact identifier from the failed request; a display name is not a
+            safe substitute for a base model or inference-profile ID.
+          </li>
+          <li>
+            <strong>Check the lifecycle status:</strong>
+            <pre><code>aws bedrock get-foundation-model --model-identifier &lt;model-id&gt;</code></pre>
+            Use the response's lifecycle fields and the active model catalog to
+            select a supported replacement in the same Region and API.
+          </li>
+          <li>
+            <strong>Update and test the caller.</strong> Change the application or
+            deployment configuration to the active model, confirm its request
+            format, and then retry. Do not add permissions for this error.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the handoff in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes the Bedrock lifecycle marker with high confidence
+          and points at model migration. It runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./bedrock-model-identifier.html">Bedrock could not resolve the model identifier</a> &mdash; check the current ID, Region, endpoint, and API.</li>
+          <li><a href="./bedrock-model-access.html">Bedrock model access has not been submitted</a> &mdash; complete a provider's first-use form in the same account and Region.</li>
+          <li><a href="./bedrock-messages-required.html">Bedrock request omitted messages</a> &mdash; correct a model-specific request body before changing access.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

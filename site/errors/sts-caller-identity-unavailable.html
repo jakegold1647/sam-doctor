@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>STS caller identity check failed | SAM Doctor</title>
+    <title>Error: reading STS Caller Identity | SAM Doctor</title>
     <meta name="description" content="Fix Error: reading STS Caller Identity by inspecting the nested endpoint, Region, signing, network, and credential-source error." />
     <meta name="author" content="Jacob Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html" />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="STS caller identity check failed | SAM Doctor" />
+    <meta property="og:title" content="Error: reading STS Caller Identity | SAM Doctor" />
     <meta property="og:description" content="Fix Error: reading STS Caller Identity by inspecting the nested endpoint, Region, signing, network, and credential-source error." />
     <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html" />
     <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
@@ -19,7 +19,7 @@
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="STS caller identity check failed | SAM Doctor" />
+    <meta name="twitter:title" content="Error: reading STS Caller Identity | SAM Doctor" />
     <meta name="twitter:description" content="Fix Error: reading STS Caller Identity by inspecting the nested endpoint, Region, signing, network, and credential-source error." />
     <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
@@ -27,6 +27,44 @@
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Error: reading STS Caller Identity",
+      "name": "Error: reading STS Caller Identity | SAM Doctor",
+      "description": "Fix Error: reading STS Caller Identity by inspecting the nested endpoint, Region, signing, network, and credential-source error.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/sts-caller-identity-unavailable.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Error: reading STS Caller Identity"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "Error: reading STS Caller Identity, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-10",
+      "dateModified": "2026-08-10"
+    }
+  </script>
   </head>
   <body>
     <a class="skip-link" href="#error-content">Skip to content</a>
@@ -43,7 +81,8 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">The deployment could not read the STS caller identity</h1>
+        <h1 id="error-title">Error: reading STS Caller Identity</h1>
+        <p class="hero-subtitle">The deployment could not read the STS caller identity</p>
         <p class="lede">
           The provider or deployment wrapper failed while checking who the AWS
           credentials belong to. Inspect the nested STS response before changing

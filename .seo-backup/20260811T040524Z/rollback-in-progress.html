@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED: what rollback is telling you | SAM Doctor</title>
+    <meta name="description" content="Triage ROLLBACK_IN_PROGRESS, UPDATE_ROLLBACK_IN_PROGRESS, and ROLLBACK_FAILED: rollback is the consequence, the first failed resource is the cause, and where each state leads." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/rollback-in-progress.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED: what rollback is telling you | SAM Doctor" />
+    <meta property="og:description" content="Triage ROLLBACK_IN_PROGRESS, UPDATE_ROLLBACK_IN_PROGRESS, and ROLLBACK_FAILED: rollback is the consequence, the first failed resource is the cause, and where each state leads." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/rollback-in-progress.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED: what rollback is telling you | SAM Doctor" />
+    <meta name="twitter:description" content="Triage ROLLBACK_IN_PROGRESS, UPDATE_ROLLBACK_IN_PROGRESS, and ROLLBACK_FAILED: rollback is the consequence, the first failed resource is the cause, and where each state leads." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Stack entered rollback (the consequence, not the cause)</h1>
+        <p class="lede">
+          <code>ROLLBACK_IN_PROGRESS</code> means CloudFormation is undoing a
+          deploy because something already failed. Debugging the rollback
+          itself is looking at the ambulance instead of the accident — the
+          question is always what failed <em>before</em> it started.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">Where each state leads</h2>
+        <ul>
+          <li><code>ROLLBACK_IN_PROGRESS</code> — a first-deploy failure being undone; it ends in <code>ROLLBACK_COMPLETE</code>, which requires deleting the stack before retrying.</li>
+          <li><code>UPDATE_ROLLBACK_IN_PROGRESS</code> — a failed update returning to the previous working state; usually ends in <code>UPDATE_ROLLBACK_COMPLETE</code> and the stack is fine.</li>
+          <li><code>ROLLBACK_FAILED</code> / <code>UPDATE_ROLLBACK_FAILED</code> — the rollback itself hit something it could not undo, and the stack needs <code>continue-update-rollback</code> or manual cleanup.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">TRIAGE</p>
+        <h2 id="fix-title">How to triage it</h2>
+        <ol>
+          <li>
+            <strong>Find the failure that triggered it</strong> — the first
+            <code>CREATE_FAILED</code>/<code>UPDATE_FAILED</code> event before
+            the rollback began:
+            <pre><code>aws cloudformation describe-stack-events --stack-name my-app \
+  --query 'reverse(StackEvents)[?contains(ResourceStatus, `FAILED`)] | [0]'</code></pre>
+          </li>
+          <li>
+            <strong>Fix that cause</strong>, not the rollback. The rollback
+            events themselves rarely contain new information.
+          </li>
+          <li>
+            <strong>Then handle the landing state:</strong> delete and
+            recreate for <code>ROLLBACK_COMPLETE</code>, redeploy normally
+            after <code>UPDATE_ROLLBACK_COMPLETE</code>, or
+            <code>continue-update-rollback</code> for the failed-rollback
+            states.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor reports the rollback state at medium confidence and the
+          root failure above it at high confidence, in log order - so the
+          first finding in the report is the one to fix. Runs locally; no AWS
+          access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> — the accident this ambulance responds to.</li>
+          <li><a href="./rollback-complete-cannot-be-updated.html">ROLLBACK_COMPLETE and can not be updated</a> — where a first-deploy rollback lands.</li>
+          <li><a href="./rollback-role-delete-failed.html">Rollback could not delete an IAM role</a> — the commonest way a rollback itself fails.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

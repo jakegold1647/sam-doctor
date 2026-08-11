@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CodeBuild cannot use the configured CodeConnections connection | SAM Doctor</title>
+    <title>User is not authorized to access connection | SAM Doctor</title>
     <meta name="description" content="Fix AWSCodeBuild OAuthProviderException connection access failures: check the CodeBuild service role, CodeConnections status, and IAM policy ordering." />
     <meta name="author" content="Jake Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/codebuild-codeconnections-access.html" />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="CodeBuild cannot use the configured CodeConnections connection | SAM Doctor" />
+    <meta property="og:title" content="User is not authorized to access connection | SAM Doctor" />
     <meta property="og:description" content="Fix AWSCodeBuild OAuthProviderException connection access failures: check the CodeBuild service role, CodeConnections status, and IAM policy ordering." />
     <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/codebuild-codeconnections-access.html" />
     <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
@@ -19,7 +19,7 @@
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CodeBuild cannot use the configured CodeConnections connection | SAM Doctor" />
+    <meta name="twitter:title" content="User is not authorized to access connection | SAM Doctor" />
     <meta name="twitter:description" content="Fix AWSCodeBuild OAuthProviderException connection access failures: check the CodeBuild service role, CodeConnections status, and IAM policy ordering." />
     <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
@@ -27,6 +27,44 @@
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "User is not authorized to access connection",
+      "name": "User is not authorized to access connection | SAM Doctor",
+      "description": "Fix AWSCodeBuild OAuthProviderException connection access failures: check the CodeBuild service role, CodeConnections status, and IAM policy ordering.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/codebuild-codeconnections-access.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/codebuild-codeconnections-access.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "User is not authorized to access connection"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "User is not authorized to access connection, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-10",
+      "dateModified": "2026-08-10"
+    }
+  </script>
   </head>
   <body>
     <a class="skip-link" href="#error-content">Skip to content</a>
@@ -43,7 +81,8 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">CodeBuild cannot use the configured CodeConnections connection</h1>
+        <h1 id="error-title">User is not authorized to access connection</h1>
+        <p class="hero-subtitle">CodeBuild cannot use the configured CodeConnections connection</p>
         <p class="lede">
           CloudFormation reached CodeBuild, but the project could not use the
           source connection while it was being created. This is usually a

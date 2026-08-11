@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Embedded stack was not successfully created/updated | SAM Doctor</title>
+    <meta name="description" content="A nested (embedded) CloudFormation stack failed: the parent's message is a symptom, the child stack's own events hold the root cause - capture them before rollback deletes the child stack." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/nested-stack-failed.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Embedded stack was not successfully created/updated | SAM Doctor" />
+    <meta property="og:description" content="A nested (embedded) CloudFormation stack failed: the parent&#x27;s message is a symptom, the child stack&#x27;s own events hold the root cause - capture them before rollback deletes the child stack." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/nested-stack-failed.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Embedded stack was not successfully created/updated | SAM Doctor" />
+    <meta name="twitter:description" content="A nested (embedded) CloudFormation stack failed: the parent&#x27;s message is a symptom, the child stack&#x27;s own events hold the root cause - capture them before rollback deletes the child stack." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Embedded stack was not successfully created/updated</h1>
+        <p class="lede">
+          With nested stacks (and SAM's <code>AWS::Serverless::Application</code>),
+          the parent stack's event only says an embedded stack failed - that
+          is a symptom, not the cause. The real root cause lives in the child
+          stack's own event stream, and it is often deleted by rollback
+          before anyone reads it.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this event means</h2>
+        <p>
+          CloudFormation reports the nested stack's failure on the parent as
+          a single summary line - <code>Embedded stack ... was not
+          successfully created</code> - with no detail about which resource
+          inside the child stack actually failed or why. That detail exists
+          only in the child stack's own events, and CloudFormation's rollback
+          can delete the child stack, and its event history with it, before
+          it is ever read.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Capture the child stack's events before rollback deletes
+            them</strong>, or redeploy with <code>--disable-rollback</code>
+            to keep the stack around while debugging.
+          </li>
+          <li>
+            <strong>Query the child stack directly</strong> (read-only) using
+            the full nested stack ARN from the parent's message - this still
+            works once deletion has started:
+            <pre><code>aws cloudformation describe-stack-events --stack-name &lt;child-stack-arn&gt;</code></pre>
+          </li>
+          <li>
+            <strong>Find the child's first <code>CREATE_FAILED</code> or
+            <code>UPDATE_FAILED</code></strong> resource event and fix that
+            cause; only edit the parent template afterward.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the nested-stack propagation message (high
+          confidence) and reports it instead of the generic CREATE_FAILED or
+          rollback findings, since the parent's own event is not the
+          actionable one. Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> — the generic form this rule takes priority over on nested-stack logs.</li>
+          <li><a href="./rollback-in-progress.html">Stack entered rollback</a> — what the parent stack does once the embedded stack fails.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

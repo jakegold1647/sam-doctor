@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Rollback could not delete an IAM role (ROLLBACK_FAILED) | SAM Doctor</title>
+    <title>The following resource(s) failed to delete | SAM Doctor</title>
     <meta name="description" content="Fix ROLLBACK_FAILED where 'The following resource(s) failed to delete' names an IAM role: policies attached outside the stack, and continue-update-rollback." />
     <meta name="author" content="Jake Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/rollback-role-delete-failed.html" />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Rollback could not delete an IAM role (ROLLBACK_FAILED) | SAM Doctor" />
+    <meta property="og:title" content="The following resource(s) failed to delete | SAM Doctor" />
     <meta property="og:description" content="Fix ROLLBACK_FAILED where &#x27;The following resource(s) failed to delete&#x27; names an IAM role: policies attached outside the stack, and continue-update-rollback." />
     <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/rollback-role-delete-failed.html" />
     <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
@@ -19,7 +19,7 @@
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Rollback could not delete an IAM role (ROLLBACK_FAILED) | SAM Doctor" />
+    <meta name="twitter:title" content="The following resource(s) failed to delete | SAM Doctor" />
     <meta name="twitter:description" content="Fix ROLLBACK_FAILED where &#x27;The following resource(s) failed to delete&#x27; names an IAM role: policies attached outside the stack, and continue-update-rollback." />
     <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
@@ -27,6 +27,44 @@
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "The following resource(s) failed to delete",
+      "name": "The following resource(s) failed to delete | SAM Doctor",
+      "description": "Fix ROLLBACK_FAILED where 'The following resource(s) failed to delete' names an IAM role: policies attached outside the stack, and continue-update-rollback.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/rollback-role-delete-failed.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/rollback-role-delete-failed.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "The following resource(s) failed to delete"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "The following resource(s) failed to delete, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-10",
+      "dateModified": "2026-08-10"
+    }
+  </script>
   </head>
   <body>
     <a class="skip-link" href="#error-content">Skip to content</a>
@@ -43,7 +81,8 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">Rollback could not delete an IAM role</h1>
+        <h1 id="error-title">The following resource(s) failed to delete</h1>
+        <p class="hero-subtitle">Rollback could not delete an IAM role</p>
         <p class="lede">
           The stack was rolling back, tried to delete a role it had created,
           and could not — leaving the stack in <code>ROLLBACK_FAILED</code>.

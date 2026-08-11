@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CloudFormation could not find the imported stack export | SAM Doctor</title>
+    <meta name="description" content="Fix the CloudFormation error 'No export named ... found' by checking the producer stack, exact export name, account, and Region before changing IAM." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/export-not-found.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="CloudFormation could not find the imported stack export | SAM Doctor" />
+    <meta property="og:description" content="Fix the CloudFormation error &#x27;No export named ... found&#x27; by checking the producer stack, exact export name, account, and Region before changing IAM." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/export-not-found.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CloudFormation could not find the imported stack export | SAM Doctor" />
+    <meta name="twitter:description" content="Fix the CloudFormation error &#x27;No export named ... found&#x27; by checking the producer stack, exact export name, account, and Region before changing IAM." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">CloudFormation could not find the imported stack export</h1>
+        <p class="lede">
+          The consumer stack uses <code>Fn::ImportValue</code>, but no export with
+          that exact name is available in the account and Region where the
+          deployment is running. This is a cross-stack dependency problem, not
+          an IAM denial or a rollback root cause.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">The export name is missing at resolution time</h2>
+        <pre><code>An error occurred (ValidationError) when calling the CreateChangeSet operation: No export named shared-vpc-id found</code></pre>
+        <p>
+          CloudFormation resolves an imported output from a producer stack in the
+          same account and Region. The producer may not have run yet, its
+          <code>Outputs</code> / <code>Export: Name</code> may have changed, or
+          the consumer is using the wrong account, Region, profile, or pipeline
+          environment.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Compare the name, producer, account, and Region</h2>
+        <ol>
+          <li>
+            <strong>Preserve the exact name.</strong> Copy the export name from
+            the error and compare it with the consumer's
+            <code>Fn::ImportValue</code> after SAM or another transform has
+            produced the submitted template.
+          </li>
+          <li>
+            <strong>List exports in the failing context.</strong> Run
+            <pre><code>aws cloudformation list-exports --region &lt;region&gt;</code></pre>
+            with the same profile or role used by the deployment. If the name is
+            absent, CloudFormation is reporting the dependency accurately.
+          </li>
+          <li>
+            <strong>Check the producer stack.</strong> Confirm its
+            <code>Outputs</code> section still defines the exact
+            <code>Export: Name</code>, deploy that stack first, and wait for it
+            to finish before the consumer runs. Keep an export name stable once
+            other stacks depend on it.
+          </li>
+          <li>
+            <strong>Check the boundary.</strong> CloudFormation exports and
+            <code>Fn::ImportValue</code> resolve only within the same account and
+            Region. For an intentional cross-account or cross-Region handoff,
+            use an explicit parameter or a supported output-sharing mechanism
+            instead of a local export.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the missing-export marker (high confidence) and
+          points at the producer stack and deployment boundary instead of
+          sending you to IAM or leaving you with rollback noise. Runs locally;
+          no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./export-in-use.html">An export cannot change while another stack imports it</a> — the producer exists, but consumers still pin its name or value.</li>
+          <li><a href="./nested-stack-failed.html">An embedded stack was not successfully created or updated</a> — inspect the child stack when the dependency is nested.</li>
+          <li><a href="./create-failed.html">CloudFormation resource creation or update failed</a> — the broad wrapper when no more specific export marker is present.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>EKS network policy agent failed | SAM Doctor</title>
+    <title>Failed to setup default network policy for Pod | SAM Doctor</title>
     <meta name="description" content="The Amazon VPC CNI network-policy agent could not set up a pod policy. Inspect aws-node and PolicyEndpoint evidence before changing workloads or IAM." />
     <meta name="author" content="Jacob Goldstein" />
     <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/eks-network-policy-agent-failed.html" />
     <meta property="og:site_name" content="SAM Doctor" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="EKS network policy agent failed | SAM Doctor" />
+    <meta property="og:title" content="Failed to setup default network policy for Pod | SAM Doctor" />
     <meta property="og:description" content="The Amazon VPC CNI network-policy agent could not set up a pod policy. Inspect aws-node and PolicyEndpoint evidence before changing workloads or IAM." />
     <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/eks-network-policy-agent-failed.html" />
     <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
@@ -19,7 +19,7 @@
     <meta property="og:image:height" content="640" />
     <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="EKS network policy agent failed | SAM Doctor" />
+    <meta name="twitter:title" content="Failed to setup default network policy for Pod | SAM Doctor" />
     <meta name="twitter:description" content="The Amazon VPC CNI network-policy agent could not set up a pod policy. Inspect aws-node and PolicyEndpoint evidence before changing workloads or IAM." />
     <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
     <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
@@ -27,6 +27,44 @@
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="../styles.css" />
     <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Failed to setup default network policy for Pod",
+      "name": "Failed to setup default network policy for Pod | SAM Doctor",
+      "description": "The Amazon VPC CNI network-policy agent could not set up a pod policy. Inspect aws-node and PolicyEndpoint evidence before changing workloads or IAM.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/eks-network-policy-agent-failed.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/eks-network-policy-agent-failed.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Failed to setup default network policy for Pod"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "Failed to setup default network policy for Pod, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-10",
+      "dateModified": "2026-08-10"
+    }
+  </script>
   </head>
   <body>
     <a class="skip-link" href="#error-content">Skip to content</a>
@@ -43,7 +81,8 @@
     <main id="error-content">
       <section class="hero" aria-labelledby="error-title">
         <p class="eyebrow">ERROR REFERENCE</p>
-        <h1 id="error-title">EKS network policy setup failed in the VPC CNI</h1>
+        <h1 id="error-title">Failed to setup default network policy for Pod</h1>
+        <p class="hero-subtitle">EKS network policy setup failed in the VPC CNI</p>
         <p class="lede">
           <code>failed to setup network policy</code> points at the
           <code>aws-network-policy-agent</code> stage inside the <code>aws-node</code>

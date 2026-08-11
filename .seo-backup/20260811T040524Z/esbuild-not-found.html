@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Esbuild Failed: Cannot find esbuild | SAM Doctor</title>
+    <meta name="description" content="Fix 'Esbuild Failed: Cannot find esbuild' from sam build (NodejsNpmEsbuildBuilder): declare esbuild in devDependencies, install before sam build, and build the right directory." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Esbuild Failed: Cannot find esbuild | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;Esbuild Failed: Cannot find esbuild&#x27; from sam build (NodejsNpmEsbuildBuilder): declare esbuild in devDependencies, install before sam build, and build the right directory." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/esbuild-not-found.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Esbuild Failed: Cannot find esbuild | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;Esbuild Failed: Cannot find esbuild&#x27; from sam build (NodejsNpmEsbuildBuilder): declare esbuild in devDependencies, install before sam build, and build the right directory." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Esbuild Failed: Cannot find esbuild</h1>
+        <p class="lede">
+          A function declared <code>BuildMethod: esbuild</code>, SAM's
+          <code>NodejsNpmEsbuildBuilder</code> ran, and the esbuild bundler was not
+          available in the project or runner environment it searched.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          SAM does not bundle esbuild. When a Node.js/TypeScript function opts into
+          esbuild bundling via <code>Metadata: BuildMethod: esbuild</code>, SAM
+          expects to find the <code>esbuild</code> binary through the function
+          project's own dependencies. The failure shapes:
+        </p>
+        <ul>
+          <li><strong>esbuild is not declared</strong> in the function's <code>package.json</code> at all — it worked on a laptop only because of a global install.</li>
+          <li><strong>The CI job never ran <code>npm ci</code></strong> (or <code>yarn</code>/<code>pnpm install</code>) before <code>sam build</code>, so <code>node_modules</code> is empty on the runner.</li>
+          <li><strong>The install ran in a different directory</strong> than the one containing the function's <code>package.json</code> — common in monorepos where <code>CodeUri</code> points at a subdirectory.</li>
+          <li><strong>Production-only installs</strong> — <code>npm ci --omit=dev</code> skips <code>devDependencies</code>, where esbuild normally lives.</li>
+        </ul>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Declare esbuild in the function project and commit the lockfile:</strong>
+            <pre><code>cd path/to/function     # the directory with the function's package.json
+npm install --save-dev esbuild</code></pre>
+          </li>
+          <li>
+            <strong>Install before building in CI</strong>, in the same directory,
+            without skipping dev dependencies:
+            <pre><code>- name: Install function dependencies
+  run: npm ci
+  working-directory: path/to/function
+
+- name: Build
+  run: sam build</code></pre>
+          </li>
+          <li>
+            <strong>In a monorepo, confirm which directory SAM builds.</strong> The
+            function's <code>CodeUri</code> (or <code>Metadata</code> build
+            properties) determine where SAM looks — the <code>package.json</code>
+            containing esbuild must be there, not only at the repo root, unless your
+            workspace tooling hoists it and SAM builds from the hoisted root.
+          </li>
+          <li>
+            <strong>Do not fall back to a global install as the fix.</strong> A
+            global esbuild hides the missing declaration and breaks again on the
+            next fresh runner. Pin a version in <code>devDependencies</code> so local
+            and CI builds agree.
+          </li>
+          <li>
+            <strong>Re-run <code>sam build</code></strong>. If it now fails on
+            TypeScript resolution instead, that is a bundling configuration issue —
+            check the <code>EntryPoints</code> in the function's build metadata.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the <code>NodejsNpmEsbuildBuilder</code> failure and
+          the <code>Esbuild Failed: Cannot find esbuild</code> phrasing (high
+          confidence), and keeps it distinct from generic SAM configuration errors.
+          Runs locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./docker-unavailable.html">Cannot connect to the Docker daemon</a> — the container-build variant of a missing build tool.</li>
+          <li><a href="./insufficient-capabilities.html">InsufficientCapabilitiesException</a> — the next gate after the build starts passing.</li>
+          <li><a href="./rest-api-no-methods.html">The REST API doesn't contain any methods</a> — a template-shape failure that surfaces at deploy time.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

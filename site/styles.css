@@ -1708,3 +1708,12 @@ body:not(.landing) footer p {
     box-shadow: none;
   }
 }
+
+/* error-page hero subtitle */
+.hero-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 0.85;
+}

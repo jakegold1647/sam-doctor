@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAM build output permission denied | SAM Doctor</title>
+    <meta name="description" content="SAM CLI could not access its generated .aws-sam/build directory. Check local ownership, permissions, and file locks before changing AWS settings." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/sam-build-output-permission-denied.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="SAM build output permission denied | SAM Doctor" />
+    <meta property="og:description" content="SAM CLI could not access its generated .aws-sam/build directory. Check local ownership, permissions, and file locks before changing AWS settings." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/sam-build-output-permission-denied.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SAM build output permission denied | SAM Doctor" />
+    <meta name="twitter:description" content="SAM CLI could not access its generated .aws-sam/build directory. Check local ownership, permissions, and file locks before changing AWS settings." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">SAM cannot access its generated build output</h1>
+        <p class="lede">
+          A <code>PermissionError</code>, <code>Access is denied</code>, or
+          <code>Permission denied</code> message naming <code>.aws-sam/build</code>
+          is a local filesystem problem. It happens before AWS receives the
+          deployment request, so changing IAM will not repair it.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">Generated files are locked or owned by another user</h2>
+        <pre><code>sam build --debug failed: Error: [WinError 5] Access is denied: '.aws-sam\build'</code></pre>
+        <p>
+          SAM writes transformed templates and packaged function artifacts under
+          <code>.aws-sam/build</code>. A previous elevated build, another user,
+          an editor or watcher, or antivirus software can leave that generated
+          directory unreadable or locked.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">NEXT CHECK</p>
+        <h2 id="fix-title">Repair the local build directory</h2>
+        <ol>
+          <li>
+            <strong>Close processes that may hold generated files.</strong> Stop
+            editors, file watchers, local emulators, antivirus scans, and other
+            SAM builds, then rerun <code>sam build --debug</code> to capture the
+            first complete error.
+          </li>
+          <li>
+            <strong>Inspect ownership and permissions.</strong>
+            <pre><code># Windows
+icacls .aws-sam\build
+
+# macOS/Linux
+ls -ld .aws-sam/build</code></pre>
+            Compare the directory and named file with the account running SAM.
+          </li>
+          <li>
+            <strong>Recreate only generated output.</strong> After confirming the
+            source template and function directories are safe, move or remove
+            <code>.aws-sam/build</code> and run <code>sam build</code> again. Do
+            not delete source code or broaden AWS permissions for this local error.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Keep the handoff in your normal workflow</h2>
+        <p class="muted">
+          SAM Doctor recognizes this generated-output permission marker with medium
+          confidence and points at local ownership and file-lock checks. It runs
+          locally; no AWS access, no log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./docker-unavailable.html">SAM build requires Docker</a> &mdash; use when the container daemon itself cannot be reached.</li>
+          <li><a href="./esbuild-not-found.html">SAM build cannot find esbuild</a> &mdash; use when the local JavaScript bundler dependency is missing.</li>
+          <li><a href="./unable-to-upload-artifact.html">SAM could not upload a build artifact</a> &mdash; a later packaging or deployment-bucket failure.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

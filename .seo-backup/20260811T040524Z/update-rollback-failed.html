@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UPDATE_ROLLBACK_FAILED: continue or skip the stuck rollback | SAM Doctor</title>
+    <meta name="description" content="Fix a stack stuck in UPDATE_ROLLBACK_FAILED: find the resource that would not roll back, then continue-update-rollback, using resources-to-skip only when confirmed necessary." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/update-rollback-failed.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="UPDATE_ROLLBACK_FAILED: continue or skip the stuck rollback | SAM Doctor" />
+    <meta property="og:description" content="Fix a stack stuck in UPDATE_ROLLBACK_FAILED: find the resource that would not roll back, then continue-update-rollback, using resources-to-skip only when confirmed necessary." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/update-rollback-failed.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="UPDATE_ROLLBACK_FAILED: continue or skip the stuck rollback | SAM Doctor" />
+    <meta name="twitter:description" content="Fix a stack stuck in UPDATE_ROLLBACK_FAILED: find the resource that would not roll back, then continue-update-rollback, using resources-to-skip only when confirmed necessary." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">UPDATE_ROLLBACK_FAILED (the rollback itself failed)</h1>
+        <p class="lede">
+          A failed update tried to roll back to the last working state, and
+          the rollback could not finish. The stack is frozen: no new deploy
+          can start until the rollback is continued past — or deliberately
+          skips — whatever refused to roll back.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this state means</h2>
+        <p>
+          Rollbacks re-apply the previous configuration, and that re-apply can
+          fail the same ways a deploy can: a resource changed outside
+          CloudFormation, a dependency was deleted, a permission was tightened
+          mid-flight. Unlike <code>ROLLBACK_COMPLETE</code> on a first create,
+          this state is recoverable in place - the stack does not need to be
+          deleted.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Find what refused to roll back</strong> (read-only):
+            <pre><code>aws cloudformation describe-stack-events --stack-name my-app \
+  --query 'StackEvents[?ResourceStatus==`UPDATE_ROLLBACK_FAILED` || contains(ResourceStatusReason, `Failed`)]|[:5]'</code></pre>
+          </li>
+          <li>
+            <strong>Fix that resource's blocker if you can</strong> - restore
+            the out-of-band change, reattach the dependency - then:
+            <pre><code>aws cloudformation continue-update-rollback --stack-name my-app</code></pre>
+          </li>
+          <li>
+            <strong>Skip only what genuinely cannot roll back:</strong>
+            <code>--resources-to-skip</code> leaves the named resource in its
+            current state and out of sync with the template - a deliberate
+            debt to reconcile in the next deploy, not a free pass.
+          </li>
+          <li>
+            <strong>Wait for <code>UPDATE_ROLLBACK_COMPLETE</code></strong>
+            before retrying the original update.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the stuck-rollback refusal (high confidence)
+          and keeps it distinct from the first-create dead end and from
+          ordinary rollback progress. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./rollback-role-delete-failed.html">Rollback could not delete an IAM role</a> — the commonest specific cause of this state.</li>
+          <li><a href="./rollback-complete-cannot-be-updated.html">ROLLBACK_COMPLETE and can not be updated</a> — the first-create dead end this state is often confused with.</li>
+          <li><a href="./rollback-in-progress.html">Stack entered rollback</a> — the healthy version of what failed here.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

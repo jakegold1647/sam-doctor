@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>InvalidIdentityToken: Incorrect token audience | SAM Doctor</title>
+    <meta name="description" content="Fix 'InvalidIdentityToken: Incorrect token audience' in GitHub Actions OIDC deploys: the sts.amazonaws.com audience and how custom audiences break AssumeRoleWithWebIdentity." />
+    <meta name="author" content="Jake Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/incorrect-token-audience.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="InvalidIdentityToken: Incorrect token audience | SAM Doctor" />
+    <meta property="og:description" content="Fix &#x27;InvalidIdentityToken: Incorrect token audience&#x27; in GitHub Actions OIDC deploys: the sts.amazonaws.com audience and how custom audiences break AssumeRoleWithWebIdentity." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/incorrect-token-audience.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="InvalidIdentityToken: Incorrect token audience | SAM Doctor" />
+    <meta name="twitter:description" content="Fix &#x27;InvalidIdentityToken: Incorrect token audience&#x27; in GitHub Actions OIDC deploys: the sts.amazonaws.com audience and how custom audiences break AssumeRoleWithWebIdentity." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Incorrect token audience (InvalidIdentityToken)</h1>
+        <p class="lede">
+          AWS STS rejected the GitHub OIDC token because its audience claim
+          does not match what the IAM identity provider expects. The token is
+          real and fresh — it was just minted for a different consumer.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <p>
+          The audience (<code>aud</code>) claim says who a token is for. The
+          standard AWS setup expects <code>sts.amazonaws.com</code>, which is
+          what <code>aws-actions/configure-aws-credentials</code> requests by
+          default. The mismatch appears when a workflow requests a custom
+          audience, or the IAM OIDC provider was registered with a different
+          client ID than the tokens carry.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">FIX</p>
+        <h2 id="fix-title">How to fix it</h2>
+        <ol>
+          <li>
+            <strong>Check what the provider expects</strong> (read-only):
+            <pre><code>aws iam get-open-id-connect-provider \
+  --open-id-connect-provider-arn &lt;provider-arn&gt;</code></pre>
+            The <code>ClientIDList</code> should contain
+            <code>sts.amazonaws.com</code> for the standard setup.
+          </li>
+          <li>
+            <strong>Check what the workflow requests.</strong> A custom
+            <code>audience:</code> input on the credentials step must match an
+            entry in that client ID list exactly; if you have no reason for a
+            custom audience, remove the input and use the default.
+          </li>
+          <li>
+            <strong>Align the two</strong> — either add the custom audience to
+            the provider's client IDs, or stop requesting it. One source of
+            truth, not two.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the audience rejection (high confidence) and
+          separates it from trust-policy subject mismatches, which say
+          "Not authorized" instead. Runs locally; no AWS access, no log
+          upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./assume-role-with-web-identity.html">Not authorized to perform: sts:AssumeRoleWithWebIdentity</a> — the trust-policy rejection with the same setup.</li>
+          <li><a href="./no-oidc-provider.html">No OpenIDConnect provider found in your account</a> — when the provider is missing entirely.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jake Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
