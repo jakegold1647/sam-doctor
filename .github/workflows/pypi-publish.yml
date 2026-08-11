@@ -146,22 +146,3 @@ jobs:
           packages-dir: dist/
           # A recovery run for an already-published release is a safe no-op.
           skip-existing: true
-
-  post-release-health:
-    needs: [validate-release, publish]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      actions: write
-    steps:
-      - name: Trigger strict post-release launch health check
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.validate-release.outputs.tag }}
-        run: |
-          gh workflow run distribution-check.yml \
-            --ref main \
-            -f release-tag="$RELEASE_TAG" \
-            -f strict-distribution-during-release=true \
-            -f strict-ethical=false \
-            -f min-feedback-ratio=100

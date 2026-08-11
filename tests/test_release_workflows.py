@@ -235,18 +235,6 @@ def test_pypi_publish_rechecks_assets_in_oidc_job_without_building() -> None:
     assert "pypa/gh-action-pypi-publish@" in serialized_steps
 
 
-def test_post_publish_health_has_no_oidc_permission() -> None:
-    path = ROOT / ".github" / "workflows" / "pypi-publish.yml"
-    parsed = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
-    health = parsed["jobs"]["post-release-health"]
-
-    assert health["needs"] == ["validate-release", "publish"]
-    assert health["permissions"] == {"contents": "read", "actions": "write"}
-    health_check = health["steps"][0]["run"]
-    assert "--ref main" in health_check
-    assert '-f release-tag="$RELEASE_TAG"' in health_check
-
-
 def test_distribution_health_uses_local_outreach_notes_not_repo_tracking_files() -> None:
     workflow = (ROOT / ".github" / "workflows" / "distribution-check.yml").read_text(
         encoding="utf-8"
