@@ -35,6 +35,8 @@ jobs:
         run: python scripts/check-rule-catalog.py --format github
       - name: Rule fixture registry gate (annotated)
         run: python scripts/check-rule-fixtures.py --format github
+      - name: Site rule catalog is current with the Python rules
+        run: python scripts/build-site-rule-catalog.py --check
       - name: Error page mapping gate (annotated)
         run: python scripts/check-error-pages.py --format github
       - run: python -m pytest -q --cov
@@ -67,6 +69,7 @@ jobs:
       - run: python -m pip install ".[dev]"
       - run: python scripts/check-rule-catalog.py
       - run: python scripts/check-rule-fixtures.py
+      - run: python scripts/build-site-rule-catalog.py --check
       - run: python scripts/check-error-pages.py
       # The action-wrapper tests skip themselves here: they need a WSL-style
       # bash, and the composite action is exercised directly below instead.

@@ -10,11 +10,12 @@ discovers failures locally instead of after pushing:
 4. lint                            (ruff check src tests scripts)
 5. rule catalog quality gate       (scripts/check-rule-catalog.py)
 6. rule fixture registry gate      (scripts/check-rule-fixtures.py)
-7. error page mapping gate         (scripts/check-error-pages.py)
-8. test suite + coverage floor     (pytest -q --cov)
-9. package build                   (python -m build)
-10. built wheel in a clean env     (scripts/verify-wheel.py)
-11. onboarding smoke check         (scripts/run-smoke.py)
+7. site rule catalog drift gate    (scripts/build-site-rule-catalog.py --check)
+8. error page mapping gate         (scripts/check-error-pages.py)
+9. test suite + coverage floor     (pytest -q --cov)
+10. package build                  (python -m build)
+11. built wheel in a clean env     (scripts/verify-wheel.py)
+12. onboarding smoke check         (scripts/run-smoke.py)
 
 All steps run even when an early one fails, then a summary reports every
 failure at once. Exit code 0 only when everything passed.
@@ -46,6 +47,10 @@ def _steps(fast: bool) -> list[tuple[str, list[str]]]:
         ("ruff lint", [python, "-m", "ruff", "check", "src", "tests", "scripts"]),
         ("rule catalog quality", [python, "scripts/check-rule-catalog.py"]),
         ("rule fixture registry", [python, "scripts/check-rule-fixtures.py"]),
+        (
+            "site rule catalog current",
+            [python, "scripts/build-site-rule-catalog.py", "--check"],
+        ),
         ("error page mapping", [python, "scripts/check-error-pages.py"]),
         ("test suite", [python, "-m", "pytest", "-q", "--cov"]),
     ]

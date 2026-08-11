@@ -4,6 +4,19 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The website hero now diagnoses a log instead of picturing one.** Paste a
+  failed deploy log into the panel on the front page and it reports the same
+  findings the CLI would - title, confidence, redacted evidence, next checks,
+  rule id and matched line - computed in the browser, with no request made and
+  nothing uploaded. "Try a sample failure" loads one of the shipped sample logs
+  for anyone without a log to hand. The rule catalog the page matches on is
+  generated from `diagnostics.py` and `redaction.py` by
+  `scripts/build-site-rule-catalog.py`, which CI runs with `--check` so the
+  page cannot drift from the rules; the test suite compares the two engines
+  over every rule fixture, every bundled sample, and a corpus of mutated logs.
+  With JavaScript unavailable the panel still shows the worked example it
+  showed before. No packaged behaviour changed.
+
 ## v0.12.2 - 2026-08-11
 
 - **Fixed the PyPI package-page demo image.** The README now uses an absolute

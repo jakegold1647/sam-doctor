@@ -172,13 +172,48 @@
           </ul>
         </div>
 
-        <div class="diagnostic-window" aria-label="Example SAM Doctor diagnosis">
+        <div class="diagnostic-window" id="hero-demo" aria-label="SAM Doctor diagnosis">
           <div class="window-bar">
             <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
             <span>deployment.log</span>
             <span class="window-status"><i aria-hidden="true"></i> local</span>
           </div>
-          <div class="window-body">
+
+          <!--
+            Two states share this panel. `hero-demo-example` is the worked
+            example and is what ships in the markup, so the hero still reads
+            correctly with JavaScript disabled or blocked. hero-demo.js hides
+            it and reveals the form only once the rule catalog has compiled.
+          -->
+          <form class="window-body demo-form" id="hero-demo-form" hidden>
+            <label class="demo-label" for="hero-demo-input">Paste a failed deploy log</label>
+            <p class="demo-privacy" id="hero-demo-privacy">
+              The 90 rules are matched here, in this page, on your machine. Nothing
+              is uploaded, no request carries your log, and the same identifiers
+              the CLI removes are removed before anything is shown.
+            </p>
+            <textarea
+              id="hero-demo-input"
+              name="log"
+              rows="6"
+              spellcheck="false"
+              autocomplete="off"
+              autocapitalize="off"
+              aria-describedby="hero-demo-privacy"
+              placeholder="Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity&#10;Role ARN: arn:aws:iam::123456789012:role/deploy"
+            ></textarea>
+            <div class="demo-actions">
+              <button type="submit" class="demo-button demo-button-primary">Diagnose</button>
+              <button type="button" class="demo-button" id="hero-demo-sample" hidden>
+                Try a sample failure
+              </button>
+            </div>
+            <p class="demo-status" id="hero-demo-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="window-body demo-results" id="hero-demo-results" hidden></div>
+
+          <div class="window-body" id="hero-demo-example">
             <p class="command"><span>$</span> sam-doctor diagnose deployment.log --format markdown</p>
             <div class="finding-meta">
               <span class="finding-number">Finding 01</span>
@@ -196,8 +231,9 @@
               </div>
             </dl>
           </div>
+
           <div class="window-footer">
-            <span>Matched line 41</span>
+            <span id="hero-demo-footer-note">Matched line 41</span>
             <span>Identifiers redacted</span>
           </div>
         </div>
@@ -450,5 +486,14 @@
       </nav>
       <p class="legal">SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
     </footer>
+
+    <!--
+      The hero demo. rule-catalog.js is generated from the Python rule source by
+      scripts/build-site-rule-catalog.py, so the browser matches on the same
+      rules the CLI does. Both are plain scripts with no network access: a
+      diagnosis costs zero requests, which is the point being demonstrated.
+    -->
+    <script src="assets/rule-catalog.js" defer></script>
+    <script src="assets/hero-demo.js" defer></script>
   </body>
 </html>

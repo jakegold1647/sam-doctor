@@ -213,7 +213,9 @@ section {
 .landing-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.02fr) minmax(22rem, .9fr);
-  align-items: center;
+  /* Top-aligned rather than centred: the panel now grows as findings are
+     rendered, and centring pushed the headline down the page as it did. */
+  align-items: start;
   gap: clamp(2.5rem, 6vw, 5.5rem);
 }
 
@@ -509,6 +511,203 @@ h3 {
 .window-footer {
   border-top: 1px solid var(--dark-line);
   background: #0c1a17;
+}
+
+/* ------------------------------------------------------------------ *
+ * In-page diagnosis (hero)
+ *
+ * The panel keeps the dark treatment above; only the controls and the
+ * rendered findings are new. Every colour here was checked against the
+ * panel background it sits on - `.diagnostic-window :not(pre) > code`
+ * already neutralises the light global code background inside this
+ * panel, and nothing below reintroduces it.
+ * ------------------------------------------------------------------ */
+
+/* `hidden` has to actually hide. `.demo-form` and `.demo-results` set
+   `display`, and an author `display` beats the user-agent `[hidden]` rule
+   whatever the specificity - so the interactive block rendered in full before
+   any script ran, which is precisely the no-JavaScript case it exists to
+   protect. The id raises specificity above those class rules without
+   `!important`. */
+#hero-demo [hidden] {
+  display: none;
+}
+
+/* The static example is deliberately tilted; a form is not. */
+.diagnostic-window.is-interactive {
+  transform: none;
+}
+
+.demo-form {
+  display: grid;
+  gap: .8rem;
+}
+
+.demo-label {
+  color: white;
+  font: 650 1.05rem/1.3 var(--sans);
+  letter-spacing: -.01em;
+}
+
+.demo-privacy {
+  margin: -.35rem 0 0;
+  color: #bcd6cd;
+  font-size: .78rem;
+  line-height: 1.55;
+}
+
+#hero-demo-input {
+  width: 100%;
+  min-height: 8.5rem;
+  resize: vertical;
+  /* Brighter than --dark-line: this is a control boundary, and the panel it
+     sits on is dark enough that the usual hairline reads as 1.9:1. */
+  border: 1px solid #5c887b;
+  border-radius: .7rem;
+  background: #0a1815;
+  padding: .8rem .9rem;
+  color: #e7f4ef;
+  font: .78rem/1.6 var(--mono);
+  /* Wrap rather than scroll sideways. Log lines are long enough that a
+     horizontal scrollbar appears in an empty box and never goes away, and a
+     scrollbar is a worse way to read a pasted line than a soft wrap. Newlines
+     in the pasted text are still preserved, which is what line numbers need. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#hero-demo-input::placeholder {
+  color: #90aca3;
+  opacity: 1;
+}
+
+#hero-demo-input:focus-visible {
+  outline: 3px solid var(--warm);
+  outline-offset: 2px;
+}
+
+.demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+}
+
+.demo-button {
+  /* Same reason as the textarea: the outline is what makes a transparent
+     button identifiable as a control, so it clears 3:1 on the panel. */
+  border: 1px solid #5c887b;
+  border-radius: 999px;
+  background: transparent;
+  padding: .6rem 1.05rem;
+  color: #dcece6;
+  cursor: pointer;
+  font: 650 .74rem/1.2 var(--mono);
+  letter-spacing: .04em;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+
+.demo-button:hover,
+.demo-button:focus-visible {
+  border-color: #8ce1c1;
+  background: #16302a;
+}
+
+.demo-button-primary {
+  border-color: #7fd8b7;
+  background: #7fd8b7;
+  color: #062019;
+}
+
+.demo-button-primary:hover,
+.demo-button-primary:focus-visible {
+  border-color: #a3e6cd;
+  background: #a3e6cd;
+}
+
+.demo-status {
+  margin: 0;
+  min-height: 1.1rem;
+  color: #8ce1c1;
+  font: .72rem/1.5 var(--mono);
+}
+
+.demo-results {
+  display: grid;
+  gap: 1.6rem;
+  border-top: 1px solid var(--dark-line);
+  padding-top: clamp(1.2rem, 2.5vw, 1.6rem);
+}
+
+.demo-finding + .demo-finding {
+  border-top: 1px solid var(--dark-line);
+  padding-top: 1.5rem;
+}
+
+.diagnostic-window .demo-finding-title {
+  max-width: none;
+  margin-bottom: .75rem;
+  font-size: clamp(1.15rem, 1.9vw, 1.4rem);
+}
+
+.demo-explanation p,
+.demo-note-block p {
+  margin: 0 0 .7rem;
+  color: #cfe3dc;
+  font-size: .82rem;
+  line-height: 1.6;
+}
+
+.demo-explanation p:last-child,
+.demo-note-block p:last-child {
+  margin-bottom: 0;
+}
+
+.demo-evidence {
+  margin: 0 0 .4rem;
+  overflow-x: auto;
+  border-left: 2px solid #4b6e64;
+  padding-left: .6rem;
+  color: #b5decf;
+  font: .74rem/1.6 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.demo-evidence:last-child {
+  margin-bottom: 0;
+}
+
+.demo-steps {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.demo-steps li {
+  margin-bottom: .35rem;
+}
+
+.demo-steps li p {
+  margin: 0;
+}
+
+.demo-docs {
+  display: inline-block;
+  margin-top: .5rem;
+  color: #8ce1c1;
+  font-size: .78rem;
+}
+
+.demo-docs:hover,
+.demo-docs:focus-visible {
+  color: #b6f0d8;
+}
+
+.demo-rule-id {
+  font-size: .74rem;
+}
+
+.demo-line {
+  color: var(--dark-muted);
+  font: .72rem/1.5 var(--mono);
 }
 
 .signal-band {
