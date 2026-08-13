@@ -159,7 +159,7 @@ import sys
 
 from html import escape
 from sam_doctor.diagnostics import Finding
-from sam_doctor.cli import markdown_report
+from sam_doctor.cli import _decode_log_bytes, markdown_report
 
 
 def _source_is_empty(source: str) -> bool:
@@ -175,8 +175,8 @@ def _source_is_empty(source: str) -> bool:
     try:
         if os.path.getsize(source) > 4096:
             return False
-        with open(source, encoding="utf-8", errors="replace") as handle:
-            return not handle.read().strip()
+        with open(source, "rb") as handle:
+            return not _decode_log_bytes(handle.read()).strip()
     except OSError:
         return False
 

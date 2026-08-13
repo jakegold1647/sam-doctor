@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Action summaries now recognize empty Windows-encoded logs.** The composite
+  Action uses the CLI's BOM-aware decoder when distinguishing an empty log from
+  an unmatched failure, so UTF-16 whitespace no longer produces a misleading
+  “No supported pattern found” summary.
+
 - **A command-launch error no longer erases the previous deployment log.** The
   `run` wrapper now waits until the child process starts before truncating an
   existing `--log-file`; successful runs still replace stale output.

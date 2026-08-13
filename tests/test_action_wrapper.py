@@ -288,7 +288,14 @@ def test_action_wrapper_gates_on_confidence_threshold(tmp_path: Path):
 
 
 @requires_wsl_bash
-def test_action_summary_calls_an_empty_log_empty(tmp_path: Path):
+@pytest.mark.parametrize(
+    "payload",
+    (
+        pytest.param(b"", id="empty-utf8"),
+        pytest.param(" \r\n\t".encode("utf-16"), id="whitespace-utf16"),
+    ),
+)
+def test_action_summary_calls_an_empty_log_empty(tmp_path: Path, payload: bytes):
     """The job summary is the surface most CI users actually read.
 
     It is rebuilt from the JSON payload, which reports zero findings for an
@@ -298,7 +305,7 @@ def test_action_summary_calls_an_empty_log_empty(tmp_path: Path):
     """
     root = ROOT
     empty_log = tmp_path / "deployment.log"
-    empty_log.write_text("", encoding="utf-8")
+    empty_log.write_bytes(payload)
     summary = tmp_path / "github-summary.md"
 
     result = _run_action(
