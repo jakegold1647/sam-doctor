@@ -50,12 +50,38 @@ def test_likely_error_excerpt_redacts_sensitive_data() -> None:
     assert "[REDACTED_AWS_ACCESS_KEY]" in line
 
 
-def test_likely_error_excerpt_caps_at_max_lines() -> None:
-    text = "\n".join(["denied line"] + [f"noise {i}" for i in range(30)])
+@pytest.mark.parametrize(
+    ("error_index", "expected_lines"),
+    [
+        (0, [1, 2, 3, 4, 5]),
+        (20, [19, 20, 21, 22, 23]),
+        (40, [37, 38, 39, 40, 41]),
+    ],
+)
+def test_likely_error_excerpt_caps_around_the_error_line(
+    error_index: int, expected_lines: list[int]
+) -> None:
+    lines = [f"noise {i}" for i in range(41)]
+    lines[error_index] = "Error: widget deployment exploded"
 
-    excerpt = likely_error_excerpt(text, context=20, max_lines=5)
+    excerpt = likely_error_excerpt("\n".join(lines), context=20, max_lines=5)
 
-    assert len(excerpt) <= 5
+    assert [line_number for line_number, _ in excerpt] == expected_lines
+    assert any("widget deployment exploded" in line for _, line in excerpt)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"context": -1}, "context must be zero or greater"),
+        ({"max_lines": 0}, "max_lines must be one or greater"),
+    ],
+)
+def test_likely_error_excerpt_rejects_invalid_bounds(
+    kwargs: dict[str, int], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        likely_error_excerpt("Error: deployment failed", **kwargs)
 
 
 def test_cli_request_packet_writes_excerpt_for_unmatched_log(tmp_path: Path) -> None:
@@ -86,6 +112,38 @@ def test_cli_request_packet_writes_excerpt_for_unmatched_log(tmp_path: Path) -> 
     assert "Complete the request form" in content
     assert "AWS or CI service" in content
     assert "report-missed-error.html" in content
+
+
+@pytest.mark.parametrize(
+    ("option", "value"),
+    [("--context", "-1"), ("--max-lines", "0")],
+)
+def test_cli_request_packet_rejects_invalid_excerpt_bounds_before_writing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    option: str,
+    value: str,
+) -> None:
+    log = tmp_path / "unmatched.log"
+    log.write_text("Error: a new deployment failure\n", encoding="utf-8")
+    output_dir = tmp_path / "artifacts"
+
+    exit_code = main(
+        [
+            "request-packet",
+            str(log),
+            "--output-dir",
+            str(output_dir),
+            option,
+            value,
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert option in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert not output_dir.exists()
 
 
 @pytest.mark.parametrize("escape_kind", ("traversal", "absolute"))

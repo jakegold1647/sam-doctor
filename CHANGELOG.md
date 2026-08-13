@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Capped rule-request excerpts keep the actual error line.** When `--context`
+  exceeded `--max-lines`, the old window took its first lines and could omit the
+  failure it was meant to share. The cap is now centered on that failure, and
+  negative context or non-positive line limits fail before creating artifacts.
+
 - **BOM-aware decoding now applies to redirected standard input.** `diagnose -`,
   `packet -`, `request-packet -`, and the repository packet wrapper preserve raw
   stdin bytes until the shared UTF-8/16/32 decoder runs. Previously a UTF-16

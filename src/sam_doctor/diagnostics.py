@@ -2709,12 +2709,29 @@ def likely_error_excerpt(
     error at all.
     """
 
+    if context < 0:
+        raise ValueError("context must be zero or greater")
+    if max_lines < 1:
+        raise ValueError("max_lines must be one or greater")
+
     lines = _strip_ansi(text).splitlines()
     for index, line in enumerate(lines):
         if not _LIKELY_ERROR_LINE.search(line):
             continue
-        start = max(0, index - context)
-        end = min(len(lines), index + context + 1, start + max_lines)
+        requested_start = max(0, index - context)
+        requested_end = min(len(lines), index + context + 1)
+        start = requested_start
+        end = requested_end
+        if end - start > max_lines:
+            # Center a capped window on the error instead of taking its first
+            # lines. With --context 20 --max-lines 5, anchoring the cap at
+            # requested_start returned lines 1-5 and omitted an error on line
+            # 21—the one line a rule request must retain.
+            start = max(requested_start, index - max_lines // 2)
+            end = min(requested_end, start + max_lines)
+            # Near the end of a log, shift the short right side back so the
+            # requested cap is still filled with useful preceding context.
+            start = max(requested_start, end - max_lines)
         return tuple(
             (line_number, redact(lines[line_number - 1].strip()))
             for line_number in range(start + 1, end + 1)

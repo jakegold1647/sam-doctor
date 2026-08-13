@@ -1124,6 +1124,11 @@ def _packet_command(args: argparse.Namespace) -> int:
 
 
 def _request_packet_command(args: argparse.Namespace) -> int:
+    if args.context < 0:
+        raise ValueError("--context must be zero or greater.")
+    if args.max_lines < 1:
+        raise ValueError("--max-lines must be one or greater.")
+
     output_dir = _make_output_dir(Path(args.output_dir).resolve())
     notes_path = _artifact_path(output_dir, args.name, "--name")
 
