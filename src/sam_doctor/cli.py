@@ -278,7 +278,8 @@ GitHub Action behavior:
         nargs="+",
         help=(
             "One or more log files, directories, or wildcard paths. "
-            "Directories are scanned for *.log, *.txt, and *.out files."
+            "Directories and ** wildcard patterns are scanned recursively; "
+            "directory inputs include *.log, *.txt, and *.out files."
         ),
     )
     batch_parser.add_argument(
@@ -679,9 +680,32 @@ def _render(text: str, source_name: str, output_format: str) -> str:
     )
 
 
+def _glob_input_paths(input_value: str) -> list[Path]:
+    """Expand a wildcard, keeping recursive globs out of symlinked directories."""
+
+    input_path = Path(input_value)
+    if "**" not in input_path.parts:
+        return [Path(candidate) for candidate in sorted(glob.glob(input_value))]
+
+    # glob.glob(..., recursive=True) follows directory symlinks. A linked loop
+    # can therefore produce the same log dozens of times before the operating
+    # system's path limit stops it. Path.glob gives ** its expected recursive
+    # meaning without descending through those links. Build a non-magic base so
+    # absolute patterns work too: Path.glob itself requires a relative pattern.
+    parts = input_path.parts
+    first_magic = next(
+        index for index, part in enumerate(parts) if glob.has_magic(part)
+    )
+    base = Path(*parts[:first_magic]) if first_magic else Path(".")
+    pattern = Path(*parts[first_magic:]).as_posix()
+    try:
+        return sorted(base.glob(pattern), key=lambda path: path.as_posix())
+    except (OSError, RuntimeError, ValueError) as error:
+        raise ValueError(f"Could not expand input path {input_value}: {error}") from error
+
+
 def _expand_input_paths(input_value: str) -> list[Path]:
-    globbed = sorted(glob.glob(input_value))
-    paths = [Path(candidate) for candidate in globbed]
+    paths = _glob_input_paths(input_value)
     direct = Path(input_value)
     if not paths and direct.exists():
         paths = [direct]

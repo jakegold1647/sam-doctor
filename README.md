@@ -263,6 +263,10 @@ Diagnose many logs in one run:
 sam-doctor batch logs/*.log logs/*.txt --format json --output batch-results.json
 ```
 
+Directory inputs recurse automatically. To select one extension at every depth,
+quote a recursive wildcard so SAM Doctor—not the shell—expands it:
+`sam-doctor batch 'logs/**/*.log' --format json`.
+
 Add `--fail-on-findings` to exit `1` when any file has a supported finding,
 or `--fail-on-confidence high` to gate only on findings the rules are sure
 about; the full batch report is still written first either way. With

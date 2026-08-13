@@ -7,7 +7,14 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from sam_doctor import __version__
-from sam_doctor.cli import _read_demo, _read_text, _render_findings, _write_report, main
+from sam_doctor.cli import (
+    _expand_input_paths,
+    _read_demo,
+    _read_text,
+    _render_findings,
+    _write_report,
+    main,
+)
 from sam_doctor.diagnostics import (
     diagnose,
     json_report,
@@ -2301,6 +2308,46 @@ def test_batch_command_analyzes_directory(
     assert "second.txt" in output
     assert "AccessDenied" not in output
     assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output
+
+
+def test_batch_command_analyzes_recursive_glob_at_every_depth(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    logs = tmp_path / "logs"
+    paths = [
+        logs / "root.log",
+        logs / "one" / "middle.log",
+        logs / "one" / "two" / "deep.log",
+    ]
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Deployment completed successfully.\n", encoding="utf-8")
+
+    pattern = str(logs / "**" / "*.log")
+    assert main(["batch", pattern, "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["batch_count"] == 3
+    assert {result["source"] for result in report["results"]} == {
+        path.as_posix() for path in paths
+    }
+
+
+def test_recursive_batch_glob_does_not_follow_directory_symlinks(
+    tmp_path: Path,
+) -> None:
+    logs = tmp_path / "logs"
+    nested = logs / "real" / "nested"
+    nested.mkdir(parents=True)
+    failure = nested / "failure.log"
+    failure.write_text("Error: example\n", encoding="utf-8")
+    loop = nested / "loop"
+    try:
+        loop.symlink_to(logs / "real", target_is_directory=True)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"directory symlinks are unavailable: {error}")
+
+    assert _expand_input_paths(str(logs / "**" / "*.log")) == [failure]
 
 
 def test_batch_command_json_has_aggregate_counts(

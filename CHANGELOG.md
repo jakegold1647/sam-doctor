@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Recursive batch wildcards now reach every directory depth.** A quoted
+  `logs/**/*.log` pattern previously behaved like a one-level `*`, silently
+  skipping root and deeply nested logs. `**` now has its conventional recursive
+  meaning without following directory symlinks into loops.
+
 - **Capped rule-request excerpts keep the actual error line.** When `--context`
   exceeded `--max-lines`, the old window took its first lines and could omit the
   failure it was meant to share. The cap is now centered on that failure, and
