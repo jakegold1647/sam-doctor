@@ -489,7 +489,11 @@ def _run_deployment_command(command: list[str], log_path: Path) -> int:
     _make_output_dir(log_path.parent)
 
     try:
-        with log_path.open("w", encoding="utf-8", newline="\n") as log:
+        # Open without truncating first. If the executable cannot start, an
+        # existing deployment log is still the only evidence the user has and
+        # must survive the launch error. Once Popen succeeds, clear the file so
+        # a successful run still replaces rather than appends to the old log.
+        with log_path.open("a+", encoding="utf-8", newline="\n") as log:
             try:
                 process = subprocess.Popen(
                     command,
@@ -503,6 +507,8 @@ def _run_deployment_command(command: list[str], log_path: Path) -> int:
                 raise ValueError(f"Could not run {command[0]}: {error}") from error
 
             try:
+                log.seek(0)
+                log.truncate()
                 assert process.stdout is not None
                 for line in process.stdout:
                     sys.stdout.write(line)

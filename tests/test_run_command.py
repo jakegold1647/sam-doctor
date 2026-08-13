@@ -40,6 +40,7 @@ def test_run_does_not_add_diagnosis_noise_after_a_successful_command(
     tmp_path: Path, capsys
 ) -> None:
     log = tmp_path / "deployment.log"
+    log.write_text("stale deployment output\n", encoding="utf-8")
 
     status = main(
         [
@@ -55,6 +56,9 @@ def test_run_does_not_add_diagnosis_noise_after_a_successful_command(
     output = capsys.readouterr().out
     assert "Not authorized to perform" in output
     assert "SAM Doctor found" not in output
+    recorded = log.read_text(encoding="utf-8")
+    assert "Not authorized to perform" in recorded
+    assert "stale deployment output" not in recorded
 
 
 def test_run_can_write_the_failure_report_separately(
@@ -118,9 +122,12 @@ def test_run_requires_a_command(capsys) -> None:
 
 def test_run_reports_a_missing_executable(tmp_path: Path, capsys) -> None:
     log = tmp_path / "deployment.log"
+    sentinel = "previous deployment evidence\n"
+    log.write_text(sentinel, encoding="utf-8")
 
     assert main(["run", "--log-file", str(log), "--", "definitely-not-a-real-command"]) == 2
     assert "Could not run definitely-not-a-real-command" in capsys.readouterr().err
+    assert log.read_text(encoding="utf-8") == sentinel
 
 
 def test_run_rejects_a_report_that_aliases_the_log(tmp_path: Path, capsys) -> None:

@@ -4,6 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **A command-launch error no longer erases the previous deployment log.** The
+  `run` wrapper now waits until the child process starts before truncating an
+  existing `--log-file`; successful runs still replace stale output.
+
 - **Quoted secret assignments are now redacted as one value.** Evidence that
   contains a quoted password, token, or secret with spaces no longer leaves the
   words after the first space visible, and the replacement keeps balanced
