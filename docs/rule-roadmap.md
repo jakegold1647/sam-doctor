@@ -1617,7 +1617,8 @@ The broader ready newcomer queue also includes the scoped documentation and
 community tasks in
 [#69](https://github.com/jakegold1647/sam-doctor/issues/69),
 [#71](https://github.com/jakegold1647/sam-doctor/issues/71), and
-[#72](https://github.com/jakegold1647/sam-doctor/issues/72)–[#77](https://github.com/jakegold1647/sam-doctor/issues/77).
+[#72](https://github.com/jakegold1647/sam-doctor/issues/72)–[#74](https://github.com/jakegold1647/sam-doctor/issues/74) and
+[#76](https://github.com/jakegold1647/sam-doctor/issues/76)–[#77](https://github.com/jakegold1647/sam-doctor/issues/77).
 Use the [live ready queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22)
 for the current count; it changes as newcomers claim or complete an issue.
 

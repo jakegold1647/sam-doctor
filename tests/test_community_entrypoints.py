@@ -41,6 +41,29 @@ def test_public_entry_points_make_early_feedback_welcome() -> None:
     assert "Draft PRs are welcome" in _read("site/index.html")
 
 
+def test_community_triage_keeps_four_copy_ready_public_routes() -> None:
+    """Keep each common report outcome safe, actionable, and contributor-ready."""
+
+    playbook = _read("docs/community-triage.md")
+    for heading in (
+        "### The diagnosis helped",
+        "### The failure was missed",
+        "### The report is unclear or unsafe",
+        "### Setup or workflow friction",
+    ):
+        assert heading in playbook
+
+    assert playbook.count("**Escalation:**") == 4
+    assert "[Support boundaries](../SUPPORT.md)" in playbook
+    assert "template=usage_feedback.yml" in playbook
+    assert "[Contributing a diagnostic rule](contributing-a-diagnostic-rule.md)" in playbook
+    assert "discussions/categories/show-and-tell" in playbook
+    assert (
+        "None of these documentation, fixture, or test follow-ups requires "
+        "repository\nadmin access"
+    ) in playbook
+
+
 def test_contributing_explains_the_claim_to_pr_path() -> None:
     """Make the maintainer handoff explicit for a first-time contributor."""
 

@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Usage-report triage now has four copy-ready maintainer paths.** Helped,
+  missed, unclear or unsafe, and setup-friction reports each ask for the
+  minimum sanitized evidence, link the right public route, and state when to
+  escalate into a scoped contribution.
+
 - **API Gateway deployment throttling now has its own diagnosis.** Anchored
   `TooManyRequestsException` CLI errors and CloudFormation
   `Service: ApiGateway` 429 status reasons point to backoff, account/Region

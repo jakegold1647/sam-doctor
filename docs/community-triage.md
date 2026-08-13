@@ -4,6 +4,18 @@ This is the short path from a usage report to a useful next contribution. Keep
 it lightweight, privacy-first, and specific enough that a newcomer can pick up
 the next step without guessing.
 
+## Public routes used in this playbook
+
+- [Support boundaries](../SUPPORT.md) explain what maintainers can investigate
+  in public and what must stay with the user's own incident process.
+- [Share usage feedback](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml)
+  accepts a helped, missed, unclear, or difficult setup report.
+- [Contributing a diagnostic rule](contributing-a-diagnostic-rule.md) is the
+  implementation path once a missed signal has a positive and nearby negative
+  fixture.
+- [Show and tell](https://github.com/jakegold1647/sam-doctor/discussions/categories/show-and-tell)
+  is for a sanitized workflow or result that other users can reuse.
+
 ## First reply
 
 1. Thank the reporter for trying SAM Doctor and sharing the result.
@@ -14,11 +26,8 @@ the next step without guessing.
 4. Apply the narrowest useful label and link the next action before asking for
    more information.
 
-Suggested reply:
-
-> Thanks for trying SAM Doctor. This is enough to start triage. Please keep any
-> follow-up sanitized. We will route this to a fixture, documentation update,
-> or diagnostic rule, and you are welcome to take the first PR if you want to.
+Use the outcome-specific first responses below instead of asking every reporter
+for the same context.
 
 ## Route the report
 
@@ -41,6 +50,65 @@ remove `status: ready` when the issue is claimed, blocked, or needs more
 reproduction. When a newcomer explicitly claims an issue in a comment, assign
 it or remove `status: ready` promptly so nobody else starts duplicate work.
 Keep these labels meaningful so a newcomer can trust the queue.
+
+## Copy-ready first responses
+
+### The diagnosis helped
+
+> Thanks for trying SAM Doctor - glad this finding helped. Please share only the
+> stable rule ID, command family, and smallest sanitized evidence line through
+> [Share usage feedback](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml).
+> If the workflow itself would help another team, post the sanitized setup in
+> [Show and tell](https://github.com/jakegold1647/sam-doctor/discussions/categories/show-and-tell).
+> Do not attach the full deployment log.
+
+**Escalation:** If the report reveals a useful workflow or a confusing sentence
+in the finding, open one scoped example or documentation issue. Name the first
+file to edit and the acceptance criterion, then invite the reporter to claim it.
+
+### The failure was missed
+
+> Thanks for reporting the miss. Run `sam-doctor request-packet deployment.log`,
+> review the generated excerpt yourself, and open a
+> [rule request](https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml)
+> with the SAM Doctor version and command family. Keep only the 5-15 sanitized
+> lines around the first useful error; do not paste the full log.
+
+**Escalation:** Keep the issue at `status: needs-repro` until one positive signal
+and one nearby non-match define a deterministic boundary. Once they do, scope
+the rule, link [Contributing a diagnostic rule](contributing-a-diagnostic-rule.md),
+and invite a contributor to claim the implementation.
+
+### The report is unclear or unsafe
+
+> Thanks for flagging this. Please stop before adding more log text. Edit or
+> remove any credential, token, account ID, ARN, customer data, or private path;
+> if a credential was exposed, follow your own incident process before
+> continuing. Start again with only the SAM Doctor version, rule ID or title,
+> command family, and a reviewed placeholder-based summary. The
+> [Support boundaries](../SUPPORT.md) explain what is safe to investigate here.
+
+**Escalation:** Ask one missing-context question at a time. If useful triage would
+require private data, stop the public investigation. If SAM Doctor or its docs
+asked for unsafe material, open a focused bug or documentation issue that names
+the unsafe prompt without reproducing the sensitive value.
+
+### Setup or workflow friction
+
+> Thanks for reporting the setup problem. Use
+> [Share usage feedback](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml)
+> to send the SAM Doctor version, OS or runner, exact command or minimal workflow
+> step, and exit code. Replace repository names and private paths with
+> placeholders; no AWS credentials or raw deployment log are needed.
+
+**Escalation:** If the command contradicts the documented exit-code contract,
+open a bug with a credential-free reproducer. If the behavior is correct but the
+path was unclear, open one documentation or example issue, name the first file,
+and invite the reporter to take the PR.
+
+None of these documentation, fixture, or test follow-ups requires repository
+admin access: a contributor can submit the normal pull request, while a
+maintainer handles labels, assignment, and closure.
 
 The scheduled [community queue check](../.github/workflows/community-queue.yml)
 checks this contract against GitHub's public issue data. It is intentionally
