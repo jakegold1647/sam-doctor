@@ -697,6 +697,9 @@ def _batch_render(
     if not inputs:
         raise ValueError("No inputs provided for batch mode.")
 
+    # A directory, a glob, and a literal file can all name the same log. Keep
+    # the first occurrence so source ordering remains tied to the arguments.
+    seen_paths: set[Path] = set()
     text_reports: list[str] = []
     batch_payload: list[dict[str, object]] = []
     sarif_pairs: list[tuple[str, list[Finding]]] = []
@@ -705,6 +708,9 @@ def _batch_render(
     confidences: list[str] = []
     for input_value in inputs:
         for file_path in _expand_input_paths(input_value):
+            if file_path in seen_paths:
+                continue
+            seen_paths.add(file_path)
             if output_path is not None:
                 _ensure_input_is_not_output(file_path, (output_path,))
             text = _read_text(file_path)

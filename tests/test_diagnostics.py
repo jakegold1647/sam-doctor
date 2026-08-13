@@ -2331,6 +2331,26 @@ def test_batch_command_json_has_aggregate_counts(
     assert any(entry["finding_count"] == 1 for entry in report["results"])
 
 
+def test_batch_command_analyzes_overlapping_inputs_once(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    log = logs / "deploy.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+
+    assert main(["batch", str(logs), str(log), "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["batch_count"] == 1
+    assert len(report["results"]) == 1
+    assert report["results"][0]["source"] == log.as_posix()
+    assert report["results"][0]["finding_count"] == 1
+
+
 def test_batch_render_github_emits_annotations_only_for_findings(
     tmp_path: Path,
 ) -> None:

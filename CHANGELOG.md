@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Batch mode no longer counts an overlapping input more than once.** When a
+  directory, glob, or literal path expands to a log that an earlier argument
+  already selected, the first occurrence now wins instead of duplicating the
+  result and inflating aggregate finding counts.
+
 - **Report and deployment-log outputs no longer follow symbolic links.** The
   CLI now refuses a symlink used as a report, packet, generated-workflow, or
   `run --log-file` target, matching its hard-link safeguards instead of
