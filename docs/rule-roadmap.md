@@ -338,10 +338,9 @@ line when SAM resource types are used.
 ## 8. The deployment ran with invalid or wrong-account AWS credentials
 
 **Status:** landed — shipped as "The deployment ran with invalid or
-wrong-account AWS credentials" in v0.10.0, contributed in
-[#55](https://github.com/jakegold1647/sam-doctor/pull/55) and closing
-[issue #31](https://github.com/jakegold1647/sam-doctor/issues/31). Kept here
-so the numbering of the other candidates stays stable.
+wrong-account AWS credentials" in v0.10.0, contributed by waterlemonnn and
+closing [issue #31](https://github.com/jakegold1647/sam-doctor/issues/31).
+Kept here so the numbering of the other candidates stays stable.
 
 **Failure family.** The request never passed authentication: the security
 token is invalid (not merely expired), or the access key belongs to no known
