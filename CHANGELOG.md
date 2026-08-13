@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Generated workflows now preserve multiline deploy commands.** `init` used to
+  indent only the first line, leaving later lines outside the YAML block while
+  still reporting success. The generated step now groups and captures the full
+  Bash script, and rejects an empty `--deploy-command` before writing a file.
+
 - **Recursive batch wildcards now reach every directory depth.** A quoted
   `logs/**/*.log` pattern previously behaved like a one-level `*`, silently
   skipping root and deeply nested logs. `**` now has its conventional recursive

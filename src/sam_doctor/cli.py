@@ -68,7 +68,9 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          {deploy_command} 2>&1 | tee deployment.log
+          {{
+{deploy_command}
+          }} 2>&1 | tee deployment.log
       - name: Diagnose deployment log
         if: always()
         id: sam-doctor
@@ -840,6 +842,16 @@ def _init_workflow_command(
     fail_on_confidence: str | None,
     on_push: bool,
 ) -> None:
+    if not command.strip():
+        raise ValueError("--deploy-command must not be empty.")
+    # Every physical line needs the block scalar's indentation. Grouping the
+    # script sends all of a multiline command—not only its final line—through
+    # tee, while pipefail preserves the group's status for the deploy step.
+    normalized_command = command.replace("\r\n", "\n").replace("\r", "\n").strip("\n")
+    deploy_block = textwrap.indent(
+        normalized_command, "          ", predicate=lambda _line: True
+    )
+
     target = Path(workflow_file).expanduser()
     if target.exists() and not force:
         raise ValueError(
@@ -852,7 +864,7 @@ def _init_workflow_command(
         textwrap.dedent(
             _WORKFLOW_TEMPLATE.format(
                 trigger=_TRIGGER_ON_PUSH if on_push else _TRIGGER_MANUAL,
-                deploy_command=command,
+                deploy_command=deploy_block,
                 summary=str(summary).lower(),
                 annotations=str(annotations).lower(),
                 batch=str(batch).lower(),

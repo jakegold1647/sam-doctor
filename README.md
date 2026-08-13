@@ -347,6 +347,10 @@ stable releases; pin a specific release tag when reproducibility requires it.
 sam-doctor init --deploy-command "sam deploy --no-confirm-changeset" --summary --annotations
 ```
 
+`--deploy-command` may contain multiple Bash lines. The generated deploy step
+captures the whole script in `deployment.log` and preserves its final exit status;
+an empty command is rejected instead of producing a workflow that cannot run.
+
 By default the generated workflow only runs on `workflow_dispatch` (the
 "Run workflow" button in the Actions tab), so an `init` you ran to try
 things out can't quietly turn into a deployment on your next push. Add

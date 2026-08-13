@@ -9,6 +9,8 @@ the file had been written.
 
 from __future__ import annotations
 
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -42,6 +44,68 @@ def test_the_workflow_runs_this_action_and_a_deploy_step(generated: dict) -> Non
     assert any("sam-doctor" in u for u in uses), f"the action is not used: {uses}"
     assert any("actions/checkout" in u for u in uses)
     assert any(step.get("run") for step in steps), "no deploy step to diagnose"
+
+
+def test_a_multiline_deploy_command_stays_valid_and_is_captured(
+    tmp_path: Path,
+) -> None:
+    bash = shutil.which("bash")
+    if bash is None:
+        pytest.skip("bash is unavailable")
+    target = tmp_path / "sam-doctor.yml"
+    command = "printf 'build output\\n'\nprintf 'deploy output\\n'\nfalse"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(target),
+                "--deploy-command",
+                command,
+            ]
+        )
+        == 0
+    )
+
+    doc = yaml.safe_load(target.read_text(encoding="utf-8"))
+    steps = next(iter(doc["jobs"].values()))["steps"]
+    script = next(step["run"] for step in steps if step.get("name") == "Deploy")
+    result = subprocess.run(
+        [bash, "-c", script],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert result.stdout == "build output\ndeploy output\n"
+    assert (tmp_path / "deployment.log").read_text(encoding="utf-8") == result.stdout
+
+
+def test_an_empty_deploy_command_is_rejected_before_writing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    target = tmp_path / "sam-doctor.yml"
+
+    assert (
+        main(
+            [
+                "init",
+                "--workflow-file",
+                str(target),
+                "--deploy-command",
+                " \t ",
+            ]
+        )
+        == 2
+    )
+
+    captured = capsys.readouterr()
+    assert "--deploy-command must not be empty" in captured.err
+    assert "Traceback" not in captured.out + captured.err
+    assert not target.exists()
 
 
 def test_the_action_inputs_survive_templating(tmp_path: Path) -> None:
