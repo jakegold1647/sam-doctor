@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.13.0 - 2026-08-13
+
 - **The credential-free first run now names its contract.** The public
   quickstart points to the tracked OIDC sample, states the one expected rule,
   and links support boundaries plus the sanitized usage-feedback path. The

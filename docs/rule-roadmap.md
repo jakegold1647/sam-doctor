@@ -32,7 +32,7 @@ titled `Rule request: <title below>`, mention that it comes from this roadmap,
 and say you would like to be assigned. Check the
    [open rule requests](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
    first so nothing gets duplicated. Do not claim #26, #27, or #33: their rules
-   shipped already, although the tracker still shows the requests as open.
+   shipped already and the requests are closed.
 
 ---
 
@@ -532,8 +532,8 @@ cause.
 
 ## 13. A resource property was rejected for non-ASCII characters
 
-**Status:** landed — shipped as "A resource property was rejected for
-non-ASCII characters" (see the Unreleased changelog). Closes
+**Status:** landed — shipped in v0.12.0 as "A resource property was rejected
+for non-ASCII characters." Closes
 [issue #62](https://github.com/jakegold1647/sam-doctor/issues/62). Kept here
 so the numbering of the other candidates stays stable.
 
@@ -621,9 +621,9 @@ with an honest confidence beats a broad one.
 
 ## 15. `sam validate --lint` failed the template
 
-**Status:** open, from the field measurement. Tracked in
-[issue #64](https://github.com/jakegold1647/sam-doctor/issues/64) - claim it
-there.
+**Status:** landed — shipped in v0.12.0 as "SAM lint validation found one or
+more cfn-lint matches." [Issue #64](https://github.com/jakegold1647/sam-doctor/issues/64)
+is closed.
 
 **Failure family.** A deploy pipeline runs `sam validate --lint` and cfn-lint
 matches at least one rule. The SAM CLI reports only that linting failed; the
@@ -1600,10 +1600,10 @@ and all 5 were diagnosed by the new rule. The circular-dependency query returned
 diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
-the misses that remain after entries 14 and 15 are mostly other tools' failures
+the misses that remain after entry 14 are mostly other tools' failures
 (CDK, Terraform, CodeBuild) or the three open rule requests still in the queue.
 
-Entries 1 to 13 and 16 to 41 have landed. A fresh rule request from a real failure is
+Entries 1 to 13 and 15 to 41 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
 is the available-work list. Two rule requests are ready for first-time contributors:

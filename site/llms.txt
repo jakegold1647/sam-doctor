@@ -16,7 +16,7 @@ SAM Doctor does not access AWS, upload logs, change resources, or claim an autho
 For a one-off local diagnosis without a global install, use
 `uvx sam-doctor diagnose deployment.log --format markdown`.
 
-The stable PyPI package is the install path for the current 90-diagnostic
+The stable PyPI package is the install path for the current 91-diagnostic
 catalog, including the shell-independent `run` wrapper and native clipboard
 handoff.
 

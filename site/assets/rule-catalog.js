@@ -3,7 +3,7 @@
  * Do not edit by hand: regenerate instead, or the in-page demo will
  * disagree with the CLI it is demonstrating. */
 window.SAM_DOCTOR_CATALOG = {
-  "sam_doctor_version": "0.12.2",
+  "sam_doctor_version": "0.13.0",
   "max_evidence_length": 360,
   "max_evidence_lines": 3,
   "benign_secret_values": [

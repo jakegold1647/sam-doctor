@@ -8,13 +8,13 @@ means a user can rely on what is already here.
    republished by hand after each release. The republish step is step 6 of the
    checklist in [pypi-publishing.md](pypi-publishing.md); what remains is
    following it on the next release and confirming the listing updates.
-2. Keep the rule-request tracker honest. Five focused requests are open: #21,
-   #25, #63, #64, and #66. Four labelled `good first issue` requests are
-   ready for first-time contributors, while #63 needs a complete sanitized
-   reproduction before implementation. The deprecated-runtime request #65 is
-   closed by PR #68. #26, #27,
+2. Keep the rule-request tracker honest. Three focused requests are open: #21,
+   #63, and #66. #21 and #66 are labelled `good first issue` and ready for
+   first-time contributors, while #63 needs a complete sanitized reproduction
+   before implementation. #25 and #64 are implemented and closed, and the
+   deprecated-runtime request #65 is closed by PR #68. #26, #27,
    and #33 were first implemented in `90cd680`; their acceptance boundaries and
-   precedence cases are now covered by focused regressions. Entries 13-15 in
+   precedence cases are now covered by focused regressions. Entry 14 in
    [rule-roadmap.md](rule-roadmap.md) should land or be explicitly deferred
    before 1.0.
 3. Promise stability. The JSON report shape, the stable rule ids (landed in
