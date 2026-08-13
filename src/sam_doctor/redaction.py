@@ -52,15 +52,16 @@ _SECRET_ASSIGNMENT = re.compile(
     # signature parameter.
     r"|secret[_-]?access[_-]?key|session[_-]?token|client[_-]?secret|private[_-]?key"
     r"|x-amz-signature)"
-    # The separator is captured rather than assumed, so a rewritten line keeps the
-    # shape it had. Forcing `=` turned the YAML `id-token: write` into
-    # `id-token=[REDACTED]`, which is not the syntax anybody wrote.
-    r"([\"'`]?\s*[:=]\s*[\"'`]?)"
-    # Never consume a value another pattern already redacted - the session-token
-    # marker must survive this later, broader pass - and never redact one of the
-    # configuration values listed above.
-    r"(?!\[REDACTED)(?!(?:" + "|".join(_BENIGN_VALUES) + r")\b)"
-    r"[^\s'\"`]+[\"'`]?"
+    # The optional quote closes a quoted JSON/YAML key; the opening value quote
+    # belongs to group 3 so the replacement can preserve a balanced pair.
+    r"([\"'`]?\s*[:=]\s*)"
+    # Quoted values may contain spaces and escaped quotes. Keep them on one line:
+    # a missing closing quote must not consume the rest of a pasted deployment
+    # log. The final branch retains the ordinary unquoted assignment shape.
+    r"(?!\[REDACTED)(\"(?:\\.|[^\"\\\r\n])*\"?"
+    r"|'(?:\\.|[^'\\\r\n])*'?"
+    r"|`(?:\\.|[^`\\\r\n])*`?"
+    r"|[^\s'\"`]+)"
 )
 # Credentials embedded in a URL: `https://user:token@host/path`, and the
 # token-as-username form `https://glpat-xxx@host/path`. Both are ordinary in CI
@@ -117,6 +118,20 @@ def _redact_url_credentials(match: re.Match[str]) -> str:
     return f"{scheme}[REDACTED_URL_CREDENTIAL]@"
 
 
+def _redact_secret_assignment(match: re.Match[str]) -> str:
+    """Redact one assignment while retaining its separator and value quotes."""
+
+    raw_value = match.group(3)
+    quote = raw_value[0] if raw_value[0] in "\"'`" else ""
+    quote_is_closed = bool(quote and len(raw_value) >= 2 and raw_value[-1] == quote)
+    value = raw_value[1:-1] if quote_is_closed else raw_value[len(quote) :]
+    if value.casefold() in _BENIGN_VALUES:
+        return match.group(0)
+    closing_quote = quote if quote_is_closed else ""
+    replacement = f"{quote}[REDACTED_SECRET]{closing_quote}"
+    return f"{match.group(1)}{match.group(2)}{replacement}"
+
+
 def redact(text: str) -> str:
     """Return text with common cloud identifiers removed.
 
@@ -153,9 +168,7 @@ def redact(text: str) -> str:
     text = _PRIVATE_KEY_BLOCK.sub("[REDACTED_PRIVATE_KEY]", text)
     text = _BEARER_TOKEN.sub(lambda match: f"{match.group(1)} [REDACTED_BEARER_TOKEN]", text)
     text = _BASIC_AUTH.sub(lambda match: f"{match.group(1)} [REDACTED_BASIC_AUTH]", text)
-    text = _SECRET_ASSIGNMENT.sub(
-        lambda match: f"{match.group(1)}{match.group(2)}[REDACTED_SECRET]", text
-    )
+    text = _SECRET_ASSIGNMENT.sub(_redact_secret_assignment, text)
     text = _JWT.sub("[REDACTED_JWT]", text)
     # Must run before the email pass: `user:password@host.tld` also matches the
     # email pattern, and letting that win both mislabels the credential and

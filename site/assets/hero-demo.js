@@ -108,10 +108,25 @@
     return scheme + "[REDACTED_URL_CREDENTIAL]@";
   }
 
+  function redactSecretAssignment(match, key, separator, rawValue) {
+    var first = rawValue.charAt(0);
+    var quote = /[\"'`]/.test(first) ? first : "";
+    var quoteIsClosed = quote && rawValue.length >= 2 &&
+      rawValue.charAt(rawValue.length - 1) === quote;
+    var value = quoteIsClosed ? rawValue.slice(1, -1) : rawValue.slice(quote.length);
+    if (catalog.benign_secret_values.indexOf(value.toLowerCase()) !== -1) {
+      return match;
+    }
+    return key + separator + quote + "[REDACTED_SECRET]" +
+      (quoteIsClosed ? quote : "");
+  }
+
   function redact(text) {
     engine.redaction.forEach(function (pass) {
       if (pass.replacement === "@url-credentials") {
         text = text.replace(pass.pattern, redactUrlCredentials);
+      } else if (pass.replacement === "@secret-assignment") {
+        text = text.replace(pass.pattern, redactSecretAssignment);
       } else {
         text = text.replace(pass.pattern, pass.replacement);
       }

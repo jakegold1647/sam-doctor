@@ -243,8 +243,8 @@ def _js_regex(pattern: str, base_flags: str, *, verbose: bool = False) -> dict:
 
 # The redaction passes, in the exact order `redaction.redact()` applies them,
 # each paired with the JavaScript replacement template that reproduces its
-# Python substitution. `@url-credentials` marks the one pass whose replacement
-# is a decision rather than a template; the browser implements it by name.
+# Python substitution. An `@` value marks a pass whose replacement is a
+# decision rather than a template; the browser implements it by name.
 REDACTION_PASSES: tuple[tuple[str, str], ...] = (
     ("_WEBHOOK_URL", "[REDACTED_WEBHOOK_URL]"),
     ("_LOGIN_PASSWORD_FLAG", "$1$2$3[REDACTED_PASSWORD]"),
@@ -260,7 +260,7 @@ REDACTION_PASSES: tuple[tuple[str, str], ...] = (
     ("_PRIVATE_KEY_BLOCK", "[REDACTED_PRIVATE_KEY]"),
     ("_BEARER_TOKEN", "$1 [REDACTED_BEARER_TOKEN]"),
     ("_BASIC_AUTH", "$1 [REDACTED_BASIC_AUTH]"),
-    ("_SECRET_ASSIGNMENT", "$1$2[REDACTED_SECRET]"),
+    ("_SECRET_ASSIGNMENT", "@secret-assignment"),
     ("_JWT", "[REDACTED_JWT]"),
     ("_URL_CREDENTIALS", "@url-credentials"),
     ("_EMAIL", "[REDACTED_EMAIL]"),
@@ -347,6 +347,7 @@ def build_catalog() -> dict:
         "sam_doctor_version": __version__,
         "max_evidence_length": diagnostics._MAX_EVIDENCE_LENGTH,
         "max_evidence_lines": 3,
+        "benign_secret_values": list(redaction._BENIGN_VALUES),
         "ansi_escape": _js_regex(
             diagnostics._ANSI_ESCAPE.pattern, "g", verbose=True
         ),

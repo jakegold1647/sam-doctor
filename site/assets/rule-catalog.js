@@ -6,6 +6,15 @@ window.SAM_DOCTOR_CATALOG = {
   "sam_doctor_version": "0.12.2",
   "max_evidence_length": 360,
   "max_evidence_lines": 3,
+  "benign_secret_values": [
+    "write",
+    "read",
+    "none",
+    "true",
+    "false",
+    "admin",
+    "null"
+  ],
   "ansi_escape": {
     "source": "\\x1b\\[[0-9;:?]*[ -/]*[@-~]|\\x1b\\][^\\x07\\x1b]*(?:\\x07|\\x1b\\\\)|\\x1b[@-Z\\\\-_]",
     "flags": "g"
@@ -96,10 +105,10 @@ window.SAM_DOCTOR_CATALOG = {
       "replacement": "$1 [REDACTED_BASIC_AUTH]"
     },
     {
-      "source": "(aws_secret_access_key|aws_session_token|github[_-]?token|access[_-]?token|api[_-]?key|password|passwd|secret|token|secret[_-]?access[_-]?key|session[_-]?token|client[_-]?secret|private[_-]?key|x-amz-signature)([\\\"'`]?\\s*[:=]\\s*[\\\"'`]?)(?!\\[REDACTED)(?!(?:write|read|none|true|false|admin|null)\\b)[^\\s'\\\"`]+[\\\"'`]?",
+      "source": "(aws_secret_access_key|aws_session_token|github[_-]?token|access[_-]?token|api[_-]?key|password|passwd|secret|token|secret[_-]?access[_-]?key|session[_-]?token|client[_-]?secret|private[_-]?key|x-amz-signature)([\\\"'`]?\\s*[:=]\\s*)(?!\\[REDACTED)(\\\"(?:\\\\.|[^\\\"\\\\\\r\\n])*\\\"?|'(?:\\\\.|[^'\\\\\\r\\n])*'?|`(?:\\\\.|[^`\\\\\\r\\n])*`?|[^\\s'\\\"`]+)",
       "flags": "gi",
       "name": "secret_assignment",
-      "replacement": "$1$2[REDACTED_SECRET]"
+      "replacement": "@secret-assignment"
     },
     {
       "source": "\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b",

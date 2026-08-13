@@ -37,6 +37,7 @@ SECRETS = (
     # entirely (`\bpassword` never matches inside `DB_PASSWORD`).
     "DB_PASSWORD=fuzz-prefixed-secret",
     "MY_API_KEY=fuzz-prefixed-apikey",
+    'DB_PASSWORD="fuzz multi word credential"',
     # Credentials in a URL against a dotless internal host, which the email
     # pattern that used to catch this incidentally cannot match.
     "https://oauth2:glpat-fuzzgitlabtoken12345@gitlab/team/repo.git",
@@ -53,6 +54,7 @@ SECRETS = (
 LEAK_MARKERS = (
     "fuzz-prefixed-secret",
     "fuzz-prefixed-apikey",
+    "fuzz multi word credential",
     "glpat-fuzzgitlabtoken12345",
     "AKIA" + "IOSFODNN7EXAMPLE",
     "ASIA" + "Y34FZKBOKMUTVV7A",
@@ -117,6 +119,17 @@ def test_fuzzed_logs_never_leak_identifiers_in_any_format() -> None:
     # Guard against vacuity: the fuzz must actually have pushed secrets into
     # rendered evidence, not just onto lines the reports never show.
     assert rendered_redactions > 50
+
+
+def test_a_quoted_multi_word_secret_never_leaks_in_any_format() -> None:
+    secret = "correct horse battery staple"
+    log = f'AccessDeniedException for caller DB_PASSWORD="{secret}"'
+    findings = diagnose(log)
+
+    assert findings, "the carrier line must reach rendered evidence"
+    for output_format in ("terminal", "markdown", "json", "github", "sarif"):
+        report = _render_findings(findings, "quoted-secret.log", output_format)
+        assert secret not in report, f"quoted secret leaked in {output_format}"
 
 
 def _pattern_names(module) -> list[str]:
@@ -282,6 +295,8 @@ CONFIGURATION_NOT_CREDENTIALS = (
     "contents: read",
     "id-token=write",
     "secret: none",
+    'id-token: "write"',
+    "secret: 'none'",
     "packages: read",
 )
 
@@ -300,6 +315,20 @@ def test_a_permission_level_is_not_treated_as_a_secret(line: str) -> None:
         ("password: hunter2-real", "password: [REDACTED_SECRET]"),
         ("DB_PASSWORD=s3cr3t-value", "DB_PASSWORD=[REDACTED_SECRET]"),
         ("api_key = abcdef123456", "api_key = [REDACTED_SECRET]"),
+        (
+            'DB_PASSWORD="correct horse battery staple"',
+            'DB_PASSWORD="[REDACTED_SECRET]"',
+        ),
+        (
+            '"SecretAccessKey": "abcdef ghijkl mnop"',
+            '"SecretAccessKey": "[REDACTED_SECRET]"',
+        ),
+        ("password='two words here'", "password='[REDACTED_SECRET]'"),
+        ("client_secret=`two words here`", "client_secret=`[REDACTED_SECRET]`"),
+        (
+            'password="unterminated value remains visible',
+            'password="[REDACTED_SECRET]',
+        ),
     ],
 )
 def test_a_real_secret_is_still_redacted_in_place(line: str, expected: str) -> None:

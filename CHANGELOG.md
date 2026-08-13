@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Quoted secret assignments are now redacted as one value.** Evidence that
+  contains a quoted password, token, or secret with spaces no longer leaves the
+  words after the first space visible, and the replacement keeps balanced
+  quotes. The browser demo uses the same generated behavior as the CLI.
+
 - **Batch mode no longer counts an overlapping input more than once.** When a
   directory, glob, or literal path expands to a log that an earlier argument
   already selected, the first occurrence now wins instead of duplicating the
