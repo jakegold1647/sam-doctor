@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The credential-free first run now names its contract.** The public
+  quickstart points to the tracked OIDC sample, states the one expected rule,
+  and links support boundaries plus the sanitized usage-feedback path. The
+  example index documents how to update the packaged mirror, and a regression
+  test keeps both sample copies aligned.
+
 - **Usage-report triage now has four copy-ready maintainer paths.** Helped,
   missed, unclear or unsafe, and setup-friction reports each ask for the
   minimum sanitized evidence, link the right public route, and state when to

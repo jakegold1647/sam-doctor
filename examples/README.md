@@ -2,6 +2,23 @@ name: SAM Doctor examples
 
 Use these templates to onboard quickly.
 
+## Credential-free first run
+
+`oidc-assume-role-failure.txt` is the sanitized local sample used by the smoke
+check and the GitHub Actions preview. It requires no AWS account, credentials,
+deployment, or network access:
+
+```bash
+sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown
+```
+
+Expected result: exactly one finding with the stable rule id
+`github.oidc.assume-role-rejected`.
+
+The packaged `sam-doctor demo` command uses the mirror under
+`src/sam_doctor/data/`. If the sample changes with the rule, update both copies
+and run `python -m pytest tests/test_bundled_samples.py tests/test_run_smoke.py -q`.
+
 ## GitHub Actions starters
 
 - `github-actions-oidc-diagnostic-demo.yml`

@@ -143,6 +143,14 @@ https://sam-doctor.jacobgoldstein.dev/quickstart.html?utm_source=share_copy&utm_
       <section class="steps" aria-labelledby="first-run-title">
         <p class="eyebrow">FIRST RUN</p>
         <h2 id="first-run-title">2) Diagnose a real failure excerpt</h2>
+        <p class="muted">No AWS account or deployment log yet? Start with the bundled, sanitized example:</p>
+        <pre><code>sam-doctor demo</code></pre>
+        <p class="muted">
+          The demo reads the tracked
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/src/sam_doctor/data/oidc-assume-role-failure.txt">OIDC failure sample</a>
+          locally and makes no network calls. It should report exactly one finding,
+          <code>github.oidc.assume-role-rejected</code>.
+        </p>
         <p class="muted">Save the smallest authorized excerpt you are allowed to inspect:</p>
         <pre><code>cat &gt; deployment-failure.log &lt;&lt;'EOF'
 Not authorized to perform: sts:AssumeRoleWithWebIdentity
@@ -162,6 +170,13 @@ pbpaste | sam-doctor diagnose - --format markdown
 wl-paste | sam-doctor diagnose - --format markdown
 xclip -selection clipboard -o | sam-doctor diagnose - --format markdown</code></pre>
         <p class="muted">Review the excerpt before sharing it; redaction is helpful, not a substitute for review.</p>
+        <p class="muted">
+          Read the project’s
+          <a href="https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md">support boundaries</a>
+          before relying on a diagnosis. After the run, you can
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml">share sanitized usage feedback</a>
+          without sending a raw log.
+        </p>
 
         <p class="muted">Make it part of every local deploy while preserving the deploy exit code:</p>
         <pre><code># Bash / zsh

@@ -88,3 +88,16 @@ def test_the_oidc_example_still_produces_exactly_one_finding() -> None:
     text = (EXAMPLES_DIR / "oidc-assume-role-failure.txt").read_text(encoding="utf-8")
 
     assert len(diagnose(text)) == 1
+
+
+def test_the_public_oidc_example_matches_the_packaged_demo_sample() -> None:
+    """Keep the documented first run and the installed demo on one fixture."""
+
+    public_sample = (EXAMPLES_DIR / "oidc-assume-role-failure.txt").read_text(
+        encoding="utf-8"
+    )
+    packaged_sample = (DATA_DIR / "oidc-assume-role-failure.txt").read_text(
+        encoding="utf-8"
+    )
+
+    assert public_sample.rstrip("\r\n") == packaged_sample.rstrip("\r\n")

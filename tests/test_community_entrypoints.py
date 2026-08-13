@@ -41,6 +41,26 @@ def test_public_entry_points_make_early_feedback_welcome() -> None:
     assert "Draft PRs are welcome" in _read("site/index.html")
 
 
+def test_public_quickstart_keeps_the_credential_free_first_run_complete() -> None:
+    """Keep the no-account demo reproducible, bounded, and easy to report."""
+
+    quickstart = _read("site/quickstart.html")
+    examples = _read("examples/README.md")
+
+    assert "sam-doctor demo" in quickstart
+    assert "src/sam_doctor/data/oidc-assume-role-failure.txt" in quickstart
+    assert "github.oidc.assume-role-rejected" in quickstart
+    assert "blob/main/SUPPORT.md" in quickstart
+    assert "template=usage_feedback.yml" in quickstart
+
+    assert (
+        "sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown"
+        in examples
+    )
+    assert "github.oidc.assume-role-rejected" in examples
+    assert "tests/test_bundled_samples.py tests/test_run_smoke.py" in examples
+
+
 def test_community_triage_keeps_four_copy_ready_public_routes() -> None:
     """Keep each common report outcome safe, actionable, and contributor-ready."""
 
