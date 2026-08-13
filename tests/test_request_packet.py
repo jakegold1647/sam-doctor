@@ -208,7 +208,7 @@ def test_request_packet_output_cannot_alias_file_input_through_existing_symlink(
     captured = capsys.readouterr()
     assert exit_code == 2
     assert captured.err.startswith("usage:")
-    assert "must not resolve to an output target" in captured.err
+    assert "must not be a symlink" in captured.err
     assert "Traceback" not in captured.out + captured.err
     assert log.read_text(encoding="utf-8") == sentinel
     assert alias.is_symlink()
