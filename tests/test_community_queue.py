@@ -30,6 +30,18 @@ def test_ready_issue_accepts_rule_issue_shape_and_claim_prompt() -> None:
     assert QUEUE.validate_ready_issue(issue, [{"body": "I'd like to take this"}]) == []
 
 
+def test_ready_issue_accepts_claim_prompt_in_body_before_comments() -> None:
+    issue = _issue(
+        labels=("status: ready", "good first issue", "mentor available", "effort: small"),
+        body=(
+            "## Acceptance criteria\n"
+            "Comment `I'd like to take this` before starting so work stays coordinated."
+        ),
+    )
+
+    assert QUEUE.validate_ready_issue(issue, []) == []
+
+
 def test_ready_issue_reports_missing_labels_and_claim_prompt() -> None:
     issue = _issue(labels=("status: ready",), body="## Acceptance criteria")
 

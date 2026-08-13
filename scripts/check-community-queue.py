@@ -130,7 +130,12 @@ def validate_ready_issue(issue: dict[str, Any], comments: list[dict[str, Any]]) 
     if not any(marker in body for marker in SCOPE_MARKERS):
         problems.append("missing scoped acceptance or implementation details")
 
-    has_claim_prompt = any(
+    # A ready issue should be valid at the instant its labels are applied.
+    # Maintainers can put the invitation in the issue body atomically; older
+    # issues that use a follow-up comment remain valid as well. Requiring only
+    # a later comment creates a noisy race where every label event fails the
+    # queue check before the invitation can be posted.
+    has_claim_prompt = any(marker in body for marker in CLAIM_MARKERS) or any(
         marker in str(comment.get("body") or "").lower()
         for comment in comments
         for marker in CLAIM_MARKERS

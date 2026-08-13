@@ -51,6 +51,11 @@ reproduction. When a newcomer explicitly claims an issue in a comment, assign
 it or remove `status: ready` promptly so nobody else starts duplicate work.
 Keep these labels meaningful so a newcomer can trust the queue.
 
+Put the claim invitation in the issue body before applying `status: ready`, for
+example: `Comment "I'd like to take this" before starting.` A maintainer comment
+still counts for older issues, but body-first keeps issue creation atomic: label
+events cannot run the community queue check before the invitation exists.
+
 ## Copy-ready first responses
 
 ### The diagnosis helped
