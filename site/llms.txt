@@ -29,6 +29,7 @@ handoff.
 - [The security token included in the request is expired (ExpiredToken)](https://sam-doctor.jacobgoldstein.dev/errors/expired-token.html): expired sessions, OIDC session duration, and clock skew.
 - [no basic auth credentials](https://sam-doctor.jacobgoldstein.dev/errors/no-basic-auth-credentials.html): unauthenticated Docker push to Amazon ECR.
 - [An error occurred (Throttling): Rate exceeded](https://sam-doctor.jacobgoldstein.dev/errors/rate-exceeded.html): CloudFormation API rate limits from CI fan-out.
+- [API Gateway TooManyRequestsException during deployment](https://sam-doctor.jacobgoldstein.dev/errors/apigateway-too-many-requests.html): back off and serialize API-changing deployments in the same account and Region; bare runtime 429 responses are different.
 - [DELETE_FAILED](https://sam-doctor.jacobgoldstein.dev/errors/delete-failed.html): blocked stack deletion and --retain-resources.
 - [An S3 lifecycle abort rule cannot use a tag filter](https://sam-doctor.jacobgoldstein.dev/errors/s3-lifecycle-abort-tags.html): separate S3 multipart-abort and tag-filtered lifecycle rules.
 - [The following resource 'ImageRecipe' already exists](https://sam-doctor.jacobgoldstein.dev/errors/imagebuilder-recipe-already-exists.html): create a new immutable Image Builder recipe version instead of reusing the existing one.
@@ -81,7 +82,7 @@ handoff.
 - IAM `AccessDenied` errors and IAM trust-policy shape errors.
 - CloudFormation failed resources, rollback states, and capability acknowledgements.
 - AWS SAM configuration, change-set, packaging, S3 artifact, esbuild, and Python dependency/runtime build failures.
-- API Gateway deployment and CORS preflight conflicts.
+- API Gateway control-plane throttling, deployment ordering, and CORS preflight conflicts.
 - Lambda container-image failures caused by missing ECR image access.
 - Lambda VPC execution-role failures caused by missing elastic network-interface permissions.
 - Deprecated Lambda runtimes rejected during function creation or update.

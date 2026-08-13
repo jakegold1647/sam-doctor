@@ -249,6 +249,18 @@ _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN = (
     r"Endpoint access mode is required for the specified security policy\b"
 )
 
+_APIGATEWAY_CONTROL_PLANE_THROTTLE_PATTERNS = (
+    (
+        r"An error occurred \(TooManyRequestsException\) when calling the "
+        r"(?:CreateApi|CreateDeployment|CreateRestApi|CreateStage|CreateUsagePlan|"
+        r"ImportApi|ImportRestApi|PutRestApi|ReimportApi|UpdateUsagePlan) operation\b"
+    ),
+    (
+        r"\b(?:CREATE_FAILED|UPDATE_FAILED)\b.{0,1000}"
+        r"Too Many Requests\s*\(Service:\s*ApiGateway,\s*Status Code:\s*429\b"
+    ),
+)
+
 _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN = (
     r"The provided execution role does not have permission(?:s)? to call "
     r"CreateNetworkInterface on EC2\b"
@@ -876,6 +888,25 @@ _RULES = (
             "Check for other automation (drift detection, scheduled deployments, dashboards polling DescribeStacks) hammering CloudFormation in the same account and Region, and request a quota increase only if the steady-state rate is genuinely higher.",
         ),
         documentation_url="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html",
+    ),
+    Rule(
+        id="apigateway.control-plane.throttled",
+        title="API Gateway throttled a deployment control-plane request",
+        confidence="medium",
+        patterns=_APIGATEWAY_CONTROL_PLANE_THROTTLE_PATTERNS,
+        explanation=(
+            "API Gateway rejected an API create, deploy, or update request because "
+            "the account exceeded a control-plane request-rate quota in this "
+            "Region. This 429 is normally transient and is not evidence that the "
+            "template is invalid. Tight or unbounded retries add request pressure "
+            "and can prolong the throttling."
+        ),
+        verification=(
+            "Preserve the named operation, account, and Region, then retry after a pause with exponential backoff and jitter; remove immediate or unbounded CI retry loops.",
+            "Serialize or reduce API-creating and API-updating deployments that target the same account and Region.",
+            "Check Amazon API Gateway in Service Quotas and the API Gateway control-plane quota table for the failing Region; request an increase only when the quota is listed as adjustable, otherwise reduce the steady request rate.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html",
     ),
     Rule(
         id="sam.template.invalid-property",
@@ -1919,6 +1950,7 @@ _RULES = (
             # checks; CloudFormation prints both on one line here.
             *_LAMBDA_ENV_KMS_FAILURE_PATTERNS,
             _APIGATEWAY_SECURITY_POLICY_ENDPOINT_ACCESS_PATTERN,
+            *_APIGATEWAY_CONTROL_PLANE_THROTTLE_PATTERNS,
             _LAMBDA_RUNTIME_DEPRECATED_CLAUSE,
             # The Lambda VPC execution-role rule explains this exact handler
             # reason; keep generic CREATE_FAILED available for other resources.
@@ -2473,6 +2505,7 @@ _RULES = (
             r"Signature expired:.*is now earlier than",
             r"An error occurred \(Throttling\)",
             r"\bRate exceeded\b",
+            *_APIGATEWAY_CONTROL_PLANE_THROTTLE_PATTERNS,
             r"No changes to deploy",
             r"The submitted information didn't contain changes",
             r"No updates are to be performed",

@@ -63,6 +63,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.stack.delete-failed": "delete-failed.html",
     "cloudformation.capabilities.required": "insufficient-capabilities.html",
     "cloudformation.api.throttled": "rate-exceeded.html",
+    "apigateway.control-plane.throttled": "apigateway-too-many-requests.html",
     "cloudformation.deploy.no-changes": "no-changes-to-deploy.html",
     "cloudformation.resource.stabilization-timeout": "resource-did-not-stabilize.html",
     "cloudformation.export.in-use": "export-in-use.html",

@@ -736,6 +736,32 @@ window.SAM_DOCTOR_CATALOG = {
       "parse_stabilization_context": false
     },
     {
+      "id": "apigateway.control-plane.throttled",
+      "title": "API Gateway throttled a deployment control-plane request",
+      "confidence": "medium",
+      "patterns": [
+        {
+          "source": "An error occurred \\(TooManyRequestsException\\) when calling the (?:CreateApi|CreateDeployment|CreateRestApi|CreateStage|CreateUsagePlan|ImportApi|ImportRestApi|PutRestApi|ReimportApi|UpdateUsagePlan) operation\\b",
+          "flags": "i"
+        },
+        {
+          "source": "\\b(?:CREATE_FAILED|UPDATE_FAILED)\\b.{0,1000}Too Many Requests\\s*\\(Service:\\s*ApiGateway,\\s*Status Code:\\s*429\\b",
+          "flags": "i"
+        }
+      ],
+      "explanation": "API Gateway rejected an API create, deploy, or update request because the account exceeded a control-plane request-rate quota in this Region. This 429 is normally transient and is not evidence that the template is invalid. Tight or unbounded retries add request pressure and can prolong the throttling.",
+      "verification": [
+        "Preserve the named operation, account, and Region, then retry after a pause with exponential backoff and jitter; remove immediate or unbounded CI retry loops.",
+        "Serialize or reduce API-creating and API-updating deployments that target the same account and Region.",
+        "Check Amazon API Gateway in Service Quotas and the API Gateway control-plane quota table for the failing Region; request an increase only when the quota is listed as adjustable, otherwise reduce the steady request rate."
+      ],
+      "documentation_url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html",
+      "suppressed_by": [],
+      "excluded_line_patterns": [],
+      "parse_denial_context": false,
+      "parse_stabilization_context": false
+    },
+    {
       "id": "sam.template.invalid-property",
       "title": "A SAM template property is not valid for its resource type",
       "confidence": "high",
@@ -2132,6 +2158,14 @@ window.SAM_DOCTOR_CATALOG = {
           "flags": "i"
         },
         {
+          "source": "An error occurred \\(TooManyRequestsException\\) when calling the (?:CreateApi|CreateDeployment|CreateRestApi|CreateStage|CreateUsagePlan|ImportApi|ImportRestApi|PutRestApi|ReimportApi|UpdateUsagePlan) operation\\b",
+          "flags": "i"
+        },
+        {
+          "source": "\\b(?:CREATE_FAILED|UPDATE_FAILED)\\b.{0,1000}Too Many Requests\\s*\\(Service:\\s*ApiGateway,\\s*Status Code:\\s*429\\b",
+          "flags": "i"
+        },
+        {
           "source": "The runtime parameter of [A-Za-z0-9._-]+ is no longer supported for creating or updating AWS Lambda functions",
           "flags": "i"
         },
@@ -2894,6 +2928,14 @@ window.SAM_DOCTOR_CATALOG = {
         },
         {
           "source": "\\bRate exceeded\\b",
+          "flags": "i"
+        },
+        {
+          "source": "An error occurred \\(TooManyRequestsException\\) when calling the (?:CreateApi|CreateDeployment|CreateRestApi|CreateStage|CreateUsagePlan|ImportApi|ImportRestApi|PutRestApi|ReimportApi|UpdateUsagePlan) operation\\b",
+          "flags": "i"
+        },
+        {
+          "source": "\\b(?:CREATE_FAILED|UPDATE_FAILED)\\b.{0,1000}Too Many Requests\\s*\\(Service:\\s*ApiGateway,\\s*Status Code:\\s*429\\b",
           "flags": "i"
         },
         {

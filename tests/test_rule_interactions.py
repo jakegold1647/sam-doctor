@@ -66,6 +66,9 @@ EXPECTED_HIDING = {
     ("sam.build.python-dependency-validation-failed", "sam.build.python-dependency-resolution-failed"),
     ("sam.build.python-dependency-validation-failed", "sam.build.python-runtime-mismatch"),
     ("sam.deploy.configuration-resolution-failed", "aws.credentials.expired"),
+    # The CLI reports the API Gateway exception as the concrete reason for the
+    # failed change set, so the API-specific checks replace the generic wrapper.
+    ("sam.deploy.configuration-resolution-failed", "apigateway.control-plane.throttled"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.api.throttled"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.capabilities.required"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.deploy.no-changes"),

@@ -434,6 +434,8 @@ see [docs/stability.md](docs/stability.md). The current set:
   policies) distinguished from missing-policy denials
 - Expired AWS credentials and runner clock skew (`ExpiredToken`, `Signature expired`)
 - CloudFormation API throttling (`Rate exceeded`)
+- API Gateway control-plane throttling during deployment
+  (`TooManyRequestsException`, `Service: ApiGateway` HTTP 429)
 - CloudFormation service interruptions and deploy-wrapper handoffs that need
   stack-event evidence (`ServiceNotAvailable`, `Failed to create/update the stack`)
 - CloudFormation failed-resource events and rollback states

@@ -10,8 +10,8 @@ entry, error page, and changelog entry a complete contribution requires.
 > **Two issues are reserved.**
 > [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
 > and attachment quotas) and
-> [#25](https://github.com/jakegold1647/sam-doctor/issues/25) (API Gateway
-> `TooManyRequestsException`) are held for first-time contributors. Please leave
+> [#66](https://github.com/jakegold1647/sam-doctor/issues/66) (CloudFormation
+> stack-name collisions) are held for first-time contributors. Please leave
 > those two even if you could finish them in an afternoon - a project asking for
 > contributors has to keep something worth contributing. Roadmap entries
 > explicitly marked **open** are otherwise available.
@@ -1601,22 +1601,20 @@ diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entries 14 and 15 are mostly other tools' failures
-(CDK, Terraform, CodeBuild) or the four open rule requests that this project
-leaves available for first-time contributors.
+(CDK, Terraform, CodeBuild) or the three open rule requests still in the queue.
 
 Entries 1 to 13 and 16 to 41 have landed. A fresh rule request from a real failure is
 always welcome, and the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. Three rule requests are ready for first-time contributors:
+is the available-work list. Two rule requests are ready for first-time contributors:
 [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
-attachment quotas), [#25](https://github.com/jakegold1647/sam-doctor/issues/25)
-(API Gateway `TooManyRequestsException`), and
+attachment quotas) and
 [#66](https://github.com/jakegold1647/sam-doctor/issues/66)
 (CloudFormation stack-name collisions). They are labelled `good first issue`,
 `status: ready`, and `mentor available`; please leave them for new contributors.
 
-The broader ready newcomer queue currently has 11 open issues: those three rule
-requests plus the scoped documentation and community tasks in
+The broader ready newcomer queue also includes the scoped documentation and
+community tasks in
 [#69](https://github.com/jakegold1647/sam-doctor/issues/69),
 [#71](https://github.com/jakegold1647/sam-doctor/issues/71), and
 [#72](https://github.com/jakegold1647/sam-doctor/issues/72)–[#77](https://github.com/jakegold1647/sam-doctor/issues/77).

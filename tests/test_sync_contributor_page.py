@@ -30,7 +30,7 @@ def test_real_contributor_page_is_in_sync() -> None:
     changed, summary = module.sync(write=False)
 
     assert changed is False
-    assert summary == "7 contributors, 90 diagnostics"
+    assert summary == "7 contributors, 91 diagnostics"
 
 
 def test_hall_stats_use_live_github_count_with_fallback() -> None:

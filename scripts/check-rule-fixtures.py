@@ -435,6 +435,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="The deployment completed under the API rate limits",
     ),
+    "apigateway.control-plane.throttled": RuleFixture(
+        positive=(
+            "An error occurred (TooManyRequestsException) when calling the "
+            "CreateDeployment operation: Too Many Requests"
+        ),
+        negative="GET /orders returned 429 Too Many Requests to the API client",
+    ),
     "sam.template.invalid-property": RuleFixture(
         positive=(
             "property StageName: not defined for resource of type "

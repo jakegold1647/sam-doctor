@@ -4,6 +4,13 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **API Gateway deployment throttling now has its own diagnosis.** Anchored
+  `TooManyRequestsException` CLI errors and CloudFormation
+  `Service: ApiGateway` 429 status reasons point to backoff, account/Region
+  deployment serialization, and the relevant control-plane quotas. Bare
+  runtime HTTP 429 responses do not match, and the specific finding replaces
+  generic change-set or resource-failure noise for the same event.
+
 - **Generated workflows now preserve multiline deploy commands.** `init` used to
   indent only the first line, leaving later lines outside the YAML block while
   still reporting success. The generated step now groups and captures the full

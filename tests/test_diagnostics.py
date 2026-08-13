@@ -282,6 +282,10 @@ def test_no_finding_reports_include_a_sanitized_rule_request_path() -> None:
             "throttled the deployment",
         ),
         (
+            "An error occurred (TooManyRequestsException) when calling the CreateDeployment operation: Too Many Requests",
+            "API Gateway throttled a deployment control-plane request",
+        ),
+        (
             "An error occurred (ValidationError) when calling the DeleteStack operation: Stack [arn:aws:cloudformation:us-east-1:123456789012:stack/sam-app/1a2b3c4d] cannot be deleted while TerminationProtection is enabled",
             "blocked by termination protection",
         ),
@@ -373,6 +377,94 @@ def test_supported_failure_categories_are_detected(
     findings = diagnose(log_line)
 
     assert any(title_fragment.lower() in finding.title.lower() for finding in findings)
+
+
+@pytest.mark.parametrize(
+    "log_line",
+    (
+        (
+            "CREATE_FAILED AWS::ApiGateway::RestApi Api Too Many Requests "
+            "(Service: ApiGateway, Status Code: 429, Request ID: example)"
+        ),
+        (
+            "An error occurred (TooManyRequestsException) when calling the "
+            "CreateDeployment operation: Too Many Requests"
+        ),
+        (
+            "UPDATE_FAILED AWS::ApiGateway::UsagePlan UsagePlan Too Many Requests "
+            "(Service: ApiGateway, Status Code: 429, Request ID: example)"
+        ),
+    ),
+)
+def test_api_gateway_control_plane_throttling_is_detected(log_line: str) -> None:
+    findings = diagnose(log_line)
+
+    assert [finding.rule_id for finding in findings] == [
+        "apigateway.control-plane.throttled"
+    ]
+    finding = findings[0]
+    assert finding.confidence == "medium"
+    assert (
+        finding.documentation_url
+        == "https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html"
+    )
+    assert "not evidence that the template is invalid" in finding.explanation
+    assert "unbounded retries" in finding.explanation
+    verification = " ".join(finding.verification).lower()
+    assert "backoff" in verification
+    assert "same account and region" in verification
+    assert "service quotas" in verification
+
+
+@pytest.mark.parametrize(
+    "log_line",
+    (
+        "GET /orders returned 429 Too Many Requests to the API client",
+        "Application response: Too Many Requests (Status Code: 429)",
+        (
+            "An error occurred (TooManyRequestsException) when calling the "
+            "StartJobRun operation: Too Many Requests"
+        ),
+        (
+            "CREATE_FAILED AWS::Lambda::Function Worker Too Many Requests "
+            "(Service: Lambda, Status Code: 429)"
+        ),
+    ),
+)
+def test_api_gateway_control_plane_throttling_rejects_near_misses(
+    log_line: str,
+) -> None:
+    assert "apigateway.control-plane.throttled" not in {
+        finding.rule_id for finding in diagnose(log_line)
+    }
+
+
+def test_api_gateway_throttle_yields_only_its_resource_line_to_the_specific_rule() -> None:
+    log = (
+        "CREATE_FAILED AWS::ApiGateway::RestApi Api Too Many Requests "
+        "(Service: ApiGateway, Status Code: 429)\n"
+        "MyQueue CREATE_FAILED Resource handler returned message: "
+        '"Invalid request provided: queue attribute name is invalid"'
+    )
+
+    findings = {finding.rule_id: finding for finding in diagnose(log)}
+
+    assert "apigateway.control-plane.throttled" in findings
+    generic = findings["cloudformation.resource.create-update-failed"]
+    assert "MyQueue" in " ".join(generic.evidence)
+    assert "ApiGateway" not in " ".join(generic.evidence)
+
+
+def test_api_gateway_throttle_owns_the_generic_sam_changeset_wrapper() -> None:
+    findings = diagnose(
+        "Error: Failed to create changeset for the stack sam-app: An error "
+        "occurred (TooManyRequestsException) when calling the CreateDeployment "
+        "operation: Too Many Requests"
+    )
+
+    assert [finding.rule_id for finding in findings] == [
+        "apigateway.control-plane.throttled"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -3801,6 +3893,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyBucket UPDATE_FAILED Resource handler returned message: \"AbortIncompleteMultipartUpload cannot be specified with Tags.\"",
     "ImageRecipe CREATE_FAILED Resource handler returned message: \"The following resource 'ImageRecipe' already exists: 'recipe/1.1.0' (HandlerErrorCode: AlreadyExists)\"",
     "MyStack CREATE_FAILED An error occurred (ServiceNotAvailable) when calling the CreateStack operation: CloudFormation is temporarily unavailable",
+    "CREATE_FAILED AWS::ApiGateway::RestApi Api Too Many Requests (Service: ApiGateway, Status Code: 429)",
     "MyFn CREATE_FAILED The runtime parameter of python3.8 is no longer supported for creating or updating AWS Lambda functions",
 )
 

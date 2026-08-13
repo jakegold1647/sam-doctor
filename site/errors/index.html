@@ -106,6 +106,7 @@
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
           <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
           <li><a href="./rate-exceeded.html">An error occurred (Throttling): Rate exceeded</a> — per-account API rate limits, usually from CI fan-out.</li>
+          <li><a href="./apigateway-too-many-requests.html">TooManyRequestsException / Too Many Requests (Service: ApiGateway)</a> — deployment control-plane throttling, not a runtime API 429.</li>
           <li><a href="./cloudformation-service-unavailable.html">CloudFormation service unavailable</a> — a temporary control-plane interruption; check service status and retry safely.</li>
           <li><a href="./cloudformation-deploy-wrapper-failed.html">Failed to create/update the stack</a> — fetch stack events because the wrapper line is not the root cause.</li>
           <li><a href="./cdk-asset-bundling-failed.html">Failed to bundle asset</a> — rerun CDK synthesis and inspect the underlying compiler, dependency, permission, or Docker error.</li>
