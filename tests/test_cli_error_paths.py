@@ -130,30 +130,36 @@ def test_demo_writes_report_to_output_file(tmp_path: Path, capsys) -> None:
     assert "SAM Doctor diagnostic report" in target.read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("command", ("demo", "rules", "diagnose", "batch"))
-def test_regular_report_output_cannot_target_hard_link(
-    tmp_path: Path, capsys, command: str
+@pytest.mark.parametrize("command", ("demo", "rules", "diagnose", "batch", "init"))
+@pytest.mark.parametrize("link_kind", ("hard link", "symlink"))
+def test_regular_output_cannot_target_link_to_unrelated_file(
+    tmp_path: Path, capsys, command: str, link_kind: str
 ) -> None:
     victim = tmp_path / "victim.txt"
     sentinel = "keep this unrelated file\n"
     victim.write_text(sentinel, encoding="utf-8")
     output = tmp_path / "report.txt"
     try:
-        output.hardlink_to(victim)
+        if link_kind == "hard link":
+            output.hardlink_to(victim)
+        else:
+            output.symlink_to(victim.name)
     except (NotImplementedError, OSError) as error:
-        pytest.skip(f"hard links unavailable: {error}")
+        pytest.skip(f"{link_kind}s unavailable: {error}")
 
     if command == "demo":
         args = ["demo", "--output", str(output)]
     elif command == "rules":
         args = ["rules", "--output", str(output)]
+    elif command == "init":
+        args = ["init", "--workflow-file", str(output), "--force"]
     else:
         log = tmp_path / "failure.log"
         log.write_text("AccessDeniedException: example\n", encoding="utf-8")
         args = [command, str(log), "--format", "json", "--output", str(output)]
 
     assert main(args) == 2
-    assert "must not be a hard link" in capsys.readouterr().err
+    assert f"must not be a {link_kind}" in capsys.readouterr().err
     assert victim.read_text(encoding="utf-8") == sentinel
 
 

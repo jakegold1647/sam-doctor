@@ -812,9 +812,12 @@ def _read_demo(scenario: str = "oidc") -> str:
 
 def _write_report(path: Path, report: str) -> None:
     try:
+        symlinked = path.is_symlink()
         hard_linked = path.exists() and path.stat().st_nlink > 1
     except OSError as error:
         raise ValueError(f"Could not inspect output target {path}: {error}") from error
+    if symlinked:
+        raise ValueError(f"Output target must not be a symlink: {path}")
     if hard_linked:
         raise ValueError(f"Output target must not be a hard link: {path}")
     try:
