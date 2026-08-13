@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 from sam_doctor.cli import main
 
 
@@ -140,3 +142,41 @@ def test_run_rejects_a_report_that_aliases_the_log(tmp_path: Path, capsys) -> No
     )
     assert "must not resolve to an output target" in capsys.readouterr().err
     assert not log.exists()
+
+
+@pytest.mark.parametrize("linked_option", ("log", "report"))
+@pytest.mark.parametrize("link_kind", ("hard link", "symlink"))
+def test_run_rejects_linked_targets_before_starting_the_command(
+    tmp_path: Path, capsys, linked_option: str, link_kind: str
+) -> None:
+    victim = tmp_path / "unrelated.txt"
+    sentinel = "leave the unrelated file alone\n"
+    victim.write_text(sentinel, encoding="utf-8")
+    linked = tmp_path / "linked-output.txt"
+    try:
+        if link_kind == "hard link":
+            linked.hardlink_to(victim)
+        else:
+            linked.symlink_to(victim.name)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"{link_kind}s unavailable: {error}")
+
+    log = linked if linked_option == "log" else tmp_path / "deployment.log"
+    report = linked if linked_option == "report" else tmp_path / "diagnosis.md"
+    status = main(
+        [
+            "run",
+            "--log-file",
+            str(log),
+            "--output",
+            str(report),
+            "--",
+            *_child("print('COMMAND_RAN'); raise SystemExit(7)"),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 2
+    assert f"must not be a {link_kind}" in captured.err
+    assert "COMMAND_RAN" not in captured.out
+    assert victim.read_text(encoding="utf-8") == sentinel

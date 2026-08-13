@@ -483,13 +483,10 @@ def _run_deployment_command(command: list[str], log_path: Path) -> int:
     if not command:
         raise ValueError("run requires a deployment command after `--`.")
 
-    log_path = log_path.expanduser().resolve()
+    log_path = _resolved_output_path(log_path)
     if log_path.exists() and log_path.is_dir():
         raise ValueError(f"Log target must be a file: {log_path}")
-    if log_path.is_symlink():
-        raise ValueError(f"Log target must not be a symlink: {log_path}")
     _make_output_dir(log_path.parent)
-    _ensure_output_targets_are_not_hard_links((log_path,))
 
     try:
         with log_path.open("w", encoding="utf-8", newline="\n") as log:
@@ -783,9 +780,12 @@ def _init_workflow_command(
     fail_on_confidence: str | None,
     on_push: bool,
 ) -> None:
-    target = Path(workflow_file).expanduser().resolve()
+    target = Path(workflow_file).expanduser()
     if target.exists() and not force:
-        raise ValueError(f"Workflow file already exists: {target}. Use --force to overwrite.")
+        raise ValueError(
+            f"Workflow file already exists: {target.resolve()}. Use --force to overwrite."
+        )
+    target = _resolved_output_path(target)
     _make_output_dir(target.parent)
     _write_report(
         target,
@@ -811,15 +811,7 @@ def _read_demo(scenario: str = "oidc") -> str:
 
 
 def _write_report(path: Path, report: str) -> None:
-    try:
-        symlinked = path.is_symlink()
-        hard_linked = path.exists() and path.stat().st_nlink > 1
-    except OSError as error:
-        raise ValueError(f"Could not inspect output target {path}: {error}") from error
-    if symlinked:
-        raise ValueError(f"Output target must not be a symlink: {path}")
-    if hard_linked:
-        raise ValueError(f"Output target must not be a hard link: {path}")
+    _ensure_output_targets_are_safe((path,))
     try:
         path.write_text(report, encoding="utf-8", newline="\n")
     except OSError as error:
@@ -873,7 +865,16 @@ def _artifact_path(output_dir: Path, name: str, option_name: str) -> Path:
 
     try:
         resolved_output_dir = output_dir.resolve()
-        candidate = (resolved_output_dir / name).resolve()
+    except (OSError, RuntimeError) as error:
+        raise ValueError(f"Could not resolve --output-dir: {output_dir}") from error
+
+    unresolved_candidate = resolved_output_dir / name
+    # Check this before resolve(): resolving a final symlink would erase the
+    # fact that the user named a link. Hard links stay for the later all-target
+    # check so an input/output alias keeps its more specific error.
+    _ensure_output_target_is_not_symlink(unresolved_candidate)
+    try:
+        candidate = unresolved_candidate.resolve()
         candidate.relative_to(resolved_output_dir)
     except (OSError, RuntimeError, ValueError) as error:
         raise ValueError(
@@ -916,27 +917,47 @@ def _ensure_input_is_not_output(
         )
 
 
-def _ensure_output_targets_are_not_hard_links(
+def _ensure_output_targets_are_safe(
     output_paths: tuple[Path, ...],
 ) -> None:
-    """Reject packet targets that can mutate files outside the packet directory."""
+    """Reject links that can mutate a file other than the named output."""
 
+    for output_path in output_paths:
+        _ensure_output_target_is_not_symlink(output_path)
+        try:
+            hard_linked = (
+                output_path.exists()
+                and output_path.is_file()
+                and output_path.stat().st_nlink > 1
+            )
+        except OSError as error:
+            raise ValueError(
+                f"Could not inspect output target {output_path}: {error}"
+            ) from error
+        if hard_linked:
+            raise ValueError(f"Output target must not be a hard link: {output_path}")
+
+
+def _ensure_output_target_is_not_symlink(output_path: Path) -> None:
     try:
-        hard_linked = next(
-            (
-                output_path
-                for output_path in output_paths
-                if output_path.exists() and output_path.stat().st_nlink > 1
-            ),
-            None,
-        )
+        symlinked = output_path.is_symlink()
     except OSError as error:
-        raise ValueError(f"Could not inspect output targets: {error}") from error
-    if hard_linked is not None:
         raise ValueError(
-            "Packet output targets must not be hard links: "
-            f"{hard_linked}"
-        )
+            f"Could not inspect output target {output_path}: {error}"
+        ) from error
+    if symlinked:
+        raise ValueError(f"Output target must not be a symlink: {output_path}")
+
+
+def _resolved_output_path(path: Path) -> Path:
+    """Resolve an output path only after rejecting a linked final component."""
+
+    expanded = path.expanduser()
+    _ensure_output_targets_are_safe((expanded,))
+    try:
+        return expanded.resolve()
+    except (OSError, RuntimeError) as error:
+        raise ValueError(f"Could not resolve output target {expanded}: {error}") from error
 
 
 def _make_output_dir(path: Path) -> Path:
@@ -1027,7 +1048,7 @@ def _packet_command(args: argparse.Namespace) -> int:
         )
         findings = diagnose(text)
 
-    _ensure_output_targets_are_not_hard_links(
+    _ensure_output_targets_are_safe(
         (markdown_path, json_path, notes_path)
     )
     input_is_empty = not text.strip()
@@ -1085,7 +1106,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
         text = _read_text(source_path)
         _ensure_input_is_not_output(source_path, (notes_path,))
 
-    _ensure_output_targets_are_not_hard_links((notes_path,))
+    _ensure_output_targets_are_safe((notes_path,))
     excerpt = likely_error_excerpt(text, context=args.context, max_lines=args.max_lines)
     command = f"sam-doctor request-packet {source_name}"
 
@@ -1148,13 +1169,13 @@ def _run_command(args: argparse.Namespace, parser: argparse.ArgumentParser) -> i
         _print_error(parser, "run requires a deployment command after `--`.")
         return 2
 
-    log_path = args.log_file.expanduser().resolve()
-    output_path = args.output.expanduser().resolve() if args.output else None
+    log_path = args.log_file.expanduser()
+    output_path = None
     try:
-        if output_path is not None:
+        if args.output is not None:
+            output_path = _resolved_output_path(args.output)
             _ensure_input_is_not_output(log_path, (output_path,))
             _make_output_dir(output_path.parent)
-            _ensure_output_targets_are_not_hard_links((output_path,))
         deploy_status = _run_deployment_command(command, log_path)
     except ValueError as error:
         _print_error(parser, str(error))

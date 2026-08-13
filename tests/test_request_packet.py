@@ -248,22 +248,27 @@ def test_request_packet_output_cannot_alias_file_input_through_hard_link(
     assert alias.read_text(encoding="utf-8") == sentinel
 
 
-def test_request_packet_rejects_hard_link_to_an_outside_file(
+@pytest.mark.parametrize("link_kind", ("hard link", "symlink"))
+def test_request_packet_rejects_link_to_an_unrelated_file(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
+    link_kind: str,
 ) -> None:
     log = tmp_path / "failure.log"
     log.write_text("Error: a new deployment failure\n", encoding="utf-8")
-    victim = tmp_path / "outside.txt"
-    sentinel = "outside file must stay unchanged\n"
-    victim.write_text(sentinel, encoding="utf-8")
     output_dir = tmp_path / "artifacts"
     output_dir.mkdir()
+    victim = output_dir / "unrelated.txt"
+    sentinel = "unrelated file must stay unchanged\n"
+    victim.write_text(sentinel, encoding="utf-8")
     output = output_dir / "rule-request.md"
     try:
-        output.hardlink_to(victim)
+        if link_kind == "hard link":
+            output.hardlink_to(victim)
+        else:
+            output.symlink_to(victim)
     except (NotImplementedError, OSError) as error:
-        pytest.skip(f"hard links unavailable: {error}")
+        pytest.skip(f"{link_kind}s unavailable: {error}")
 
     exit_code = main(
         ["request-packet", str(log), "--output-dir", str(output_dir)]
@@ -271,7 +276,7 @@ def test_request_packet_rejects_hard_link_to_an_outside_file(
 
     captured = capsys.readouterr()
     assert exit_code == 2
-    assert "must not be hard links" in captured.err
+    assert f"must not be a {link_kind}" in captured.err
     assert victim.read_text(encoding="utf-8") == sentinel
     assert output.read_text(encoding="utf-8") == sentinel
 

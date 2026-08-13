@@ -4,10 +4,10 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
-- **Report outputs no longer follow symbolic links.** The CLI now refuses an
-  existing symlink passed to `--output` or `--workflow-file`, matching its
-  existing hard-link and deployment-log safeguards instead of overwriting the
-  link's target outside the requested report path.
+- **Report and deployment-log outputs no longer follow symbolic links.** The
+  CLI now refuses a symlink used as a report, packet, generated-workflow, or
+  `run --log-file` target, matching its hard-link safeguards instead of
+  overwriting the link's target under a different path.
 
 - **The website hero now diagnoses a log instead of picturing one.** Paste a
   failed deploy log into the panel on the front page and it reports the same

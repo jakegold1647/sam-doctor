@@ -312,7 +312,7 @@ def test_packet_rejects_existing_symlink_alias_before_writing(
     captured = capsys.readouterr()
     assert exit_code == 2
     assert captured.err.startswith("usage:")
-    assert "must resolve to distinct files" in captured.err
+    assert "must not be a symlink" in captured.err
     assert "Traceback" not in captured.out + captured.err
     assert target.read_text(encoding="utf-8") == sentinel
     assert alias.is_symlink()
@@ -456,7 +456,7 @@ def test_packet_rejects_hard_links_to_an_outside_file_before_writing(
 
     captured = capsys.readouterr()
     assert exit_code == 2
-    assert "must not be hard links" in captured.err
+    assert "must not be a hard link" in captured.err
     assert victim.read_text(encoding="utf-8") == sentinel
     assert markdown_path.read_text(encoding="utf-8") == sentinel
     assert json_path.read_text(encoding="utf-8") == sentinel
