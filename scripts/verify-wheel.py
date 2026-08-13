@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -89,8 +90,23 @@ def _venv_console_script(venv_dir: Path) -> Path | None:
     return None
 
 
+def _isolated_subprocess_environment() -> dict[str, str]:
+    """Keep source-tree Python overrides out of the wheel-only environment."""
+
+    environment = os.environ.copy()
+    environment.pop("PYTHONHOME", None)
+    environment.pop("PYTHONPATH", None)
+    return environment
+
+
 def _run(command: list[str], *, title: str) -> subprocess.CompletedProcess[str]:
-    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=_isolated_subprocess_environment(),
+    )
     if completed.returncode != 0:
         print(f"FAIL: {title} exited {completed.returncode}")
         if completed.stdout:
