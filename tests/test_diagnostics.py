@@ -2332,7 +2332,9 @@ def test_batch_command_json_has_aggregate_counts(
 
 
 def test_batch_command_analyzes_overlapping_inputs_once(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     logs = tmp_path / "logs"
     logs.mkdir()
@@ -2341,14 +2343,37 @@ def test_batch_command_analyzes_overlapping_inputs_once(
         "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
         encoding="utf-8",
     )
+    monkeypatch.chdir(tmp_path)
 
-    assert main(["batch", str(logs), str(log), "--format", "json"]) == 0
+    assert main(["batch", "logs", str(log), "--format", "json"]) == 0
 
     report = json.loads(capsys.readouterr().out)
     assert report["batch_count"] == 1
     assert len(report["results"]) == 1
-    assert report["results"][0]["source"] == log.as_posix()
+    assert report["results"][0]["source"] == "logs/deploy.log"
     assert report["results"][0]["finding_count"] == 1
+
+
+def test_batch_command_analyzes_symlink_alias_once(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log = tmp_path / "deploy.log"
+    log.write_text(
+        "Not authorized to perform: sts:AssumeRoleWithWebIdentity",
+        encoding="utf-8",
+    )
+    alias = tmp_path / "linked.log"
+    try:
+        alias.symlink_to(log)
+    except (NotImplementedError, OSError) as error:
+        pytest.skip(f"symlink creation is unavailable: {error}")
+
+    assert main(["batch", str(alias), str(log), "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["batch_count"] == 1
+    assert len(report["results"]) == 1
+    assert report["results"][0]["source"] == alias.as_posix()
 
 
 def test_batch_render_github_emits_annotations_only_for_findings(
