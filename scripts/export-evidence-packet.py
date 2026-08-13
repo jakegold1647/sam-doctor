@@ -42,21 +42,6 @@ def main() -> int:
     existing = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = str(src_dir) + (os.pathsep + existing if existing else "")
 
-    input_text = None
-    if args.log_file == "-":
-        stdin_text = sys.stdin.read()
-        if not stdin_text:
-            # A precondition failure is exit 2 per docs/cli-exit-and-action-exit-codes.md,
-            # and a message rather than a traceback. This used to raise, which a
-            # reader sees as a crash in the tool and CI sees as exit 1 - the code
-            # that means "findings were found".
-            print(
-                "error: stdin input was empty; provide an error excerpt.",
-                file=sys.stderr,
-            )
-            return 2
-        input_text = stdin_text
-
     command = [
         sys.executable,
         "-m",
@@ -80,10 +65,12 @@ def main() -> int:
     # and its exit 2 for a missing file was reported as exit 1 - which in this
     # project's contract means findings were found. A wrapper that exists for
     # compatibility has to preserve the contract it is wrapping.
+    #
+    # stdin is inherited rather than decoded and forwarded as text. That lets
+    # the CLI inspect a byte-order mark before Python's text decoder can replace
+    # bytes or insert NULs into a UTF-16 log.
     completed = subprocess.run(
         command,
-        input=input_text,
-        text=True,
         env=env,
         check=False,
     )

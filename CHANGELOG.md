@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **BOM-aware decoding now applies to redirected standard input.** `diagnose -`,
+  `packet -`, `request-packet -`, and the repository packet wrapper preserve raw
+  stdin bytes until the shared UTF-8/16/32 decoder runs. Previously a UTF-16
+  failure piped to these commands silently produced zero findings even though
+  the same log was diagnosed correctly by file path.
+
 - **Action summaries now recognize empty Windows-encoded logs.** The composite
   Action uses the CLI's BOM-aware decoder when distinguishing an empty log from
   an unmatched failure, so UTF-16 whitespace no longer produces a misleading

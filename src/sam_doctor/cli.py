@@ -105,6 +105,10 @@ _SCHEMA_URLS = {
     "rules": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/rules-report.schema.json",
     "sarif": "https://raw.githubusercontent.com/jakegold1647/sam-doctor/main/docs/schemas/sarif-report.schema.json",
 }
+_LOG_INPUT_HELP = (
+    "Path to a text log, or - to read the log from stdin. "
+    "BOM-marked UTF-8, UTF-16, and UTF-32 are supported."
+)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -144,7 +148,7 @@ GitHub Action behavior:
     diagnose_parser.add_argument(
         "input",
         type=Path,
-        help="Path to a UTF-8 text log, or - to read the log from stdin.",
+        help=_LOG_INPUT_HELP,
     )
     diagnose_parser.add_argument(
         "--format",
@@ -208,7 +212,7 @@ GitHub Action behavior:
     packet_parser.add_argument(
         "input",
         type=str,
-        help="Path to a UTF-8 text log, or - to read the log from stdin.",
+        help=_LOG_INPUT_HELP,
     )
     packet_parser.add_argument(
         "--output-dir",
@@ -243,7 +247,7 @@ GitHub Action behavior:
     request_packet_parser.add_argument(
         "input",
         type=str,
-        help="Path to a UTF-8 text log, or - to read the log from stdin.",
+        help=_LOG_INPUT_HELP,
     )
     request_packet_parser.add_argument(
         "--output-dir",
@@ -466,9 +470,22 @@ def _decode_log_bytes(raw: bytes) -> str:
     return raw.decode("utf-8", errors="replace")
 
 
+def _read_stdin_text() -> str:
+    """Read redirected input as bytes so its byte-order mark survives."""
+
+    try:
+        binary_stdin = getattr(sys.stdin, "buffer", None)
+        if binary_stdin is None:
+            # Tests and embedders commonly provide an in-memory text stream.
+            return sys.stdin.read()
+        return _decode_log_bytes(binary_stdin.read())
+    except OSError as error:
+        raise ValueError(f"Could not read stdin: {error}") from error
+
+
 def _read_text(path: Path) -> str:
     if path == Path("-"):
-        return sys.stdin.read()
+        return _read_stdin_text()
     try:
         text = _decode_log_bytes(path.read_bytes())
     except OSError as error:
@@ -1047,7 +1064,7 @@ def _packet_command(args: argparse.Namespace) -> int:
         )
 
     if args.input == "-":
-        stdin_text = sys.stdin.read()
+        stdin_text = _read_stdin_text()
         if not stdin_text:
             raise ValueError("stdin input was empty; provide an error excerpt.")
         source_name = "<stdin>"
@@ -1111,7 +1128,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
     notes_path = _artifact_path(output_dir, args.name, "--name")
 
     if args.input == "-":
-        stdin_text = sys.stdin.read()
+        stdin_text = _read_stdin_text()
         if not stdin_text:
             raise ValueError("stdin input was empty; provide an error excerpt.")
         source_name = "<stdin>"

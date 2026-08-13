@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+from conftest import child_env
 
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import likely_error_excerpt
@@ -348,6 +351,31 @@ def test_cli_request_packet_supports_stdin(tmp_path: Path, monkeypatch) -> None:
     assert exit_code == 0
     content = (output_dir / "rule-request.md").read_text(encoding="utf-8")
     assert "<stdin>" in content
+
+
+def test_cli_request_packet_decodes_bom_marked_stdin(tmp_path: Path) -> None:
+    output_dir = tmp_path / "artifacts"
+    failure = "Error: Not authorized to perform sts:AssumeRoleWithWebIdentity\n"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "sam_doctor.cli",
+            "request-packet",
+            "-",
+            "--output-dir",
+            str(output_dir),
+        ],
+        input=failure.encode("utf-16"),
+        capture_output=True,
+        check=False,
+        env=child_env(),
+    )
+
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    content = (output_dir / "rule-request.md").read_text(encoding="utf-8")
+    assert "sts:AssumeRoleWithWebIdentity" in content
 
 
 def test_cli_request_packet_empty_stdin_exits_2(tmp_path: Path, monkeypatch, capsys) -> None:

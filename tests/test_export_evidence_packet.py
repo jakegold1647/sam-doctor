@@ -516,6 +516,32 @@ def test_cli_packet_supports_stdin(tmp_path: Path) -> None:
     assert report["finding_count"] == 1
 
 
+def test_cli_packet_decodes_bom_marked_stdin(tmp_path: Path) -> None:
+    output_dir = tmp_path / "artifacts"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "sam_doctor.cli",
+            "packet",
+            "-",
+            "--output-dir",
+            str(output_dir),
+        ],
+        input="Not authorized to perform: sts:AssumeRoleWithWebIdentity".encode(
+            "utf-16"
+        ),
+        capture_output=True,
+        check=False,
+        env=child_env(),
+    )
+
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    report = json.loads((output_dir / "diagnosis.json").read_text(encoding="utf-8"))
+    assert report["finding_count"] == 1
+
+
 def test_packet_calls_an_empty_log_empty(tmp_path: Path) -> None:
     """The packet is the artifact people hand to a colleague or a ticket.
 
@@ -601,6 +627,24 @@ def test_empty_stdin_is_a_precondition_failure_not_a_crash(tmp_path: Path) -> No
     assert result.returncode == 2
     assert "Traceback" not in result.stderr
     assert "stdin input was empty" in result.stderr
+
+
+def test_wrapper_preserves_bom_marked_stdin_for_the_cli(tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+
+    result = subprocess.run(
+        [sys.executable, str(_SCRIPT), "-", "--output-dir", str(output_dir)],
+        input="Not authorized to perform: sts:AssumeRoleWithWebIdentity".encode(
+            "utf-16"
+        ),
+        capture_output=True,
+        check=False,
+        env=child_env(),
+    )
+
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    report = json.loads((output_dir / "diagnosis.json").read_text(encoding="utf-8"))
+    assert report["finding_count"] == 1
 
 
 def test_a_successful_wrapper_run_still_exits_zero_and_writes_the_packet(

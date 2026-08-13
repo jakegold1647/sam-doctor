@@ -5,9 +5,12 @@ from __future__ import annotations
 import codecs
 import io
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+from conftest import child_env
 
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import rules_report
@@ -278,6 +281,23 @@ def test_diagnose_reads_every_bom_marked_encoding(
     assert exit_code == 0
     assert payload["finding_count"] == 1, f"{label} produced no finding"
     # The line number must survive decoding, not just the match.
+    assert payload["findings"][0]["line_number"] == 3
+
+
+def test_diagnose_decodes_bom_marked_stdin_before_matching() -> None:
+    text = f"Build Succeeded\nnoise line\n{_ENCODING_FAILURE_LINE}\n"
+
+    result = subprocess.run(
+        [sys.executable, "-m", "sam_doctor", "diagnose", "-", "--format", "json"],
+        input=text.encode("utf-16"),
+        capture_output=True,
+        check=False,
+        env=child_env(),
+    )
+    payload = json.loads(result.stdout.decode("utf-8"))
+
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    assert payload["finding_count"] == 1
     assert payload["findings"][0]["line_number"] == 3
 
 
