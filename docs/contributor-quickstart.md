@@ -11,7 +11,7 @@ help early if you get stuck.
 - [Add a safe first-run workflow](https://github.com/jakegold1647/sam-doctor/issues/73) — a credential-free GitHub Actions example.
 - [Add a CloudFormation stack-name collision rule](https://github.com/jakegold1647/sam-doctor/issues/66) — one diagnostic, one fixture pair.
 
-These issues are marked ready and have a maintainer path. If none fits, use the
+For the pilot issue, use the [first-deployment pilot checklist](adoption-pilot.md) to verify the tracked examples before wiring CI.\n\nThese issues are marked ready and have a maintainer path. If none fits, use the
 [ready newcomer queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22).
 
 ## Claim it before editing
