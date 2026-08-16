@@ -108,8 +108,10 @@ def test_cli_request_packet_writes_excerpt_for_unmatched_log(tmp_path: Path) -> 
     assert "widget-error-9000" in content
     assert "noise line 0" not in content
     assert "more noise 4" not in content
-    assert "rule request" in content.lower()
+    assert "redacted sam doctor rule request excerpt" in content.lower()
     assert "Complete the request form" in content
+    assert "Support boundaries:" in content
+    assert "Share usage feedback:" in content
     assert "AWS or CI service" in content
     assert "report-missed-error.html" in content
 
