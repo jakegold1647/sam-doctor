@@ -1,2 +1,2 @@
-Failed to bundle asset example-app/function/Api/Code/Stage, bundle output is located at C:\\Users\\example\\project\\cdk.out\\bundling-temp-error: Error: esbuild exited with status 1
+Failed to bundle asset example-app/function/Api/Code/Stage, bundle output is located at C:\Users\\example\\project\\cdk.out\\bundling-temp-error: Error: esbuild exited with status 1
 [BackendBuildError] Caused by: [_AssemblyError] Assembly builder failed
