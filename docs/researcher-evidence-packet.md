@@ -23,9 +23,13 @@ cp artifacts/diagnosis.md artifacts/diagnosis.json artifacts/researcher-notes.md
 ## 3) Share safely
 
 - Never share raw logs.
-- Strip account IDs, ARNs, access keys, session tokens, emails, and private URLs.
+- The packet is visibly marked as redacted and removes common account IDs, ARNs,
+  access keys, session tokens, emails, private URLs, and user-home paths.
 - Share only `artifacts/researcher-notes.md`, `diagnosis.json`, and the top
-  matching excerpt in `diagnosis.md`.
+  matching excerpt in `diagnosis.md`; review each file before posting it.
+- Read the [support boundaries](../SUPPORT.md) before asking for help, or use the
+  [usage feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml)
+  to share a safe result, miss, or unclear report.
 
 This packet is intentionally small, reproducible, and safe to discuss in:
 
@@ -49,3 +53,16 @@ sam-doctor request-packet deployment.log
 ```
 
 Same rule as everywhere else: review the excerpt yourself before sharing it.
+
+## Short before-and-after example
+
+Input evidence can contain a local checkout path:
+
+```text
+Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity at C:\Users\alice\acme-private\template.yaml
+```
+
+The shared report preserves the failure wording but replaces the local path with
+`[REDACTED_PRIVATE_PATH]`. Relative paths such as
+`scripts/build-site-rule-catalog.py` stay visible because they are often useful
+for reproducing the command without naming a user or private checkout.
