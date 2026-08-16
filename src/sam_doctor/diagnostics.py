@@ -728,6 +728,29 @@ _RULES = (
         parse_denial_context=True,
     ),
     Rule(
+        id="iam.role.inline-policy-size-limit",
+        title="An IAM role's inline policies exceed the aggregate size limit",
+        confidence="high",
+        patterns=(
+            r"Maximum policy size of 10240 bytes exceeded for (?:the )?role\b",
+        ),
+        explanation=(
+            "IAM rejected the role because the combined text of its inline policies "
+            "exceeded the hard per-role limit. The 10,240-character limit applies "
+            "to the aggregate inline-policy content on one role, excluding "
+            "whitespace; it is different from the size of one customer-managed "
+            "policy and from the adjustable count of managed-policy attachments."
+        ),
+        verification=(
+            "Inspect the synthesized or packaged template first to see every inline policy that will be attached to the role; the last failed resource may not contain the whole aggregate.",
+            "For an existing role, confirm the hard limit and inventory its inline policy names with `aws iam get-account-summary --query 'SummaryMap.RolePolicySizeQuota' --output text` and `aws iam list-role-policies --role-name <role>`.",
+            "Read a named policy only after identifying the role and policy with `aws iam get-role-policy --role-name <role> --policy-name <inline-policy>`; these calls are read-only.",
+            "Remove duplicate statements and repeated resources while preserving the original permissions. Move a genuinely reusable permission set to a customer-managed policy when that makes ownership clearer, while accounting separately for managed-policy attachment limits.",
+            "Do not replace specific actions or resources with broad wildcards to save characters, and do not request a quota increase: this aggregate inline-policy limit is hard.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-limits-entity-length",
+    ),
+    Rule(
         id="iam.tag.action-denied",
         title="AWS denied a tagging action required by the deployment",
         confidence="medium",
@@ -1950,6 +1973,7 @@ _RULES = (
             r"cannot be (?:updated|deleted) as it is in use by",
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
+            r"Maximum policy size of 10240 bytes exceeded for (?:the )?role\b",
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
             r"Embedded stack .* was not successfully (?:created|updated)",
             _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,

@@ -352,6 +352,14 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="AccessDeniedException: action is not authorized",
         negative="The API call completed without an access denial",
     ),
+    "iam.role.inline-policy-size-limit": RuleFixture(
+        positive=(
+            "An error occurred (LimitExceeded) when calling the PutRolePolicy "
+            "operation: Maximum policy size of 10240 bytes exceeded for the role "
+            "my-function-role"
+        ),
+        negative="Cannot exceed quota for PolicySize: 6144",
+    ),
     "iam.tag.action-denied": RuleFixture(
         positive=(
             "An error occurred (AccessDenied) when calling the CreateRole "

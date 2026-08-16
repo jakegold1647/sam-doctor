@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>An IAM role's inline policies exceed the aggregate size limit | SAM Doctor</title>
+    <meta name="description" content="Resolve IAM's aggregate inline-policy limit without widening permissions or confusing it with managed-policy quotas." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/iam-role-inline-policy-size-limit.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="An IAM role&#x27;s inline policies exceed the aggregate size limit | SAM Doctor" />
+    <meta property="og:description" content="Resolve IAM&#x27;s aggregate inline-policy limit without widening permissions or confusing it with managed-policy quotas." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/iam-role-inline-policy-size-limit.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="An IAM role&#x27;s inline policies exceed the aggregate size limit | SAM Doctor" />
+    <meta name="twitter:description" content="Resolve IAM&#x27;s aggregate inline-policy limit without widening permissions or confusing it with managed-policy quotas." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+    <script type="application/ld+json" data-seo-block="error-techarticle">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "An IAM role's inline policies exceed the aggregate size limit",
+        "name": "An IAM role's inline policies exceed the aggregate size limit | SAM Doctor",
+        "description": "Resolve IAM's aggregate inline-policy limit without widening permissions or confusing it with managed-policy quotas.",
+        "url": "https://sam-doctor.jacobgoldstein.dev/errors/iam-role-inline-policy-size-limit.html",
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://sam-doctor.jacobgoldstein.dev/errors/iam-role-inline-policy-size-limit.html"
+        },
+        "inLanguage": "en",
+        "author": {
+          "@type": "Person",
+          "name": "Jacob Goldstein",
+          "url": "https://jacobgoldstein.dev"
+        },
+        "publisher": {
+          "@type": "Person",
+          "name": "Jacob Goldstein",
+          "url": "https://jacobgoldstein.dev"
+        },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "SAM Doctor",
+          "url": "https://sam-doctor.jacobgoldstein.dev/"
+        },
+        "about": {
+          "@type": "Thing",
+          "name": "An IAM role's inline policies exceed the aggregate size limit"
+        },
+        "proficiencyLevel": "Expert",
+        "keywords": "IAM inline policy size limit, Maximum policy size of 10240 bytes exceeded for role, AWS deployment error, CloudFormation",
+        "datePublished": "2026-08-16",
+        "dateModified": "2026-08-16"
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">An IAM role's inline policies exceed the aggregate size limit</h1>
+        <p class="hero-subtitle">Maximum policy size of 10240 bytes exceeded for role</p>
+        <p class="lede">
+          IAM rejected the combined inline-policy content on one role. This is a
+          hard per-role limit, not the size limit for one customer-managed policy
+          and not the adjustable count of managed-policy attachments.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>An error occurred (LimitExceeded) when calling the PutRolePolicy operation:
+Maximum policy size of 10240 bytes exceeded for the role my-function-role
+
+CREATE_FAILED AWS::IAM::Policy FunctionPolicy Maximum policy size of 10240 bytes
+exceeded for role my-function-role (Service: AmazonIdentityManagement; Status Code: 409)</code></pre>
+        <p>
+          IAM limits the aggregate character content of every inline policy on a
+          role to 10,240 characters, excluding whitespace. The policy named in
+          the last failed event may only be the one that crossed the threshold.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">SAFE NEXT STEPS</p>
+        <h2 id="fix-title">Inspect the full role before changing permissions</h2>
+        <ol>
+          <li>
+            <strong>Start with the generated deployment artifact.</strong> Inspect
+            the synthesized or packaged template and list every inline policy it
+            will put on the role; do not assume the final resource is the whole cause.
+          </li>
+          <li>
+            <strong>Inventory an existing role with read-only calls.</strong>
+            <pre><code>aws iam get-account-summary --query "SummaryMap.RolePolicySizeQuota" --output text
+aws iam list-role-policies --role-name YOUR_ROLE
+aws iam get-role-policy --role-name YOUR_ROLE --policy-name YOUR_INLINE_POLICY</code></pre>
+          </li>
+          <li>
+            <strong>Make bounded reductions.</strong> Remove duplicate statements
+            and repeated resources while preserving the intended permissions. Move
+            a genuinely reusable policy to a customer-managed policy only when that
+            makes ownership clearer.
+          </li>
+          <li>
+            <strong>Keep the related quotas separate.</strong> A customer-managed
+            policy still has its own document-size limit, and role attachments have
+            their own adjustable <code>PoliciesPerRole</code> quota.
+          </li>
+          <li>
+            <strong>Do not broaden the policy to make it shorter.</strong> Avoid
+            replacing specific actions or resources with wildcards, and do not
+            request a quota increase: the aggregate inline-policy limit is hard.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes direct IAM failures and matching CloudFormation
+          resource events, keeps unrelated failed resources visible, and runs
+          locally without AWS credentials or log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./access-denied.html">AccessDenied / is not authorized to perform</a> &mdash; a permission denial is different from an IAM policy-size limit.</li>
+          <li><a href="./tag-action-denied.html">Not authorized to perform a tagging action</a> &mdash; diagnose a missing paired tag grant without widening unrelated access.</li>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> &mdash; the generic CloudFormation handoff when no concrete resource reason is present.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

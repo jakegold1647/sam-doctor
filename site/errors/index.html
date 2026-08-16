@@ -63,6 +63,7 @@
           <li><a href="./access-denied-explicit-deny.html">Access denied with an explicit deny</a> — an SCP or Deny statement blocks the action; broader Allow policies cannot fix it.</li>
           <li><a href="./access-denied-no-policy-allows.html">Denied because no policy allows it</a> — the implicit deny: grant the exact action in the layer the error names.</li>
           <li><a href="./tag-action-denied.html">Not authorized to perform a tagging action</a> — grant the exact tag mutation directly or alongside the create or update action that requires it.</li>
+          <li><a href="./iam-role-inline-policy-size-limit.html">Maximum policy size of 10240 bytes exceeded for role</a> — an IAM role's combined inline policies exceeded the hard aggregate limit.</li>
           <li><a href="./tag-key-validation-failed.html">Value at 'tags.N.member.key' failed to satisfy constraint</a> — the reserved <code>aws:</code> prefix and the tag character and length limits.</li>
           <li><a href="./lambda-ecr-image-access.html">Lambda does not have permission to access the ECR image</a> — the repository policy gating the Lambda service's own pull.</li>
           <li><a href="./lambda-env-vars-kms-key.html">Lambda was unable to configure access to your environment variables</a> — read the <code>KMS Exception:</code> inside the wrapper: key policy, disabled key, or wrong-Region ARN.</li>

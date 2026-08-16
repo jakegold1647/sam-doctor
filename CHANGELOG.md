@@ -12,6 +12,8 @@ All notable changes to SAM Doctor are documented here.
 
 - **CloudFormation create-name conflicts now have a focused handoff.** Direct CreateStack collisions and CREATE-type change sets aimed at an existing stack report one high-confidence finding, preserve the separate S3 and terminal-stack owners, and start with identity and read-only stack checks rather than deletion.
 
+- **IAM inline-policy aggregate limits now have a focused handoff.** Direct PutRolePolicy failures and matching CloudFormation resource events report the hard per-role limit, distinguish it from managed-policy size and attachment quotas, retain unrelated failed resources, and point to template inspection plus read-only IAM inventory before any least-privilege cleanup.
+
 ## v0.13.0 - 2026-08-13
 
 - **The credential-free first run now names its contract.** The public
