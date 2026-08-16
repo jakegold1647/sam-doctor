@@ -10,6 +10,8 @@ All notable changes to SAM Doctor are documented here.
   finding. The packet and request excerpt are visibly marked as redacted and
   link the support boundaries plus the usage-feedback route.
 
+- **CloudFormation create-name conflicts now have a focused handoff.** Direct CreateStack collisions and CREATE-type change sets aimed at an existing stack report one high-confidence finding, preserve the separate S3 and terminal-stack owners, and start with identity and read-only stack checks rather than deletion.
+
 ## v0.13.0 - 2026-08-13
 
 - **The credential-free first run now names its contract.** The public
