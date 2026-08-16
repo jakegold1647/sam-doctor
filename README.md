@@ -410,6 +410,8 @@ Pick the template that matches your deploy command:
 - CloudFormation package/deploy: [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
 - CDK deploy: [`examples/github-actions-workflow-cdk.yml`](examples/github-actions-workflow-cdk.yml)
 - Opt-in first-finding PR comment: [`examples/github-actions-pr-comment.yml`](examples/github-actions-pr-comment.yml)
+
+The PR-comment template is opt-in: fork PRs still receive the redacted job summary and skip the comment step.
 - Batched logs in one run: [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
 The [CI command matrix](docs/ci-command-matrix.md) maps exact deploy commands
