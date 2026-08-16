@@ -60,6 +60,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "cloudformation.stack.failed-recreate-required": (
         "rollback-complete-cannot-be-updated.html"
     ),
+    "cloudformation.stack.create-name-conflict": "stack-already-exists-during-create.html",
     "cloudformation.stack.delete-failed": "delete-failed.html",
     "cloudformation.capabilities.required": "insufficient-capabilities.html",
     "cloudformation.api.throttled": "rate-exceeded.html",

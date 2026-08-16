@@ -28,6 +28,11 @@ Waiting for changeset to be created..
 Error: Failed to create changeset for the stack: my-app, An error occurred (ValidationError) when calling the CreateChangeSet operation: Stack:arn:aws:cloudformation:us-east-1:123456789012:stack/my-app/abc is in ROLLBACK_COMPLETE state and can not be updated.
 """
 
+STACK_CREATE_NAME_CONFLICT = """Deploying with following values
+Waiting for changeset to be created..
+Error: Failed to create changeset for the stack: sam-app, An error occurred (ValidationError) when calling the CreateChangeSet operation: Stack [sam-app] already exists and cannot be created again with the changeSet [samcli-deploy-1700000000].
+"""
+
 THREE_FAILED_RESOURCES = """CloudFormation events from stack operations
 CREATE_IN_PROGRESS  AWS::DynamoDB::Table  Orders
 CREATE_FAILED  AWS::DynamoDB::Table  Orders  Resource handler returned message: "Subscriber limit exceeded"
@@ -94,6 +99,12 @@ def test_rollback_complete_reports_only_the_recreate_diagnosis() -> None:
     # `samconfig.toml` for a stack that simply has to be deleted first.
     assert _rule_ids(STACK_IN_ROLLBACK_COMPLETE) == {
         "cloudformation.stack.failed-recreate-required"
+    }
+
+
+def test_stack_create_name_conflict_reports_only_the_specific_diagnosis() -> None:
+    assert _rule_ids(STACK_CREATE_NAME_CONFLICT) == {
+        "cloudformation.stack.create-name-conflict"
     }
 
 

@@ -3919,3 +3919,68 @@ def test_a_specific_reason_does_not_hide_other_failed_resources(
         f"{specific_failure[:60]!r}"
     )
     assert "MyQueue" in " ".join(generic.evidence)
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "An error occurred (AlreadyExistsException) when calling the CreateStack "
+            "operation: Stack [sam-app] already exists"
+        ),
+        (
+            "Error: Failed to create changeset for the stack: sam-app, An error "
+            "occurred (ValidationError) when calling the CreateChangeSet operation: "
+            "Stack [sam-app] already exists and cannot be created again with the "
+            "changeSet [samcli-deploy-1700000000]."
+        ),
+    ),
+)
+def test_cloudformation_create_name_conflict_has_one_high_confidence_finding(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.stack.create-name-conflict"
+    ]
+    assert findings[0].confidence == "high"
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "An error occurred (BucketAlreadyExists) when calling the CreateBucket operation: "
+            "The requested bucket name is not available."
+        ),
+        "ImageRecipe demo already exists",
+        "Stack my-app is in ROLLBACK_COMPLETE state and can not be updated.",
+        (
+            "An error occurred (AlreadyExistsException) when calling the CreateChangeSet "
+            "operation: ChangeSet [deploy] already exists"
+        ),
+        (
+            "AWS::IAM::Role CREATE_FAILED Resource handler returned message: "
+            "HandlerErrorCode: AlreadyExists"
+        ),
+        "The stack [sam-app] already exists and is ready for an update.",
+    ),
+)
+def test_stack_create_name_conflict_leaves_nearby_cases_with_their_owners(log: str) -> None:
+    assert "cloudformation.stack.create-name-conflict" not in {
+        finding.rule_id for finding in diagnose(log)
+    }
+
+
+def test_stack_create_name_conflict_redacts_protected_stack_text_without_losing_the_finding() -> None:
+    log = (
+        "An error occurred (AlreadyExistsException) when calling the CreateStack "
+        "operation: Stack [sam-123456789012] already exists"
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "cloudformation.stack.create-name-conflict"
+    ]
+    assert "sam-123456789012" not in findings[0].evidence[0]
+    assert "[REDACTED_ACCOUNT_ID]" in findings[0].evidence[0]

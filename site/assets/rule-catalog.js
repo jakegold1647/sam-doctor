@@ -2292,6 +2292,34 @@ window.SAM_DOCTOR_CATALOG = {
       "parse_stabilization_context": false
     },
     {
+      "id": "cloudformation.stack.create-name-conflict",
+      "title": "A CloudFormation create operation targeted an existing stack name",
+      "confidence": "high",
+      "patterns": [
+        {
+          "source": "An error occurred \\(AlreadyExistsException\\) when calling the CreateStack operation:\\s*Stack\\s+\\[[^\\]\\r\\n]+\\]\\s+already exists\\b",
+          "flags": "i"
+        },
+        {
+          "source": "An error occurred \\(ValidationError\\) when calling the CreateChangeSet operation:\\s*Stack\\s+\\[[^\\]\\r\\n]+\\]\\s+already exists and cannot be created again with the changeSet\\s+\\[[^\\]\\r\\n]+\\]",
+          "flags": "i"
+        }
+      ],
+      "explanation": "CloudFormation received a create operation for a stack name that already exists in the selected account and Region. This can be an intended stack that should use an update-capable path, a wrong stack name/profile/Region or SAM configuration environment, or a different deployment that owns the name. The error alone is not evidence that deletion is safe.",
+      "verification": [
+        "Confirm the caller and target Region, then inspect the exact stack read-only with aws sts get-caller-identity and aws cloudformation describe-stacks --stack-name <stack> --region <region> --query 'Stacks[0].[StackId,StackStatus,CreationTime]' --output table.",
+        "If the stack is REVIEW_IN_PROGRESS, inspect its change sets before changing anything with aws cloudformation list-change-sets --stack-name <stack> --region <region>.",
+        "Use an update-capable path only for the intended, updatable stack; otherwise correct --stack-name, profile, Region, samconfig.toml environment, or change-set type, or choose another name for a different deployment.",
+        "Do not treat a failed describe-stacks permission check as proof that the stack is absent; branch only on CloudFormation's specific not-found response.",
+        "Do not delete a stack from this error alone. Review its identity, status, retained resources, and termination protection before choosing a cleanup path."
+      ],
+      "documentation_url": "https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateChangeSet.html",
+      "suppressed_by": [],
+      "excluded_line_patterns": [],
+      "parse_denial_context": false,
+      "parse_stabilization_context": false
+    },
+    {
       "id": "cloudformation.stack.operation-in-progress",
       "title": "Another CloudFormation operation is already in progress on the stack",
       "confidence": "high",
@@ -2954,6 +2982,14 @@ window.SAM_DOCTOR_CATALOG = {
         },
         {
           "source": "No updates are to be performed",
+          "flags": "i"
+        },
+        {
+          "source": "An error occurred \\(AlreadyExistsException\\) when calling the CreateStack operation:\\s*Stack\\s+\\[[^\\]\\r\\n]+\\]\\s+already exists\\b",
+          "flags": "i"
+        },
+        {
+          "source": "An error occurred \\(ValidationError\\) when calling the CreateChangeSet operation:\\s*Stack\\s+\\[[^\\]\\r\\n]+\\]\\s+already exists and cannot be created again with the changeSet\\s+\\[[^\\]\\r\\n]+\\]",
           "flags": "i"
         },
         {

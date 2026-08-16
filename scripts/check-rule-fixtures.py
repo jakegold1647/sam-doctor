@@ -637,6 +637,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Stack: example is in ROLLBACK_COMPLETE state and can not be updated.",
         negative="Stack reached UPDATE_COMPLETE after the change set executed",
     ),
+    "cloudformation.stack.create-name-conflict": RuleFixture(
+        positive=(
+            "An error occurred (AlreadyExistsException) when calling the CreateStack "
+            "operation: Stack [sam-app] already exists"
+        ),
+        negative=(
+            "An error occurred (AlreadyExistsException) when calling the CreateChangeSet "
+            "operation: ChangeSet [deploy] already exists"
+        ),
+    ),
     "cloudformation.stack.update-rollback-failed": RuleFixture(
         positive="Stack my-app is in UPDATE_ROLLBACK_FAILED state and can not be updated.",
         negative="Stack my-app is in UPDATE_ROLLBACK_IN_PROGRESS state and can not be updated.",
