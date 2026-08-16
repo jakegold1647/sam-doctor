@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Shareable reports now remove common user-home paths.** Packets, rule-request
+  excerpts, and diagnostic Markdown redact Windows, macOS, and Linux home paths
+  inside matched evidence while retaining relative project paths and the original
+  finding. The packet and request excerpt are visibly marked as redacted and
+  link the support boundaries plus the usage-feedback route.
+
 ## v0.13.0 - 2026-08-13
 
 - **The credential-free first run now names its contract.** The public
