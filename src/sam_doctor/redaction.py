@@ -35,8 +35,8 @@ _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}
 # Unix/macOS paths below /home or /Users. Relative project paths remain useful
 # evidence, and URL paths are not local filesystem evidence.
 _PRIVATE_PATH = re.compile(
-    r"(?i)(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\/]+Users[\\/]+[^\\/\\s'"]+|"
-    r"[\\/](?:Users|home)[\\/][^\\/\\s'"]+)(?:[\\/][^\\/\\s'"]+)*"
+    r"""(?i)(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\/]+Users[\\/]+[^\\/\\s'"]+|"""
+    r"""[\\/](?:Users|home)[\\/][^\\/\\s'"]+)(?:[\\/][^\\/\\s'"]+)*"""
 )
 
 # Values that are configuration whatever key they sit under. `permissions: id-token:
