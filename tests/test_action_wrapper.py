@@ -349,3 +349,96 @@ def test_action_summary_keeps_the_unmatched_wording_for_real_logs(tmp_path: Path
     rendered = summary.read_text(encoding="utf-8")
     assert "No supported pattern found" in rendered
     assert "Nothing to diagnose" not in rendered
+
+
+@requires_wsl_bash
+def test_action_wrapper_writes_a_single_redacted_first_finding(tmp_path: Path):
+    root = ROOT
+    log = tmp_path / "deployment.log"
+    log.write_text(
+        "Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity "
+        "for arn:aws:iam::123456789012:role/private-deploy\n",
+        encoding="utf-8",
+    )
+    report = tmp_path / "first-finding.md"
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(tmp_path / "github-output.txt"),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(log),
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+            "SAM_DOCTOR_FIRST_FINDING_REPORT": _bash_path(report),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    rendered = report.read_text(encoding="utf-8")
+    assert "GitHub Actions cannot assume the configured AWS role through OIDC" in rendered
+    assert "[REDACTED_ARN]" in rendered
+    assert "123456789012" not in rendered
+    assert rendered.count("## 1.") == 1
+
+
+@requires_wsl_bash
+def test_action_wrapper_writes_an_honest_no_match_first_finding_report(tmp_path: Path):
+    root = ROOT
+    log = tmp_path / "deployment.log"
+    log.write_text(
+        "The deployment stopped for a pattern this catalog does not cover.\n",
+        encoding="utf-8",
+    )
+    report = tmp_path / "first-finding.md"
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(tmp_path / "github-output.txt"),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(log),
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+            "SAM_DOCTOR_FIRST_FINDING_REPORT": _bash_path(report),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    rendered = report.read_text(encoding="utf-8")
+    assert "No supported pattern found" in rendered
+    assert "Nothing to diagnose" not in rendered
+
+
+@requires_wsl_bash
+def test_action_wrapper_preserves_a_wrapped_deploy_status_with_first_finding_report(
+    tmp_path: Path,
+):
+    root = ROOT
+    output_path = tmp_path / "github-output.txt"
+    report = tmp_path / "first-finding.md"
+    command = (
+        "python3 -c "
+        + shlex.quote(
+            "print('Error: Not authorized to perform: "
+            "sts:AssumeRoleWithWebIdentity'); raise SystemExit(7)"
+        )
+    )
+
+    result = _run_action(
+        root,
+        {
+            "GITHUB_ACTION_PATH": _bash_path(root),
+            "GITHUB_OUTPUT": _bash_path(output_path),
+            "GITHUB_STEP_SUMMARY": _bash_path(tmp_path / "github-summary.md"),
+            "SAM_DOCTOR_LOG_FILE": _bash_path(tmp_path / "deployment.log"),
+            "SAM_DOCTOR_RUN_COMMAND": command,
+            "SAM_DOCTOR_ANNOTATIONS": "false",
+            "SAM_DOCTOR_FIRST_FINDING_REPORT": _bash_path(report),
+        },
+    )
+
+    assert result.returncode == 7, result.stderr
+    assert "finding-count=1\n" in output_path.read_text(encoding="utf-8")
+    assert "deploy-exit-status=7\n" in output_path.read_text(encoding="utf-8")
+    assert report.exists()

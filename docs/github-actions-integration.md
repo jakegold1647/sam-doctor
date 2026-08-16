@@ -34,6 +34,20 @@ Place this step immediately after the deployment step. `if: always()` lets SAM D
 
 The action writes a compact diagnosis to the workflow log and, when `summary` is enabled, to the job summary. By default it also adds redacted GitHub Actions notices for each finding, so issues are visible in the run UI. Set `annotations: "false"` if your workflow should not create annotations. The action exposes `finding-count` and `has-findings` as step outputs for a later notification or reporting step.
 
+### Optional: add a safe, idempotent PR comment
+
+For a repository-owned pull request, the
+[`github-actions-pr-comment.yml` example](../examples/github-actions-pr-comment.yml)
+writes a separate Markdown file containing only the first redacted finding, then
+creates or updates one marked PR comment with the built-in `GITHUB_TOKEN`. It
+uses `pull_request`, not `pull_request_target`, and declares only
+`contents: read` and `pull-requests: write`.
+
+The diagnosis and job summary still run with `if: always()`. Fork PRs skip the
+comment step, and a same-repository PR without comment permission leaves the job
+summary available because the optional comment step is non-blocking. The example
+never uploads or comments the raw deployment log.
+
 If you want one Action step to run the deployment and diagnose it, keep your
 authentication steps before the Action and pass `run-command`:
 

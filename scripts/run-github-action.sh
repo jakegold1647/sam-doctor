@@ -15,6 +15,7 @@ fi
 : "${SAM_DOCTOR_RUN_COMMAND:=}"
 : "${SAM_DOCTOR_SUMMARY:=false}"
 : "${SAM_DOCTOR_ANNOTATIONS:=true}"
+: "${SAM_DOCTOR_FIRST_FINDING_REPORT:=}"
 : "${SAM_DOCTOR_BATCH:=false}"
 : "${SAM_DOCTOR_FAIL_ON_FINDINGS:=false}"
 : "${SAM_DOCTOR_FAIL_ON_CONFIDENCE:=}"
@@ -149,6 +150,89 @@ if [[ "$finding_count" -gt 0 ]]; then
   echo "has-findings=true" >> "$GITHUB_OUTPUT"
 else
   echo "has-findings=false" >> "$GITHUB_OUTPUT"
+fi
+
+
+if [[ -n "${SAM_DOCTOR_FIRST_FINDING_REPORT//[[:space:]]/}" ]]; then
+  set +e
+  "$PYTHON_BIN" - "$report_path" "$SAM_DOCTOR_BATCH" "$SAM_DOCTOR_LOG_FILE" "$SAM_DOCTOR_FIRST_FINDING_REPORT" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+
+from sam_doctor.diagnostics import Finding
+from sam_doctor.cli import _decode_log_bytes, markdown_report
+
+
+def _source_is_empty(source: str) -> bool:
+    try:
+        if os.path.getsize(source) > 4096:
+            return False
+        with open(source, "rb") as handle:
+            return not _decode_log_bytes(handle.read()).strip()
+    except OSError:
+        return False
+
+
+def _as_findings(raw_findings: list[dict[str, object]]) -> list[Finding]:
+    return [
+        Finding(
+            rule_id=str(item.get("rule_id", "")),
+            title=str(item["title"]),
+            confidence=str(item["confidence"]),
+            explanation=str(item["explanation"]),
+            verification=tuple(item["verification"]),
+            documentation_url=str(item["documentation_url"]),
+            evidence=tuple(item["evidence"]),
+            line_number=int(item["line_number"]),
+        )
+        for item in raw_findings
+    ]
+
+
+def write_first_finding_report(
+    payload_path: str, is_batch: bool, log_file: str, destination: str
+) -> None:
+    payload = json.load(open(payload_path, encoding="utf-8"))
+    first: Finding | None = None
+    source = log_file
+    if is_batch:
+        for result in payload.get("results", []):
+            findings = _as_findings(result.get("findings", []))
+            if findings:
+                first = findings[0]
+                source = str(result.get("source", ""))
+                break
+    else:
+        findings = _as_findings(payload.get("findings", []))
+        if findings:
+            first = findings[0]
+            source = str(payload.get("source", ""))
+
+    report = markdown_report(
+        [first] if first is not None else [],
+        source,
+        input_is_empty=first is None and _source_is_empty(log_file),
+    )
+    target = Path(destination).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(report, encoding="utf-8")
+
+
+write_first_finding_report(
+    sys.argv[1], sys.argv[2].lower() == "true", sys.argv[3], sys.argv[4]
+)
+PY
+  first_finding_report_status=$?
+  set -e
+  if [[ "$first_finding_report_status" -ne 0 ]]; then
+    echo "Could not write first-finding-report to ${SAM_DOCTOR_FIRST_FINDING_REPORT}." >&2
+    if [[ -n "${SAM_DOCTOR_RUN_COMMAND//[[:space:]]/}" && "$deploy_status" -ne 0 ]]; then
+      exit "$deploy_status"
+    fi
+    exit 2
+  fi
 fi
 
 if [[ "$SAM_DOCTOR_SUMMARY" == "true" ]]; then
