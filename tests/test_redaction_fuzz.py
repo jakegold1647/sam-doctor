@@ -245,7 +245,7 @@ def test_the_readme_names_every_redaction_pattern_family() -> None:
     readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
     claim = readme[readme.index("Reports redact AWS account IDs") :][:1400]
 
-    assert len(families) == 18, (
+    assert len(families) == 19, (
         f"redaction has {len(families)} pattern families ({sorted(families)}); "
         "update the README paragraph that enumerates them, then this count"
     )
@@ -258,6 +258,7 @@ def test_the_readme_names_every_redaction_pattern_family() -> None:
         "private-key blocks",
         "webhook URLs",
         "login command line",
+        "user-home paths",
         "Docker Hub",
     ):
         assert phrase in claim, f"the README no longer mentions {phrase!r}"

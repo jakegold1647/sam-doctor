@@ -1071,7 +1071,7 @@ def _write_packet_notes(
         notes_path,
         "\n".join(
             [
-                "# Researcher evidence packet",
+                "# Redacted researcher evidence packet",
                 f"- Generated: {datetime.now(timezone.utc).isoformat()}",
                 f"- Scenario: {redact(scenario)}",
                 f"- Source: {redact(source)}",
@@ -1081,7 +1081,10 @@ def _write_packet_notes(
                 f"- Finding count: {finding_count}",
                 f"- Top finding: {top_finding}",
                 "",
+                "These files are redacted for sharing, but review them before posting.",
                 "Use only the packet files to discuss this case; do not share full raw logs.",
+                "- [Support boundaries](https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md)",
+                "- [Share usage feedback](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml)",
             ]
         )
         + "\n",
@@ -1188,7 +1191,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
     command = f"sam-doctor request-packet {source_name}"
 
     lines = [
-        "# SAM Doctor rule request excerpt",
+        "# Redacted SAM Doctor rule request excerpt",
         "",
         f"- Generated: {datetime.now(timezone.utc).isoformat()}",
         f"- SAM Doctor version: {__version__}",
@@ -1229,6 +1232,8 @@ def _request_packet_command(args: argparse.Namespace) -> int:
             "- **Useful next check:** If you are unsure, write `Not sure — please suggest the safest first check.`",
             "",
             "Before submitting, review the excerpt again and select the privacy confirmation in the form.",
+            "Support boundaries: https://github.com/jakegold1647/sam-doctor/blob/main/SUPPORT.md",
+            "Share usage feedback: https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml",
             "For a short walkthrough, see https://sam-doctor.jacobgoldstein.dev/report-missed-error.html.",
         ]
     )

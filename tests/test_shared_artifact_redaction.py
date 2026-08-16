@@ -18,6 +18,8 @@ from pathlib import Path
 import pytest
 
 from sam_doctor.cli import main
+from sam_doctor.diagnostics import diagnose
+from sam_doctor.redaction import redact
 
 # Assembled at runtime so secret scanners do not flag literals in source. None of
 # these are real, and each marker is unique so a failure names the leaking kind.
@@ -34,6 +36,8 @@ SECRET_LINES = (
     "role arn:aws:iam::" + "123456789012" + ":role/deploy",
     "contact " + "release-owner@example.test",
     "token " + "ghp_" + "abcdefghij0123456789abcdefghij456789",
+    r"template path C:\Users\alice\acme-private\template.yaml",
+    "/home/alice/acme-private/template.yaml",
 )
 SCENARIO_SECRET = "leakmarkerscenario"
 
@@ -48,6 +52,8 @@ LEAK_MARKERS = (
     "123456789012",
     "release-owner@example.test",
     "ghp_" + "abcdefghij",
+    r"C:\Users\alice\acme-private\template.yaml",
+    "/home/alice/acme-private/template.yaml",
     SCENARIO_SECRET,
 )
 
@@ -63,7 +69,9 @@ LEAK_MARKERS = (
 FAILURE_LINE = (
     "Error: Not authorized to perform: sts:AssumeRoleWithWebIdentity "
     "Authorization: Basic " + "WxlYWt5LWJhc2ljLWNyZWQ" + "lbnRpYWw= "
-    "AWS_SECRET_ACCESS_KEY=" + "leakmarkerawssecret"
+    "AWS_SECRET_ACCESS_KEY=" + "leakmarkerawssecret" + " "
+    + r"C:\Users\alice\acme-private\template.yaml"
+    + " /home/alice/acme-private/template.yaml"
 )
 LOG_TEXT = "\n".join((*SECRET_LINES, FAILURE_LINE, ""))
 
@@ -78,6 +86,17 @@ def log(tmp_path: Path) -> Path:
 def _assert_clean(text: str, surface: str) -> None:
     for marker in LEAK_MARKERS:
         assert marker not in text, f"{marker!r} leaked into {surface}"
+
+
+def test_private_path_redaction_keeps_relative_project_paths_visible() -> None:
+    rendered = redact(
+        r"input C:\Users\alice\acme-private\template.yaml "
+        "and scripts/build-site-rule-catalog.py"
+    )
+
+    assert r"C:\Users\alice\acme-private\template.yaml" not in rendered
+    assert "[REDACTED_PRIVATE_PATH]" in rendered
+    assert "scripts/build-site-rule-catalog.py" in rendered
 
 
 @pytest.mark.parametrize(
@@ -112,6 +131,9 @@ def test_no_packet_file_leaks(log: Path, tmp_path: Path) -> None:
         _assert_clean(path.read_text(encoding="utf-8"), f"packet/{path.name}")
     notes = (output_dir / "researcher-notes.md").read_text(encoding="utf-8")
     assert "- Scenario: DB_PASSWORD=[REDACTED_SECRET]" in notes
+    assert notes.startswith("# Redacted researcher evidence packet")
+    assert "Support boundaries" in notes
+    assert "Share usage feedback" in notes
 
 
 def test_the_rule_request_excerpt_does_not_leak(log: Path, tmp_path: Path) -> None:
@@ -153,6 +175,9 @@ def test_batch_output_does_not_leak(
 def test_the_log_is_still_diagnosed_through_all_that_noise(log: Path, capsys) -> None:
     # Guards the guard: if the secrets somehow stopped the rule from matching, the
     # assertions above would pass against empty reports.
+    assert [finding.rule_id for finding in diagnose(LOG_TEXT)] == [
+        "github.oidc.assume-role-rejected"
+    ]
     assert main(["diagnose", str(log), "--format", "markdown"]) == 0
 
     assert "sts:AssumeRoleWithWebIdentity" in capsys.readouterr().out
