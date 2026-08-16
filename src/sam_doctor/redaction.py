@@ -30,6 +30,14 @@ _WEBHOOK_URL = re.compile(
     r"|[a-z0-9-]+\.webhook\.office\.com/webhookb2/[A-Za-z0-9@/._-]{8,})"
 )
 _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
+# A home-directory path can expose both the local user and a private checkout.
+# Keep this intentionally narrow: absolute Windows paths below C:\Users and
+# Unix/macOS paths below /home or /Users. Relative project paths remain useful
+# evidence, and URL paths are not local filesystem evidence.
+_PRIVATE_PATH = re.compile(
+    r"(?i)(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\/]+Users[\\/]+[^\\/\\s'"]+|"
+    r"[\\/](?:Users|home)[\\/][^\\/\\s'"]+)(?:[\\/][^\\/\\s'"]+)*"
+)
 
 # Values that are configuration whatever key they sit under. `permissions: id-token:
 # write` is a GitHub permission level, and it was being starred out of the evidence
@@ -170,6 +178,7 @@ def redact(text: str) -> str:
     text = _BASIC_AUTH.sub(lambda match: f"{match.group(1)} [REDACTED_BASIC_AUTH]", text)
     text = _SECRET_ASSIGNMENT.sub(_redact_secret_assignment, text)
     text = _JWT.sub("[REDACTED_JWT]", text)
+    text = _PRIVATE_PATH.sub("[REDACTED_PRIVATE_PATH]", text)
     # Must run before the email pass: `user:password@host.tld` also matches the
     # email pattern, and letting that win both mislabels the credential and
     # leaves the dotless-host case unredacted.
