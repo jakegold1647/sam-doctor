@@ -409,6 +409,7 @@ Pick the template that matches your deploy command:
 - SAM sync: [`examples/github-actions-workflow-sam-sync.yml`](examples/github-actions-workflow-sam-sync.yml)
 - CloudFormation package/deploy: [`examples/github-actions-workflow-cf-pipeline.yml`](examples/github-actions-workflow-cf-pipeline.yml)
 - CDK deploy: [`examples/github-actions-workflow-cdk.yml`](examples/github-actions-workflow-cdk.yml)
+- Opt-in first-finding PR comment: [`examples/github-actions-pr-comment.yml`](examples/github-actions-pr-comment.yml)
 - Batched logs in one run: [`examples/github-actions-workflow-batch-logs.yml`](examples/github-actions-workflow-batch-logs.yml)
 
 The [CI command matrix](docs/ci-command-matrix.md) maps exact deploy commands
