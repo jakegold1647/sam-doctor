@@ -602,6 +602,7 @@ not security, legal, or production-operations advice.
 - [Find the first useful error in a CloudFormation ROLLBACK_COMPLETE](docs/cloudformation-first-failure.md)
 - [Fix "InsufficientCapabilitiesException" in an AWS SAM deployment](docs/capability-acknowledgement.md)
 - [Worked examples (incident-to-action workflows)](docs/worked-examples.md)
+- [Sanitized community examples (tracked fixtures and report fragments)](docs/community-examples.md)
 - [Rolling out SAM Doctor on a team (commands by role)](docs/team-rollout.md)
 - [Create a reproducible evidence packet for collaboration](docs/researcher-evidence-packet.md)
 - [Community triage: turn usage feedback into a contribution](docs/community-triage.md)
