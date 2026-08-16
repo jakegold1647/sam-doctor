@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stack already exists during a CloudFormation create operation | SAM Doctor</title>
+    <meta name="description" content="Resolve a CloudFormation create name conflict by identifying the existing stack and choosing the correct create or update path." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/stack-already-exists-during-create.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Stack already exists during a CloudFormation create operation | SAM Doctor" />
+    <meta property="og:description" content="Resolve a CloudFormation create name conflict by identifying the existing stack and choosing the correct create or update path." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/stack-already-exists-during-create.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Stack already exists during a CloudFormation create operation | SAM Doctor" />
+    <meta name="twitter:description" content="Resolve a CloudFormation create name conflict by identifying the existing stack and choosing the correct create or update path." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Stack already exists during a CloudFormation create operation",
+      "name": "Stack already exists during a CloudFormation create operation | SAM Doctor",
+      "description": "Resolve a CloudFormation create name conflict by identifying the existing stack and choosing the correct create or update path.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/stack-already-exists-during-create.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/stack-already-exists-during-create.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Stack already exists during a CloudFormation create operation"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "Stack already exists during a CloudFormation create operation, AWS deployment error, sam deploy, CloudFormation",
+      "datePublished": "2026-08-16",
+      "dateModified": "2026-08-16"
+    }
+  </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Stack already exists during a CloudFormation create operation</h1>
+        <p class="hero-subtitle">A CloudFormation create operation targeted an existing stack name</p>
+        <p class="lede">
+          A direct <code>CreateStack</code> call or a CREATE-type change set named a stack
+          that already exists in the selected account and Region. The message is not proof
+          that deletion is safe or that the current caller can even inspect the stack.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>An error occurred (AlreadyExistsException) when calling the CreateStack operation:
+Stack [my-app] already exists
+
+An error occurred (ValidationError) when calling the CreateChangeSet operation:
+Stack [my-app] already exists and cannot be created again with the changeSet [deploy].</code></pre>
+        <p>
+          CREATE is only for a stack that does not exist. The name may belong to the
+          deployment you intended to update, a different profile or Region, another
+          <code>samconfig.toml</code> environment, or a separate deployment entirely.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">SAFE NEXT STEPS</p>
+        <h2 id="fix-title">Confirm the stack before changing anything</h2>
+        <ol>
+          <li>
+            <strong>Confirm the caller and Region, then inspect the exact stack read-only.</strong>
+            <pre><code>aws sts get-caller-identity
+aws cloudformation describe-stacks --stack-name YOUR_STACK --region YOUR_REGION \
+  --query "Stacks[0].[StackId,StackStatus,CreationTime]" --output table</code></pre>
+          </li>
+          <li>
+            <strong>Handle a review stack carefully.</strong> If the status is
+            <code>REVIEW_IN_PROGRESS</code>, list its change sets before making any decision:
+            <pre><code>aws cloudformation list-change-sets --stack-name YOUR_STACK --region YOUR_REGION</code></pre>
+          </li>
+          <li>
+            <strong>Choose the intended path.</strong> Use an update-capable path only for
+            the stack you own and expect to update. Otherwise correct the stack name, profile,
+            Region, SAM configuration environment, or change-set type; use another name when
+            a different deployment owns this one.
+          </li>
+          <li>
+            <strong>Do not turn every failed lookup into "absent".</strong> A denied
+            <code>describe-stacks</code> request is a permissions problem, not evidence that
+            no stack exists. Branch only on CloudFormation's explicit not-found response.
+          </li>
+          <li>
+            <strong>Do not delete from this message alone.</strong> Review the stack identity,
+            status, retained resources, and termination protection before selecting a cleanup path.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the direct create and CREATE-type change-set forms, keeps S3
+          bucket conflicts and terminal-stack recovery separate, and runs locally without AWS
+          credentials or log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./rollback-complete-cannot-be-updated.html">ROLLBACK_COMPLETE or DELETE_COMPLETE</a> &mdash; a terminal stack cannot take an update.</li>
+          <li><a href="./operation-in-progress.html">Another stack operation is in progress</a> &mdash; wait for the existing operation before starting one.</li>
+          <li><a href="./failed-to-create-changeset.html">Failed to create a change set</a> &mdash; the general configuration handoff when no concrete reason is present.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
