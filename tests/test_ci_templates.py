@@ -15,6 +15,8 @@ STARTERS = (
     "examples/bitbucket-pipelines-sam-doctor.yml",
 )
 
+PRIMARY_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+
 
 @pytest.mark.parametrize("relative_path", STARTERS)
 def test_non_github_starter_preserves_deploy_status(relative_path: str) -> None:
@@ -40,3 +42,9 @@ def test_non_github_starter_preserves_deploy_status(relative_path: str) -> None:
 @pytest.mark.parametrize("relative_path", STARTERS)
 def test_non_github_starter_is_valid_yaml(relative_path: str) -> None:
     yaml.safe_load((ROOT / relative_path).read_text(encoding="utf-8"))
+
+
+def test_primary_verification_workflow_defaults_to_read_only_token() -> None:
+    workflow = yaml.load(PRIMARY_WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    assert workflow["permissions"] == {"contents": "read"}
