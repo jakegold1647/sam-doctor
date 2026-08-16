@@ -33,6 +33,12 @@ Waiting for changeset to be created..
 Error: Failed to create changeset for the stack: sam-app, An error occurred (ValidationError) when calling the CreateChangeSet operation: Stack [sam-app] already exists and cannot be created again with the changeSet [samcli-deploy-1700000000].
 """
 
+
+INLINE_POLICY_SIZE_LIMIT = """CloudFormation events from stack operations
+CREATE_IN_PROGRESS AWS::IAM::Policy FunctionPolicy
+CREATE_FAILED AWS::IAM::Policy FunctionPolicy Maximum policy size of 10240 bytes exceeded for role orders-123456789012-role (Service: AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)
+"""
+
 THREE_FAILED_RESOURCES = """CloudFormation events from stack operations
 CREATE_IN_PROGRESS  AWS::DynamoDB::Table  Orders
 CREATE_FAILED  AWS::DynamoDB::Table  Orders  Resource handler returned message: "Subscriber limit exceeded"
@@ -107,6 +113,12 @@ def test_stack_create_name_conflict_reports_only_the_specific_diagnosis() -> Non
         "cloudformation.stack.create-name-conflict"
     }
 
+
+
+def test_inline_policy_size_limit_reports_only_the_specific_iam_diagnosis() -> None:
+    assert _rule_ids(INLINE_POLICY_SIZE_LIMIT) == {
+        "iam.role.inline-policy-size-limit"
+    }
 
 def test_three_failed_resources_each_get_their_own_finding() -> None:
     # The case whole-log suppression used to ruin: a stack rarely fails exactly
