@@ -131,3 +131,7 @@ Keep this checklist in your repo until the template is stable in CI.
 Use the full matrix to pick the right starter for your exact deploy command:
 
 - [`ci-command-matrix.md`](../docs/ci-command-matrix.md)
+
+## Opt-in pull request comment
+
+Use [`github-actions-pr-comment.yml`](github-actions-pr-comment.yml) when a same-repository pull request should receive one updated, redacted first-finding comment. Fork PRs keep the job summary and skip the comment; no raw log is uploaded or posted.
