@@ -21,11 +21,18 @@ and run `python -m pytest tests/test_bundled_samples.py tests/test_run_smoke.py 
 
 ## GitHub Actions starters
 
-- `github-actions-oidc-diagnostic-demo.yml`
-  - Runs against the bundled, sanitized OIDC failure excerpt: no AWS account,
-    AWS credentials, or deployment required.
-  - Use it as a one-minute preview of the Action's job summary and annotations
-    before adding SAM Doctor to a live deployment workflow.
+- [`github-actions-oidc-diagnostic-demo.yml`](https://github.com/jakegold1647/sam-doctor/actions/workflows/oidc-diagnostic-demo.yml)
+  - This repository's live, manually triggered demo runs against the bundled,
+    sanitized OIDC failure excerpt: no AWS account, credentials, deployment, or
+    repository secrets required.
+  - To run it from a fork: enable Actions if GitHub asks, open **Actions**, choose
+    **Preview a credential-free OIDC diagnosis**, then select **Run workflow**.
+    The run stays green and uploads only `redacted-oidc-diagnosis`; it never
+    uploads the fixture or a log bundle.
+  - The report proves the stable `github.oidc.assume-role-rejected` rule ID.
+    For a real deployment, follow [CONTRIBUTING.md](../CONTRIBUTING.md); for a
+    result, miss, or confusing local behavior, use the
+    [sanitized usage-feedback form](https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml).
 
 - `github-actions-workflow.yml`
   - Works for classic `sam deploy` command.

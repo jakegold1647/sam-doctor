@@ -1,0 +1,47 @@
+name: Preview a credential-free OIDC diagnosis
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-sanitized-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Explain the bundled GitHub Actions OIDC failure
+        id: sam-doctor
+        uses: ./
+        with:
+          log-file: examples/oidc-assume-role-failure.txt
+          summary: true
+          annotations: false
+
+      - name: Write and check the redacted diagnosis
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt \
+            --format json --output oidc-diagnosis.json
+          python - <<'PY'
+          import json
+
+          payload = json.load(open("oidc-diagnosis.json", encoding="utf-8"))
+          rule_ids = [finding["rule_id"] for finding in payload["findings"]]
+          assert payload["finding_count"] == 1, payload
+          assert rule_ids == ["github.oidc.assume-role-rejected"], rule_ids
+          report = open("oidc-diagnosis.json", encoding="utf-8").read()
+          assert "123456789012" not in report, report
+          assert "builder@example.com" not in report, report
+          PY
+
+      - name: Upload the redacted diagnosis
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: redacted-oidc-diagnosis
+          path: oidc-diagnosis.json
+          if-no-files-found: error
+          retention-days: 1
