@@ -20,6 +20,11 @@ inputs:
     required: false
     type: boolean
     default: true
+  first-finding-report:
+    description: Optional Markdown path for the first redacted finding, for a later opt-in workflow step.
+    required: false
+    type: string
+    default: ""
   batch:
     description: Diagnose multiple files from a directory or glob path using batch mode.
     required: false
@@ -72,6 +77,7 @@ runs:
         SAM_DOCTOR_RUN_COMMAND: ${{ inputs.run-command }}
         SAM_DOCTOR_SUMMARY: ${{ inputs.summary }}
         SAM_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
+        SAM_DOCTOR_FIRST_FINDING_REPORT: ${{ inputs.first-finding-report }}
         SAM_DOCTOR_BATCH: ${{ inputs.batch }}
         SAM_DOCTOR_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
         SAM_DOCTOR_FAIL_ON_CONFIDENCE: ${{ inputs.fail-on-confidence }}
