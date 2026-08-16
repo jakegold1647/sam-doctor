@@ -125,4 +125,4 @@ reviewed against real failures.
 Related docs:
 
 - [GitHub Actions integration](github-actions-integration.md)
-- [On-call playbook](on-call-playbook.md)
+- [On-call playbook](on-call-playbook.md)\n- [Sanitized community examples](community-examples.md)
