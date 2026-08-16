@@ -23,9 +23,10 @@ Set `first-finding-report` to a workspace path:
     first-finding-report: sam-doctor-first-finding.md
 ```
 
-The file contains one deterministically first finding with already-redacted
-evidence. If no rule matches, it contains SAM Doctor's normal no-supported-pattern
-message. It never contains or uploads the raw deployment log.
+The file contains the first deterministic finding with already-redacted
+evidence. For a non-empty input with no matching rule, it contains SAM Doctor's
+normal no-supported-pattern message; an empty log reports that there is nothing to
+diagnose. It never contains or uploads the raw deployment log.
 
 ## Keep the comment opt-in and safe
 
