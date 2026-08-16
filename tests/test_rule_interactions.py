@@ -52,6 +52,9 @@ EXPECTED_HIDING = {
     ("cloudformation.resource.create-update-failed", "cloudformation.lambda-layer.artifact-unreadable"),
     ("cloudformation.resource.create-update-failed", "lambda.code-signing.image-incompatible"),
     ("cloudformation.resource.create-update-failed", "lambda.ecr-image.access-denied"),
+    # The inline-policy size reason is carried on the failed resource event itself,
+    # so the specific IAM finding owns that line without hiding other resources.
+    ("cloudformation.resource.create-update-failed", "iam.role.inline-policy-size-limit"),
     ("cloudformation.stack.delete-failed", "cloudformation.export.in-use"),
     ("cloudformation.stack.rollback-complete", "cloudformation.rollback.iam-role-delete-failed"),
     ("cloudformation.stack.rollback-complete", "cloudformation.stack.failed-recreate-required"),
