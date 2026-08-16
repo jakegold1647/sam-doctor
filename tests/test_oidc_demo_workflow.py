@@ -25,8 +25,11 @@ def test_oidc_demo_is_manual_credential_free_and_proves_the_expected_rule() -> N
         "annotations": False,
     }
 
-    checks = next(step["run"] for step in steps if step["name"] == "Write and check the redacted diagnosis")
-    assert "PYTHONPATH: src" not in checks
+    check_step = next(
+        step for step in steps if step["name"] == "Write and check the redacted diagnosis"
+    )
+    assert check_step["env"] == {"PYTHONPATH": "src"}
+    checks = check_step["run"]
     assert "python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt" in checks
     assert 'rule_ids == ["github.oidc.assume-role-rejected"]' in checks
     assert 'payload["finding_count"] == 1' in checks
