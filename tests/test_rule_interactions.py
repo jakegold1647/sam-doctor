@@ -72,6 +72,10 @@ EXPECTED_HIDING = {
     ("sam.deploy.configuration-resolution-failed", "cloudformation.api.throttled"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.capabilities.required"),
     ("sam.deploy.configuration-resolution-failed", "cloudformation.deploy.no-changes"),
+    # A CREATE-type change set against an existing stack names the concrete
+    # mistake on the same line as SAM's generic changeset wrapper, so only the
+    # stack-name conflict should speak for that event.
+    ("sam.deploy.configuration-resolution-failed", "cloudformation.stack.create-name-conflict"),
     # A stack in ROLLBACK_COMPLETE reports "can not be updated" inside the same
     # CreateChangeSet ValidationError this rule matches generically, on one line -
     # so they are one failure, and the recreate-required rule is the one that says
