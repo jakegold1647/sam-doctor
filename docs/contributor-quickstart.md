@@ -8,6 +8,7 @@ help early if you get stuck.
 
 - [Add a sanitized deployment-log example](https://github.com/jakegold1647/sam-doctor/issues/69) — documentation only.
 - [Add a first-deployment pilot checklist](https://github.com/jakegold1647/sam-doctor/issues/71) — documentation and examples.
+- [Add a contribution-friendly CI recipe index](https://github.com/jakegold1647/sam-doctor/issues/77) — documentation only.
 - [Add a safe first-run workflow](https://github.com/jakegold1647/sam-doctor/issues/73) — a credential-free GitHub Actions example.
 - [Add a CloudFormation stack-name collision rule](https://github.com/jakegold1647/sam-doctor/issues/66) — one diagnostic, one fixture pair.
 
