@@ -33,8 +33,8 @@ def test_oidc_demo_is_manual_credential_free_and_proves_the_expected_rule() -> N
     assert "python -m sam_doctor.cli diagnose examples/oidc-assume-role-failure.txt" in checks
     assert 'rule_ids == ["github.oidc.assume-role-rejected"]' in checks
     assert 'payload["finding_count"] == 1' in checks
-    assert "123456789012" not in checks
-    assert "builder@example.com" not in checks
+    assert 'assert "123456789012" not in report' in checks
+    assert 'assert "builder@example.com" not in report' in checks
 
 
 def test_oidc_demo_uploads_only_the_redacted_diagnosis() -> None:
