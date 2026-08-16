@@ -3948,14 +3948,20 @@ def test_cloudformation_create_name_conflict_has_one_high_confidence_finding(log
 @pytest.mark.parametrize(
     "log",
     (
-        "An error occurred (BucketAlreadyExists) when calling the CreateBucket operation: "
-        "The requested bucket name is not available.",
+        (
+            "An error occurred (BucketAlreadyExists) when calling the CreateBucket operation: "
+            "The requested bucket name is not available."
+        ),
         "ImageRecipe demo already exists",
         "Stack my-app is in ROLLBACK_COMPLETE state and can not be updated.",
-        "An error occurred (AlreadyExistsException) when calling the CreateChangeSet "
-        "operation: ChangeSet [deploy] already exists",
-        "AWS::IAM::Role CREATE_FAILED Resource handler returned message: "
-        "HandlerErrorCode: AlreadyExists",
+        (
+            "An error occurred (AlreadyExistsException) when calling the CreateChangeSet "
+            "operation: ChangeSet [deploy] already exists"
+        ),
+        (
+            "AWS::IAM::Role CREATE_FAILED Resource handler returned message: "
+            "HandlerErrorCode: AlreadyExists"
+        ),
         "The stack [sam-app] already exists and is ready for an update.",
     ),
 )
