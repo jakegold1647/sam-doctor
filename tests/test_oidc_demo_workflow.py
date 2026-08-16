@@ -26,7 +26,7 @@ def test_oidc_demo_is_manual_credential_free_and_proves_the_expected_rule() -> N
     }
 
     check_step = next(
-        step for step in steps if step["name"] == "Write and check the redacted diagnosis"
+        step for step in steps if step.get("name") == "Write and check the redacted diagnosis"
     )
     assert check_step["env"] == {"PYTHONPATH": "src"}
     checks = check_step["run"]
