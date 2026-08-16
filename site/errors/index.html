@@ -103,6 +103,7 @@
           <li><a href="./nested-stack-failed.html">Embedded stack was not successfully created/updated</a> — why the real cause lives in the child stack's own events, not the parent's.</li>
           <li><a href="./rollback-in-progress.html">ROLLBACK_IN_PROGRESS / ROLLBACK_FAILED</a> — what each rollback state means and where it lands.</li>
           <li><a href="./rollback-complete-cannot-be-updated.html">A terminal CloudFormation stack must be recreated before deployment</a> — recover from ROLLBACK_COMPLETE or DELETE_COMPLETE instead of sending an update.</li>
+          <li><a href="./stack-already-exists-during-create.html">Stack already exists during a CloudFormation create operation</a> — inspect the existing stack and choose the intended create or update path without deleting blindly.</li>
           <li><a href="./delete-failed.html">DELETE_FAILED</a> — non-empty buckets, lingering ENIs, nested stacks, and cross-stack imports.</li>
           <li><a href="./insufficient-capabilities.html">Requires capabilities : [CAPABILITY_IAM] (InsufficientCapabilitiesException)</a> — the IAM acknowledgement gate.</li>
           <li><a href="./rate-exceeded.html">An error occurred (Throttling): Rate exceeded</a> — per-account API rate limits, usually from CI fan-out.</li>
