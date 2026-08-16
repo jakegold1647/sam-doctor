@@ -24,6 +24,7 @@ nothing matches, it says so instead of guessing.
 [Find a mentored first issue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22) |
 [Contributor guide](CONTRIBUTING.md) |
 [Contributor quickstart](docs/contributor-quickstart.md) |\n[First-deployment pilot](docs/adoption-pilot.md) |
+[CI recipe index](docs/ci-recipes.md) |
 [Maintainers](MAINTAINERS.md) |
 [Code of Conduct](CODE_OF_CONDUCT.md) |
 [Report a bad diagnosis](https://github.com/jakegold1647/sam-doctor/issues/new?template=bug_report.yml) |
