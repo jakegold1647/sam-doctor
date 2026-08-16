@@ -3895,6 +3895,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyStack CREATE_FAILED An error occurred (ServiceNotAvailable) when calling the CreateStack operation: CloudFormation is temporarily unavailable",
     "CREATE_FAILED AWS::ApiGateway::RestApi Api Too Many Requests (Service: ApiGateway, Status Code: 429)",
     "MyFn CREATE_FAILED The runtime parameter of python3.8 is no longer supported for creating or updating AWS Lambda functions",
+    "FunctionPolicy CREATE_FAILED Maximum policy size of 10240 bytes exceeded for role my-function-role (Service: AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (
@@ -3984,3 +3985,65 @@ def test_stack_create_name_conflict_redacts_protected_stack_text_without_losing_
     ]
     assert "sam-123456789012" not in findings[0].evidence[0]
     assert "[REDACTED_ACCOUNT_ID]" in findings[0].evidence[0]
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "An error occurred (LimitExceeded) when calling the PutRolePolicy "
+            "operation: Maximum policy size of 10240 bytes exceeded for the role "
+            "my-function-role"
+        ),
+        (
+            "CREATE_FAILED AWS::IAM::Policy FunctionPolicy Maximum policy size of "
+            "10240 bytes exceeded for role my-function-role (Service: "
+            "AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)"
+        ),
+    ),
+)
+def test_iam_role_inline_policy_size_limit_has_one_high_confidence_finding(
+    log: str,
+) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "iam.role.inline-policy-size-limit"
+    ]
+    assert findings[0].confidence == "high"
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        "Cannot exceed quota for PolicySize: 6144",
+        "Cannot exceed quota for PoliciesPerRole: 10",
+        "Maximum policy size of 10240 bytes exceeded for managed policy my-policy",
+        "An error occurred (PolicyNotAttachable) when calling the AttachRolePolicy operation",
+        "Rate exceeded",
+        "AccessDenied: iam:PutRolePolicy",
+        "The role's inline policies are close to the documented aggregate limit.",
+    ),
+)
+def test_iam_role_inline_policy_size_limit_leaves_nearby_cases_with_their_owners(
+    log: str,
+) -> None:
+    assert "iam.role.inline-policy-size-limit" not in {
+        finding.rule_id for finding in diagnose(log)
+    }
+
+
+def test_iam_role_inline_policy_size_limit_redacts_protected_identifiers() -> None:
+    log = (
+        "FunctionPolicy CREATE_FAILED Maximum policy size of 10240 bytes exceeded "
+        "for role service-123456789012-worker (Service: AmazonIdentityManagement; "
+        "Status Code: 409; Request ID: request-123456789012)"
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "iam.role.inline-policy-size-limit"
+    ]
+    assert "123456789012" not in findings[0].evidence[0]
+    assert findings[0].evidence[0].count("[REDACTED_ACCOUNT_ID]") == 2
+
