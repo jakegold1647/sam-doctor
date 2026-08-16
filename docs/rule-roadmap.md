@@ -7,14 +7,13 @@ level of [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24) so on
 contributor can land it in a focused PR with the rule, tests, fixture-registry
 entry, error page, and changelog entry a complete contribution requires.
 
-> **Two issues are reserved.**
-> [#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size
-> and attachment quotas) and
-> [#66](https://github.com/jakegold1647/sam-doctor/issues/66) (CloudFormation
-> stack-name collisions) are held for first-time contributors. Please leave
-> those two even if you could finish them in an afternoon - a project asking for
-> contributors has to keep something worth contributing. Roadmap entries
-> explicitly marked **open** are otherwise available.
+> **One diagnostic is actively assigned.**
+> [#79](https://github.com/jakegold1647/sam-doctor/issues/79) (IAM role
+> managed-policy attachment quota) is being handled by its assigned contributor,
+> so please do not start competing work on it. [#63](https://github.com/jakegold1647/sam-doctor/issues/63)
+> remains at `status: needs-repro` and needs a complete sanitized reproduction
+> before implementation. Check the live issue queue before claiming work; this
+> roadmap records evidence and scope rather than live assignments.
 
 Before starting:
 
@@ -1568,12 +1567,13 @@ before retrying.
 
 ## What is still open
 
-**Entries 13 to 15 are open.** They and the now-landed entry 12 came out of
+**Entry 14 remains open, but it needs a sanitized reproduction.** Entries 13
+and 15 have landed. They and the now-landed entry 12 came out of
 `scripts/measure-field-detection.py`, which measures this catalog against
 deployment logs real people pasted into public GitHub issues. They are failures
 sam-doctor was handed and did not diagnose, rather than failures somebody expected
-it to meet. Entry 14 in particular is worth reading before claiming — the sampled
-log was truncated, so the first job is collecting a complete example.
+it to meet. The sampled entry-14 log was truncated, so the first job is collecting
+a complete example.
 
 The measurement prints every signature it missed, so a run of it is the fastest way
 to find work that is definitely real. The latest follow-up run on 2026-08-10
@@ -1601,38 +1601,19 @@ diagnosed by the new rule.
 That percentage is a moving sample,
 not a release guarantee;
 the misses that remain after entry 14 are mostly other tools' failures
-(CDK, Terraform, CodeBuild) or the three open rule requests still in the queue.
+(CDK, Terraform, CodeBuild) or the remaining rule requests still in the queue.
 
-Entries 1 to 13 and 15 to 41 have landed. A fresh rule request from a real failure is
-always welcome, and the
+Entries 1 to 13 and 15 to 41 have landed. A fresh rule request from a real
+failure is always welcome; use the
 [open-rule-request search](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+%22Rule+request%22)
-is the available-work list. Two rule requests are ready for first-time contributors:
-[#21](https://github.com/jakegold1647/sam-doctor/issues/21) (IAM policy size and
-attachment quotas) and
-[#66](https://github.com/jakegold1647/sam-doctor/issues/66)
-(CloudFormation stack-name collisions). They are labelled `good first issue`,
-`status: ready`, and `mentor available`; please leave them for new contributors.
+for the current queue.
 
-The broader ready newcomer queue also includes the scoped documentation and
-community tasks in
-[#69](https://github.com/jakegold1647/sam-doctor/issues/69),
-[#71](https://github.com/jakegold1647/sam-doctor/issues/71), and
-[#72](https://github.com/jakegold1647/sam-doctor/issues/72)–[#74](https://github.com/jakegold1647/sam-doctor/issues/74) and
-[#76](https://github.com/jakegold1647/sam-doctor/issues/76)–[#77](https://github.com/jakegold1647/sam-doctor/issues/77).
-Use the [live ready queue](https://github.com/jakegold1647/sam-doctor/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3A+ready%22+label%3A%22mentor%20available%22)
-for the current count; it changes as newcomers claim or complete an issue.
-
-The deprecated-runtime request in #65 is already shipped and closed by PR #68;
-it is not available work. Adoption and documentation work is tracked separately
-in [#69](https://github.com/jakegold1647/sam-doctor/issues/69),
-[#71](https://github.com/jakegold1647/sam-doctor/issues/71), and
-[#72](https://github.com/jakegold1647/sam-doctor/issues/72).
-
-[#63](https://github.com/jakegold1647/sam-doctor/issues/63) is intentionally
-`status: needs-repro`, so contribute a complete sanitized example there before
-implementing a rule.
-
-Nothing is currently claimed.
+At the time of this update,
+[#79](https://github.com/jakegold1647/sam-doctor/issues/79) is assigned to a
+contributor. Do not duplicate that work. [#63](https://github.com/jakegold1647/sam-doctor/issues/63)
+is intentionally `status: needs-repro`, so contribute a complete sanitized
+example there before implementing a rule. The live issue search is the source
+of truth as contributors claim or complete work.
 
 - Lambda code storage limit exceeded (`CodeStorageExceededException`) —
   landed in [#35](https://github.com/jakegold1647/sam-doctor/pull/35), closing
