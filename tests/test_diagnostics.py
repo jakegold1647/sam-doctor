@@ -4047,3 +4047,71 @@ def test_iam_role_inline_policy_size_limit_redacts_protected_identifiers() -> No
     assert "123456789012" not in findings[0].evidence[0]
     assert findings[0].evidence[0].count("[REDACTED_ACCOUNT_ID]") == 2
 
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "An error occurred (LimitExceeded) when calling the AttachRolePolicy "
+            "operation: Cannot exceed quota for PoliciesPerRole: 10"
+        ),
+        (
+            "CREATE_FAILED AWS::IAM::Role MyRole Resource handler returned "
+            "message: \"Cannot exceed quota for PoliciesPerRole: 10 (Service: Iam, "
+            "Status Code: 409, Request ID: example)\" (HandlerErrorCode: "
+            "ServiceLimitExceeded)"
+        ),
+    ),
+)
+def test_iam_role_managed_policy_attachment_limit_has_one_high_confidence_finding(
+    log: str,
+) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "iam.role.managed-policy-attachment-limit"
+    ]
+    assert findings[0].confidence == "high"
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        "Maximum policy size of 10240 bytes exceeded for role my-function-role",
+        "Cannot exceed quota for PolicySize: 6144",
+        "An error occurred (PolicyNotAttachable) when calling the AttachRolePolicy operation",
+        "Rate exceeded",
+        "AccessDenied: iam:PutRolePolicy",
+        # A bare handler ServiceLimitExceeded without the PoliciesPerRole token is
+        # the generic CloudFormation resource failure, not an attachment finding.
+        "CREATE_FAILED AWS::IAM::Role MyRole Resource handler returned message: \"boom\" (HandlerErrorCode: ServiceLimitExceeded)",
+        # A LimitExceeded/AttachRolePolicy without the PoliciesPerRole token is
+        # not this attachment finding.
+        "An error occurred (LimitExceeded) when calling the AttachRolePolicy operation: some other reason",
+        "An error occurred (LimitExceeded) when calling the CreateRole operation",
+    ),
+)
+def test_iam_role_managed_policy_attachment_limit_leaves_nearby_cases_with_their_owners(
+    log: str,
+) -> None:
+    assert "iam.role.managed-policy-attachment-limit" not in {
+        finding.rule_id for finding in diagnose(log)
+    }
+
+
+def test_iam_role_managed_policy_attachment_limit_redacts_protected_identifiers() -> None:
+    log = (
+        "MyRole CREATE_FAILED AWS::IAM::Role Resource handler returned message: "
+        "\"Cannot exceed quota for PoliciesPerRole: 10 (Service: Iam, Status "
+        "Code: 409, Request ID: request-123456789012)\" (HandlerErrorCode: "
+        "ServiceLimitExceeded)"
+    )
+
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "iam.role.managed-policy-attachment-limit"
+    ]
+    assert "123456789012" not in findings[0].evidence[0]
+    assert "[REDACTED_ACCOUNT_ID]" in findings[0].evidence[0]

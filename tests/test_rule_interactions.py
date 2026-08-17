@@ -52,6 +52,11 @@ EXPECTED_HIDING = {
     ("cloudformation.resource.create-update-failed", "cloudformation.lambda-layer.artifact-unreadable"),
     ("cloudformation.resource.create-update-failed", "lambda.code-signing.image-incompatible"),
     ("cloudformation.resource.create-update-failed", "lambda.ecr-image.access-denied"),
+    # The managed-policy attachment-limit rule is deliberately NOT a
+    # whole-log hiding pair here: it excludes only its matching CREATE_FAILED
+    # line via excluded_line_patterns, so an unrelated resource failure in the
+    # same log still reports through cloudformation.resource.create-update-failed
+    # (verified by test_attachment_limit_rule_excludes_only_its_own_line).
     ("cloudformation.stack.delete-failed", "cloudformation.export.in-use"),
     ("cloudformation.stack.rollback-complete", "cloudformation.rollback.iam-role-delete-failed"),
     ("cloudformation.stack.rollback-complete", "cloudformation.stack.failed-recreate-required"),
@@ -172,3 +177,25 @@ def test_catch_all_rules_are_the_ones_that_yield(generic_rule: str) -> None:
     assert any(hidden == generic_rule for hidden, _ in observed), (
         f"{generic_rule} is a catch-all and should yield to specific rules"
     )
+
+
+def test_attachment_limit_rule_excludes_only_its_own_line() -> None:
+    """A PoliciesPerRole CREATE_FAILED line must not suppress an unrelated
+    resource failure elsewhere in the same log."""
+
+    log = (
+        "CREATE_FAILED AWS::IAM::Role MyRole Resource handler returned message: "
+        "\"Cannot exceed quota for PoliciesPerRole: 10 (Service: Iam, Status "
+        "Code: 409)\" (HandlerErrorCode: ServiceLimitExceeded)\n"
+        "CREATE_FAILED AWS::SQS::Queue UnrelatedQueue Resource handler returned "
+        "message: \"Some generic failure\""
+    )
+
+    findings = {finding.rule_id for finding in diagnose(log)}
+
+    # The specific attachment-limit rule explains the PoliciesPerRole line.
+    assert "iam.role.managed-policy-attachment-limit" in findings
+    # The unrelated CREATE_FAILED stays visible: with the PoliciesPerRole line
+    # excluded (not the whole log), the generic resource rule still reports the
+    # queue failure.
+    assert "cloudformation.resource.create-update-failed" in findings

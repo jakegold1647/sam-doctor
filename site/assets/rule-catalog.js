@@ -571,6 +571,34 @@ window.SAM_DOCTOR_CATALOG = {
       "parse_stabilization_context": false
     },
     {
+      "id": "iam.role.managed-policy-attachment-limit",
+      "title": "An IAM role reached its managed-policy attachment quota",
+      "confidence": "high",
+      "patterns": [
+        {
+          "source": "(?:\\bAttachRolePolicy\\b|\\bLimitExceeded\\b).*Cannot exceed quota for PoliciesPerRole: \\d+",
+          "flags": "i"
+        },
+        {
+          "source": "Cannot exceed quota for PoliciesPerRole: \\d+.*(?:\\bServiceLimitExceeded\\b|\\bLimitExceeded\\b)",
+          "flags": "i"
+        }
+      ],
+      "explanation": "IAM rejected an AttachRolePolicy call (or the matching CloudFormation resource handler) because attaching another managed policy would exceed the role's `PoliciesPerRole` quota. The emitted quota value is the account's applied limit and can vary. This is separate from the inline-policy document-size limit (#21) and from a single customer-managed policy's document-size quota.",
+      "verification": [
+        "Confirm the named role and its current attachments with the read-only call `aws iam list-attached-role-policies --role-name <role>`.",
+        "Confirm the applied quota with `aws iam get-account-summary --query 'SummaryMap.AttachedPoliciesPerRoleQuota' --output text`.",
+        "Remove an attachment only after confirming it is obsolete and who owns it; do not detach policies blindly.",
+        "Consolidate policies only when the combined policy stays least-privilege and reviewable; do not broaden actions or resources just to lower the count.",
+        "If every attachment is intentional, request an increase for the adjustable IAM quota through Service Quotas (US East (N. Virginia))."
+      ],
+      "documentation_url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html",
+      "suppressed_by": [],
+      "excluded_line_patterns": [],
+      "parse_denial_context": false,
+      "parse_stabilization_context": false
+    },
+    {
       "id": "iam.tag.action-denied",
       "title": "AWS denied a tagging action required by the deployment",
       "confidence": "medium",
@@ -2133,6 +2161,10 @@ window.SAM_DOCTOR_CATALOG = {
         },
         {
           "source": "Maximum policy size of 10240 bytes exceeded for (?:the )?role\\b",
+          "flags": "i"
+        },
+        {
+          "source": "Cannot exceed quota for PoliciesPerRole: \\d+",
           "flags": "i"
         },
         {
