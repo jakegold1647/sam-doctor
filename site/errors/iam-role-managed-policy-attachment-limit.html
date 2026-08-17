@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>An IAM role reached its managed-policy attachment quota | SAM Doctor</title>
+    <meta name="description" content="Resolve IAM's adjustable managed-policy-per-role quota without detaching policies or converting everything to one broad policy." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/iam-role-managed-policy-attachment-limit.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="An IAM role reached its managed-policy attachment quota | SAM Doctor" />
+    <meta property="og:description" content="Resolve IAM&#x27;s adjustable managed-policy-per-role quota without detaching policies or converting everything to one broad policy." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/iam-role-managed-policy-attachment-limit.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="An IAM role reached its managed-policy attachment quota | SAM Doctor" />
+    <meta name="twitter:description" content="Resolve IAM&#x27;s adjustable managed-policy-per-role quota without detaching policies or converting everything to one broad policy." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+    <script type="application/ld+json" data-seo-block="error-techarticle">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "An IAM role reached its managed-policy attachment quota",
+        "name": "An IAM role reached its managed-policy attachment quota | SAM Doctor",
+        "description": "Resolve IAM's adjustable managed-policy-per-role quota without detaching policies or converting everything to one broad policy.",
+        "url": "https://sam-doctor.jacobgoldstein.dev/errors/iam-role-managed-policy-attachment-limit.html",
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://sam-doctor.jacobgoldstein.dev/errors/iam-role-managed-policy-attachment-limit.html"
+        },
+        "inLanguage": "en",
+        "author": {
+          "@type": "Person",
+          "name": "Jacob Goldstein",
+          "url": "https://jacobgoldstein.dev"
+        },
+        "publisher": {
+          "@type": "Person",
+          "name": "Jacob Goldstein",
+          "url": "https://jacobgoldstein.dev"
+        },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "SAM Doctor",
+          "url": "https://sam-doctor.jacobgoldstein.dev/"
+        },
+        "about": {
+          "@type": "Thing",
+          "name": "An IAM role reached its managed-policy attachment quota"
+        },
+        "proficiencyLevel": "Expert",
+        "keywords": "IAM managed policy attachment limit, PoliciesPerRole, Cannot exceed quota for PoliciesPerRole, AWS deployment error, CloudFormation",
+        "datePublished": "2026-08-16",
+        "dateModified": "2026-08-16"
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">An IAM role reached its managed-policy attachment quota</h1>
+        <p class="hero-subtitle">Cannot exceed quota for PoliciesPerRole: 10</p>
+        <p class="lede">
+          IAM rejected attaching another managed policy to a role. The quoted
+          number is the account's applied <code>PoliciesPerRole</code> quota and
+          can vary; it is adjustable, unlike the hard inline-policy document-size
+          limit.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>An error occurred (LimitExceeded) when calling the AttachRolePolicy operation:
+Cannot exceed quota for PoliciesPerRole: 10
+
+CREATE_FAILED AWS::IAM::Role MyRole Resource handler returned message:
+"Cannot exceed quota for PoliciesPerRole: 10 (Service: Iam, Status Code: 409)"
+(HandlerErrorCode: ServiceLimitExceeded)</code></pre>
+        <p>
+          Attaching one more managed policy would take the role past its allowance.
+          This is the attachment-count limit, not the document-size limit for a
+          single policy and not the aggregate inline-policy size limit.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">SAFE NEXT STEPS</p>
+        <h2 id="fix-title">Confirm the role and account before changing permissions</h2>
+        <ol>
+          <li>
+            <strong>Name the role and its current attachments.</strong>
+            <pre><code>aws iam list-attached-role-policies --role-name YOUR_ROLE</code></pre>
+          </li>
+          <li>
+            <strong>Confirm the applied quota.</strong>
+            <pre><code>aws iam get-account-summary --query "SummaryMap.AttachedPoliciesPerRoleQuota" --output text</code></pre>
+          </li>
+          <li>
+            <strong>Remove an attachment only after confirming it is obsolete.</strong>
+            Check who owns each policy before detaching; do not detach policies
+            blindly to make the error go away.
+          </li>
+          <li>
+            <strong>Consolidate policies deliberately.</strong> Merge only when the
+            combined policy stays least-privilege and reviewable. Do not broaden
+            actions or resources just to lower the attachment count.
+          </li>
+          <li>
+            <strong>When every attachment is intentional, request an increase.</strong>
+            <code>PoliciesPerRole</code> is an adjustable quota. File the increase
+            through Service Quotas; IAM's quota guide directs these requests through
+            US East (N. Virginia).
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes direct IAM attachment failures and matching
+          CloudFormation resource events, keeps unrelated failed resources visible,
+          and runs locally without AWS credentials or log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./iam-role-inline-policy-size-limit.html">Maximum policy size of 10240 bytes exceeded for role</a> &mdash; the hard aggregate inline-policy limit, separate from the adjustable attachment count.</li>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> &mdash; the generic CloudFormation handoff when no concrete resource reason is present.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

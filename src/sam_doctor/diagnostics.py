@@ -751,6 +751,36 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-limits-entity-length",
     ),
     Rule(
+        id="iam.role.managed-policy-attachment-limit",
+        title="An IAM role reached its managed-policy attachment quota",
+        confidence="high",
+        patterns=(
+            # Direct IAM API / CLI: (LimitExceeded) ... AttachRolePolicy ... Cannot
+            # exceed quota for PoliciesPerRole: N (the emitted N is account-specific
+            # and must not be hard-coded).
+            r"(?:\bAttachRolePolicy\b|\bLimitExceeded\b).*Cannot exceed quota for PoliciesPerRole: \d+",
+            # CloudFormation resource handler: ... PoliciesPerRole: N ...
+            # (HandlerErrorCode: ServiceLimitExceeded).
+            r"Cannot exceed quota for PoliciesPerRole: \d+.*(?:\bServiceLimitExceeded\b|\bLimitExceeded\b)",
+        ),
+        explanation=(
+            "IAM rejected an AttachRolePolicy call (or the matching CloudFormation "
+            "resource handler) because attaching another managed policy would "
+            "exceed the role's `PoliciesPerRole` quota. The emitted quota value is "
+            "the account's applied limit and can vary. This is separate from the "
+            "inline-policy document-size limit (#21) and from a single "
+            "customer-managed policy's document-size quota."
+        ),
+        verification=(
+            "Confirm the named role and its current attachments with the read-only call `aws iam list-attached-role-policies --role-name <role>`.",
+            "Confirm the applied quota with `aws iam get-account-summary --query 'SummaryMap.AttachedPoliciesPerRoleQuota' --output text`.",
+            "Remove an attachment only after confirming it is obsolete and who owns it; do not detach policies blindly.",
+            "Consolidate policies only when the combined policy stays least-privilege and reviewable; do not broaden actions or resources just to lower the count.",
+            "If every attachment is intentional, request an increase for the adjustable IAM quota through Service Quotas (US East (N. Virginia)).",
+        ),
+        documentation_url="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html",
+    ),
+    Rule(
         id="iam.tag.action-denied",
         title="AWS denied a tagging action required by the deployment",
         confidence="medium",
@@ -1974,6 +2004,10 @@ _RULES = (
             r"CodeStorageExceededException",
             r"Code storage limit exceeded",
             r"Maximum policy size of 10240 bytes exceeded for (?:the )?role\b",
+            # The managed-policy attachment-limit rule explains this exact handler
+            # reason (PoliciesPerRole); keep generic CREATE_FAILED available for
+            # other resources by excluding only this line.
+            r"Cannot exceed quota for PoliciesPerRole: \d+",
             r"ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value",
             r"Embedded stack .* was not successfully (?:created|updated)",
             _CODEBUILD_CODECONNECTIONS_FAILURE_PATTERN,

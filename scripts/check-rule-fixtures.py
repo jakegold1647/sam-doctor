@@ -360,6 +360,13 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         ),
         negative="Cannot exceed quota for PolicySize: 6144",
     ),
+    "iam.role.managed-policy-attachment-limit": RuleFixture(
+        positive=(
+            "An error occurred (LimitExceeded) when calling the AttachRolePolicy "
+            "operation: Cannot exceed quota for PoliciesPerRole: 10"
+        ),
+        negative="Cannot exceed quota for PolicySize: 6144",
+    ),
     "iam.tag.action-denied": RuleFixture(
         positive=(
             "An error occurred (AccessDenied) when calling the CreateRole "
