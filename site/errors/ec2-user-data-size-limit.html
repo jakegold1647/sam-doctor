@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User data is limited to 16384 bytes | SAM Doctor</title>
+    <meta name="description" content="Fix the EC2 user-data size rejection by measuring the rendered script, then shrinking it, offloading it to S3 or SSM, compressing it, or baking it into the AMI." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/ec2-user-data-size-limit.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="User data is limited to 16384 bytes | SAM Doctor" />
+    <meta property="og:description" content="Fix the EC2 user-data size rejection by measuring the rendered script, then shrinking it, offloading it to S3 or SSM, compressing it, or baking it into the AMI." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/ec2-user-data-size-limit.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="User data is limited to 16384 bytes | SAM Doctor" />
+    <meta name="twitter:description" content="Fix the EC2 user-data size rejection by measuring the rendered script, then shrinking it, offloading it to S3 or SSM, compressing it, or baking it into the AMI." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "User data is limited to 16384 bytes",
+      "name": "User data is limited to 16384 bytes | SAM Doctor",
+      "description": "Fix the EC2 user-data size rejection by measuring the rendered script, then shrinking it, offloading it to S3 or SSM, compressing it, or baking it into the AMI.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/ec2-user-data-size-limit.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/ec2-user-data-size-limit.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "User data is limited to 16384 bytes"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "User data is limited to 16384 bytes, AWS deployment error, EC2 user data, CloudFormation",
+      "datePublished": "2026-08-18",
+      "dateModified": "2026-08-18"
+    }
+  </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">User data is limited to 16384 bytes</h1>
+        <p class="hero-subtitle">EC2 rejected user data larger than 16,384 bytes</p>
+        <p class="lede">
+          EC2 refused the instance or launch-template request because the rendered
+          user data exceeds its 16,384-byte limit. The limit applies to the raw,
+          base64-decoded script &mdash; and CloudFormation resolves
+          <code>Fn::Sub</code> and <code>Fn::Base64</code> before EC2 sees the
+          result, so a template that looks small can exceed the limit after
+          substitution.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>An error occurred (InvalidParameterValue) when calling the RunInstances operation:
+User data is limited to 16384 bytes
+
+CREATE_FAILED  AWS::EC2::Instance  Web
+Resource handler returned message: "User data is limited to 16384 bytes
+(Service: AmazonEC2; Status Code: 400; Error Code: InvalidParameterValue)"</code></pre>
+        <p>
+          The number is a hard EC2 request limit, not a quota you can raise. It is
+          measured against the decoded bytes that reach EC2, which is why counting
+          characters in the template understates the real size.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">SAFE NEXT STEPS</p>
+        <h2 id="fix-title">Measure the rendered script, then make it smaller</h2>
+        <ol>
+          <li>
+            <strong>Measure what was actually sent, not the template text.</strong>
+            Base64-decode the rendered user data and count its bytes. For an
+            existing instance, read the current value without changing anything:
+            <pre><code>aws ec2 describe-instance-attribute --instance-id YOUR_INSTANCE \
+  --attribute userData --query "UserData.Value" --output text | base64 --decode | wc -c</code></pre>
+          </li>
+          <li>
+            <strong>Shrink the inline script first.</strong> Strip comments and
+            blank lines; heredocs and embedded configuration files are usually
+            where the bytes went.
+          </li>
+          <li>
+            <strong>Move the bootstrap body out of user data.</strong> Store the
+            real script in S3 or an SSM document, keep a short download-and-run
+            stub in user data, and grant the instance profile read access to it.
+          </li>
+          <li>
+            <strong>Compress or prebake what remains.</strong> cloud-init accepts
+            gzip-compressed user data, and setup that rarely changes belongs in
+            the AMI image rather than in the boot script.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the RunInstances error, the CloudFormation
+          resource-handler message, and the <code>InvalidUserData.Malformed</code>
+          wrapper, and runs locally without AWS credentials or log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./create-failed.html">CREATE_FAILED / UPDATE_FAILED</a> &mdash; the generic resource-failure handoff when no more specific reason is present.</li>
+          <li><a href="./iam-role-inline-policy-size-limit.html">Maximum policy size exceeded for a role</a> &mdash; another hard size limit that reads like a permissions problem.</li>
+          <li><a href="./ec2-network-interface-create-failed.html">EC2 could not create a network interface</a> &mdash; a different EC2 request failure surfaced through provider wrappers.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

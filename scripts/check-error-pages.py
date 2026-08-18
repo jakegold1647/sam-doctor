@@ -100,6 +100,7 @@ ERROR_PAGE_MAP: dict[str, str] = {
     "aws.api.action-not-implemented": "aws-action-not-implemented.html",
     "aws.api.service-unknown": "aws-service-unknown.html",
     "aws.credentials.caller-identity-unavailable": "sts-caller-identity-unavailable.html",
+    "ec2.user-data.size-limit-exceeded": "ec2-user-data-size-limit.html",
     "ec2.network-interface.create-failed": "ec2-network-interface-create-failed.html",
     "lambda.vpc.execution-role-network-interface-permission": "lambda-vpc-execution-role-network-interface-permission.html",
     "eks.vpc-cni.pod-sandbox-network-failed": "eks-vpc-cni-pod-sandbox-failed.html",

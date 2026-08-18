@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Oversized EC2 user data now has a focused handoff.** The exact `User data is limited to 16384 bytes` rejection reports one high-confidence finding across RunInstances errors, CloudFormation resource-handler messages, and the `InvalidUserData.Malformed` wrapper. The guide explains that the limit applies to the decoded, post-substitution script and starts with measuring the rendered bytes before shrinking the script, offloading it to S3 or SSM, compressing it, or baking the setup into the AMI. Unrelated failed resources in the same log still report.
+
 - **Shareable reports now remove common user-home paths.** Packets, rule-request
   excerpts, and diagnostic Markdown redact Windows, macOS, and Linux home paths
   inside matched evidence while retaining relative project paths and the original

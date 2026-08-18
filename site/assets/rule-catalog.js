@@ -1540,6 +1540,29 @@ window.SAM_DOCTOR_CATALOG = {
       "parse_stabilization_context": false
     },
     {
+      "id": "ec2.user-data.size-limit-exceeded",
+      "title": "EC2 rejected user data larger than 16,384 bytes",
+      "confidence": "high",
+      "patterns": [
+        {
+          "source": "User data is limited to 16384 bytes",
+          "flags": "i"
+        }
+      ],
+      "explanation": "EC2 refused the instance or launch-template request because the rendered user data exceeds the 16,384-byte limit. The limit applies to the raw, base64-decoded user data, and CloudFormation resolves Fn::Sub and Fn::Base64 before EC2 sees the result, so a template that looks small can exceed the limit after substitution.",
+      "verification": [
+        "Measure what was actually sent, not the template text: base64-decode the rendered user data and count its bytes.",
+        "For an existing instance, read the current value without changing anything: `aws ec2 describe-instance-attribute --instance-id <id> --attribute userData --query 'UserData.Value' --output text | base64 --decode | wc -c`.",
+        "Shrink the inline script first - strip comments and blank lines - or move the bootstrap body to S3 or an SSM document, keep a short download-and-run stub in user data, and grant the instance profile read access to it.",
+        "cloud-init also accepts gzip-compressed user data, and setup that rarely changes belongs in the AMI image rather than in the boot script."
+      ],
+      "documentation_url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-add-user-data.html",
+      "suppressed_by": [],
+      "excluded_line_patterns": [],
+      "parse_denial_context": false,
+      "parse_stabilization_context": false
+    },
+    {
       "id": "ec2.network-interface.create-failed",
       "title": "EC2 could not create a network interface",
       "confidence": "low",
@@ -2237,6 +2260,10 @@ window.SAM_DOCTOR_CATALOG = {
         },
         {
           "source": "The provided execution role does not have permission(?:s)? to call CreateNetworkInterface on EC2\\b",
+          "flags": "i"
+        },
+        {
+          "source": "User data is limited to 16384 bytes",
           "flags": "i"
         },
         {

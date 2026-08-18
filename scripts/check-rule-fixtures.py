@@ -253,6 +253,16 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
         positive="Error: reading STS Caller Identity",
         negative="The caller identity was recorded successfully",
     ),
+    "ec2.user-data.size-limit-exceeded": RuleFixture(
+        positive=(
+            "An error occurred (InvalidParameterValue) when calling the "
+            "RunInstances operation: User data is limited to 16384 bytes"
+        ),
+        negative=(
+            "An error occurred (InvalidParameterValue) when calling the "
+            "RunInstances operation: User data must be base64 encoded"
+        ),
+    ),
     "ec2.network-interface.create-failed": RuleFixture(
         positive=(
             "Error: creating EC2 Network Interface: operation error EC2: "

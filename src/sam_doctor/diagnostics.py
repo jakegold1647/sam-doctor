@@ -408,6 +408,12 @@ _EC2_NETWORK_INTERFACE_CREATE_FAILURE_PATTERNS = (
     ),
 )
 
+# EC2 prints this exact sentence when the decoded user data exceeds its
+# 16,384-byte limit, in RunInstances errors, CloudFormation resource-handler
+# messages, and the InvalidUserData.Malformed wrapper alike. The sentence is
+# tool-specific wording, so the bare marker is safe to anchor on.
+_EC2_USER_DATA_SIZE_LIMIT_PATTERN = r"User data is limited to 16384 bytes"
+
 _EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS = (
     r"Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b",
     r"plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b",
@@ -1545,6 +1551,26 @@ _RULES = (
         documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html",
     ),
     Rule(
+        id="ec2.user-data.size-limit-exceeded",
+        title="EC2 rejected user data larger than 16,384 bytes",
+        confidence="high",
+        patterns=(_EC2_USER_DATA_SIZE_LIMIT_PATTERN,),
+        explanation=(
+            "EC2 refused the instance or launch-template request because the "
+            "rendered user data exceeds the 16,384-byte limit. The limit applies "
+            "to the raw, base64-decoded user data, and CloudFormation resolves "
+            "Fn::Sub and Fn::Base64 before EC2 sees the result, so a template "
+            "that looks small can exceed the limit after substitution."
+        ),
+        verification=(
+            "Measure what was actually sent, not the template text: base64-decode the rendered user data and count its bytes.",
+            "For an existing instance, read the current value without changing anything: `aws ec2 describe-instance-attribute --instance-id <id> --attribute userData --query 'UserData.Value' --output text | base64 --decode | wc -c`.",
+            "Shrink the inline script first - strip comments and blank lines - or move the bootstrap body to S3 or an SSM document, keep a short download-and-run stub in user data, and grant the instance profile read access to it.",
+            "cloud-init also accepts gzip-compressed user data, and setup that rarely changes belongs in the AMI image rather than in the boot script.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-add-user-data.html",
+    ),
+    Rule(
         id="ec2.network-interface.create-failed",
         title="EC2 could not create a network interface",
         confidence="low",
@@ -2025,6 +2051,10 @@ _RULES = (
             # The Lambda VPC execution-role rule explains this exact handler
             # reason; keep generic CREATE_FAILED available for other resources.
             _LAMBDA_VPC_EXECUTION_ROLE_ENI_PATTERN,
+            # The user-data size rule explains this exact handler reason; the
+            # sentence arrives on the CREATE_FAILED line itself, so excluding
+            # only that line keeps other failed resources reported.
+            _EC2_USER_DATA_SIZE_LIMIT_PATTERN,
             _CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,
             _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),

@@ -3896,6 +3896,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "CREATE_FAILED AWS::ApiGateway::RestApi Api Too Many Requests (Service: ApiGateway, Status Code: 429)",
     "MyFn CREATE_FAILED The runtime parameter of python3.8 is no longer supported for creating or updating AWS Lambda functions",
     "FunctionPolicy CREATE_FAILED Maximum policy size of 10240 bytes exceeded for role my-function-role (Service: AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)",
+    "Web CREATE_FAILED Resource handler returned message: \"User data is limited to 16384 bytes (Service: AmazonEC2; Status Code: 400; Error Code: InvalidParameterValue)\"",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (
@@ -4115,3 +4116,48 @@ def test_iam_role_managed_policy_attachment_limit_redacts_protected_identifiers(
     ]
     assert "123456789012" not in findings[0].evidence[0]
     assert "[REDACTED_ACCOUNT_ID]" in findings[0].evidence[0]
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "botocore.exceptions.ClientError: An error occurred (InvalidParameterValue) "
+            "when calling the RunInstances operation: User data is limited to 16384 bytes"
+        ),
+        (
+            'Web CREATE_FAILED Resource handler returned message: "User data is limited '
+            'to 16384 bytes (Service: AmazonEC2; Status Code: 400; Error Code: '
+            'InvalidParameterValue; Request ID: 91bc53af-7754-42bf-be57-3a0f83c33de5; '
+            'Proxy: null)"'
+        ),
+        "InvalidUserData.Malformed: User data is limited to 16384 bytes.",
+    ),
+)
+def test_ec2_user_data_size_limit_has_one_high_confidence_finding(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "ec2.user-data.size-limit-exceeded"
+    ]
+    assert findings[0].confidence == "high"
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        # Prose about the limit, not the error EC2 prints.
+        "EC2 user data is limited to 16 KB in raw form before it is base64-encoded.",
+        # A different InvalidParameterValue from the same operation.
+        (
+            "An error occurred (InvalidParameterValue) when calling the RunInstances "
+            "operation: User data must be base64 encoded"
+        ),
+        # A different size limit with the same sentence shape.
+        "Launch template data is limited to 6144 bytes",
+    ),
+)
+def test_ec2_user_data_size_limit_leaves_nearby_cases_unmatched(log: str) -> None:
+    assert "ec2.user-data.size-limit-exceeded" not in {
+        finding.rule_id for finding in diagnose(log)
+    }
