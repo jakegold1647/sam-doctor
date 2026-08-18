@@ -1,6 +1,7 @@
 import io
 import json
 import re
+import urllib.parse
 from pathlib import Path
 
 import pytest
@@ -2538,7 +2539,10 @@ def test_batch_render_github_emits_annotations_only_for_findings(
     lines = [line for line in report.splitlines() if line.strip()]
     assert len(lines) == 1
     assert lines[0].startswith("::notice ")
-    assert redact(finding_log.as_posix()) in lines[0]
+    # The annotation percent-encodes the file property, so decode it before
+    # comparing against the (possibly redacted) source path.
+    file_field = lines[0].split("file=", 1)[1].split(",", 1)[0]
+    assert urllib.parse.unquote(file_field) == redact(finding_log.as_posix())
 
 
 def test_github_notices_from_json_payload_skips_noise() -> None:
