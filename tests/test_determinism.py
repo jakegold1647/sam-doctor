@@ -17,6 +17,7 @@ from conftest import child_env
 
 from sam_doctor.cli import _batch_render, _render_findings, _write_report
 from sam_doctor.diagnostics import diagnose
+from sam_doctor.redaction import redact
 
 SAMPLES_DIR = Path(__file__).resolve().parents[1] / "src" / "sam_doctor" / "data"
 
@@ -81,7 +82,12 @@ def test_batch_paths_have_platform_independent_order_and_separators(
     report, _ = _batch_render([str(logs)], "json")
     sources = [result["source"] for result in json.loads(report)["results"]]
 
-    assert sources == [(logs / "B.log").as_posix(), (logs / "a.log").as_posix()]
+    # Sources go through the same redaction as the findings, so a gate run
+    # from a home directory compares against the redacted form of each path.
+    assert sources == [
+        redact((logs / "B.log").as_posix()),
+        redact((logs / "a.log").as_posix()),
+    ]
     assert all("\\" not in source for source in sources)
 
 

@@ -117,7 +117,7 @@ window.SAM_DOCTOR_CATALOG = {
       "replacement": "[REDACTED_JWT]"
     },
     {
-      "source": "(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\\\/]+Users[\\\\/]+(?!runneradmin[\\\\/]AppData[\\\\/]Local[\\\\/]Temp[\\\\/])[^\\\\/\\\\s'\"]+|[\\\\/](?:Users|home)[\\\\/](?!runner[\\\\/]work[\\\\/])[^\\\\/\\\\s'\"]+)(?:[\\\\/][^\\\\/\\\\s'\"]+)*",
+      "source": "(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\\\/]+Users[\\\\/]+(?!runneradmin[\\\\/]AppData[\\\\/]Local[\\\\/]Temp[\\\\/])[^\\\\/\\s'\"]+|[\\\\/](?:Users|home)[\\\\/](?!runner[\\\\/]work[\\\\/])[^\\\\/\\s'\"]+)(?:[\\\\/][^\\\\/\\s'\"]+)*",
       "flags": "gi",
       "name": "private_path",
       "replacement": "[REDACTED_PRIVATE_PATH]"

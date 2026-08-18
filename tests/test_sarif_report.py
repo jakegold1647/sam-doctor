@@ -11,6 +11,7 @@ from pathlib import Path
 from sam_doctor import __version__
 from sam_doctor.cli import main
 from sam_doctor.diagnostics import diagnose, sarif_report
+from sam_doctor.redaction import redact
 
 _OIDC_LINE = (
     "Not authorized to perform: sts:AssumeRoleWithWebIdentity "
@@ -180,7 +181,10 @@ def test_cli_batch_emits_one_sarif_document(tmp_path: Path, capsys) -> None:
         result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
         for result in run["results"]
     }
-    assert any(uri.endswith("one.log") for uri in uris)
+    # In CI the runner's paths are exempt from private-path redaction; a gate
+    # run from a home directory compares against the redacted source instead.
+    expected = redact((tmp_path / "one.log").as_posix())
+    assert any(urllib.parse.unquote(uri) == expected for uri in uris)
     assert not any(uri.endswith("two.log") for uri in uris), "clean file adds no results"
 
 

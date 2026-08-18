@@ -2395,9 +2395,9 @@ def test_batch_command_analyzes_directory(
     assert main(["batch", str(logs), "--format", "terminal"]) == 0
     output = capsys.readouterr().out
 
-    assert "first.log" in output
+    assert redact((logs / "first.log").as_posix()) in output
     assert "second.log" not in output
-    assert "second.txt" in output
+    assert redact((logs / "second.txt").as_posix()) in output
     assert "AccessDenied" not in output
     assert "GitHub Actions cannot assume the configured AWS role through OIDC" in output
 
@@ -2420,8 +2420,10 @@ def test_batch_command_analyzes_recursive_glob_at_every_depth(
 
     report = json.loads(capsys.readouterr().out)
     assert report["batch_count"] == 3
+    # Sources go through the same redaction as the findings, so a gate run
+    # from a home directory compares against the redacted form of each path.
     assert {result["source"] for result in report["results"]} == {
-        path.as_posix() for path in paths
+        redact(path.as_posix()) for path in paths
     }
 
 
@@ -2536,7 +2538,7 @@ def test_batch_render_github_emits_annotations_only_for_findings(
     lines = [line for line in report.splitlines() if line.strip()]
     assert len(lines) == 1
     assert lines[0].startswith("::notice ")
-    assert "with_finding.log" in lines[0]
+    assert redact(finding_log.as_posix()) in lines[0]
 
 
 def test_github_notices_from_json_payload_skips_noise() -> None:
@@ -2809,8 +2811,10 @@ def test_batch_command_preserves_path_for_duplicate_filenames(
     assert main(["batch", str(first_dir), str(second_dir), "--format", "terminal"]) == 0
 
     output = capsys.readouterr().out
-    assert first_file.as_posix() in output
-    assert second_file.as_posix() in output
+    # In CI the runner's paths are exempt from private-path redaction, so this
+    # still proves both full paths survive; from a home directory both redact.
+    assert redact(first_file.as_posix()) in output
+    assert redact(second_file.as_posix()) in output
 
 
 def test_batch_markdown_output_includes_file_sections(
@@ -2831,8 +2835,8 @@ def test_batch_markdown_output_includes_file_sections(
 
     output = capsys.readouterr().out
     assert "## Source:" in output
-    assert first_file.as_posix() in output
-    assert second_file.as_posix() in output
+    assert redact(first_file.as_posix()) in output
+    assert redact(second_file.as_posix()) in output
 
 
 def test_diagnose_can_fail_on_findings_after_writing_report(

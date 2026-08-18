@@ -99,6 +99,19 @@ def test_private_path_redaction_keeps_relative_project_paths_visible() -> None:
     assert "scripts/build-site-rule-catalog.py" in rendered
 
 
+def test_private_path_redaction_consumes_segments_containing_s() -> None:
+    # The character class once spelled whitespace as a doubled backslash, so
+    # every segment stopped at its first `s` and the tail of the path - here
+    # `st-stack/logs/deploy.log`, username fragment included - leaked after
+    # the label.
+    rendered = redact(
+        r"reading C:\Users\sam\projects\test-stack\logs\deploy.log"
+        " and /home/sam/projects/serverless/deploy.log"
+    )
+
+    assert rendered == "reading [REDACTED_PRIVATE_PATH] and [REDACTED_PRIVATE_PATH]"
+
+
 @pytest.mark.parametrize(
     "output_format", ["terminal", "markdown", "json", "github", "sarif"]
 )
@@ -169,7 +182,10 @@ def test_batch_output_does_not_leak(
 
     rendered = capsys.readouterr().out
     _assert_clean(rendered, f"batch --format {output_format}")
-    assert "DB_PASSWORD=[REDACTED_SECRET]" in rendered
+    # In CI the runner's paths are exempt from private-path redaction, so this
+    # still proves the filename's secret is starred out rather than leaked; a
+    # gate run from a home directory sees the whole source path redacted.
+    assert redact(second.as_posix()) in rendered
 
 
 def test_the_log_is_still_diagnosed_through_all_that_noise(log: Path, capsys) -> None:

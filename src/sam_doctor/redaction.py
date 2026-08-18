@@ -34,11 +34,15 @@ _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}
 # Keep this intentionally narrow: absolute Windows paths below C:\Users and
 # Unix/macOS paths below /home or /Users. Relative project paths remain useful
 # evidence, and URL paths are not local filesystem evidence.
+# Inside a character class, whitespace is `\s`, not `\\s`: the doubled
+# backslash reads as a literal backslash plus the letter `s`, which made every
+# path segment stop at its first `s` and leak the rest of the path after the
+# redaction label.
 _PRIVATE_PATH = re.compile(
     r"""(?i)(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\/]+Users[\\/]+"""
-    r"""(?!runneradmin[\\/]AppData[\\/]Local[\\/]Temp[\\/])[^\\/\\s'"]+|"""
-    r"""[\\/](?:Users|home)[\\/](?!runner[\\/]work[\\/])[^\\/\\s'"]+"""
-    r""")(?:[\\/][^\\/\\s'"]+)*"""
+    r"""(?!runneradmin[\\/]AppData[\\/]Local[\\/]Temp[\\/])[^\\/\s'"]+|"""
+    r"""[\\/](?:Users|home)[\\/](?!runner[\\/]work[\\/])[^\\/\s'"]+"""
+    r""")(?:[\\/][^\\/\s'"]+)*"""
 )
 
 # Values that are configuration whatever key they sit under. `permissions: id-token:
