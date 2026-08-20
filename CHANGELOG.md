@@ -8,7 +8,8 @@ All notable changes to SAM Doctor are documented here.
   made every home-directory path segment stop redacting at its first `s`, so the
   tail of the path - including username fragments - could trail the
   `[REDACTED_PRIVATE_PATH]` label in reports, packets, and the browser demo. The
-  full path is now consumed, and the CI-runner and URL exemptions are unchanged.
+  full path is now consumed, including quoted home paths whose username or
+  checkout contains spaces, and the CI-runner and URL exemptions are unchanged.
 
 - **Oversized EC2 user data now has a focused handoff.** The exact `User data is limited to 16384 bytes` rejection reports one high-confidence finding across RunInstances errors, CloudFormation resource-handler messages, and the `InvalidUserData.Malformed` wrapper. The guide explains that the limit applies to the decoded, post-substitution script and starts with measuring the rendered bytes before shrinking the script, offloading it to S3 or SSM, compressing it, or baking the setup into the AMI. Unrelated failed resources in the same log still report.
 

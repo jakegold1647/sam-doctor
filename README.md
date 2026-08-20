@@ -545,7 +545,8 @@ JSON keys STS output prints), presigned-URL signatures, bearer tokens,
 `Authorization: Basic` values, JWT-style tokens, PEM private-key blocks,
 credentials embedded in URLs, incoming webhook URLs (Slack, Discord, Teams),
 passwords passed on a login command line or in `.netrc` form, common Windows,
-macOS, and Linux user-home paths, and common GitHub, Slack and Docker Hub token
+macOS, and Linux user-home paths (including quoted paths containing spaces),
+and common GitHub, Slack and Docker Hub token
 formats before matched evidence is shown.
 This is a guardrail, not a secret scanner: review a report before sharing it.
 

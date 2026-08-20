@@ -218,6 +218,8 @@ REDACTION_CORPUS = (
     "-----BEGIN RSA PRIVATE KEY-----\nMIIEow\n-----END RSA PRIVATE KEY-----",
     "xoxb-1234567890-abcdefghijkl posted the failure",
     "dckr_pat_abcdefghijklmnopqrstuvwxyz expired",
+    'opening "C:\\Users\\Alice Smith\\private repo\\deploy.log"',
+    "reading '/Users/alice/Client Work/deploy.log'",
     "no identifiers on this line at all",
 )
 

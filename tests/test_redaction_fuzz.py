@@ -245,7 +245,7 @@ def test_the_readme_names_every_redaction_pattern_family() -> None:
     readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
     claim = readme[readme.index("Reports redact AWS account IDs") :][:1400]
 
-    assert len(families) == 19, (
+    assert len(families) == 20, (
         f"redaction has {len(families)} pattern families ({sorted(families)}); "
         "update the README paragraph that enumerates them, then this count"
     )

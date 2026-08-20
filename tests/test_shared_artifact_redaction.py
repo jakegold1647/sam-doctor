@@ -113,6 +113,25 @@ def test_private_path_redaction_consumes_segments_containing_s() -> None:
 
 
 @pytest.mark.parametrize(
+    ("text", "expected"),
+    (
+        (
+            'opening "C:\\Users\\Alice Smith\\private repo\\deploy.log"',
+            'opening "[REDACTED_PRIVATE_PATH]"',
+        ),
+        (
+            "reading '/Users/alice/Client Work/deploy.log'",
+            "reading '[REDACTED_PRIVATE_PATH]'",
+        ),
+    ),
+)
+def test_quoted_private_path_redaction_consumes_spaces(
+    text: str, expected: str
+) -> None:
+    assert redact(text) == expected
+
+
+@pytest.mark.parametrize(
     "output_format", ["terminal", "markdown", "json", "github", "sarif"]
 )
 def test_no_report_format_leaks(log: Path, capsys, output_format: str) -> None:

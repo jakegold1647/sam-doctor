@@ -38,6 +38,15 @@ _JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}
 # backslash reads as a literal backslash plus the letter `s`, which made every
 # path segment stop at its first `s` and leak the rest of the path after the
 # redaction label.
+# Quoted paths need a separate pass because spaces are valid inside them. The
+# unquoted matcher must still stop at whitespace or it would consume ordinary
+# prose after a path, but doing that inside quotes can expose the rest of a
+# username or private checkout (for example, `C:\Users\Alice Smith\...`).
+_QUOTED_PRIVATE_PATH = re.compile(
+    r'''(?i)(["'`])(?:[A-Z]:[\\/]+Users[\\/]+'''
+    r'''(?!runneradmin[\\/]AppData[\\/]Local[\\/]Temp[\\/])[^\r\n]*?|'''
+    r'''[\\/](?:Users|home)[\\/](?!runner[\\/]work[\\/])[^\r\n]*?)\1'''
+)
 _PRIVATE_PATH = re.compile(
     r"""(?i)(?<![A-Za-z0-9_:/])(?:[A-Z]:[\\/]+Users[\\/]+"""
     r"""(?!runneradmin[\\/]AppData[\\/]Local[\\/]Temp[\\/])[^\\/\s'"]+|"""
@@ -184,6 +193,10 @@ def redact(text: str) -> str:
     text = _BASIC_AUTH.sub(lambda match: f"{match.group(1)} [REDACTED_BASIC_AUTH]", text)
     text = _SECRET_ASSIGNMENT.sub(_redact_secret_assignment, text)
     text = _JWT.sub("[REDACTED_JWT]", text)
+    text = _QUOTED_PRIVATE_PATH.sub(
+        lambda match: f"{match.group(1)}[REDACTED_PRIVATE_PATH]{match.group(1)}",
+        text,
+    )
     text = _PRIVATE_PATH.sub("[REDACTED_PRIVATE_PATH]", text)
     # Must run before the email pass: `user:password@host.tld` also matches the
     # email pattern, and letting that win both mislabels the credential and

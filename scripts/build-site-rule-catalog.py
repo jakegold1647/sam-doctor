@@ -262,6 +262,7 @@ REDACTION_PASSES: tuple[tuple[str, str], ...] = (
     ("_BASIC_AUTH", "$1 [REDACTED_BASIC_AUTH]"),
     ("_SECRET_ASSIGNMENT", "@secret-assignment"),
     ("_JWT", "[REDACTED_JWT]"),
+    ("_QUOTED_PRIVATE_PATH", "$1[REDACTED_PRIVATE_PATH]$1"),
     ("_PRIVATE_PATH", "[REDACTED_PRIVATE_PATH]"),
     ("_URL_CREDENTIALS", "@url-credentials"),
     ("_EMAIL", "[REDACTED_EMAIL]"),
