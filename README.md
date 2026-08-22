@@ -427,7 +427,9 @@ to templates, and [`examples/README.md`](examples/README.md) indexes everything.
 ## What it detects
 
 Run `sam-doctor rules` (or `rules --format json`) for the current
-machine-readable catalog. Each rule triggers on an explicit error signal in the
+machine-readable catalog. Use `rules --search changeset` to match stable ids
+and titles, and add `--confidence high` when you only want high-confidence
+diagnostics. Each rule triggers on an explicit error signal in the
 log, not on template inspection or AWS account access, and carries a stable id
 (`iam.deny.explicit`, and so on) that CI tooling can match on across releases -
 see [docs/stability.md](docs/stability.md). The current set:

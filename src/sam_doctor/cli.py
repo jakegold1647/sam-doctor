@@ -196,6 +196,15 @@ GitHub Action behavior:
     rules_parser = subcommands.add_parser("rules", help="List the currently supported diagnostic rules.")
     rules_parser.add_argument("--format", choices=("terminal", "json"), default="terminal")
     rules_parser.add_argument("--output", type=Path, help="Write the rule catalog to this path instead of stdout.")
+    rules_parser.add_argument(
+        "--search",
+        help="Show rules whose stable id or title contains this text.",
+    )
+    rules_parser.add_argument(
+        "--confidence",
+        choices=("low", "medium", "high"),
+        help="Show only rules with this confidence level.",
+    )
 
     schemas_parser = subcommands.add_parser(
         "schemas", help="Show schema references for current machine-readable outputs."
@@ -1345,7 +1354,15 @@ def main(argv: list[object] | None = None) -> int:
         return 0
 
     if args.command == "rules":
-        report = rules_report(args.format)
+        try:
+            report = rules_report(
+                args.format,
+                search=args.search,
+                confidence=args.confidence,
+            )
+        except ValueError as error:
+            _print_error(parser, str(error))
+            return 2
         if args.output:
             try:
                 _write_report(args.output, report)

@@ -3181,10 +3181,29 @@ def sarif_report(results: list[tuple[str, list[Finding]]]) -> str:
     return json.dumps(payload, indent=2) + "\n"
 
 
-def rules_report(output_format: str) -> str:
+def rules_report(
+    output_format: str,
+    *,
+    search: str | None = None,
+    confidence: str | None = None,
+) -> str:
     """Render the supported-rule catalog for prospective users and CI checks."""
 
-    rules = supported_rules()
+    all_rules = supported_rules()
+    rules = all_rules
+    if search is not None:
+        needle = search.strip().casefold()
+        if not needle:
+            raise ValueError("--search must contain non-whitespace text.")
+        rules = tuple(
+            rule
+            for rule in rules
+            if needle in rule.id.casefold() or needle in rule.title.casefold()
+        )
+    if confidence is not None:
+        if confidence not in {"low", "medium", "high"}:
+            raise ValueError("confidence must be low, medium, or high.")
+        rules = tuple(rule for rule in rules if rule.confidence == confidence)
     if output_format == "json":
         payload = {
             "sam_doctor_version": __version__,
@@ -3201,7 +3220,14 @@ def rules_report(output_format: str) -> str:
         }
         return json.dumps(payload, indent=2) + "\n"
 
-    lines = [f"SAM Doctor {__version__} supports {len(rules)} diagnostic rule(s):", ""]
+    if search is not None or confidence is not None:
+        heading = (
+            f"SAM Doctor {__version__} matched {len(rules)} of "
+            f"{len(all_rules)} diagnostic rule(s):"
+        )
+    else:
+        heading = f"SAM Doctor {__version__} supports {len(rules)} diagnostic rule(s):"
+    lines = [heading, ""]
     for index, rule in enumerate(rules, start=1):
         lines.extend(
             [

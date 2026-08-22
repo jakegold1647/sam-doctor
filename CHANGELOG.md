@@ -4,6 +4,11 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The rule catalog is now searchable.** `sam-doctor rules --search TEXT`
+  filters stable rule ids and titles case-insensitively, and
+  `--confidence low|medium|high` can narrow the result further in terminal or
+  JSON output. The diagnostic matcher itself is unchanged.
+
 - **Private-path redaction now removes the whole path.** A character-class typo
   made every home-directory path segment stop redacting at its first `s`, so the
   tail of the path - including username fragments - could trail the

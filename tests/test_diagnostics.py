@@ -2360,6 +2360,40 @@ def test_rules_command_prints_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert report["rule_count"] >= 7
 
 
+def test_rules_command_filters_by_id_and_confidence(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from sam_doctor.diagnostics import supported_rules
+
+    target = next(rule for rule in supported_rules() if rule.confidence == "high")
+
+    assert (
+        main(
+            [
+                "rules",
+                "--format",
+                "json",
+                "--search",
+                target.id.upper(),
+                "--confidence",
+                "high",
+            ]
+        )
+        == 0
+    )
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["rule_count"] == 1
+    assert [rule["id"] for rule in report["rules"]] == [target.id]
+
+
+def test_rules_command_rejects_blank_search(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["rules", "--search", "   "]) == 2
+    assert "--search must contain non-whitespace text" in capsys.readouterr().err
+
+
 def test_schemas_command_prints_schema_locations(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
