@@ -88,6 +88,7 @@
       <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
       <nav aria-label="Site navigation">
         <a href="./">Home</a>
+        <a href="./ci-recipes.html">CI recipes</a>
         <a href="./errors/">Error index</a>
         <a href="./contributors/">Community</a>
         <a class="nav-github" href="https://github.com/jakegold1647/sam-doctor">GitHub <span aria-hidden="true">↗</span></a>
@@ -196,7 +197,7 @@ if ($deployStatus -ne 0) {
   sam-doctor diagnose deployment.log --format markdown
 }
 exit $deployStatus</code></pre>
-        <p class="muted">These examples keep diagnosis advisory; add a confidence or findings gate only when you are ready. For a bounded rollout, follow the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adoption-pilot.md">first-deployment pilot checklist</a>. The <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/ci-recipes.md">CI recipe index</a> has copyable starters for other runners.</p>
+        <p class="muted">These examples keep diagnosis advisory; add a confidence or findings gate only when you are ready. For a bounded rollout, follow the <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adoption-pilot.md">first-deployment pilot checklist</a>. The <a href="./ci-recipes.html">CI recipe index</a> has copyable starters for other runners.</p>
 
         <p class="muted">Prefer one command without shell-specific capture glue:</p>
         <pre><code>sam-doctor run --log-file deployment.log --format markdown -- sam deploy --no-confirm-changeset</code></pre>
