@@ -7,13 +7,14 @@ level of [issue #24](https://github.com/jakegold1647/sam-doctor/issues/24) so on
 contributor can land it in a focused PR with the rule, tests, fixture-registry
 entry, error page, and changelog entry a complete contribution requires.
 
-> **One diagnostic is actively assigned.**
+> **No diagnostic is currently available to claim from the live queue.**
 > [#79](https://github.com/jakegold1647/sam-doctor/issues/79) (IAM role
-> managed-policy attachment quota) is being handled by its assigned contributor,
-> so please do not start competing work on it. [#63](https://github.com/jakegold1647/sam-doctor/issues/63)
-> remains at `status: needs-repro` and needs a complete sanitized reproduction
-> before implementation. Check the live issue queue before claiming work; this
-> roadmap records evidence and scope rather than live assignments.
+> managed-policy attachment quota) landed through
+> [Sean's #92](https://github.com/jakegold1647/sam-doctor/pull/92).
+> [#63](https://github.com/jakegold1647/sam-doctor/issues/63) remains at
+> `status: needs-repro` and needs a complete sanitized reproduction before
+> implementation. Check the live issue queue before claiming work; this roadmap
+> records evidence and scope rather than live assignments.
 
 Before starting:
 
@@ -1609,11 +1610,12 @@ failure is always welcome; use the
 for the current queue.
 
 At the time of this update,
-[#79](https://github.com/jakegold1647/sam-doctor/issues/79) is assigned to a
-contributor. Do not duplicate that work. [#63](https://github.com/jakegold1647/sam-doctor/issues/63)
-is intentionally `status: needs-repro`, so contribute a complete sanitized
-example there before implementing a rule. The live issue search is the source
-of truth as contributors claim or complete work.
+[#79](https://github.com/jakegold1647/sam-doctor/issues/79) is implemented and
+closed through [Sean's #92](https://github.com/jakegold1647/sam-doctor/pull/92).
+[#63](https://github.com/jakegold1647/sam-doctor/issues/63) is intentionally
+`status: needs-repro`, so contribute a complete sanitized example there before
+implementing a rule. The live issue search is the source of truth as
+contributors claim or complete work.
 
 - Lambda code storage limit exceeded (`CodeStorageExceededException`) —
   landed in [#35](https://github.com/jakegold1647/sam-doctor/pull/35), closing

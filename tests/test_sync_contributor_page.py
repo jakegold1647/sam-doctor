@@ -30,16 +30,16 @@ def test_real_contributor_page_is_in_sync() -> None:
     changed, summary = module.sync(write=False)
 
     assert changed is False
-    assert summary == "7 contributors, 95 diagnostics"
+    assert summary == "8 contributors, 95 diagnostics"
 
 
 def test_hall_stats_use_live_github_count_with_fallback() -> None:
     module = _load_sync()
 
-    rendered = module._stats_block(7, 90)
+    rendered = module._stats_block(8, 90)
 
     assert 'id="github-contributor-count"' in rendered
-    assert 'data-fallback="7"' in rendered
+    assert 'data-fallback="8"' in rendered
     assert "GitHub contributors (live)" in rendered
 
 

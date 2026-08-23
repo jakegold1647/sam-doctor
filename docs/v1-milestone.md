@@ -9,10 +9,10 @@ means a user can rely on what is already here.
    checklist in [pypi-publishing.md](pypi-publishing.md); what remains is
    following it on the next release and confirming the listing updates.
 2. Keep the rule-request tracker honest. [#79](https://github.com/jakegold1647/sam-doctor/issues/79)
-   is assigned to a contributor, so it is not available for duplicate work.
+   landed through [Sean's #92](https://github.com/jakegold1647/sam-doctor/pull/92).
    [#63](https://github.com/jakegold1647/sam-doctor/issues/63) still needs a
-   complete sanitized reproduction before implementation. #21 and #66 are
-   implemented and closed. Entry 14 in
+   complete sanitized reproduction before implementation. #21, #66, and #79
+   are implemented and closed. Entry 14 in
    [rule-roadmap.md](rule-roadmap.md) should land or be explicitly deferred
    before 1.0.
 3. Promise stability. The JSON report shape, the stable rule ids (landed in

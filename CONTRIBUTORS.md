@@ -21,6 +21,7 @@ still shipped, and a card that links to a 404 helps nobody.
 - [rasmalai25](https://github.com/rasmalai25) — deployment rules — Lambda deployment diagnostics that make a noisy failure easier to investigate locally.
 - [JasonColapietro](https://github.com/JasonColapietro) — test coverage — Near-match test coverage that protects the boundary between a useful signal and a false positive.
 - [agu2347](https://github.com/agu2347) — template validation — Non-ASCII property validation diagnostics that catch invisible template failures before they cost a deploy.
+- [seanxuu](https://github.com/seanxuu) — IAM quotas — Managed-policy attachment quota diagnostics with direct API and CloudFormation coverage, focused negatives, and preserved generic handoffs.
 
 This is a thank-you list, not an authoritative contributor count. GitHub's
 [contributor graph](https://github.com/jakegold1647/sam-doctor/graphs/contributors)
