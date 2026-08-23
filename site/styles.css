@@ -1557,6 +1557,86 @@ body:not(.landing) .faq,
   border-left: 3px solid var(--accent);
 }
 
+.error-search {
+  margin: 0 0 clamp(2.4rem, 7vw, 5rem);
+  border: 1px solid var(--line-strong);
+  border-radius: .9rem;
+  background: var(--accent-pale);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  box-shadow: var(--shadow-sm);
+}
+
+.error-search > label {
+  display: block;
+  margin-bottom: .7rem;
+  color: var(--ink);
+  font: 700 .85rem/1.4 var(--mono);
+}
+
+.error-search-controls {
+  display: flex;
+  align-items: stretch;
+  gap: .7rem;
+}
+
+.error-search input {
+  width: 100%;
+  min-width: 0;
+  min-height: 3rem;
+  border: 1px solid var(--line-strong);
+  border-radius: .65rem;
+  background: var(--surface);
+  color: var(--ink);
+  padding: .72rem .9rem;
+  font: inherit;
+}
+
+.error-search input::placeholder {
+  color: var(--muted);
+}
+
+.error-search .button {
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.error-search .button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  transform: none;
+}
+
+.error-search-note,
+.error-search-status {
+  margin: .7rem 0 0;
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.error-search-status {
+  color: var(--accent-strong);
+  font-family: var(--mono);
+}
+
+.error-search-empty {
+  margin-block: clamp(2.4rem, 7vw, 5rem);
+  border: 1px dashed var(--line-strong);
+  border-radius: .9rem;
+  background: rgb(255 254 253 / 72%);
+  padding: clamp(1.25rem, 4vw, 2.4rem);
+  text-align: center;
+}
+
+.error-search-empty h2 {
+  margin-bottom: .65rem;
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+}
+
+.error-search-empty p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .steps h2,
 .terminal h2,
 .integration h2,
@@ -1716,6 +1796,15 @@ body:not(.landing) footer p {
 
   .topbar nav a {
     font-size: .74rem;
+  }
+
+  .error-search-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .error-search .button {
+    width: 100%;
   }
 
   .landing .topbar nav a:first-child {
