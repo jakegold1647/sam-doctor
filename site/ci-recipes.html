@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CI Recipes for AWS Deployments | SAM Doctor</title>
+    <meta name="description" content="Choose a SAM Doctor starter for GitHub Actions, GitLab CI, CircleCI, Azure Pipelines, or Bitbucket while preserving the original AWS deployment exit status." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/ci-recipes.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CI Recipes for AWS Deployments | SAM Doctor" />
+    <meta property="og:description" content="Choose a SAM Doctor starter for GitHub Actions, GitLab CI, CircleCI, Azure Pipelines, or Bitbucket while preserving the original AWS deployment exit status." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/ci-recipes.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CI Recipes for AWS Deployments | SAM Doctor" />
+    <meta name="twitter:description" content="Choose a SAM Doctor starter for GitHub Actions, GitLab CI, CircleCI, Azure Pipelines, or Bitbucket while preserving the original AWS deployment exit status." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="SAM Doctor CI recipes, GitHub Actions AWS deployment, GitLab CI AWS SAM, CircleCI AWS SAM, Azure Pipelines AWS deployment, Bitbucket Pipelines AWS SAM" />
+    <meta name="geo.region" content="US" />
+    <meta name="geo.placename" content="United States" />
+    <link rel="sitemap" type="application/xml" href="./sitemap.xml" />
+    <link rel="alternate" type="text/plain" href="./llms.txt" />
+    <link rel="alternate" href="./ci-recipes.html" hreflang="en-us" />
+    <link rel="alternate" href="./ci-recipes.html" hreflang="x-default" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "SAM Doctor CI recipes",
+        "description": "Credential-free CI starters for adding advisory AWS deployment-log diagnosis without hiding the deploy exit status.",
+        "url": "https://sam-doctor.jacobgoldstein.dev/ci-recipes.html",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "SAM Doctor",
+          "url": "https://sam-doctor.jacobgoldstein.dev/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/sam-doctor-logo.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#ci-recipes-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav aria-label="Site navigation">
+        <a href="./">Home</a>
+        <a href="./quickstart.html">Quickstart</a>
+        <a href="./ci-recipes.html" aria-current="page">CI recipes</a>
+        <a href="./errors/">Error index</a>
+        <a href="./contributors/">Community</a>
+        <a class="nav-github" href="https://github.com/jakegold1647/sam-doctor">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="ci-recipes-content">
+      <section class="hero" aria-labelledby="ci-recipes-title">
+        <p class="eyebrow">PIPELINE STARTERS</p>
+        <h1 id="ci-recipes-title">Add the diagnosis. Keep the deploy result.</h1>
+        <p class="lede">
+          Pick the runner you already use, start advisory, and keep the AWS
+          deployment command's original exit status. Every starter runs locally
+          on the log you provide and needs no AWS credentials of its own.
+        </p>
+        <nav class="recipe-jump" aria-label="Choose a CI runner">
+          <a href="#github-actions">GitHub Actions</a>
+          <a href="#gitlab-ci">GitLab CI</a>
+          <a href="#circleci">CircleCI</a>
+          <a href="#azure-pipelines">Azure Pipelines</a>
+          <a href="#bitbucket-pipelines">Bitbucket</a>
+          <a href="#custom-runner">Custom runner</a>
+        </nav>
+      </section>
+
+      <section class="terminal" aria-labelledby="known-result-title">
+        <p class="eyebrow">CREDENTIAL-FREE CHECK</p>
+        <h2 id="known-result-title">Verify one known result before touching a deployment</h2>
+        <pre><code>sam-doctor diagnose examples/oidc-assume-role-failure.txt --format markdown</code></pre>
+        <p>The tracked sample returns one finding with rule ID <code>github.oidc.assume-role-rejected</code>.</p>
+        <p class="muted">Then verify the honest no-match path:</p>
+        <pre><code>printf '%s\n' 'deployment finished with status 0' | sam-doctor diagnose - --format markdown</code></pre>
+        <p class="muted">That command should report that no supported pattern was found.</p>
+      </section>
+
+      <section class="steps" aria-labelledby="runner-title">
+        <p class="eyebrow">CHOOSE A RUNNER</p>
+        <h2 id="runner-title">Copy the smallest starter that matches your pipeline</h2>
+        <p class="muted">Replace only the marked deploy command and keep your existing authentication and environment setup in earlier steps.</p>
+
+        <div class="grid recipe-grid">
+          <article id="github-actions">
+            <p class="eyebrow">GITHUB ACTIONS</p>
+            <h2>Use the Action or a captured shell log</h2>
+            <p>Keep <code>if: always()</code> on a diagnostic step after deploy so it can explain a failed run.</p>
+            <ul>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow.yml">AWS SAM starter</a></li>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow-two-phase-gating.yml">Advisory-to-strict rollout</a></li>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow-sam-sync.yml"><code>sam sync</code> starter</a></li>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow-cdk.yml">AWS CDK starter</a></li>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow-cf-pipeline.yml">CloudFormation starter</a></li>
+              <li><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/github-actions-workflow-batch-logs.yml">Batch-log starter</a></li>
+            </ul>
+          </article>
+
+          <article id="gitlab-ci">
+            <p class="eyebrow">GITLAB CI</p>
+            <h2>Save the report as a job artifact</h2>
+            <p>Diagnose after a non-zero deploy, publish Markdown or JSON, then return the captured deployment status.</p>
+            <p><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/gitlab-ci-sam-doctor.yml">Open the GitLab CI starter <span aria-hidden="true">↗</span></a></p>
+          </article>
+
+          <article id="circleci">
+            <p class="eyebrow">CIRCLECI</p>
+            <h2>Keep the report beside the deployment log</h2>
+            <p>Capture <code>PIPESTATUS[0]</code>, diagnose the saved log on failure, and persist both files to the workspace.</p>
+            <p><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/circleci-sam-doctor.yml">Open the CircleCI starter <span aria-hidden="true">↗</span></a></p>
+          </article>
+
+          <article id="azure-pipelines">
+            <p class="eyebrow">AZURE PIPELINES</p>
+            <h2>Publish a reviewed pipeline artifact</h2>
+            <p>Use the Bash step's captured deploy status and keep diagnosis advisory while the team evaluates the findings.</p>
+            <p><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/azure-pipelines-sam-doctor.yml">Open the Azure Pipelines starter <span aria-hidden="true">↗</span></a></p>
+          </article>
+
+          <article id="bitbucket-pipelines">
+            <p class="eyebrow">BITBUCKET PIPELINES</p>
+            <h2>Keep the log and report as step artifacts</h2>
+            <p>Run diagnosis only when deployment fails, then exit with the status captured from the deploy command.</p>
+            <p><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/bitbucket-pipelines-sam-doctor.yml">Open the Bitbucket starter <span aria-hidden="true">↗</span></a></p>
+          </article>
+
+          <article id="custom-runner">
+            <p class="eyebrow">CUSTOM RUNNER</p>
+            <h2>Wrap any deployment command</h2>
+            <p>The <code>run</code> command streams the deploy, saves the combined log, diagnoses on failure, and returns the deploy exit status.</p>
+            <pre><code>sam-doctor run --log-file deployment.log --format markdown -- your-deploy-command</code></pre>
+            <p><a href="https://github.com/jakegold1647/sam-doctor/blob/main/examples/README.md">Browse every checked-in starter <span aria-hidden="true">↗</span></a></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="steps" aria-labelledby="output-title">
+        <p class="eyebrow">CHOOSE AN OUTPUT</p>
+        <h2 id="output-title">Send the report where your team will review it</h2>
+        <div class="table-wrap">
+          <table class="choice-table">
+            <thead>
+              <tr><th scope="col">Destination</th><th scope="col">Command</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Terminal or ticket draft</td><td><code>sam-doctor diagnose deployment.log --format markdown</code></td></tr>
+              <tr><td>Script or later CI step</td><td><code>sam-doctor diagnose deployment.log --format json --output diagnosis.json</code></td></tr>
+              <tr><td>GitHub annotations</td><td><code>sam-doctor diagnose deployment.log --format github</code></td></tr>
+              <tr><td>GitHub code scanning</td><td><code>sam-doctor diagnose deployment.log --format sarif --output sam-doctor.sarif</code></td></tr>
+              <tr><td>Several logs</td><td><code>sam-doctor batch logs/ --format json</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="steps recipe-contract" aria-labelledby="rollout-title">
+        <p class="eyebrow">ROLLOUT CONTRACT</p>
+        <h2 id="rollout-title">Start advisory. Enforce only after review.</h2>
+        <ol>
+          <li>Run the known-result and no-match checks without credentials.</li>
+          <li>Keep diagnosis non-blocking while you review expected, missed, and unclear findings.</li>
+          <li>Preserve the deployment command's exit status in every runner.</li>
+          <li>Gate findings only after the signal quality fits your workflow.</li>
+        </ol>
+        <p class="muted">SAM Doctor reads text; it does not inspect or change an AWS stack. The <a href="https://github.com/jakegold1647/sam-doctor/blob/main/docs/adoption-pilot.md">first-deployment pilot</a> gives a bounded review checklist.</p>
+      </section>
+
+      <section class="founder" aria-labelledby="sharing-title">
+        <p class="eyebrow">SAFE SHARING</p>
+        <h2 id="sharing-title">Review the excerpt before it leaves the runner</h2>
+        <p class="muted">Remove account IDs, ARNs, request IDs, credentials, tokens, private paths, customer names, and private repository names. Built-in redaction helps, but it is not a substitute for your review.</p>
+        <p class="muted">A useful report includes the rule ID, one short redacted excerpt, the command, the expected result, and whether the suggested verification was read-only and useful.</p>
+        <a class="button primary" href="https://github.com/jakegold1647/sam-doctor/issues/new?template=usage_feedback.yml">Share a usage result</a>
+        <a class="button secondary" href="./report-missed-error.html">Report an unmatched error safely</a>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>
