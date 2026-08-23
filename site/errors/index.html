@@ -52,6 +52,33 @@
         </p>
       </section>
 
+      <form class="error-search" id="error-guide-search-form" role="search">
+        <label for="error-guide-search">Find an error guide</label>
+        <div class="error-search-controls">
+          <input
+            id="error-guide-search"
+            name="q"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="error-guide-search-note error-guide-search-status"
+            placeholder="Try OIDC, rollback, Docker, or an error message"
+          >
+          <button class="button secondary" id="error-guide-search-clear" type="button" disabled>Clear</button>
+        </div>
+        <p class="error-search-note" id="error-guide-search-note">Filtering happens in this page. Nothing is sent or stored.</p>
+        <p class="error-search-status" id="error-guide-search-status" role="status" aria-live="polite">Showing all error guides.</p>
+      </form>
+
+      <div class="error-search-empty" id="error-guide-search-empty" hidden>
+        <h2>No matching guide yet</h2>
+        <p>
+          Try a shorter phrase, or
+          <a href="https://github.com/jakegold1647/sam-doctor/issues/new?template=rule_request.yml">request a diagnostic rule</a>
+          with a short sanitized excerpt.
+        </p>
+      </div>
+
       <section class="steps" aria-labelledby="identity-title">
         <p class="eyebrow">IDENTITY AND CREDENTIALS</p>
         <h2 id="identity-title">Identity, OIDC, and credential errors</h2>
@@ -195,5 +222,6 @@ sam-doctor diagnose deployment.log --format markdown</code></pre>
       <p><a href="../contributors/">Meet the community contributors</a>.</p>
       <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
     </footer>
+    <script src="../assets/error-index-filter.js" defer></script>
   </body>
 </html>
