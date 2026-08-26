@@ -85,6 +85,7 @@ QUERIES = (
     '"Circular dependency between resources" CloudFormation in:body',
     '"No export named" CloudFormation in:body',
     '"User data is limited to 16384 bytes" in:body',
+    '"Layers consume more than the available size" in:body',
 )
 
 # Unauthenticated search allows 10 requests a minute; a token raises that. The pause
@@ -131,6 +132,7 @@ FAILURE_SIGNAL = re.compile(
     r"|Error:\s*reading STS Caller Identity\b"
     r"|Database cannot be renamed\b"
     r"|User data is limited to 16384 bytes\b"
+    r"|Layers consume more than the available size of\b"
     r"|AWS SDK Go Service Operation Incomplete\b"
     r"|(?:Error:\s*creating EC2 Network Interface|Failed to (?:CreateNetworkInterface|create network interface)|failed to create (?:an )?network interface|error creating (?:an )?network interface).{0,320}\boperation error EC2:\s*CreateNetworkInterface\b"
     r"|Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b"

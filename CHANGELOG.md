@@ -4,6 +4,16 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **The Lambda layers size rejection now has a focused handoff.** The exact
+  `Layers consume more than the available size of` refusal - in both the
+  `262144000 bytes` and `the function` phrasings - reports one high-confidence
+  finding across direct API errors and CloudFormation resource-handler
+  messages. The guide explains that Lambda sums the unzipped bytes of the
+  function package and every attached layer version against a 250 MB total,
+  and starts remediation from measuring that sum before dropping unused
+  layers, trimming the rest, or repackaging as a container image. Unrelated
+  failed resources in the same log still report.
+
 - **The rule catalog is now searchable.** `sam-doctor rules --search TEXT`
   filters stable rule ids and titles case-insensitively, and
   `--confidence low|medium|high` can narrow the result further in terminal or

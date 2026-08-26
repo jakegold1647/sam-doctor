@@ -573,6 +573,20 @@ RULE_FIXTURES: dict[str, RuleFixture] = {
             "the UpdateFunctionCode operation: Code storage limit exceeded."
         ),
     ),
+    "lambda.layers.size-limit-exceeded": RuleFixture(
+        positive=(
+            'Resource handler returned message: "Layers consume more than '
+            'the available size of 262144000 bytes (Service: Lambda, Status '
+            'Code: 400)"'
+        ),
+        # The same limit number on the function package alone belongs to
+        # lambda.package.size-limit-exceeded, not the layers rule.
+        negative=(
+            "An error occurred (InvalidParameterValueException) when calling "
+            "the UpdateFunctionCode operation: Unzipped size must be smaller "
+            "than 262144000 bytes"
+        ),
+    ),
     "lambda.runtime.deprecated": RuleFixture(
         positive=(
             "CREATE_FAILED AWS::Lambda::Function Worker Resource handler returned "

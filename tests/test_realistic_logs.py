@@ -39,6 +39,11 @@ CREATE_IN_PROGRESS AWS::IAM::Policy FunctionPolicy
 CREATE_FAILED AWS::IAM::Policy FunctionPolicy Maximum policy size of 10240 bytes exceeded for role orders-123456789012-role (Service: AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)
 """
 
+LAYERS_SIZE_LIMIT = """CloudFormation events from stack operations
+CREATE_IN_PROGRESS AWS::Lambda::Function ApiFunction
+CREATE_FAILED AWS::Lambda::Function ApiFunction Resource handler returned message: "Layers consume more than the available size of 262144000 bytes (Service: Lambda, Status Code: 400)" (RequestToken: 91bc, HandlerErrorCode: InvalidRequest)
+"""
+
 USER_DATA_SIZE_LIMIT = """CloudFormation events from stack operations
 CREATE_IN_PROGRESS AWS::EC2::Instance Web
 CREATE_FAILED AWS::EC2::Instance Web Resource handler returned message: "User data is limited to 16384 bytes (Service: AmazonEC2; Status Code: 400; Error Code: InvalidParameterValue; Request ID: 91bc53af-7754-42bf-be57-3a0f83c33de5; Proxy: null)" (RequestToken: 6b1f, HandlerErrorCode: InvalidRequest)
@@ -128,6 +133,12 @@ def test_inline_policy_size_limit_reports_only_the_specific_iam_diagnosis() -> N
 def test_user_data_size_limit_reports_only_the_specific_diagnosis() -> None:
     assert _rule_ids(USER_DATA_SIZE_LIMIT) == {
         "ec2.user-data.size-limit-exceeded"
+    }
+
+
+def test_layers_size_limit_reports_only_the_specific_diagnosis() -> None:
+    assert _rule_ids(LAYERS_SIZE_LIMIT) == {
+        "lambda.layers.size-limit-exceeded"
     }
 
 

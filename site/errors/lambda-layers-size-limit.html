@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Layers consume more than the available size of the function | SAM Doctor</title>
+    <meta name="description" content="Fix the Lambda layers size rejection by summing the unzipped bytes of the function and every layer, then dropping unused layers, trimming the rest, or moving to a container image." />
+    <meta name="author" content="Jacob Goldstein" />
+    <link rel="canonical" href="https://sam-doctor.jacobgoldstein.dev/errors/lambda-layers-size-limit.html" />
+    <meta property="og:site_name" content="SAM Doctor" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Layers consume more than the available size of the function | SAM Doctor" />
+    <meta property="og:description" content="Fix the Lambda layers size rejection by summing the unzipped bytes of the function and every layer, then dropping unused layers, trimming the rest, or moving to a container image." />
+    <meta property="og:url" content="https://sam-doctor.jacobgoldstein.dev/errors/lambda-layers-size-limit.html" />
+    <meta property="og:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Layers consume more than the available size of the function | SAM Doctor" />
+    <meta name="twitter:description" content="Fix the Lambda layers size rejection by summing the unzipped bytes of the function and every layer, then dropping unused layers, trimming the rest, or moving to a container image." />
+    <meta name="twitter:image" content="https://sam-doctor.jacobgoldstein.dev/assets/sam-doctor-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="SAM Doctor identifies the next useful check in a failed AWS deployment" />
+    <meta name="theme-color" content="#0f5c4e" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/sam-doctor-logo.svg" />
+  <script type="application/ld+json" data-seo-block="error-techarticle">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Layers consume more than the available size of the function",
+      "name": "Layers consume more than the available size of the function | SAM Doctor",
+      "description": "Fix the Lambda layers size rejection by summing the unzipped bytes of the function and every layer, then dropping unused layers, trimming the rest, or moving to a container image.",
+      "url": "https://sam-doctor.jacobgoldstein.dev/errors/lambda-layers-size-limit.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sam-doctor.jacobgoldstein.dev/errors/lambda-layers-size-limit.html"
+      },
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Jacob Goldstein",
+        "url": "https://jacobgoldstein.dev"
+      },
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SAM Doctor",
+        "url": "https://sam-doctor.jacobgoldstein.dev/"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Layers consume more than the available size of the function"
+      },
+      "proficiencyLevel": "Expert",
+      "keywords": "Layers consume more than the available size, AWS deployment error, Lambda layers, 262144000 bytes, CloudFormation",
+      "datePublished": "2026-08-25",
+      "dateModified": "2026-08-25"
+    }
+  </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#error-content">Skip to content</a>
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">SAM Doctor</span></a>
+      <nav>
+        <a href="../">Home</a>
+        <a href="../quickstart.html">Quickstart</a>
+        <a href="./">Error index</a>
+        <a href="https://github.com/jakegold1647/sam-doctor">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="error-content">
+      <section class="hero" aria-labelledby="error-title">
+        <p class="eyebrow">ERROR REFERENCE</p>
+        <h1 id="error-title">Layers consume more than the available size of the function</h1>
+        <p class="hero-subtitle">Attached layers exceed the Lambda function's available size</p>
+        <p class="lede">
+          Lambda adds up the unzipped bytes of the function package and every
+          attached layer version, and rejects the request when the total passes
+          262,144,000 bytes (250&nbsp;MB). The check is on the combined total
+          &mdash; so attaching one more layer, or a new version of a layer that
+          grew, can fail a function whose own package never changed.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="means-title">
+        <p class="eyebrow">WHAT IT MEANS</p>
+        <h2 id="means-title">What this error means</h2>
+        <pre><code>CREATE_FAILED  AWS::Lambda::Function  ApiFunction
+Resource handler returned message: "Layers consume more than the available size of
+262144000 bytes (Service: Lambda, Status Code: 400)"
+
+An error occurred (InvalidParameterValueException) when calling the
+UpdateFunctionConfiguration operation: Layers consume more than the
+available size of the function</code></pre>
+        <p>
+          The number is a hard Lambda limit for zip-packaged functions, not a
+          quota you can raise. It is measured against unzipped bytes, so the
+          upload sizes you see in the console understate the real total, and the
+          failure often arrives from a layer version that grew rather than from
+          the code you just changed.
+        </p>
+      </section>
+
+      <section class="steps" aria-labelledby="fix-title">
+        <p class="eyebrow">SAFE NEXT STEPS</p>
+        <h2 id="fix-title">Sum the unzipped bytes, then shed layers</h2>
+        <ol>
+          <li>
+            <strong>Sum what Lambda actually measures.</strong> The limit counts
+            the unzipped bytes of the function package plus every attached layer
+            version, not the zipped upload sizes. Read the attachments without
+            changing anything:
+            <pre><code>aws lambda get-function --function-name YOUR_FUNCTION \
+  --query "{code:Configuration.CodeSize,layers:Configuration.Layers}"</code></pre>
+            The listed <code>CodeSize</code> values are zipped; download and
+            unzip the heaviest layer to count its real bytes.
+          </li>
+          <li>
+            <strong>Drop the layers the function no longer imports.</strong>
+            Layers accumulate: a dependency vendored into the package often
+            still rides along as a layer from an earlier design.
+          </li>
+          <li>
+            <strong>Trim the layers that stay.</strong> Tests, docs,
+            <code>__pycache__</code>, and unstripped native libraries are
+            usually where the bytes went; publish a slimmer layer version and
+            point the function at it.
+          </li>
+          <li>
+            <strong>Repackage if the dependencies are genuinely that large.</strong>
+            Container-image functions get 10&nbsp;GB, and bulky assets can load
+            from EFS or S3 at runtime instead of shipping in layers.
+          </li>
+        </ol>
+      </section>
+
+      <section class="steps" aria-labelledby="diagnose-title">
+        <p class="eyebrow">AUTOMATE THE TRIAGE</p>
+        <h2 id="diagnose-title">Diagnose this automatically</h2>
+        <p class="muted">
+          SAM Doctor recognizes the direct API error and the CloudFormation
+          resource-handler message, in both the <code>262144000 bytes</code> and
+          <code>the function</code> phrasings, and runs locally without AWS
+          credentials or log upload.
+        </p>
+        <pre><code>python -m pip install sam-doctor
+sam-doctor diagnose deployment.log --format markdown</code></pre>
+      </section>
+
+      <section class="steps" aria-labelledby="related-title">
+        <p class="eyebrow">RELATED</p>
+        <h2 id="related-title">Related errors</h2>
+        <ul>
+          <li><a href="./lambda-package-size-limit.html">Unzipped size must be smaller than 262144000 bytes</a> &mdash; the same limit hit by the function package alone, before layers enter the sum.</li>
+          <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded</a> &mdash; the regional quota across all functions, which reads like this error but has a different fix.</li>
+          <li><a href="./iam-role-inline-policy-size-limit.html">Maximum policy size exceeded for a role</a> &mdash; another hard size limit that surfaces mid-deploy.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built by <a href="https://jacobgoldstein.dev">Jacob Goldstein</a>. Independent development and maintenance.</p>
+      <p>SAM Doctor is an independent developer tool. AWS and GitHub are trademarks of their respective owners.</p>
+    </footer>
+  </body>
+</html>

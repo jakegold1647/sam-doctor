@@ -3939,6 +3939,7 @@ _OVERLAPPING_STATUS_REASONS = (
     "MyFn CREATE_FAILED The runtime parameter of python3.8 is no longer supported for creating or updating AWS Lambda functions",
     "FunctionPolicy CREATE_FAILED Maximum policy size of 10240 bytes exceeded for role my-function-role (Service: AmazonIdentityManagement; Status Code: 409; Error Code: LimitExceeded)",
     "Web CREATE_FAILED Resource handler returned message: \"User data is limited to 16384 bytes (Service: AmazonEC2; Status Code: 400; Error Code: InvalidParameterValue)\"",
+    "ApiFunction CREATE_FAILED Resource handler returned message: \"Layers consume more than the available size of 262144000 bytes (Service: Lambda, Status Code: 400)\"",
 )
 
 _UNRELATED_RESOURCE_FAILURE = (
@@ -4201,5 +4202,55 @@ def test_ec2_user_data_size_limit_has_one_high_confidence_finding(log: str) -> N
 )
 def test_ec2_user_data_size_limit_leaves_nearby_cases_unmatched(log: str) -> None:
     assert "ec2.user-data.size-limit-exceeded" not in {
+        finding.rule_id for finding in diagnose(log)
+    }
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        (
+            "botocore.exceptions.ClientError: An error occurred "
+            "(InvalidParameterValueException) when calling the "
+            "UpdateFunctionConfiguration operation: Layers consume more than "
+            "the available size of the function"
+        ),
+        (
+            'ApiFunction CREATE_FAILED Resource handler returned message: '
+            '"Layers consume more than the available size of 262144000 bytes '
+            '(Service: Lambda, Status Code: 400)" (RequestToken: 6b1f, '
+            "HandlerErrorCode: InvalidRequest)"
+        ),
+    ),
+)
+def test_lambda_layers_size_limit_has_one_high_confidence_finding(log: str) -> None:
+    findings = diagnose(log)
+
+    assert [finding.rule_id for finding in findings] == [
+        "lambda.layers.size-limit-exceeded"
+    ]
+    assert findings[0].confidence == "high"
+
+
+@pytest.mark.parametrize(
+    "log",
+    (
+        # The function package alone over the same limit is a different rule.
+        (
+            "An error occurred (InvalidParameterValueException) when calling "
+            "the UpdateFunctionCode operation: Unzipped size must be smaller "
+            "than 262144000 bytes"
+        ),
+        # Prose about the limit, not the error Lambda prints.
+        "Attached layers may consume most of the available size of a function.",
+        # The regional storage quota reads similar but is another rule.
+        (
+            "An error occurred (CodeStorageExceededException) when calling "
+            "the UpdateFunctionCode operation: Code storage limit exceeded."
+        ),
+    ),
+)
+def test_lambda_layers_size_limit_leaves_nearby_cases_unmatched(log: str) -> None:
+    assert "lambda.layers.size-limit-exceeded" not in {
         finding.rule_id for finding in diagnose(log)
     }

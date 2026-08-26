@@ -414,6 +414,13 @@ _EC2_NETWORK_INTERFACE_CREATE_FAILURE_PATTERNS = (
 # tool-specific wording, so the bare marker is safe to anchor on.
 _EC2_USER_DATA_SIZE_LIMIT_PATTERN = r"User data is limited to 16384 bytes"
 
+# Lambda prints this exact sentence when function code plus attached layers
+# exceed the unzipped total, in direct API errors and CloudFormation
+# resource-handler messages alike. The tail varies - older responses end in
+# "the function", current ones in "262144000 bytes" - so the anchor stops at
+# the stable prefix.
+_LAMBDA_LAYERS_SIZE_LIMIT_PATTERN = r"Layers consume more than the available size of"
+
 _EKS_VPC_CNI_POD_SANDBOX_FAILURE_PATTERNS = (
     r"Failed to create pod sandbox\b.{0,500}\baws-cni\b.{0,220}\bfailed\b",
     r"plugin type=[\"']?aws-cni[\"']?\b.{0,220}\bfailed\b",
@@ -1873,6 +1880,28 @@ _RULES = (
         ),
     ),
     Rule(
+        id="lambda.layers.size-limit-exceeded",
+        title="Attached layers exceed the Lambda function's available size",
+        confidence="high",
+        patterns=(_LAMBDA_LAYERS_SIZE_LIMIT_PATTERN,),
+        explanation=(
+            "Lambda adds up the unzipped bytes of the function package and "
+            "every attached layer version, and rejects CreateFunction, "
+            "UpdateFunctionCode, and UpdateFunctionConfiguration when the "
+            "total passes 262,144,000 bytes (250 MB). The check is on the "
+            "combined total, so attaching one more layer - or a new version "
+            "of a layer that grew - can fail a function whose own package "
+            "never changed."
+        ),
+        verification=(
+            "Sum what Lambda actually measures: the unzipped bytes of the function package plus every attached layer version, not the zipped upload sizes.",
+            "Read the attached layers without changing anything: `aws lambda get-function --function-name <name> --query '{code:Configuration.CodeSize,layers:Configuration.Layers}'` lists each layer ARN with its zipped CodeSize; download and unzip the heaviest to count its real bytes.",
+            "Drop the layers the function no longer imports, and trim the remaining ones - tests, docs, `__pycache__`, and unstripped native libraries are usually where the bytes went.",
+            "If the dependencies are genuinely that large, package the function as a container image (up to 10 GB) or load bulky assets from EFS or S3 at runtime instead of shipping them in layers.",
+        ),
+        documentation_url="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+    ),
+    Rule(
         id="apigateway.security-policy.endpoint-access-required",
         title="API Gateway needs an endpoint access mode for its security policy",
         confidence="high",
@@ -2055,6 +2084,9 @@ _RULES = (
             # sentence arrives on the CREATE_FAILED line itself, so excluding
             # only that line keeps other failed resources reported.
             _EC2_USER_DATA_SIZE_LIMIT_PATTERN,
+            # Same shape for the layers total-size rule: the handler reason
+            # rides the CREATE_FAILED line, so only that line steps aside.
+            _LAMBDA_LAYERS_SIZE_LIMIT_PATTERN,
             _CLOUDFORMATION_CIRCULAR_DEPENDENCY_PATTERN,
             _CLOUDFORMATION_EXPORT_NOT_FOUND_PATTERN,
         ),

@@ -181,6 +181,7 @@
           <li><a href="./cloudformation-circular-dependency.html">Circular dependency between resources</a> — trace the transformed template's dependency graph and break the cycle.</li>
           <li><a href="./template-limit-exceeded.html">Template exceeds a size or count quota</a> — the 51,200-byte inline body limit and the 500-resource cap.</li>
           <li><a href="./lambda-package-size-limit.html">Unzipped size must be smaller than 262144000 bytes</a> — the per-function package ceilings and the container-image escape hatch.</li>
+          <li><a href="./lambda-layers-size-limit.html">Layers consume more than the available size of the function</a> — sum the unzipped bytes of code plus every layer, then drop, trim, or repackage.</li>
           <li><a href="./code-storage-limit-exceeded.html">Code storage limit exceeded (CodeStorageExceededException)</a> — the regional quota that months of retained versions quietly fill.</li>
           <li><a href="./reserved-concurrency-below-minimum.html">ReservedConcurrentExecutions decreases UnreservedConcurrentExecution below its minimum value</a> — the account-wide concurrency floor a fresh account often can't clear.</li>
           <li><a href="./confirm-changeset-prompt.html">Deploy this changeset? [y/N] hangs CI</a> — the interactive confirmation step in a pipeline with no keyboard.</li>

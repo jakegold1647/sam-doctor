@@ -62,8 +62,8 @@ package directly through `uvx`:
 uvx sam-doctor diagnose deployment.log --format markdown
 ```
 
-The stable PyPI release carries 91 of the 95 documented diagnostics — the
-newest four land in the next release — plus the shell-independent `run`
+The stable PyPI release carries 91 of the 96 documented diagnostics — the
+newest five land in the next release — plus the shell-independent `run`
 wrapper and the native clipboard handoff. The public guides follow that
 release, so `pip install sam-doctor` is all you need.
 

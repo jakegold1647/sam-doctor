@@ -1979,6 +1979,29 @@ window.SAM_DOCTOR_CATALOG = {
       "parse_stabilization_context": false
     },
     {
+      "id": "lambda.layers.size-limit-exceeded",
+      "title": "Attached layers exceed the Lambda function's available size",
+      "confidence": "high",
+      "patterns": [
+        {
+          "source": "Layers consume more than the available size of",
+          "flags": "i"
+        }
+      ],
+      "explanation": "Lambda adds up the unzipped bytes of the function package and every attached layer version, and rejects CreateFunction, UpdateFunctionCode, and UpdateFunctionConfiguration when the total passes 262,144,000 bytes (250 MB). The check is on the combined total, so attaching one more layer - or a new version of a layer that grew - can fail a function whose own package never changed.",
+      "verification": [
+        "Sum what Lambda actually measures: the unzipped bytes of the function package plus every attached layer version, not the zipped upload sizes.",
+        "Read the attached layers without changing anything: `aws lambda get-function --function-name <name> --query '{code:Configuration.CodeSize,layers:Configuration.Layers}'` lists each layer ARN with its zipped CodeSize; download and unzip the heaviest to count its real bytes.",
+        "Drop the layers the function no longer imports, and trim the remaining ones - tests, docs, `__pycache__`, and unstripped native libraries are usually where the bytes went.",
+        "If the dependencies are genuinely that large, package the function as a container image (up to 10 GB) or load bulky assets from EFS or S3 at runtime instead of shipping them in layers."
+      ],
+      "documentation_url": "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html",
+      "suppressed_by": [],
+      "excluded_line_patterns": [],
+      "parse_denial_context": false,
+      "parse_stabilization_context": false
+    },
+    {
       "id": "apigateway.security-policy.endpoint-access-required",
       "title": "API Gateway needs an endpoint access mode for its security policy",
       "confidence": "high",
@@ -2270,6 +2293,10 @@ window.SAM_DOCTOR_CATALOG = {
         },
         {
           "source": "User data is limited to 16384 bytes",
+          "flags": "i"
+        },
+        {
+          "source": "Layers consume more than the available size of",
           "flags": "i"
         },
         {
