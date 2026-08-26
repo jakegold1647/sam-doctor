@@ -1568,7 +1568,7 @@ _RULES = (
             "Shrink the inline script first - strip comments and blank lines - or move the bootstrap body to S3 or an SSM document, keep a short download-and-run stub in user data, and grant the instance profile read access to it.",
             "cloud-init also accepts gzip-compressed user data, and setup that rarely changes belongs in the AMI image rather than in the boot script.",
         ),
-        documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-add-user-data.html",
+        documentation_url="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html",
     ),
     Rule(
         id="ec2.network-interface.create-failed",
