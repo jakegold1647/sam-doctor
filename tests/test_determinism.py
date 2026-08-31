@@ -22,6 +22,7 @@ from sam_doctor.redaction import redact
 SAMPLES_DIR = Path(__file__).resolve().parents[1] / "src" / "sam_doctor" / "data"
 
 FORMATS = ("terminal", "markdown", "json", "github", "sarif")
+RULE_FORMATS = ("terminal", "json")
 
 
 def _composite_log() -> str:
@@ -136,6 +137,18 @@ def _run_cli(
     return result.stdout
 
 
+def _run_rules(output_format: str, *, hash_seed: str) -> str:
+    result = subprocess.run(
+        [sys.executable, "-m", "sam_doctor.cli", "rules", "--format", output_format],
+        capture_output=True,
+        text=True,
+        env=child_env(PYTHONHASHSEED=hash_seed),
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stdout
+
+
 @pytest.mark.parametrize("output_format", FORMATS)
 def test_output_does_not_depend_on_the_hash_seed(
     output_format: str, tmp_path: Path
@@ -150,6 +163,13 @@ def test_output_does_not_depend_on_the_hash_seed(
     }
 
     assert len(outputs) == 1, f"{output_format} output varies with PYTHONHASHSEED"
+
+
+@pytest.mark.parametrize("output_format", RULE_FORMATS)
+def test_rule_catalog_does_not_depend_on_the_hash_seed(output_format: str) -> None:
+    outputs = {_run_rules(output_format, hash_seed=seed) for seed in ("0", "1", "12345")}
+
+    assert len(outputs) == 1, f"{output_format} rule catalog varies with PYTHONHASHSEED"
 
 
 def test_output_does_not_depend_on_the_locale(tmp_path: Path) -> None:
