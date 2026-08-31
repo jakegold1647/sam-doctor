@@ -158,6 +158,15 @@ def _sitemap_relative_path(loc: str) -> str:
     return rel
 
 
+def _html_paths(site_root: Path) -> list[Path]:
+    """Return HTML files in the same case-sensitive order on every platform."""
+
+    return sorted(
+        site_root.rglob("*.html"),
+        key=lambda path: path.relative_to(site_root).as_posix(),
+    )
+
+
 def check_sitemap(site_root: Path, issues: list[str]) -> None:
     sitemap_path = site_root / "sitemap.xml"
     if not sitemap_path.exists():
@@ -186,7 +195,7 @@ def check_sitemap(site_root: Path, issues: list[str]) -> None:
     # silently stopped keeping up: four commits added pages without touching it,
     # leaving 38 pages that search engines had no path to. Nothing failed,
     # because nothing was looking this way.
-    for html in sorted(site_root.rglob("*.html")):
+    for html in _html_paths(site_root):
         rel = html.relative_to(site_root).as_posix()
         if rel in listed:
             continue
@@ -233,7 +242,8 @@ def main() -> int:
         return 1
 
     issues: list[str] = []
-    for html in sorted(site_root.rglob("*.html")):
+    html_paths = _html_paths(site_root)
+    for html in html_paths:
         check_html(site_root, html, issues)
 
     check_sitemap(site_root, issues)
@@ -246,7 +256,7 @@ def main() -> int:
         return 1
 
     print("Site QA checks passed:")
-    print(f"- checked {len(list(site_root.rglob('*.html')))} HTML files")
+    print(f"- checked {len(html_paths)} HTML files")
     return 0
 
 

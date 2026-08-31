@@ -82,6 +82,13 @@ def test_the_real_site_passes(qa) -> None:
     assert _issues(qa, SITE_ROOT) == []
 
 
+def test_html_discovery_order_is_platform_independent(qa, tmp_path: Path) -> None:
+    for name in ("a.html", "B.html"):
+        (tmp_path / name).write_text("<!doctype html>", encoding="utf-8")
+
+    assert [path.name for path in qa._html_paths(tmp_path)] == ["B.html", "a.html"]
+
+
 def test_every_error_page_is_in_the_real_sitemap(qa) -> None:
     # Stated directly, because the generic message above is easy to misread as a
     # link problem. These pages exist to be found by search.
