@@ -10,12 +10,17 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import pytest
 from conftest import child_env
 
-from sam_doctor.cli import _batch_render, _render_findings, _write_report
+from sam_doctor.cli import (
+    _batch_render,
+    _ordered_unique_paths,
+    _render_findings,
+    _write_report,
+)
 from sam_doctor.diagnostics import diagnose
 from sam_doctor.redaction import redact
 
@@ -90,6 +95,19 @@ def test_batch_paths_have_platform_independent_order_and_separators(
         redact((logs / "a.log").as_posix()),
     ]
     assert all("\\" not in source for source in sources)
+
+
+def test_batch_path_deduplication_preserves_case_distinct_windows_names() -> None:
+    paths = [
+        PureWindowsPath("logs/a.log"),
+        PureWindowsPath("logs/A.log"),
+        PureWindowsPath("logs/a.log"),
+    ]
+
+    assert [path.as_posix() for path in _ordered_unique_paths(paths)] == [
+        "logs/A.log",
+        "logs/a.log",
+    ]
 
 
 def test_crlf_input_produces_the_same_findings_as_lf() -> None:
