@@ -10,10 +10,12 @@ import shutil
 import subprocess
 import sys
 import textwrap
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from html import escape
 from importlib.resources import files
-from pathlib import Path
+from pathlib import Path, PurePath
+from typing import TypeVar
 
 from . import __version__
 from .diagnostics import (
@@ -28,6 +30,8 @@ from .diagnostics import (
     terminal_report,
 )
 from .redaction import redact
+
+_PathT = TypeVar("_PathT", bound=PurePath)
 
 _DEMO_FILES = {
     "oidc": "oidc-assume-role-failure.txt",
@@ -742,11 +746,15 @@ def _expand_input_paths(input_value: str) -> list[Path]:
 
     if not expanded:
         raise ValueError(f"No log files found for: {input_value}")
-    # `Path` ordering follows the host path flavour: Windows compares paths
-    # case-insensitively while POSIX compares their exact spelling.  Use the
-    # serialized form as the key so a portable set of input names keeps the
-    # same order on every runner.
-    return sorted(set(expanded), key=lambda path: path.as_posix())
+    return _ordered_unique_paths(expanded)
+
+
+def _ordered_unique_paths(paths: Iterable[_PathT]) -> list[_PathT]:
+    """Deduplicate exact spellings and order them without host path semantics."""
+    by_spelling: dict[str, _PathT] = {}
+    for path in paths:
+        by_spelling.setdefault(path.as_posix(), path)
+    return [by_spelling[spelling] for spelling in sorted(by_spelling)]
 
 
 def _batch_render(
