@@ -827,7 +827,7 @@ def check_fixtures(
                     f"{rule_id!r}: catalog rule has no fixture registry entry."
                 )
 
-    for rule_id, fixture in fixtures.items():
+    for rule_id, fixture in sorted(fixtures.items()):
         if rule_id not in rules_by_id:
             problems.append(
                 f"{rule_id!r}: no rule in the catalog carries this id."

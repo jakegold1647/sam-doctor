@@ -42,6 +42,29 @@ def test_flags_an_id_with_no_matching_rule() -> None:
     assert any("no rule in the catalog" in problem for problem in problems)
 
 
+def test_custom_fixture_diagnostics_ignore_insertion_order() -> None:
+    checker = _load_checker()
+    entries = [
+        (
+            "z.unregistered-rule",
+            checker.RuleFixture(positive="anything", negative="anything else"),
+        ),
+        (
+            "a.unregistered-rule",
+            checker.RuleFixture(positive="anything", negative="anything else"),
+        ),
+    ]
+
+    forward = checker.check_fixtures(dict(entries))
+    reverse = checker.check_fixtures(dict(reversed(entries)))
+
+    assert forward == [
+        "'a.unregistered-rule': no rule in the catalog carries this id.",
+        "'z.unregistered-rule': no rule in the catalog carries this id.",
+    ]
+    assert reverse == forward
+
+
 def test_flags_a_catalog_rule_missing_from_the_registry() -> None:
     checker = _load_checker()
     complete = checker.RULE_FIXTURES
