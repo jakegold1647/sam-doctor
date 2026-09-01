@@ -173,3 +173,31 @@ def test_collaborator_invitation_is_not_an_active_claim() -> None:
     )
 
     assert "unassigned work has a contributor claim in comments" not in problems
+
+
+def test_main_reports_violations_in_issue_number_order(monkeypatch, capsys) -> None:
+    issues = []
+    for number in (10, 2):
+        issue = _issue(
+            labels=(
+                "status: ready",
+                "good first issue",
+                "mentor available",
+                "effort: small",
+            ),
+            body="## Acceptance criteria\nComment `claim this` before starting.",
+            assigned=True,
+        )
+        issue["number"] = number
+        issues.append(issue)
+
+    def fake_paged_json(path: str, *_args, **_kwargs) -> list[dict]:
+        return issues if path == "issues" else []
+
+    monkeypatch.setattr(QUEUE, "_paged_json", fake_paged_json)
+
+    assert QUEUE.main(["--repo", "owner/repository"]) == 1
+    assert capsys.readouterr().out.splitlines() == [
+        "#2: assigned work still carries `status: ready`",
+        "#10: assigned work still carries `status: ready`",
+    ]
