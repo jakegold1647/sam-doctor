@@ -194,7 +194,10 @@ def main(argv: list[str] | None = None) -> int:
             state="open",
             labels=READY_LABEL,
         )
-        ready_issues = [issue for issue in issues if "pull_request" not in issue]
+        ready_issues = sorted(
+            (issue for issue in issues if "pull_request" not in issue),
+            key=lambda issue: int(issue["number"]),
+        )
         violations: list[tuple[int, str]] = []
         for issue in ready_issues:
             number = int(issue["number"])
