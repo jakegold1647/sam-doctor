@@ -126,6 +126,20 @@ def _write_duplicate_member_archive(path: Path, payloads: tuple[bytes, ...]) -> 
             archive.addfile(member, io.BytesIO(payload))
 
 
+def _write_aliased_member_archive(
+    path: Path, members: tuple[tuple[str, bytes], ...]
+) -> None:
+    with (
+        path.open("wb") as raw,
+        gzip.GzipFile(fileobj=raw, mode="wb", mtime=1_700_000_000) as compressed,
+        tarfile.open(fileobj=compressed, mode="w") as archive,
+    ):
+        for name, payload in members:
+            member = tarfile.TarInfo(name)
+            member.size = len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+
+
 def test_reproducible_sdist_normalizer_produces_identical_bytes(tmp_path: Path) -> None:
     first = tmp_path / "first.tar.gz"
     second = tmp_path / "second.tar.gz"
@@ -180,6 +194,43 @@ def test_reproducible_sdist_rejects_duplicate_members_in_any_order(
     assert diagnostics == [
         (
             "source archive contains duplicate member names: "
+            "'sam_doctor-0.0.0/README.md'\n"
+        )
+    ] * 2
+
+
+def test_reproducible_sdist_rejects_path_equivalent_members_in_any_order(
+    tmp_path: Path,
+) -> None:
+    first = tmp_path / "first.tar.gz"
+    second = tmp_path / "second.tar.gz"
+    members = (
+        ("sam_doctor-0.0.0/README.md", b"first payload\n"),
+        ("sam_doctor-0.0.0/./README.md", b"second payload\n"),
+    )
+    _write_aliased_member_archive(first, members)
+    _write_aliased_member_archive(second, tuple(reversed(members)))
+
+    environment = os.environ.copy()
+    environment["SOURCE_DATE_EPOCH"] = "1700000000"
+    command = [sys.executable, str(ROOT / "scripts" / "reproducible-sdist.py")]
+    results = [
+        subprocess.run(
+            [*command, str(archive)],
+            check=False,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        for archive in (first, second)
+    ]
+
+    assert [result.returncode for result in results] == [2, 2]
+    diagnostics = [result.stderr.rsplit("error: ", 1)[-1] for result in results]
+    assert diagnostics == [
+        (
+            "source archive contains path-equivalent member names: "
+            "'sam_doctor-0.0.0/./README.md', "
             "'sam_doctor-0.0.0/README.md'\n"
         )
     ] * 2
