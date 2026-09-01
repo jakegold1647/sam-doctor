@@ -132,6 +132,24 @@ def _compile_problems(rule: Rule, field: str, patterns: tuple[str, ...]) -> list
     return problems
 
 
+def _rule_order_key(rule: Rule) -> tuple[object, ...]:
+    """Order even duplicate or malformed custom rules by their complete content."""
+
+    return (
+        rule.id,
+        rule.title,
+        rule.confidence,
+        rule.patterns,
+        rule.explanation,
+        rule.verification,
+        rule.documentation_url,
+        rule.suppressed_by,
+        rule.excluded_line_patterns,
+        rule.parse_denial_context,
+        rule.parse_stabilization_context,
+    )
+
+
 def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
     """Return every catalog problem as a human-readable string."""
 
@@ -140,7 +158,7 @@ def check_rules(rules: tuple[Rule, ...] = ()) -> list[str]:
     seen_titles: set[str] = set()
     seen_ids: set[str] = set()
 
-    for rule in rules:
+    for rule in sorted(rules, key=_rule_order_key):
         title = rule.title.strip()
         if not title:
             problems.append("A rule has an empty title.")
