@@ -45,7 +45,21 @@ def normalize_archive(path: Path, epoch: int) -> None:
     temporary_path: Path | None = None
     try:
         with tarfile.open(path, mode="r:gz") as source:
-            members = sorted(source.getmembers(), key=lambda member: member.name)
+            members = source.getmembers()
+            seen_names: set[str] = set()
+            duplicate_names: set[str] = set()
+            for member in members:
+                if member.name in seen_names:
+                    duplicate_names.add(member.name)
+                seen_names.add(member.name)
+            if duplicate_names:
+                rendered = ", ".join(repr(name) for name in sorted(duplicate_names)[:8])
+                if len(duplicate_names) > 8:
+                    rendered += f", plus {len(duplicate_names) - 8} more"
+                raise ValueError(
+                    f"source archive contains duplicate member names: {rendered}"
+                )
+            members.sort(key=lambda member: member.name)
             with tempfile.NamedTemporaryFile(
                 dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False
             ) as temporary:
