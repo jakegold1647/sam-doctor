@@ -116,6 +116,13 @@ def _page_label(path: Path) -> str:
     return f"site/{path.relative_to(SITE_ROOT).as_posix()}"
 
 
+def _html_paths(site_root: Path) -> list[Path]:
+    return sorted(
+        site_root.rglob("*.html"),
+        key=lambda path: path.relative_to(site_root).as_posix(),
+    )
+
+
 def _ensure_write_target_is_not_a_hard_link(path: Path) -> None:
     """Reject an existing output alias before any metadata writes begin."""
 
@@ -282,7 +289,7 @@ def sync_metadata(write: bool = True) -> tuple[int, str, list[str]]:
         if write:
             pending_writes.append((INDEX_PATH, updated_index))
 
-    for page in sorted(SITE_ROOT.rglob("*.html")):
+    for page in _html_paths(SITE_ROOT):
         if page.resolve() == INDEX_PATH.resolve():
             page_text = updated_index
         else:

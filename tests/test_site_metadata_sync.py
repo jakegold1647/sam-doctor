@@ -84,6 +84,20 @@ def _write_index(sync, **versions: str) -> None:
     sync.INDEX_PATH.write_text(INDEX.format(**fields), encoding="utf-8")
 
 
+def test_html_paths_use_platform_independent_relative_order(sync) -> None:
+    _write_index(sync)
+    (sync.SITE_ROOT / "a.html").write_text("", encoding="utf-8")
+    (sync.SITE_ROOT / "B.html").write_text("", encoding="utf-8")
+
+    paths = sync._html_paths(sync.SITE_ROOT)
+
+    assert [path.relative_to(sync.SITE_ROOT).as_posix() for path in paths] == [
+        "B.html",
+        "a.html",
+        "index.html",
+    ]
+
+
 def test_an_aligned_page_is_in_sync(sync) -> None:
     _write_index(sync)
 
