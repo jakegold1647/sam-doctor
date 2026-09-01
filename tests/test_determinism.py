@@ -17,6 +17,7 @@ from conftest import child_env
 
 from sam_doctor.cli import (
     _batch_render,
+    _generated_timestamp,
     _ordered_unique_paths,
     _render_findings,
     _write_report,
@@ -232,3 +233,83 @@ def test_packet_timestamps_stay_utc_whatever_the_local_zone(tmp_path: Path) -> N
             line for line in notes.splitlines() if line.startswith("- Generated:")
         )
         assert generated.endswith("+00:00"), f"TZ={zone} produced {generated}"
+
+
+def test_packet_files_are_identical_with_source_date_epoch(tmp_path: Path) -> None:
+    log = _composite_log_file(tmp_path)
+    packets: list[dict[str, bytes]] = []
+    for index in range(2):
+        output_dir = tmp_path / f"reproducible-packet-{index}"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "sam_doctor.cli",
+                "packet",
+                str(log),
+                "--output-dir",
+                str(output_dir),
+            ],
+            capture_output=True,
+            env=child_env(SOURCE_DATE_EPOCH="1700000000"),
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        packets.append(
+            {path.name: path.read_bytes() for path in output_dir.iterdir()}
+        )
+
+    assert packets[0] == packets[1]
+    assert b"- Generated: 2023-11-14T22:13:20+00:00" in packets[0][
+        "researcher-notes.md"
+    ]
+
+
+def test_generated_timestamp_uses_source_date_epoch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1700000000")
+
+    assert _generated_timestamp() == "2023-11-14T22:13:20+00:00"
+
+
+@pytest.mark.parametrize("epoch", ["not-an-integer", "-1"])
+def test_generated_timestamp_rejects_invalid_epoch(
+    monkeypatch: pytest.MonkeyPatch,
+    epoch: str,
+) -> None:
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", epoch)
+
+    with pytest.raises(
+        ValueError,
+        match="SOURCE_DATE_EPOCH must be a non-negative integer timestamp",
+    ):
+        _generated_timestamp()
+
+
+@pytest.mark.parametrize("epoch", ["not-an-integer", "-1"])
+def test_packet_rejects_invalid_source_date_epoch(
+    tmp_path: Path,
+    epoch: str,
+) -> None:
+    log = _composite_log_file(tmp_path)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "sam_doctor.cli",
+            "packet",
+            str(log),
+            "--output-dir",
+            str(tmp_path / "packet"),
+        ],
+        capture_output=True,
+        text=True,
+        env=child_env(SOURCE_DATE_EPOCH=epoch),
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "SOURCE_DATE_EPOCH must be a non-negative integer timestamp" in result.stderr
+    assert "Traceback" not in result.stderr
+    assert not (tmp_path / "packet").exists()
