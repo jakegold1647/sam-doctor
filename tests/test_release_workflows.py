@@ -114,6 +114,18 @@ def _write_test_archive(path: Path, *, member_mtime: int, gzip_mtime: int) -> No
         archive.addfile(member, io.BytesIO(payload))
 
 
+def _write_duplicate_member_archive(path: Path, payloads: tuple[bytes, ...]) -> None:
+    with (
+        path.open("wb") as raw,
+        gzip.GzipFile(fileobj=raw, mode="wb", mtime=1_700_000_000) as compressed,
+        tarfile.open(fileobj=compressed, mode="w") as archive,
+    ):
+        for payload in payloads:
+            member = tarfile.TarInfo("sam_doctor-0.0.0/README.md")
+            member.size = len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+
+
 def test_reproducible_sdist_normalizer_produces_identical_bytes(tmp_path: Path) -> None:
     first = tmp_path / "first.tar.gz"
     second = tmp_path / "second.tar.gz"
@@ -138,6 +150,39 @@ def test_reproducible_sdist_normalizer_produces_identical_bytes(tmp_path: Path) 
     assert first.read_bytes() == second.read_bytes()
     with tarfile.open(first, mode="r:gz") as archive:
         assert all(member.mtime == 1_700_000_000 for member in archive.getmembers())
+
+
+def test_reproducible_sdist_rejects_duplicate_members_in_any_order(
+    tmp_path: Path,
+) -> None:
+    first = tmp_path / "first.tar.gz"
+    second = tmp_path / "second.tar.gz"
+    payloads = (b"first payload\n", b"second payload\n")
+    _write_duplicate_member_archive(first, payloads)
+    _write_duplicate_member_archive(second, tuple(reversed(payloads)))
+
+    environment = os.environ.copy()
+    environment["SOURCE_DATE_EPOCH"] = "1700000000"
+    command = [sys.executable, str(ROOT / "scripts" / "reproducible-sdist.py")]
+    results = [
+        subprocess.run(
+            [*command, str(archive)],
+            check=False,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        for archive in (first, second)
+    ]
+
+    assert [result.returncode for result in results] == [2, 2]
+    diagnostics = [result.stderr.rsplit("error: ", 1)[-1] for result in results]
+    assert diagnostics == [
+        (
+            "source archive contains duplicate member names: "
+            "'sam_doctor-0.0.0/README.md'\n"
+        )
+    ] * 2
 
 
 def test_release_write_job_only_verifies_and_publishes_prebuilt_bytes() -> None:
