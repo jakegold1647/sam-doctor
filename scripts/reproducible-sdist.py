@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import os
+import posixpath
 import tarfile
 import tempfile
 from pathlib import Path
@@ -58,6 +59,27 @@ def normalize_archive(path: Path, epoch: int) -> None:
                     rendered += f", plus {len(duplicate_names) - 8} more"
                 raise ValueError(
                     f"source archive contains duplicate member names: {rendered}"
+                )
+
+            names_by_path: dict[str, set[str]] = {}
+            for member in members:
+                normalized_name = posixpath.normpath(member.name)
+                names_by_path.setdefault(normalized_name, set()).add(member.name)
+            equivalent_groups = sorted(
+                tuple(sorted(names))
+                for names in names_by_path.values()
+                if len(names) > 1
+            )
+            if equivalent_groups:
+                rendered = "; ".join(
+                    ", ".join(repr(name) for name in names)
+                    for names in equivalent_groups[:8]
+                )
+                if len(equivalent_groups) > 8:
+                    rendered += f"; plus {len(equivalent_groups) - 8} more"
+                raise ValueError(
+                    "source archive contains path-equivalent member names: "
+                    f"{rendered}"
                 )
             members.sort(key=lambda member: member.name)
             with tempfile.NamedTemporaryFile(
