@@ -70,6 +70,23 @@ def test_flags_broken_regex_and_bad_metadata() -> None:
     assert "https://" in text
 
 
+def test_custom_rule_diagnostics_ignore_input_order() -> None:
+    checker = _load_checker()
+    rules = (
+        _rule(id="z.invalid-rule", title="Z invalid rule", confidence="certain"),
+        _rule(id="a.invalid-rule", title="A invalid rule", confidence="certain"),
+    )
+
+    forward = checker.check_rules(rules)
+    reverse = checker.check_rules(tuple(reversed(rules)))
+
+    assert forward == [
+        "'A invalid rule': confidence 'certain' is not one of high/medium/low.",
+        "'Z invalid rule': confidence 'certain' is not one of high/medium/low.",
+    ]
+    assert reverse == forward
+
+
 def test_flags_duplicate_titles() -> None:
     checker = _load_checker()
     problems = checker.check_rules((_rule(), _rule(id="example.other-rule")))
