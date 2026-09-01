@@ -169,7 +169,10 @@ def check_error_pages(mapping: dict[str, str] | None = None) -> list[str]:
                 )
 
     pages_seen: dict[str, str] = {}
-    for rule_id, page in mapping.items():
+    # Callers may assemble a custom mapping in any insertion order. Keep the
+    # resulting diagnostics stable, including which id is named first when two
+    # rules point at the same page.
+    for rule_id, page in sorted(mapping.items()):
         if rule_id not in rules_by_id:
             problems.append(f"{rule_id!r}: no rule in the catalog carries this id.")
 

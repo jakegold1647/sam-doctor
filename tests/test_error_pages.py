@@ -52,6 +52,23 @@ def test_flags_two_rules_mapped_to_the_same_page() -> None:
     assert any("is mapped from both" in problem for problem in problems)
 
 
+def test_custom_mapping_diagnostics_ignore_insertion_order() -> None:
+    checker = _load_checker()
+    entries = [
+        ("z.unregistered-rule", "shared-missing-page.html"),
+        ("a.unregistered-rule", "shared-missing-page.html"),
+    ]
+
+    forward = checker.check_error_pages(dict(entries))
+    reverse = checker.check_error_pages(dict(reversed(entries)))
+
+    assert forward == reverse
+    assert (
+        "'shared-missing-page.html' is mapped from both "
+        "'a.unregistered-rule' and 'z.unregistered-rule'."
+    ) in forward
+
+
 def test_flags_a_page_missing_from_the_mapping() -> None:
     checker = _load_checker()
     mapping = dict(checker.ERROR_PAGE_MAP)
