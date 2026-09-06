@@ -6,6 +6,7 @@ import argparse
 import codecs
 import glob
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -1068,6 +1069,24 @@ def _make_output_dir(path: Path) -> Path:
     return path
 
 
+def _generated_timestamp() -> str:
+    """Return a UTC artifact timestamp, honoring the reproducible-build epoch."""
+
+    raw_epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if raw_epoch is None:
+        return datetime.now(timezone.utc).isoformat()
+    try:
+        epoch = int(raw_epoch)
+        if epoch < 0:
+            raise ValueError
+        generated = datetime.fromtimestamp(epoch, timezone.utc)
+    except (OSError, OverflowError, ValueError) as error:
+        raise ValueError(
+            "SOURCE_DATE_EPOCH must be a non-negative integer timestamp"
+        ) from error
+    return generated.isoformat()
+
+
 def _write_packet_notes(
     notes_path: Path,
     scenario: str,
@@ -1076,6 +1095,7 @@ def _write_packet_notes(
     command: str,
     json_payload: dict[str, object],
     source: str,
+    generated_at: str,
 ) -> None:
     findings = json_payload.get("findings", [])
     finding_count = json_payload.get("finding_count", 0)
@@ -1089,7 +1109,7 @@ def _write_packet_notes(
         "\n".join(
             [
                 "# Redacted researcher evidence packet",
-                f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+                f"- Generated: {generated_at}",
                 f"- Scenario: {redact(scenario)}",
                 f"- Source: {redact(source)}",
                 f"- Command: {redact(command)}",
@@ -1109,6 +1129,7 @@ def _write_packet_notes(
 
 
 def _packet_command(args: argparse.Namespace) -> int:
+    generated_at = _generated_timestamp()
     output_dir = _make_output_dir(Path(args.output_dir).resolve())
     markdown_path = _artifact_path(output_dir, args.markdown_name, "--markdown-name")
     json_path = _artifact_path(output_dir, args.json_name, "--json-name")
@@ -1170,6 +1191,7 @@ def _packet_command(args: argparse.Namespace) -> int:
         command,
         payload,
         source_name,
+        generated_at,
     )
 
     print("Evidence packet generated:")
@@ -1185,6 +1207,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
     if args.max_lines < 1:
         raise ValueError("--max-lines must be one or greater.")
 
+    generated_at = _generated_timestamp()
     output_dir = _make_output_dir(Path(args.output_dir).resolve())
     notes_path = _artifact_path(output_dir, args.name, "--name")
 
@@ -1210,7 +1233,7 @@ def _request_packet_command(args: argparse.Namespace) -> int:
     lines = [
         "# Redacted SAM Doctor rule request excerpt",
         "",
-        f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+        f"- Generated: {generated_at}",
         f"- SAM Doctor version: {__version__}",
         f"- Source: {redact(source_name)}",
         f"- Command: {redact(command)}",

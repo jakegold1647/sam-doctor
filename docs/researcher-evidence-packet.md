@@ -12,6 +12,10 @@ sam-doctor packet deployment.log
 python scripts/export-evidence-packet.py deployment.log
 ```
 
+Set `SOURCE_DATE_EPOCH` to a non-negative Unix timestamp when packet files must
+be byte-identical across reruns. The generated UTC timestamp in both evidence
+packets and rule-request excerpts will use that pinned value.
+
 ## 2) Build a reusable packet
 
 You can move artifacts for sharing as needed:

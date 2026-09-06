@@ -4,6 +4,12 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+- **Evidence packets can now be rebuilt byte-for-byte.** Setting
+  `SOURCE_DATE_EPOCH` to a non-negative Unix timestamp pins the generated UTC
+  timestamp in evidence-packet and rule-request files, so reruns produce
+  identical bytes for review and archiving. A negative or non-integer value is
+  rejected before any packet output is written.
+
 ## v0.14.0 - 2026-09-06
 
 - **The website now has its own not-found page.** A missing or mistyped
