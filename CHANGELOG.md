@@ -4,6 +4,15 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.14.0 - 2026-09-06
+
+- **The website now has its own not-found page.** A missing or mistyped
+  address on sam-doctor.jacobgoldstein.dev used to land on the bare GitHub
+  Pages 404, which overflowed on phones and offered no way back. The new page
+  keeps the site navigation, points at the searchable error index, the
+  quickstart, and the CI recipes, and is marked `noindex` so it never appears
+  in search results or the sitemap.
+
 - **The Lambda layers size rejection now has a focused handoff.** The exact
   `Layers consume more than the available size of` refusal - in both the
   `262144000 bytes` and `the function` phrasings - reports one high-confidence
