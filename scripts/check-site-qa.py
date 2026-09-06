@@ -13,6 +13,7 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SITE_ROOT = ROOT / "site"
 SITE_BASE_URL = "https://sam-doctor.jacobgoldstein.dev/"
+NOT_FOUND_PAGE = "404.html"
 REPO_BLOB_PREFIX = "/blob/main/"
 
 
@@ -198,6 +199,10 @@ def check_sitemap(site_root: Path, issues: list[str]) -> None:
     for html in _html_paths(site_root):
         rel = html.relative_to(site_root).as_posix()
         if rel in listed:
+            continue
+        if rel == NOT_FOUND_PAGE:
+            # GitHub Pages serves this file for every missing URL. It is
+            # deliberately noindex and must stay out of the sitemap.
             continue
         issues.append(
             f"{rel} exists but is not listed in sitemap.xml; add "
