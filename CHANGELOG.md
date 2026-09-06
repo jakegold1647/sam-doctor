@@ -4,6 +4,8 @@ All notable changes to SAM Doctor are documented here.
 
 ## Unreleased
 
+## v0.14.0 - 2026-09-06
+
 - **The website now has its own not-found page.** A missing or mistyped
   address on sam-doctor.jacobgoldstein.dev used to land on the bare GitHub
   Pages 404, which overflowed on phones and offered no way back. The new page
